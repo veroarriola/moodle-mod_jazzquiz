@@ -233,7 +233,6 @@ activequiz.gather_current_results = function () {
         if (status == '500') {
             activequiz.quiz_info('there was an error getting current results', true);
         } else if (status == 200) {
-            console.log(response);
             activequiz.quiz_info_responses(response.responses);
 
             // after the responses have been inserted, we see if any question type javascript was added and evaluate

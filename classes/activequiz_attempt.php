@@ -653,9 +653,13 @@ class activequiz_attempt {
      */
     public function get_response_data($slot) {
 
-        $q = $this->quba->get_question($slot);
-        $textlen = 92 + strlen($q->questiontext);
-        $response = substr($this->responsesummary, $textlen);
+        // NOTE: This is technically a bad solution. If someone writes this in their answer, it won't work.
+        $needle_begin = '_answer" value="';
+        $needle_end = '" id="q';
+        $response_value_begin_pos = strpos($this->responsesummary, $needle_begin);
+        $response = substr($this->responsesummary, $response_value_begin_pos + strlen($needle_begin));
+        $response_value_end_pos = strpos($response, $needle_end);
+        $response = substr($response, 0, $response_value_end_pos);
 
         return [
             'response' => $response

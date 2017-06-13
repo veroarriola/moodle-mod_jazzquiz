@@ -576,8 +576,6 @@ activequiz.quiz_info = function (quizinfo, clear) {
 
 activequiz.quiz_info_responses = function (responses) {
 
-    activequiz.current_responses = responses;
-
     if (responses === undefined) {
         console.log('Responses is undefined.');
         return;
@@ -588,9 +586,24 @@ activequiz.quiz_info_responses = function (responses) {
     }
 
     var html = '';
+    activequiz.current_responses = [];
 
     for (var i = 0; i < responses.length; i++) {
         html += '<p>' + responses[i].response + '</p>';
+        var exists = false;
+        for (var j = 0; j < activequiz.current_responses; j++) {
+            if (activequiz.current_responses[j].response === responses[i].response) {
+                exists = true;
+                activequiz.current_responses[j].count++;
+                break;
+            }
+        }
+        if (!exists) {
+            activequiz.current_responses.push({
+                response: responses[i].response,
+                count: 1
+            });
+        }
     }
 
     activequiz.quiz_info(html, true);
