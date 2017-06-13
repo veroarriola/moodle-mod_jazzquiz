@@ -233,7 +233,8 @@ activequiz.gather_current_results = function () {
         if (status == '500') {
             activequiz.quiz_info('there was an error getting current results', true);
         } else if (status == 200) {
-            activequiz.quiz_info(response.responses, true);
+            console.log(response);
+            activequiz.quiz_info_responses(response.responses);
 
             // after the responses have been inserted, we see if any question type javascript was added and evaluate
             if (document.getElementById(response.qtype + '_js') !== null) {
@@ -287,7 +288,7 @@ activequiz.gather_results = function () {
         // only put results into the screen if
         if (activequiz.get('showstudentresponses') !== false) {
 
-            activequiz.quiz_info(response.responses);
+            activequiz.quiz_info_responses(response.responses);
 
             // after the responses have been inserted, we see if any question type javascript was added and evaluate
             if (document.getElementById(response.qtype + '_js') !== null) {

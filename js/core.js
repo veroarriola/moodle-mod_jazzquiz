@@ -558,24 +558,42 @@ activequiz.quiz_info = function (quizinfo, clear) {
         quizinfobox.innerHTML = '';
     }
 
-    if (quizinfo === null) {
-        quizinfo = '';
+    if (quizinfo === null || quizinfo === '') {
+        return;
     }
 
-    if (quizinfo.length === 0) {
-        return; // display nothing if there is nothing
-    }
-
-    activequiz.current_responses = quizinfo;
-
-    for (var i = 0; i < activequiz.current_responses.length; i++) {
-        quizinfobox.innerHTML += activequiz.current_responses[i].response;
+    if (typeof quizinfo === 'object') {
+        quizinfobox.appendChild(quizinfo);
+    } else {
+        quizinfobox.innerHTML = quizinfo;
     }
 
     // if it's hidden remove the hidden class
     if (quizinfobox.classList.contains('hidden')) {
         quizinfobox.classList.remove('hidden');
     }
+};
+
+activequiz.quiz_info_responses = function (responses) {
+
+    activequiz.current_responses = responses;
+
+    if (responses === undefined) {
+        console.log('Responses is undefined.');
+        return;
+    }
+
+    if (responses.length === 0) {
+        return; // display nothing if there is nothing
+    }
+
+    var html = '';
+
+    for (var i = 0; i < responses.length; i++) {
+        html += '<p>' + responses[i].response + '</p>';
+    }
+
+    activequiz.quiz_info(html, true);
 };
 
 /**

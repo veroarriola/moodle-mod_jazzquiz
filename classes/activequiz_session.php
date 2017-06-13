@@ -343,11 +343,11 @@ class activequiz_session {
                 continue;
             }
 
-            $anonymous =  ($this->session->anonymize_responses != 0 || $this->session->fully_anonymize != 0);
+            $anonymous = ($this->session->anonymize_responses != 0 || $this->session->fully_anonymize != 0);
 
-            $attempt->summarize_response();
+            $attempt->summarize_response($this->session->currentquestion);
 
-            $responses[] = $attempt->get_response_data();
+            $responses[] = $attempt->get_response_data($this->session->currentquestion);
         }
 
         return $responses;
@@ -380,10 +380,8 @@ class activequiz_session {
         }
 
         // next allow question modifiers to modify the output
-        $currQuestion = $this->rtq->get_questionmanager()->get_question_with_slot($this->session->currentqnum,
-            $this->openAttempt);
-        $return = $this->rtq->call_question_modifiers('modify_questionresults_duringquiz', $currQuestion, $currQuestion,
-            $attempts, $totalresponsesummary);
+        $currQuestion = $this->rtq->get_questionmanager()->get_question_with_slot($this->session->currentqnum, $this->openAttempt);
+        $return = $this->rtq->call_question_modifiers('modify_questionresults_duringquiz', $currQuestion, $currQuestion, $attempts, $totalresponsesummary);
 
         if (!empty($return)) {
             // we have an updated output

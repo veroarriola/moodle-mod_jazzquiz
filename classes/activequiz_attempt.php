@@ -648,6 +648,21 @@ class activequiz_attempt {
     }
 
     /**
+     * Returns response data as an array
+     *
+     */
+    public function get_response_data($slot) {
+
+        $q = $this->quba->get_question($slot);
+        $textlen = 92 + strlen($q->questiontext);
+        $response = substr($this->responsesummary, $textlen);
+
+        return [
+            'response' => $response
+        ];
+    }
+
+    /**
      * Gets the mark for a slot from the quba
      *
      * @param int $slot
@@ -741,8 +756,8 @@ class activequiz_attempt {
         }
 
         return \html_writer::tag('h4', get_string('responsehistory', 'question'),
-            array('class' => 'responsehistoryheader')) . \html_writer::tag('div',
-            \html_writer::table($table, true), array('class' => 'responsehistoryheader'));
+                array('class' => 'responsehistoryheader')) . \html_writer::tag('div',
+                \html_writer::table($table, true), array('class' => 'responsehistoryheader'));
 
     }
 
