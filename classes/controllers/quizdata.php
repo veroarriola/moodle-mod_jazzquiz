@@ -217,20 +217,17 @@ class quizdata {
                 }
 
                 break;
-            case 'getcurrentresults': // case to get the results of the question currently going
-
+            case 'getcurrentresults':
                 if ($this->RTQ->is_instructor()) {
-                    $responses = $this->session->get_question_results();
-
+                    $responses = $this->session->get_question_results_list();
+                    $responses[] = [ 'response' => 'My first answer' ];
                     $this->jsonlib->set('responses', $responses);
                     $this->jsonlib->set('status', 'success');
                     $this->jsonlib->set('qtype', $this->RTQ->get_questionmanager()->get_questiontype_byqnum($this->session->get_session()->currentqnum));
                     $this->jsonlib->send_response();
-
                 } else {
-                    $this->jsonlib->send_error('invalidaction');
+                    $this->jsonlib->send_error('invalidation');
                 }
-
                 break;
             case 'getnotresponded':
 

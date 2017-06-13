@@ -558,19 +558,18 @@ activequiz.quiz_info = function (quizinfo, clear) {
         quizinfobox.innerHTML = '';
     }
 
-
-    if (quizinfo == null) {
+    if (quizinfo === null) {
         quizinfo = '';
     }
 
-    if (quizinfo == '') {
+    if (quizinfo.length === 0) {
         return; // display nothing if there is nothing
     }
 
-    if (typeof quizinfo == 'object') {
-        quizinfobox.appendChild(quizinfo);
-    } else {
-        quizinfobox.innerHTML = quizinfo;
+    activequiz.current_responses = quizinfo;
+
+    for (var i = 0; i < activequiz.current_responses.length; i++) {
+        quizinfobox.innerHTML += activequiz.current_responses[i].response;
     }
 
     // if it's hidden remove the hidden class

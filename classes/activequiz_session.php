@@ -328,6 +328,32 @@ class activequiz_session {
     }
 
     /**
+     * Gets the results of the current question as an array
+     *
+     *
+     */
+    public function get_question_results_list() {
+
+        $attempts = $this->getall_open_attempts(false);
+
+        $responses = [];
+
+        foreach ($attempts as $attempt) {
+            if ($attempt->responded != 1) {
+                continue;
+            }
+
+            $anonymous =  ($this->session->anonymize_responses != 0 || $this->session->fully_anonymize != 0);
+
+            $attempt->summarize_response();
+
+            $responses[] = $attempt->get_response_data();
+        }
+
+        return $responses;
+    }
+
+    /**
      * Gets the results of the current question
      *
      */
