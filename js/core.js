@@ -587,11 +587,11 @@ activequiz.quiz_info_responses = function (responses) {
 
     var html = '';
     activequiz.current_responses = [];
+    var exists = false;
 
     for (var i = 0; i < responses.length; i++) {
-        html += '<p>' + responses[i].response + '</p>';
-        var exists = false;
-        for (var j = 0; j < activequiz.current_responses; j++) {
+        exists = false;
+        for (var j = 0; j < activequiz.current_responses.length; j++) {
             if (activequiz.current_responses[j].response === responses[i].response) {
                 exists = true;
                 activequiz.current_responses[j].count++;
@@ -599,6 +599,7 @@ activequiz.quiz_info_responses = function (responses) {
             }
         }
         if (!exists) {
+            html += '<p>' + responses[i].response + '</p>';
             activequiz.current_responses.push({
                 response: responses[i].response,
                 count: 1
