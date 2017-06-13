@@ -217,7 +217,7 @@ class quizdata {
                 }
 
                 break;
-            case 'getcurrentresults':
+            case 'getcurrentresults': // case to get the results of the question currently going
                 if ($this->RTQ->is_instructor()) {
                     $responses = $this->session->get_question_results_list();
                     $responses[] = [ 'response' => 'My first answer' ];
