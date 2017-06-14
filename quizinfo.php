@@ -76,6 +76,11 @@ if ($session->sessionopen == 0) {
     $jsonlib->set('status', 'endquestion');
     $jsonlib->send_response();
 
+} else if ($session->status == "multichoice") {
+
+    $jsonlib->set('status', 'multichoice');
+    $jsonlib->send_response();
+
 } else {
     // otherwise send a response of the current question with the next start time
     $jsonlib->set('status', 'running');

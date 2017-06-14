@@ -208,6 +208,29 @@ activequiz.handle_question = function (questionid) {
     });
 };
 
+activequiz.run_multichoice_question = function () {
+    var params = {
+        'action': 'runmultichoicequestion',
+        'rtqid': activequiz.get('rtqid'),
+        'sessionid': activequiz.get('sessionid'),
+        'attemptid': activequiz.get('attemptid'),
+        'sesskey': activequiz.get('sesskey')
+    };
+
+    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+
+        if (status == '500') {
+            activequiz.quiz_info('there was an error starting the multichoice question', true);
+        } else if (status == 200) {
+            activequiz.clear_and_hide_notresponded();
+            activequiz.hide_all_questionboxes();
+            activequiz.quiz_info('Running the multichoice question!');
+
+        }
+
+    });
+};
+
 /**
  * This function is slightly different than gather results as it doesn't look to alter the state of the quiz, or the interface
  * but just get the results of the quesiton and display them in the quiz info box
@@ -273,14 +296,14 @@ activequiz.gather_results = function () {
 
                 if (activequiz.get('lastquestion') == 'true') { // don't enable the next question button
 
-                    activequiz.control_buttons(['closesession', 'reloadresults', 'jumptoquestion', 'repollquestion', 'showcorrectanswer', 'toggleresponses']);
+                    activequiz.control_buttons(['closesession', 'reloadresults', 'jumptoquestion', 'repollquestion', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion']);
                 } else {
                     //otherwise enable the next question button and repoll question
 
-                    activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses']);
+                    activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion']);
                 }
             } else {
-                activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses']);
+                activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion']);
             }
         }
 

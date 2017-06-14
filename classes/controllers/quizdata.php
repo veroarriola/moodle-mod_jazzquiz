@@ -198,6 +198,19 @@ class quizdata {
                 }
 
                 break;
+            case 'runmultichoicequestion':
+
+                if ($this->RTQ->is_instructor()) {
+
+                    $this->session->set_status('multichoice');
+
+                    $this->jsonlib->set('status', 'success');
+                    $this->jsonlib->send_response();
+
+                } else {
+                    $this->jsonlib->send_error('invalidaction');
+                }
+                break;
             case 'getresults':
 
                 // only allow instructors to perform this action

@@ -486,6 +486,14 @@ class mod_activequiz_renderer extends plugin_renderer_base {
             )
         );
 
+        // TODO: Add language string for button text
+        $inqcontrol .= html_writer::tag('button', 'Run multichoice question', array(
+                'class'   => 'btn',
+                'id'      => 'runmultichoicequestion',
+                'onclick' => 'activequiz.run_multichoice_question();'
+            )
+        );
+
         $output .= html_writer::div($inqcontrol, 'btn-hide rtq_inquiz', array('id' => 'inquizcontrols'));
 
         return $output;
@@ -631,7 +639,7 @@ EOD;
                     // next check how many tries left
                     $jsinfo->resumequestiontries = $attempt->check_tries_left($session->get_session()->currentqnum, $nextQuestion->getTries());
                 }
-            } else if ($sessionstatus == 'reviewing' || $sessionstatus == 'endquestion') {
+            } else if ($sessionstatus == 'reviewing' || $sessionstatus == 'endquestion' || $sessionstatus == 'multichoice') {
 
                 // if we're reviewing, resume with quiz info of reviewing and just let
                 // set interval capture next question start time

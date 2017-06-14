@@ -74,6 +74,10 @@ activequiz.getQuizInfo = function () {
                 activequiz.hide_all_questionboxes();
                 activequiz.quiz_info(M.util.get_string('sessionclosed', 'activequiz'));
 
+            } else if (response.status == 'multichoice') {
+
+                activequiz.quiz_info('Multichoice question is being run!');
+
             }
         }
 
