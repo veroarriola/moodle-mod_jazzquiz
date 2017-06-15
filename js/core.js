@@ -159,10 +159,8 @@ activequiz.projector_mode = function() {
 
 //Function to exit the projector view
 document.addEventListener('keyup', function(e) {
-	console.log('is something happening?');
 	//If escape is pressed
 	if (e.keyCode == 27) {
-		console.log('something is happening!!');
 		var projector_div = document.getElementById('projector_view');
 		projector_div.parentNode.removeChild(projector_div);
 	}
