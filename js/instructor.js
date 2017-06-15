@@ -224,7 +224,9 @@ activequiz.run_multichoice_question = function () {
         } else if (status == 200) {
             activequiz.clear_and_hide_notresponded();
             activequiz.hide_all_questionboxes();
+            var e
             activequiz.quiz_info('Running the multichoice question!');
+
 
         }
 

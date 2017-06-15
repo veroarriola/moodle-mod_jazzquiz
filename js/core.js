@@ -1,3 +1,4 @@
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -144,6 +145,28 @@ activequiz.ajax = {
         //activequiz_delayed_request("activequiz_resend_request()", activequiz.resenddelay);
     }
 };
+
+//A view to view the answers intuitively on a big screen
+activequiz.projector_mode = function() {
+	var projector_div = document.createElement('div');
+	document.body.appendChild(projector_div);
+	projector_div.id = 'projector_view';
+	document.documentElement.style.overflowY = 'hidden';
+	activequiz.current_responses.forEach(function(response) {
+		projector_div.innerHTML += '<div>' + response.response + '</div>';
+	});
+}
+
+//Function to exit the projector view
+document.addEventListener('keyup', function(e) {
+	console.log('is something happening?');
+	//If escape is pressed
+	if (e.keyCode == 27) {
+		console.log('something is happening!!');
+		var projector_div = document.getElementById('projector_view');
+		projector_div.parentNode.removeChild(projector_div);
+	}
+});
 
 
 /**
