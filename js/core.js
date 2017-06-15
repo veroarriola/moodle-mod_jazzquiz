@@ -160,9 +160,11 @@ activequiz.projector_mode = function() {
 //Function to exit the projector view
 document.addEventListener('keyup', function(e) {
 	//If escape is pressed
-	if (e.keyCode == 27) {
-		var projector_div = document.getElementById('projector_view');
-		projector_div.parentNode.removeChild(projector_div);
+	var projector_div = document.getElementById('projector_view');
+	if (projector_div !== null) {	
+		if (e.keyCode == 27) {
+			projector_div.parentNode.removeChild(projector_div);
+		}
 	}
 });
 
