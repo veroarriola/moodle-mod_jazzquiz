@@ -155,7 +155,7 @@ activequiz.projector_mode = function() {
 	activequiz.current_responses.forEach(function(response) {
 		projector_div.innerHTML += '<div>' + response.response + '</div>';
 	});
-}
+};
 
 //Function to exit the projector view
 document.addEventListener('keyup', function(e) {
