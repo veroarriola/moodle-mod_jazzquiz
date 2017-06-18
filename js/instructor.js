@@ -283,6 +283,7 @@ activequiz.run_multichoice_question = function () {
 
             activequiz.clear_and_hide_notresponded();
             activequiz.hide_all_questionboxes();
+
             var html = '<ul>';
             var options = activequiz.get_selected_multichoice_questions();
             for (var i = 0; i < options.length; i++) {
@@ -290,7 +291,6 @@ activequiz.run_multichoice_question = function () {
             }
             html += '</ul><p>Results:</p><div id="multichoice_results"></div>';
             activequiz.quiz_info('<p>Running the multichoice question!</p><p>Here are the options: </p>' + html);
-
         }
 
     });
