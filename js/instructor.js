@@ -48,6 +48,7 @@ activequiz.getQuizInfo = function () {
         if (status == 500) {
             alert('There was an error....' + response);
         } else if (status == 200) {
+
             if (response.status == 'notrunning') {
                 // do nothing as we're not running
                 activequiz.set('endquestion', 'false');
@@ -76,7 +77,7 @@ activequiz.getQuizInfo = function () {
                     activequiz.getnotresponded();
                 }
 
-            } else if (response.status = 'endquestion') {
+            } else if (response.status == 'endquestion') {
 
                 activequiz.set('inquestion', 'false');
 
@@ -87,6 +88,10 @@ activequiz.getQuizInfo = function () {
             } else if (response.status == 'sessionclosed') {
 
                 activequiz.set('inquestion', 'false');
+
+            } else if (response.status == 'multichoice') {
+
+                activequiz.get_and_show_multichoice_results();
 
             }
         }
@@ -208,9 +213,24 @@ activequiz.handle_question = function (questionid) {
     });
 };
 
-activequiz.run_multichoice_question = function () {
+activequiz.get_selected_multichoice_questions = function() {
+    /*var selected = document.getElementsByClassName('multichoice-selected');
+    var result = new Array();
+    for (var i = 0; i < selected.length; i++) {
+        result.push({ attempt: selected[i].innerHTML, count: 0});
+    }*/
+    // At the moment, just add all the attempts to the multichoice question:
+    var result = new Array();
+    for (var i = 0; i < activequiz.current_responses.length; i++) {
+        result.push({ text: activequiz.current_responses[i].response, count: activequiz.current_responses[i].count });
+    }
+    return result;
+};
+
+activequiz.get_and_show_multichoice_results = function() {
+
     var params = {
-        'action': 'runmultichoicequestion',
+        'action': 'getmultichoiceresults',
         'rtqid': activequiz.get('rtqid'),
         'sessionid': activequiz.get('sessionid'),
         'attemptid': activequiz.get('attemptid'),
@@ -219,12 +239,57 @@ activequiz.run_multichoice_question = function () {
 
     activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
 
+        console.log(response);
+
+        if (status == '500') {
+            activequiz.quiz_info('there was an error getting the multichoice results', true);
+        } else if (status == 200) {
+
+            var answers = JSON.parse(response.answers);
+
+            var html = '<ul>';
+            for (var i in answers) {
+                html += '<li>' + answers[i].attempt + ' <i>(finalcount: ' + answers[i].finalcount + ')</i></li>';
+            };
+            html += '</ul>';
+            var results_div = document.getElementById('multichoice_results');
+            if (results_div !== null) {
+                results_div.innerHTML = html;
+            }
+        }
+
+    });
+};
+
+activequiz.run_multichoice_question = function () {
+
+    var multichoice_questions = activequiz.get_selected_multichoice_questions();
+    var questions_param = JSON.stringify(multichoice_questions);
+
+    var params = {
+        'action': 'runmultichoicequestion',
+        'rtqid': activequiz.get('rtqid'),
+        'sessionid': activequiz.get('sessionid'),
+        'attemptid': activequiz.get('attemptid'),
+        'sesskey': activequiz.get('sesskey'),
+        'questions': questions_param
+    };
+
+    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+
         if (status == '500') {
             activequiz.quiz_info('there was an error starting the multichoice question', true);
         } else if (status == 200) {
+
             activequiz.clear_and_hide_notresponded();
             activequiz.hide_all_questionboxes();
-            activequiz.quiz_info('Running the multichoice question!');
+            var html = '<ul>';
+            var options = activequiz.get_selected_multichoice_questions();
+            for (var i = 0; i < options.length; i++) {
+                html += '<li>' + options[i].text + ' <i>(count: ' + options[i].count + ')</i></li>';
+            }
+            html += '</ul><p>Results:</p><div id="multichoice_results"></div>';
+            activequiz.quiz_info('<p>Running the multichoice question!</p><p>Here are the options: </p>' + html);
 
         }
 

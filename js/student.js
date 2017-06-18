@@ -37,6 +37,7 @@ activequiz.getQuizInfo = function () {
         if (status == 500) {
             window.alert('There was an error....' + response);
         } else if (status == 200) {
+            console.log('Status: ' + response);
             if (response.status == 'notrunning') {
                 // do nothing as we're not running
             } else if (response.status == 'running' && activequiz.get('inquestion') != 'true') {
@@ -76,7 +77,21 @@ activequiz.getQuizInfo = function () {
 
             } else if (response.status == 'multichoice') {
 
-                activequiz.quiz_info('Multichoice question is being run!');
+                if (activequiz.is_multichoice_running === undefined || !activequiz.is_multichoice_running) {
+
+                    var options = JSON.parse(response.options);
+
+                    var html = '<p>Here are your options:</p><div><h2>This is the question. What is your answer?</h2>';
+                    for (var i = 0; i < options.length; i++) {
+                        html += '<label><input type="radio" value="' + options[i].id + '" onclick="activequiz.multichoice_answer = this.value;">' + options[i].text + '</label>';
+                    }
+                    html += '</div>';
+                    html += '<button class="btn" onclick="activequiz.save_multichoice_answer(); return false;">Save</button>';
+
+                    activequiz.quiz_info('<p>Multichoice question is being run!</p>' + html);
+
+                    activequiz.is_multichoice_running = true;
+                }
 
             }
         }
@@ -185,4 +200,27 @@ activequiz.handle_question = function (questionid, hide) {
         activequiz.set('savingquestion', 'done');
     });
 
+};
+
+
+activequiz.save_multichoice_answer = function() {
+
+    var params = {
+        'action': 'savemultichoiceanswer',
+        'rtqid': activequiz.get('rtqid'),
+        'sessionid': activequiz.get('sessionid'),
+        'attemptid': activequiz.get('attemptid'),
+        'sesskey': activequiz.get('sesskey'),
+        'answer': activequiz.multichoice_answer
+    };
+
+    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+        if (status == '500') {
+            activequiz.quiz_info('there was an error saving the multichoice answer', true);
+        } else if (status == 200) {
+            activequiz.hide_all_questionboxes();
+            activequiz.quiz_info('<p>Answer saved. Waiting for instructor...</p>');
+        }
+
+    });
 };

@@ -127,6 +127,8 @@ class quizdata {
      */
     public function handle_request() {
 
+        global $DB; // TODO: Put the multichoice question logic in a new class
+
         switch ($this->action) {
             case 'startquiz':
 
@@ -200,17 +202,77 @@ class quizdata {
                 break;
             case 'runmultichoicequestion':
 
-                if ($this->RTQ->is_instructor()) {
+                if ($this->RTQ->is_instructor() && isset($_POST['questions'])) {
 
-                    $this->session->set_status('multichoice');
+                    //$questions = $_POST['questions'];
+                    $questions = json_decode($_POST['questions'], true);
 
-                    $this->jsonlib->set('status', 'success');
-                    $this->jsonlib->send_response();
+                    if (!$questions) {
+                        $this->jsonlib->send_error('no questions sent');
+                    } else {
+
+                        // Delete previous multichoice options for this session
+                        $DB->delete_records('activequiz_multichoice', [
+                            'sessionid' => $this->session->get_session()->id
+                        ]);
+
+                        // Add to database
+                        foreach ($questions as $question) {
+                            $multichoice_question = new \stdClass();
+                            $multichoice_question->activequizid = $this->RTQ->getRTQ()->id;
+                            $multichoice_question->sessionid = $this->session->get_session()->id;
+                            $multichoice_question->attempt = $question['text'];
+                            $multichoice_question->initialcount = $question['count'];
+                            $multichoice_question->finalcount = 0;
+                            $DB->insert_record('activequiz_multichoice', $multichoice_question);
+                        }
+
+                        // Change quiz status
+                        $this->session->set_status('multichoice');
+
+                        // Send response
+                        $this->jsonlib->set('status', 'success');
+                        $this->jsonlib->send_response();
+                    }
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
                 break;
+
+            case 'savemultichoiceanswer':
+                if ($this->RTQ->is_instructor() || !isset($_POST['answer'])) {
+                    $this->jsonlib->send_error('invalidaction');
+                } else {
+                    $answer = intval($_POST['answer']);
+                    $exists = $DB->record_exists('activequiz_multichoice', ['id' => $answer]);
+                    if ($exists) {
+                        $row = $DB->get_record('activequiz_multichoice', ['id' => $answer]);
+                        if ($row) {
+                            $row->finalcount++;
+                            $DB->update_record('activequiz_multichoice', $row);
+                            $this->jsonlib->set('status', 'success');
+                        } else {
+                            $this->jsonlib->set('status', 'error');
+                        }
+                    } else {
+                        $this->jsonlib->set('status', 'error');
+                    }
+                    $this->jsonlib->send_response();
+                }
+                break;
+
+            case 'getmultichoiceresults':
+                if ($this->RTQ->is_instructor()) {
+                    $answers = $DB->get_records('activequiz_multichoice', ['sessionid' => $this->session->get_session()->id]);
+                    $this->jsonlib->set('answers', json_encode($answers));
+                    $this->jsonlib->set('status', 'success');
+                    $this->jsonlib->send_response();
+                } else {
+                    $this->jsonlib->send_error('invalidaction');
+                }
+                break;
+
             case 'getresults':
 
                 // only allow instructors to perform this action

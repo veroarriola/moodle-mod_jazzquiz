@@ -76,9 +76,19 @@ if ($session->sessionopen == 0) {
     $jsonlib->set('status', 'endquestion');
     $jsonlib->send_response();
 
-} else if ($session->status == "multichoice") {
+} else if ($session->status == 'multichoice') {
+
+    $multichoice_options = $DB->get_records('activequiz_multichoice', ['sessionid' => $sessionid ]);
+    $options = [];
+    foreach ($multichoice_options as $multichoice_option) {
+        $options[] = [
+            'text' => $multichoice_option->attempt,
+            'id' => $multichoice_option->id
+        ];
+    }
 
     $jsonlib->set('status', 'multichoice');
+    $jsonlib->set('options', json_encode($options));
     $jsonlib->send_response();
 
 } else {
@@ -90,8 +100,3 @@ if ($session->sessionopen == 0) {
     $jsonlib->set('delay', $delay);
     $jsonlib->send_response();
 }
-
-
-
-
-

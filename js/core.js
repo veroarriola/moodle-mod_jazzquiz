@@ -270,7 +270,6 @@ activequiz.resume_quiz = function () {
 
 };
 
-
 /**
  * General function for waiting for the question
  *
@@ -279,7 +278,6 @@ activequiz.resume_quiz = function () {
  * @param delay
  */
 activequiz.waitfor_question = function (questionid, questiontime, delay) {
-
 
     var quizinfobox = activequiz.get('quizinfobox');
 

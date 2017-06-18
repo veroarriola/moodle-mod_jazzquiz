@@ -175,9 +175,33 @@ function xmldb_activequiz_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-
         // Activequiz savepoint reached.
         upgrade_mod_savepoint(true, 2016030601, 'activequiz');
+    }
+
+    if ($oldversion < 2017010433) {
+
+        // Define table activequiz_multichoice to be created.
+        $table = new xmldb_table('activequiz_multichoice');
+
+        // Adding fields to table activequiz_multichoice.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('activequizid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('attempt', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('initialcount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('finalcount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table activequiz_multichoice.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for activequiz_multichoice.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Activequiz savepoint reached.
+        upgrade_mod_savepoint(true, 2017010433, 'activequiz');
     }
 
     return true;
