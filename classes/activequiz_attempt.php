@@ -649,20 +649,41 @@ class activequiz_attempt {
 
     /**
      * Returns response data as an array
+     * TODO: One SQL query
      *
      */
     public function get_response_data($slot) {
 
-        // NOTE: This is technically a bad solution. If someone writes this in their answer, it won't work.
-        $needle_begin = '_answer" value="';
-        $needle_end = '" id="q';
-        $response_value_begin_pos = strpos($this->responsesummary, $needle_begin);
-        $response = substr($this->responsesummary, $response_value_begin_pos + strlen($needle_begin));
-        $response_value_end_pos = strpos($response, $needle_end);
-        $response = substr($response, 0, $response_value_end_pos);
+        global $DB;
+
+        $questionattempt = $this->quba->get_question_attempt($slot);
+
+        // Find last step
+        $steps = $DB->get_records('question_attempt_steps', [
+            'questionattemptid' => $questionattempt->get_database_id()
+        ], 'id desc', '*', 0, 1);
+
+        if (!$steps) {
+            return ['response' => 'error, no steps'];
+        }
+
+        // Get first element
+        $step = reset($steps);
+
+        // Find step data
+        $data = $DB->get_records('question_attempt_step_data', [
+            'attemptstepid' => $step->id
+        ], 'id desc', 'value', 0, 1);
+
+        if (!$data) {
+            return ['response', 'error, no step data'];
+        }
+
+        // Get first element
+        $data = reset($data);
 
         return [
-            'response' => $response
+            'response' => $data->value
         ];
     }
 

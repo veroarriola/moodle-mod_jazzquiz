@@ -335,18 +335,13 @@ class activequiz_session {
     public function get_question_results_list() {
 
         $attempts = $this->getall_open_attempts(false);
-
         $responses = [];
 
         foreach ($attempts as $attempt) {
             if ($attempt->responded != 1) {
                 continue;
             }
-
             $anonymous = ($this->session->anonymize_responses != 0 || $this->session->fully_anonymize != 0);
-
-            $attempt->summarize_response($this->session->currentquestion);
-
             $responses[] = $attempt->get_response_data($this->session->currentquestion);
         }
 
