@@ -37,7 +37,6 @@ activequiz.getQuizInfo = function () {
         if (status == 500) {
             window.alert('There was an error....' + response);
         } else if (status == 200) {
-            console.log('Status: ' + response);
             if (response.status == 'notrunning') {
                 // do nothing as we're not running
             } else if (response.status == 'running' && activequiz.get('inquestion') != 'true') {
