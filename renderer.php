@@ -494,6 +494,13 @@ class mod_activequiz_renderer extends plugin_renderer_base {
             )
         );
 
+        $inqcontrol .= html_writer::tag('button', 'Projector view', array(
+                'class'   => 'btn',
+                'id'      => 'enableprojectorview',
+                'onclick' => 'activequiz.projector_mode();'
+            )
+        );
+
         $output .= html_writer::div($inqcontrol, 'btn-hide rtq_inquiz', array('id' => 'inquizcontrols'));
 
         return $output;

@@ -361,14 +361,14 @@ activequiz.gather_results = function () {
 
                 if (activequiz.get('lastquestion') == 'true') { // don't enable the next question button
 
-                    activequiz.control_buttons(['closesession', 'reloadresults', 'jumptoquestion', 'repollquestion', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion']);
+                    activequiz.control_buttons(['closesession', 'reloadresults', 'jumptoquestion', 'repollquestion', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'enableprojcectorview']);
                 } else {
                     //otherwise enable the next question button and repoll question
 
-                    activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion']);
+                    activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'enableprojectorview']);
                 }
             } else {
-                activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion']);
+                activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'enableprojectorview']);
             }
         }
 
