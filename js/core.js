@@ -671,7 +671,7 @@ activequiz.quiz_info_responses = function (responses, qtype) {
         }
     }
 
-    activequiz.quiz_info(html, true)
+    activequiz.quiz_info(html, true);
 
 };
 
