@@ -183,7 +183,7 @@ activequiz.projector_mode = function() {
 	document.documentElement.style.overflowY = 'hidden';
 	activequiz.current_responses.forEach(function(response, index) {
 	    if (response.qtype === 'stack') {
-            projector_div.innerHTML += '<div id="projector_latex_response_' + index + '"></div>';
+            projector_div.innerHTML += '<div id="projector_latex_response' + index + '"></div>';
             activequiz.render_maxima_equation(response.response, index, 'projector_latex_response');
         } else {
             projector_div.innerHTML += '<div>' + response.response + '</div>';
