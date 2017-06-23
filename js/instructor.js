@@ -245,16 +245,32 @@ activequiz.get_and_show_multichoice_results = function() {
             activequiz.quiz_info('there was an error getting the multichoice results', true);
         } else if (status == 200) {
 
+            // Parse answers
             var answers = JSON.parse(response.answers);
 
-            var html = '<ul>';
+            // Build HTML
+            var html = '<div>';
             for (var i in answers) {
-                html += '<li>' + answers[i].attempt + ' <i>(finalcount: ' + answers[i].finalcount + ')</i></li>';
-            };
-            html += '</ul>';
+                html += '<div>';
+                html += '<p>' + answers[i].finalcount + ' answered:</p>';
+                html += '<div id="multichoice_answer_current' + i + '"></div>';
+                html += '</div>';
+            }
+            html += '</div>';
+
+            // Apply HTML
             var results_div = document.getElementById('multichoice_results');
             if (results_div !== null) {
+                if (results_div.innerHTML === html) {
+                    return;
+                }
                 results_div.innerHTML = html;
+            }
+
+            // Query for the LaTeX
+            for (var i in answers) {
+                //console.log('rendering answer ' + i + ' (attempt: ' + answers[i].attempt + ')');
+                activequiz.render_maxima_equation(answers[i].attempt, i, 'multichoice_answer_current');
             }
         }
 
@@ -264,7 +280,7 @@ activequiz.get_and_show_multichoice_results = function() {
 activequiz.run_multichoice_question = function () {
 
     var multichoice_questions = activequiz.get_selected_multichoice_questions();
-    var questions_param = JSON.stringify(multichoice_questions);
+    var questions_param = encodeURIComponent(JSON.stringify(multichoice_questions));
 
     var params = {
         'action': 'runmultichoicequestion',
@@ -281,16 +297,28 @@ activequiz.run_multichoice_question = function () {
             activequiz.quiz_info('there was an error starting the multichoice question', true);
         } else if (status == 200) {
 
+            // Hide unnecessary information
             activequiz.clear_and_hide_notresponded();
             activequiz.hide_all_questionboxes();
 
-            var html = '<ul>';
+            // Build HTML
+            var html = '<div>';
             var options = activequiz.get_selected_multichoice_questions();
             for (var i = 0; i < options.length; i++) {
-                html += '<li>' + options[i].text + ' <i>(count: ' + options[i].count + ')</i></li>';
+                html += '<div>';
+                html += '<p>' + options[i].count + ' answered:</p>';
+                html += '<div id="multichoice_answer' + i + '">' + options[i].text + '</div>';
+                html += '</div>';
             }
-            html += '</ul><p>Results:</p><div id="multichoice_results"></div>';
+            html += '</div><p>Results:</p><div id="multichoice_results"></div>';
+
+            // Apply HTML
             activequiz.quiz_info('<p>Running the multichoice question!</p><p>Here are the options: </p>' + html);
+
+            // Query for the LaTeX
+            for (var i = 0; i < options.length; i++) {
+                activequiz.render_maxima_equation(options[i].text, i, 'multichoice_answer');
+            }
         }
 
     });

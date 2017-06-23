@@ -37,6 +37,11 @@ activequiz.getQuizInfo = function () {
         if (status == 500) {
             window.alert('There was an error....' + response);
         } else if (status == 200) {
+
+            if (response.status != 'multichoice') {
+                activequiz.is_multichoice_running = false;
+            }
+
             if (response.status == 'notrunning') {
                 // do nothing as we're not running
             } else if (response.status == 'running' && activequiz.get('inquestion') != 'true') {
@@ -82,12 +87,19 @@ activequiz.getQuizInfo = function () {
 
                     var html = '<p>Here are your options:</p><div><h2>This is the question. What is your answer?</h2>';
                     for (var i = 0; i < options.length; i++) {
-                        html += '<label><input type="radio" value="' + options[i].id + '" onclick="activequiz.multichoice_answer = this.value;">' + options[i].text + '</label>';
+                        html += '<label>';
+                        html += '<input type="radio" name="multichoiceanswer" value="' + options[i].id + '" onclick="activequiz.multichoice_answer = this.value;">';
+                        html += '<span id="multichoice_answer_label' + i + '">' + options[i].text + '</span>';
+                        html += '</label><br>';
                     }
                     html += '</div>';
                     html += '<button class="btn" onclick="activequiz.save_multichoice_answer(); return false;">Save</button>';
 
                     activequiz.quiz_info('<p>Multichoice question is being run!</p>' + html);
+
+                    for (var i = 0; i < options.length; i++) {
+                        activequiz.render_maxima_equation(options[i].text, i, 'multichoice_answer_label');
+                    }
 
                     activequiz.is_multichoice_running = true;
                 }

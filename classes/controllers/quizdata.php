@@ -204,8 +204,7 @@ class quizdata {
 
                 if ($this->RTQ->is_instructor() && isset($_POST['questions'])) {
 
-                    //$questions = $_POST['questions'];
-                    $questions = json_decode($_POST['questions'], true);
+                    $questions = json_decode(urldecode($_POST['questions']), true);
 
                     if (!$questions) {
                         $this->jsonlib->send_error('no questions sent');
