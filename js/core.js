@@ -146,14 +146,48 @@ activequiz.ajax = {
     }
 };
 
+activequiz.render_maxima_equation = function(input, index, base_id) {
+
+    input = encodeURIComponent(input);
+
+    var callback = function(status, response) {
+        var target = document.getElementById(base_id + index);
+        if (target === null) {
+            console.log('Target element #' + base_id + index + ' not found.');
+            return;
+        }
+        if (status == 500) {
+            target.innerHTML = input;
+            console.log('Failed to get latex for ' + index);
+        } else if (status == 200) {
+            target.innerHTML = '<span class="filter_mathjaxloader_equation">' + response.latex + '</span>';
+            Y.all('.filter_mathjaxloader_equation').each(function (node) {
+                if (typeof window.MathJax !== "undefined") {
+                    window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, node.getDOMNode()]);
+                }
+            });
+        }
+    };
+
+    var id = activequiz.get('attemptid');
+
+    activequiz.ajax.create_request('/mod/activequiz/stack.php?id=' + id + '&name=ans1&input=' + input, null, callback);
+
+};
+
 //A view to view the answers intuitively on a big screen
 activequiz.projector_mode = function() {
 	var projector_div = document.createElement('div');
 	document.body.appendChild(projector_div);
 	projector_div.id = 'projector_view';
 	document.documentElement.style.overflowY = 'hidden';
-	activequiz.current_responses.forEach(function(response) {
-		projector_div.innerHTML += '<div>' + response.response + '</div>';
+	activequiz.current_responses.forEach(function(response, index) {
+	    if (response.qtype === 'stack') {
+            projector_div.innerHTML += '<div id="projector_latex_response_' + index + '"></div>';
+            activequiz.render_maxima_equation(response.response, index, 'projector_latex_response');
+        } else {
+            projector_div.innerHTML += '<div>' + response.response + '</div>';
+        }
 	});
 };
 
@@ -167,7 +201,6 @@ document.addEventListener('keyup', function(e) {
 		}
 	}
 });
-
 
 /**
  * Callback for when the quiz page is fully loaded
@@ -595,7 +628,7 @@ activequiz.quiz_info = function (quizinfo, clear) {
     }
 };
 
-activequiz.quiz_info_responses = function (responses) {
+activequiz.quiz_info_responses = function (responses, qtype) {
 
     if (responses === undefined) {
         console.log('Responses is undefined.');
@@ -620,15 +653,26 @@ activequiz.quiz_info_responses = function (responses) {
             }
         }
         if (!exists) {
-            html += '<p>' + responses[i].response + '</p>';
+
+            var result = responses[i].response;
+
+            if (qtype === 'stack') {
+                html += '<span id="current_response_latex_' + i + '"></span>';
+                activequiz.render_maxima_equation(result, i, 'current_response_latex_');
+            } else {
+                html += '<p>' + result + '</p>';
+            }
+
             activequiz.current_responses.push({
                 response: responses[i].response,
-                count: 1
+                count: 1,
+                qtype: qtype
             });
         }
     }
 
-    activequiz.quiz_info(html, true);
+    activequiz.quiz_info(html, true)
+
 };
 
 /**
