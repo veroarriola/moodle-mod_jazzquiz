@@ -685,12 +685,12 @@ activequiz.quiz_info_responses = function (responses, qtype) {
     // Update html
     for (var i = 0; i < activequiz.current_responses.length; i++) {
         var response_wrapper = document.getElementById('current_response_wrapper_' + i);
+        var percent = (activequiz.current_responses[i].count / activequiz.total_responses) * 100;
         if (response_wrapper === null) {
 
             var row = wrapper_current_responses.insertRow();
             row.id = 'current_response_wrapper_' + i;
-
-            var percent = (activequiz.current_responses[i].count / activequiz.total_responses) * 100;
+            row.dataPercent = percent;
 
             var count_html = '<span id="current_response_count_' + i + '">' + activequiz.current_responses[i].count + '</span>';
 
@@ -714,13 +714,30 @@ activequiz.quiz_info_responses = function (responses, qtype) {
         } else {
 
             var count_element = document.getElementById('current_response_count_' + i);
-
             if (count_element !== null) {
-
                 count_element.innerHTML = activequiz.current_responses[i].count;
-
             }
 
+            var bar_element = document.getElementById('current_response_bar_' + i);
+            if (bar_element !== null) {
+                bar_element.firstElementChild.style.width = percent + '%';
+            }
+
+        }
+    }
+
+    // Sort the rows
+    var is_sorting = true;
+    while (is_sorting) {
+        is_sorting = false;
+        for (var i = 0; i < (wrapper_current_responses.rows.length - 1); i++) {
+            var first = wrapper_current_responses.rows[i].dataPercent;
+            var second = wrapper_current_responses.rows[i + 1].dataPercent;
+            if (first < second) {
+                wrapper_current_responses.rows[i].parentNode.insertBefore(wrapper_current_responses.rows[i + 1], wrapper_current_responses.rows[i]);
+                is_sorting = true;
+                break;
+            }
         }
     }
 
