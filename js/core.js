@@ -181,14 +181,18 @@ activequiz.projector_mode = function() {
 	document.body.appendChild(projector_div);
 	projector_div.id = 'projector_view';
 	document.documentElement.style.overflowY = 'hidden';
-	activequiz.current_responses.forEach(function(response, index) {
+	/*activequiz.current_responses.forEach(function(response, index) {
 	    if (response.qtype === 'stack') {
             projector_div.innerHTML += '<div id="projector_latex_response' + index + '"></div>';
             activequiz.render_maxima_equation(response.response, index, 'projector_latex_response');
         } else {
             projector_div.innerHTML += '<div>' + response.response + '</div>';
         }
-	});
+	});*/
+	var wrapper_current_responses = document.getElementById('wrapper_current_responses');
+	if (wrapper_current_responses !== null) {
+        projector_div.innerHTML = '<table class="activequiz-responses-overview">' + wrapper_current_responses.innerHTML + '</table>';
+    }
 };
 
 //Function to exit the projector view
@@ -630,24 +634,6 @@ activequiz.quiz_info = function (quizinfo, clear) {
 
 activequiz.quiz_info_responses = function (responses, qtype) {
 
-    responses = [
-        { response: '2*x^3+y^4' },
-        { response: '2*x^3+y^4' },
-        { response: '2*x^3+y^4' },
-        { response: '2*x^3+y^4' },
-        { response: '2*x^3+y^4' },
-        { response: '6*z^2+x^y' },
-        { response: '6*z^2+x^y' },
-        { response: '6*z^2+x^y' },
-        { response: '6*z^2+x^y' },
-        { response: 'sqrt(x^3+y-2)+5*x^4'},
-        { response: 'sqrt(x^3+y-2)+5*x^4'},
-        { response: 'sqrt(x^3+y-2)+5*x^4'},
-        { response: 'sqrt(x^3+y-2)+5*x^4'}
-    ];
-
-    ///
-
     if (responses === undefined) {
         console.log('Responses is undefined.');
         return;
@@ -660,6 +646,7 @@ activequiz.quiz_info_responses = function (responses, qtype) {
 
     // Update data
     activequiz.current_responses = [];
+    activequiz.total_responses = responses.length;
     for (var i = 0; i < responses.length; i++) {
 
         var exists = false;
@@ -686,7 +673,7 @@ activequiz.quiz_info_responses = function (responses, qtype) {
     // Make sure quiz info has the wrapper for the responses
     var wrapper_current_responses = document.getElementById('wrapper_current_responses');
     if (wrapper_current_responses === null) {
-        activequiz.quiz_info('<div id="wrapper_current_responses"></div>', true);
+        activequiz.quiz_info('<table id="wrapper_current_responses" class="activequiz-responses-overview"></table>', true);
         wrapper_current_responses = document.getElementById('wrapper_current_responses');
 
         // This should not happen, but check just in case quiz_info fails to set the html.
@@ -700,22 +687,29 @@ activequiz.quiz_info_responses = function (responses, qtype) {
         var response_wrapper = document.getElementById('current_response_wrapper_' + i);
         if (response_wrapper === null) {
 
-            wrapper_current_responses.innerHTML += '<div id="current_response_wrapper_' + i + '">';
+            var row = wrapper_current_responses.insertRow();
+            row.id = 'current_response_wrapper_' + i;
+
+            var percent = (activequiz.current_responses[i].count / activequiz.total_responses) * 100;
 
             var count_html = '<span id="current_response_count_' + i + '">' + activequiz.current_responses[i].count + '</span>';
 
             if (qtype === 'stack') {
 
-                wrapper_current_responses.innerHTML += '<p>' + count_html + ' answered: </div><span id="current_response_latex_' + i + '"></span></p>';
+                var response_cell = row.insertCell(0);
+                response_cell.innerHTML = '<span id="current_response_latex_' + i + '"></span>';
+
+                var bar_cell = row.insertCell(1);
+                bar_cell.id = 'current_response_bar_' + i;
+                bar_cell.innerHTML = '<div style="width:' + percent + '%;">' + count_html + '</div>';
+
                 activequiz.render_maxima_equation(activequiz.current_responses[i].response, i, 'current_response_latex_');
 
             } else {
 
-                wrapper_current_responses.innerHTML += '<p>' + count_html + activequiz.current_responses[i].response + '</p>';
+                wrapper_current_responses.innerHTML += '<td>' + count_html + activequiz.current_responses[i].response + '</td>';
 
             }
-
-            wrapper_current_responses.innerHTML += '</div>';
 
         } else {
 

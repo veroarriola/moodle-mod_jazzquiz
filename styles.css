@@ -102,25 +102,15 @@
 
 #projector_view {
     font-family: monospace;
-    font-size: 5vw;
     padding: 20px;
-    /*margin: 10px;*/
     /**background-image:url([[pix:mod_activequiz|footer_lodyas]]);**/
-    background-color: #d9edf7;
-    border: 2px solid;
-    /*border-radius: 8px;*/
+    background: #d9edf7;
     z-index: 9000;
     height: 100vh;
     width: 100vw;
     top: 0px;
     left: 0px;
     position: fixed;
-}
-
-#projector_view div {
-    display: inline-block;
-    padding: 0.5vw;
-    font-size: 2vw;
 }
 
 /** end edit questions **/
@@ -285,4 +275,40 @@
 
 .activequizbox.isanonymous {
     background-color: #d7f5d7;
+}
+
+.activequiz-responses-overview {
+    width: 100%;
+}
+
+.activequiz-responses-overview tr {
+    /*background: #CCC;*/
+}
+
+.activequiz-responses-overview tr td:last-child {
+    padding-left: 16px;
+    width: 100%;
+    border-top: 2px solid #AAA;
+}
+
+.activequiz-responses-overview tr td:first-child {
+    /*border-top-left-radius: 1rem;
+    border-bottom-left-radius: 1rem;*/
+    border-top: 2px solid #AAA;
+}
+
+.activequiz-responses-overview tr td:last-child {
+    /*border-top-right-radius: 1rem;
+    border-bottom-right-radius: 1rem;*/
+}
+
+.activequiz-responses-overview tr td:last-child div {
+    background: lightseagreen;
+    border-radius: 1.5rem;
+    text-align: center;
+}
+
+.activequiz-responses-overview tr td:last-child div span {
+    color: #111;
+    font-size: 1.6rem;
 }
