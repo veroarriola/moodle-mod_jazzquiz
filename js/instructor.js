@@ -239,8 +239,6 @@ activequiz.get_and_show_multichoice_results = function() {
 
     activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
 
-        console.log(response);
-
         if (status == '500') {
             activequiz.quiz_info('there was an error getting the multichoice results', true);
         } else if (status == 200) {

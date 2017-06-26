@@ -635,34 +635,28 @@ activequiz.quiz_info_responses = function (responses, qtype) {
         return;
     }
 
+    // Check if any responses to show
     if (responses.length === 0) {
-        return; // display nothing if there is nothing
+        return;
     }
 
-    var html = '';
+    // Update data
     activequiz.current_responses = [];
-    var exists = false;
-
     for (var i = 0; i < responses.length; i++) {
-        exists = false;
+
+        var exists = false;
+
+        // Check if response is a duplicate
         for (var j = 0; j < activequiz.current_responses.length; j++) {
             if (activequiz.current_responses[j].response === responses[i].response) {
-                exists = true;
                 activequiz.current_responses[j].count++;
+                exists = true;
                 break;
             }
         }
+
+        // Add element if not a duplicate
         if (!exists) {
-
-            var result = responses[i].response;
-
-            if (qtype === 'stack') {
-                html += '<span id="current_response_latex_' + i + '"></span>';
-                activequiz.render_maxima_equation(result, i, 'current_response_latex_');
-            } else {
-                html += '<p>' + result + '</p>';
-            }
-
             activequiz.current_responses.push({
                 response: responses[i].response,
                 count: 1,
@@ -671,7 +665,52 @@ activequiz.quiz_info_responses = function (responses, qtype) {
         }
     }
 
-    activequiz.quiz_info(html, true);
+    // Make sure quiz info has the wrapper for the responses
+    var wrapper_current_responses = document.getElementById('wrapper_current_responses');
+    if (wrapper_current_responses === null) {
+        activequiz.quiz_info('<div id="wrapper_current_responses"></div>', true);
+        wrapper_current_responses = document.getElementById('wrapper_current_responses');
+
+        // This should not happen, but check just in case quiz_info fails to set the html.
+        if (wrapper_current_responses === null) {
+            return;
+        }
+    }
+
+    // Update html
+    for (var i = 0; i < activequiz.current_responses.length; i++) {
+        var response_wrapper = document.getElementById('current_response_wrapper_' + i);
+        if (response_wrapper === null) {
+
+            wrapper_current_responses.innerHTML += '<div id="current_response_wrapper_' + i + '">';
+
+            var count_html = '<span id="current_response_count_' + i + '">1</span>';
+
+            if (qtype === 'stack') {
+
+                wrapper_current_responses.innerHTML += '<p>' + count_html + ' answered: </div><span id="current_response_latex_' + i + '"></span></p>';
+                activequiz.render_maxima_equation(responses[i].response, i, 'current_response_latex_');
+
+            } else {
+
+                wrapper_current_responses.innerHTML += '<p>' + count_html + responses[i].response + '</p>';
+
+            }
+
+            wrapper_current_responses.innerHTML += '</div>';
+
+        } else {
+
+            var count_element = document.getElementById('current_response_count_' + i);
+
+            if (count_element !== null) {
+
+                count_element.innerHTML = activequiz.current_responses[i].count;
+
+            }
+
+        }
+    }
 
 };
 
