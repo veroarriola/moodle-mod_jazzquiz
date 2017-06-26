@@ -630,6 +630,24 @@ activequiz.quiz_info = function (quizinfo, clear) {
 
 activequiz.quiz_info_responses = function (responses, qtype) {
 
+    responses = [
+        { response: '2*x^3+y^4' },
+        { response: '2*x^3+y^4' },
+        { response: '2*x^3+y^4' },
+        { response: '2*x^3+y^4' },
+        { response: '2*x^3+y^4' },
+        { response: '6*z^2+x^y' },
+        { response: '6*z^2+x^y' },
+        { response: '6*z^2+x^y' },
+        { response: '6*z^2+x^y' },
+        { response: 'sqrt(x^3+y-2)+5*x^4'},
+        { response: 'sqrt(x^3+y-2)+5*x^4'},
+        { response: 'sqrt(x^3+y-2)+5*x^4'},
+        { response: 'sqrt(x^3+y-2)+5*x^4'}
+    ];
+
+    ///
+
     if (responses === undefined) {
         console.log('Responses is undefined.');
         return;
@@ -684,16 +702,16 @@ activequiz.quiz_info_responses = function (responses, qtype) {
 
             wrapper_current_responses.innerHTML += '<div id="current_response_wrapper_' + i + '">';
 
-            var count_html = '<span id="current_response_count_' + i + '">1</span>';
+            var count_html = '<span id="current_response_count_' + i + '">' + activequiz.current_responses[i].count + '</span>';
 
             if (qtype === 'stack') {
 
                 wrapper_current_responses.innerHTML += '<p>' + count_html + ' answered: </div><span id="current_response_latex_' + i + '"></span></p>';
-                activequiz.render_maxima_equation(responses[i].response, i, 'current_response_latex_');
+                activequiz.render_maxima_equation(activequiz.current_responses[i].response, i, 'current_response_latex_');
 
             } else {
 
-                wrapper_current_responses.innerHTML += '<p>' + count_html + responses[i].response + '</p>';
+                wrapper_current_responses.innerHTML += '<p>' + count_html + activequiz.current_responses[i].response + '</p>';
 
             }
 
