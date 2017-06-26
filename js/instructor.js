@@ -248,29 +248,44 @@ activequiz.get_and_show_multichoice_results = function() {
             // Parse answers
             var answers = JSON.parse(response.answers);
 
-            // Build HTML
-            var html = '<div>';
-            for (var i in answers) {
-                html += '<div>';
-                html += '<p>' + answers[i].finalcount + ' answered:</p>';
-                html += '<div id="multichoice_answer_current' + i + '"></div>';
-                html += '</div>';
-            }
-            html += '</div>';
-
-            // Apply HTML
             var results_div = document.getElementById('multichoice_results');
-            if (results_div !== null) {
-                if (results_div.innerHTML === html) {
-                    return;
-                }
-                results_div.innerHTML = html;
-            }
 
-            // Query for the LaTeX
-            for (var i in answers) {
-                //console.log('rendering answer ' + i + ' (attempt: ' + answers[i].attempt + ')');
-                activequiz.render_maxima_equation(answers[i].attempt, i, 'multichoice_answer_current');
+            if (results_div.innerHTML !== '') {
+
+                // No need to render everything again. Just update the finalcount.
+                for (var i in answers) {
+                    var element = document.getElementById('multichoice_answer_finalcount_' + i);
+                    if (element !== null) {
+                        element.innerHTML = answers[i].finalcount;
+                    }
+                }
+
+            } else {
+
+                // Build HTML
+                var html = '<div>';
+                for (var i in answers) {
+                    html += '<div>';
+                    html += '<p><span id="multichoice_answer_finalcount_' + i + '">' + answers[i].finalcount + '</span> answered:</p>';
+                    html += '<div id="multichoice_answer_current' + i + '"></div>';
+                    html += '</div>';
+                }
+                html += '</div>';
+
+                // Apply HTML
+                if (results_div !== null) {
+                    if (results_div.innerHTML === html) {
+                        return;
+                    }
+                    results_div.innerHTML = html;
+                }
+
+                // Query for the LaTeX
+                for (var i in answers) {
+                    //console.log('rendering answer ' + i + ' (attempt: ' + answers[i].attempt + ')');
+                    activequiz.render_maxima_equation(answers[i].attempt, i, 'multichoice_answer_current');
+                }
+
             }
         }
 
