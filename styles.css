@@ -305,10 +305,11 @@
 .activequiz-responses-overview tr td:last-child div {
     background: lightseagreen;
     border-radius: 1.5rem;
-    text-align: center;
+    text-align: right;
 }
 
 .activequiz-responses-overview tr td:last-child div span {
     color: #111;
     font-size: 1.6rem;
+    margin-right: 1.6rem;
 }
