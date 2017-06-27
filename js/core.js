@@ -706,24 +706,18 @@ activequiz.sort_response_bar_graph = function(target_id) {
         return;
     }
     var is_sorting = true;
-    console.log('Starting to sort ' + target_id);
     while (is_sorting) {
         is_sorting = false;
         for (var i = 0; i < (target.rows.length - 1); i++) {
             var current = parseInt(target.rows[i].dataset.percent);
             var next = parseInt(target.rows[i + 1].dataset.percent);
             if (current < next) {
-                console.log(current + ' < ' + next + ' === true');
                 target.rows[i].parentNode.insertBefore(target.rows[i + 1], target.rows[i]);
                 is_sorting = true;
                 break;
-            } else {
-
-                console.log(current + ' < ' + next + ' === false');
             }
         }
     }
-    console.log('End sorting');
 };
 
 activequiz.quiz_info_responses = function (responses, qtype) {
