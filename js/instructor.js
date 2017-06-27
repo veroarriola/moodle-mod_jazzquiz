@@ -220,7 +220,7 @@ activequiz.get_selected_multichoice_questions = function() {
         result.push({ attempt: selected[i].innerHTML, count: 0});
     }*/
     // At the moment, just add all the attempts to the multichoice question:
-    var result = new Array();
+    var result = [];
     for (var i = 0; i < activequiz.current_responses.length; i++) {
         result.push({ text: activequiz.current_responses[i].response, count: activequiz.current_responses[i].count });
     }
@@ -243,8 +243,35 @@ activequiz.get_and_show_multichoice_results = function() {
             activequiz.quiz_info('there was an error getting the multichoice results', true);
         } else if (status == 200) {
 
-            // Parse answers
             var answers = JSON.parse(response.answers);
+
+            var target_id = 'wrapper_multichoice_responses';
+
+            var responses = [];
+            for (var i in answers) {
+                responses.push({
+                    response: answers[i].attempt,
+                    count: answers[i].finalcount
+                });
+            }
+
+            var target = document.getElementById(target_id);
+            if (target === null) {
+                activequiz.quiz_info('<table id="' + target_id + '" class="activequiz-responses-overview"></table>', true);
+                target = document.getElementById(target_id);
+
+                // This should not happen, but check just in case quiz_info fails to set the html.
+                if (target === null) {
+                    return;
+                }
+            }
+
+            // TOOD: Not hardcode stack here...
+            activequiz.create_response_bar_graph(responses, 'multichoice_response', 'stack', target_id);
+            activequiz.sort_response_bar_graph(target_id);
+
+            // Parse answers
+            /*var answers = JSON.parse(response.answers);
 
             var results_div = document.getElementById('multichoice_results');
 
@@ -283,8 +310,8 @@ activequiz.get_and_show_multichoice_results = function() {
                     //console.log('rendering answer ' + i + ' (attempt: ' + answers[i].attempt + ')');
                     activequiz.render_maxima_equation(answers[i].attempt, i, 'multichoice_answer_current');
                 }
-
             }
+             */
         }
 
     });
@@ -315,7 +342,7 @@ activequiz.run_multichoice_question = function () {
             activequiz.hide_all_questionboxes();
 
             // Build HTML
-            var html = '<div>';
+            /*var html = '<div>';
             var options = activequiz.get_selected_multichoice_questions();
             for (var i = 0; i < options.length; i++) {
                 html += '<div>';
@@ -331,7 +358,7 @@ activequiz.run_multichoice_question = function () {
             // Query for the LaTeX
             for (var i = 0; i < options.length; i++) {
                 activequiz.render_maxima_equation(options[i].text, i, 'multichoice_answer');
-            }
+            }*/
         }
 
     });

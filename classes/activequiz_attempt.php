@@ -673,7 +673,7 @@ class activequiz_attempt {
         // Find step data
         $data = $DB->get_records('question_attempt_step_data', [
             'attemptstepid' => $step->id
-        ], 'id desc', 'value', 0, 1);
+        ], 'id desc', 'id, value', 0, 1);
 
         if (!$data) {
             return ['response', 'error, no step data'];
@@ -683,7 +683,8 @@ class activequiz_attempt {
         $data = reset($data);
 
         return [
-            'response' => $data->value
+            'response' => $data->value,
+            'step_data_id' => $data->id // TODO: Eventually remove this from being sent, it's just for debugging purposes
         ];
     }
 

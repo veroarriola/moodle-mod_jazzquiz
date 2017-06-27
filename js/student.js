@@ -85,7 +85,7 @@ activequiz.getQuizInfo = function () {
 
                     var options = JSON.parse(response.options);
 
-                    var html = '<p>Here are your options:</p><div><h2>This is the question. What is your answer?</h2>';
+                    var html = '<div class="activequiz-multichoice"><h2>This is the question. What is your answer?</h2>';
                     for (var i = 0; i < options.length; i++) {
                         html += '<label>';
                         html += '<input type="radio" name="multichoiceanswer" value="' + options[i].id + '" onclick="activequiz.multichoice_answer = this.value;">';
@@ -95,7 +95,7 @@ activequiz.getQuizInfo = function () {
                     html += '</div>';
                     html += '<button class="btn" onclick="activequiz.save_multichoice_answer(); return false;">Save</button>';
 
-                    activequiz.quiz_info('<p>Multichoice question is being run!</p>' + html);
+                    activequiz.quiz_info(html);
 
                     for (var i = 0; i < options.length; i++) {
                         activequiz.render_maxima_equation(options[i].text, i, 'multichoice_answer_label');

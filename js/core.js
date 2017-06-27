@@ -181,17 +181,10 @@ activequiz.projector_mode = function() {
 	document.body.appendChild(projector_div);
 	projector_div.id = 'projector_view';
 	document.documentElement.style.overflowY = 'hidden';
-	/*activequiz.current_responses.forEach(function(response, index) {
-	    if (response.qtype === 'stack') {
-            projector_div.innerHTML += '<div id="projector_latex_response' + index + '"></div>';
-            activequiz.render_maxima_equation(response.response, index, 'projector_latex_response');
-        } else {
-            projector_div.innerHTML += '<div>' + response.response + '</div>';
-        }
-	});*/
-	var wrapper_current_responses = document.getElementById('wrapper_current_responses');
-	if (wrapper_current_responses !== null) {
-        projector_div.innerHTML = '<table class="activequiz-responses-overview">' + wrapper_current_responses.innerHTML + '</table>';
+	var quizinfobox = document.getElementById('quizinfobox');
+	if (quizinfobox !== null && quizinfobox.children.length > 0) {
+	    // NOTE: Always assumes first child of quizinfobox is a table
+        projector_div.innerHTML = '<table class="activequiz-responses-overview">' + quizinfobox.children[0].innerHTML + '</table>';
     }
 };
 
@@ -632,6 +625,107 @@ activequiz.quiz_info = function (quizinfo, clear) {
     }
 };
 
+activequiz.create_response_bar_graph = function (responses, name, qtype, target_id) {
+    var target = document.getElementById(target_id);
+    if (target === null) {
+        return;
+    }
+    var total = 0;
+    for (var i = 0; i < responses.length; i++) {
+        total += parseInt(responses[i].count); // in case count is a string
+    }
+    if (total === 0) {
+        total = 1;
+    }
+    for (var i = 0; i < responses.length; i++) {
+
+        var percent = (parseInt(responses[i].count) / total) * 100;
+
+        // Check if row with same response already exists
+        var row_i = -1;
+        var current_row_index = -1;
+        for (var j = 0; j < target.rows.length; j++) {
+            if (target.rows[j].dataset.response === responses[i].response) {
+                row_i = target.rows[j].dataset.row_i;
+                current_row_index = j;
+                break;
+            }
+        }
+
+        if (row_i === -1) {
+
+            row_i = target.rows.length;
+
+            var row = target.insertRow();
+            row.dataset.response = responses[i].response;
+            row.dataset.percent = percent;
+            row.dataset.row_i = row_i;
+
+            // TODO: Use classes instead of IDs for these elements. At the moment it's just easier to use an ID.
+
+            var count_html = '<span id="' + name + '_count_' + row_i + '">' + responses[i].count + '</span>';
+
+            var response_cell = row.insertCell(0);
+
+            var bar_cell = row.insertCell(1);
+            bar_cell.id = name + '_bar_' + row_i;
+            bar_cell.innerHTML = '<div style="width:' + percent + '%;">' + count_html + '</div>';
+
+            if (qtype === 'stack') {
+
+                response_cell.innerHTML = '<span id="' + name + '_latex_' + row_i + '"></span>';
+                activequiz.render_maxima_equation(responses[i].response, row_i, name + '_latex_');
+
+            } else {
+                
+                response_cell.innerHTML = responses[i].response;
+
+            }
+
+        } else {
+
+            target.rows[current_row_index].dataset.percent = percent;
+
+            var count_element = document.getElementById(name + '_count_' + row_i);
+            if (count_element !== null) {
+                count_element.innerHTML = responses[i].count;
+            }
+
+            var bar_element = document.getElementById(name + '_bar_' + row_i);
+            if (bar_element !== null) {
+                bar_element.firstElementChild.style.width = percent + '%';
+            }
+
+        }
+    }
+};
+
+activequiz.sort_response_bar_graph = function(target_id) {
+    var target = document.getElementById(target_id);
+    if (target === null) {
+        return;
+    }
+    var is_sorting = true;
+    console.log('Starting to sort ' + target_id);
+    while (is_sorting) {
+        is_sorting = false;
+        for (var i = 0; i < (target.rows.length - 1); i++) {
+            var current = parseInt(target.rows[i].dataset.percent);
+            var next = parseInt(target.rows[i + 1].dataset.percent);
+            if (current < next) {
+                console.log(current + ' < ' + next + ' === true');
+                target.rows[i].parentNode.insertBefore(target.rows[i + 1], target.rows[i]);
+                is_sorting = true;
+                break;
+            } else {
+
+                console.log(current + ' < ' + next + ' === false');
+            }
+        }
+    }
+    console.log('End sorting');
+};
+
 activequiz.quiz_info_responses = function (responses, qtype) {
 
     if (responses === undefined) {
@@ -682,64 +776,9 @@ activequiz.quiz_info_responses = function (responses, qtype) {
         }
     }
 
-    // Update html
-    for (var i = 0; i < activequiz.current_responses.length; i++) {
-        var response_wrapper = document.getElementById('current_response_wrapper_' + i);
-        var percent = (activequiz.current_responses[i].count / activequiz.total_responses) * 100;
-        if (response_wrapper === null) {
-
-            var row = wrapper_current_responses.insertRow();
-            row.id = 'current_response_wrapper_' + i;
-            row.dataPercent = percent;
-
-            var count_html = '<span id="current_response_count_' + i + '">' + activequiz.current_responses[i].count + '</span>';
-
-            if (qtype === 'stack') {
-
-                var response_cell = row.insertCell(0);
-                response_cell.innerHTML = '<span id="current_response_latex_' + i + '"></span>';
-
-                var bar_cell = row.insertCell(1);
-                bar_cell.id = 'current_response_bar_' + i;
-                bar_cell.innerHTML = '<div style="width:' + percent + '%;">' + count_html + '</div>';
-
-                activequiz.render_maxima_equation(activequiz.current_responses[i].response, i, 'current_response_latex_');
-
-            } else {
-
-                wrapper_current_responses.innerHTML += '<td>' + count_html + activequiz.current_responses[i].response + '</td>';
-
-            }
-
-        } else {
-
-            var count_element = document.getElementById('current_response_count_' + i);
-            if (count_element !== null) {
-                count_element.innerHTML = activequiz.current_responses[i].count;
-            }
-
-            var bar_element = document.getElementById('current_response_bar_' + i);
-            if (bar_element !== null) {
-                bar_element.firstElementChild.style.width = percent + '%';
-            }
-
-        }
-    }
-
-    // Sort the rows
-    var is_sorting = true;
-    while (is_sorting) {
-        is_sorting = false;
-        for (var i = 0; i < (wrapper_current_responses.rows.length - 1); i++) {
-            var first = wrapper_current_responses.rows[i].dataPercent;
-            var second = wrapper_current_responses.rows[i + 1].dataPercent;
-            if (first < second) {
-                wrapper_current_responses.rows[i].parentNode.insertBefore(wrapper_current_responses.rows[i + 1], wrapper_current_responses.rows[i]);
-                is_sorting = true;
-                break;
-            }
-        }
-    }
+    // Update HTML
+    activequiz.create_response_bar_graph(activequiz.current_responses, 'current_response', qtype, 'wrapper_current_responses');
+    activequiz.sort_response_bar_graph('wrapper_current_responses');
 
 };
 
