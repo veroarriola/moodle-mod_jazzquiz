@@ -175,28 +175,69 @@ activequiz.render_maxima_equation = function(input, index, base_id) {
 
 };
 
-//A view to view the answers intuitively on a big screen
-activequiz.projector_mode = function() {
-	var projector_div = document.createElement('div');
-	document.body.appendChild(projector_div);
-	projector_div.id = 'projector_view';
-	document.documentElement.style.overflowY = 'hidden';
-	var quizinfobox = document.getElementById('quizinfobox');
+activequiz.get_question_body_formatted = function(questionid) {
+    var original = document.getElementById('q' + questionid + '_container');
+    if (original === null) {
+        return 'Not found';
+    }
+
+    var questionbox = original.cloneNode(true);
+
+    jQuery(questionbox).find('.info').remove();
+    jQuery(questionbox).find('.im-controls').remove();
+    jQuery(questionbox).find('.questiontestslink').remove();
+    jQuery(questionbox).find('input').remove();
+    jQuery(questionbox).find('label').remove(); // Some inputs have labels
+    jQuery(questionbox).find('.ablock.form-inline').remove();
+    jQuery(questionbox).find('.save_row').remove();
+
+    return questionbox.innerHTML;
+};
+
+// Create a container with fixed position that fills the entire screen
+// Grabs the already existing question text and bar graph and shows it in a minimalistic style.
+activequiz.show_fullscreen_results_view = function() {
+
+    // Hide the scrollbar - remember to always set back to auto when closing
+    document.documentElement.style.overflowY = 'hidden';
+
+    // Create the container
+	var container = document.createElement('div');
+	container.id = 'fullscreen_results_container';
+    document.body.appendChild(container);
+
+    // Set question text
+    container.innerHTML = activequiz.get_question_body_formatted(activequiz.get('currentquestion'));
+
+	// Add bar graph
+    var quizinfobox = document.getElementById('quizinfobox');
 	if (quizinfobox !== null && quizinfobox.children.length > 0) {
 	    // NOTE: Always assumes first child of quizinfobox is a table
-        projector_div.innerHTML = '<table class="activequiz-responses-overview">' + quizinfobox.children[0].innerHTML + '</table>';
+        container.innerHTML += '<table class="activequiz-responses-overview">' + quizinfobox.children[0].innerHTML + '</table>';
     }
 };
 
-//Function to exit the projector view
+// Checks if the view currently exists, and removes it if so.
+activequiz.close_fullscreen_results_view = function() {
+
+    // Does the container exist?
+    var container = document.getElementById('fullscreen_results_container');
+    if (container !== null) {
+
+        // Remove the container entirely
+        container.parentNode.removeChild(container);
+
+        // Reset the overflow-y back to auto
+        document.documentElement.style.overflowY = 'auto';
+    }
+};
+
+// Listens for key event to remove the projector view container
 document.addEventListener('keyup', function(e) {
-	//If escape is pressed
-	var projector_div = document.getElementById('projector_view');
-	if (projector_div !== null) {	
-		if (e.keyCode == 27) {
-			projector_div.parentNode.removeChild(projector_div);
-		}
-	}
+    // Check if 'Escape' key was pressed
+    if (e.keyCode == 27) {
+        activequiz.close_fullscreen_results_view();
+    }
 });
 
 /**

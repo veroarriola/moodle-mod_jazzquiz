@@ -85,7 +85,13 @@ activequiz.getQuizInfo = function () {
 
                     var options = JSON.parse(response.options);
 
-                    var html = '<div class="activequiz-multichoice"><h2>This is the question. What is your answer?</h2>';
+                    //var question_text = activequiz.vars.questions[activequiz.vars.currentquestion].questiontext;
+                    //question_text = question_text.replace('[[input:ans1]]', '');
+                    //question_text = question_text.replace('[{validation:ans1]]', '');
+
+                    var question_text = '';
+
+                    var html = '<div class="activequiz-multichoice"><h2>' + question_text + '</h2>';
                     for (var i = 0; i < options.length; i++) {
                         html += '<label>';
                         html += '<input type="radio" name="multichoiceanswer" value="' + options[i].id + '" onclick="activequiz.multichoice_answer = this.value;">';

@@ -270,48 +270,6 @@ activequiz.get_and_show_multichoice_results = function() {
             activequiz.create_response_bar_graph(responses, 'multichoice_response', 'stack', target_id);
             activequiz.sort_response_bar_graph(target_id);
 
-            // Parse answers
-            /*var answers = JSON.parse(response.answers);
-
-            var results_div = document.getElementById('multichoice_results');
-
-            if (results_div.innerHTML !== '') {
-
-                // No need to render everything again. Just update the finalcount.
-                for (var i in answers) {
-                    var element = document.getElementById('multichoice_answer_finalcount_' + i);
-                    if (element !== null) {
-                        element.innerHTML = answers[i].finalcount;
-                    }
-                }
-
-            } else {
-
-                // Build HTML
-                var html = '<div>';
-                for (var i in answers) {
-                    html += '<div>';
-                    html += '<p><span id="multichoice_answer_finalcount_' + i + '">' + answers[i].finalcount + '</span> answered:</p>';
-                    html += '<div id="multichoice_answer_current' + i + '"></div>';
-                    html += '</div>';
-                }
-                html += '</div>';
-
-                // Apply HTML
-                if (results_div !== null) {
-                    if (results_div.innerHTML === html) {
-                        return;
-                    }
-                    results_div.innerHTML = html;
-                }
-
-                // Query for the LaTeX
-                for (var i in answers) {
-                    //console.log('rendering answer ' + i + ' (attempt: ' + answers[i].attempt + ')');
-                    activequiz.render_maxima_equation(answers[i].attempt, i, 'multichoice_answer_current');
-                }
-            }
-             */
         }
 
     });
@@ -341,24 +299,6 @@ activequiz.run_multichoice_question = function () {
             activequiz.clear_and_hide_notresponded();
             activequiz.hide_all_questionboxes();
 
-            // Build HTML
-            /*var html = '<div>';
-            var options = activequiz.get_selected_multichoice_questions();
-            for (var i = 0; i < options.length; i++) {
-                html += '<div>';
-                html += '<p>' + options[i].count + ' answered:</p>';
-                html += '<div id="multichoice_answer' + i + '">' + options[i].text + '</div>';
-                html += '</div>';
-            }
-            html += '</div><p>Results:</p><div id="multichoice_results"></div>';
-
-            // Apply HTML
-            activequiz.quiz_info('<p>Running the multichoice question!</p><p>Here are the options: </p>' + html);
-
-            // Query for the LaTeX
-            for (var i = 0; i < options.length; i++) {
-                activequiz.render_maxima_equation(options[i].text, i, 'multichoice_answer');
-            }*/
         }
 
     });
@@ -430,14 +370,14 @@ activequiz.gather_results = function () {
 
                 if (activequiz.get('lastquestion') == 'true') { // don't enable the next question button
 
-                    activequiz.control_buttons(['closesession', 'reloadresults', 'jumptoquestion', 'repollquestion', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'enableprojcectorview']);
+                    activequiz.control_buttons(['closesession', 'reloadresults', 'jumptoquestion', 'repollquestion', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'showfullscreenresults']);
                 } else {
                     //otherwise enable the next question button and repoll question
 
-                    activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'enableprojectorview']);
+                    activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'showfullscreenresults']);
                 }
             } else {
-                activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'enableprojectorview']);
+                activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'showfullscreenresults']);
             }
         }
 

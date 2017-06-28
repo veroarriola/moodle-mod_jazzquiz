@@ -494,10 +494,10 @@ class mod_activequiz_renderer extends plugin_renderer_base {
             )
         );
 
-        $inqcontrol .= html_writer::tag('button', 'Projector view', array(
+        $inqcontrol .= html_writer::tag('button', 'Fullscreen results', array(
                 'class'   => 'btn',
-                'id'      => 'enableprojectorview',
-                'onclick' => 'activequiz.projector_mode();'
+                'id'      => 'showfullscreenresults',
+                'onclick' => 'activequiz.show_fullscreen_results_view();'
             )
         );
 
