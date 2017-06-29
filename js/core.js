@@ -257,7 +257,6 @@ activequiz.quiz_page_loaded = function (stop) {
         // initialize ajax object
         activequiz.ajax.init();
 
-
         // next insert rtqinitinfo into the activequizvars
         for (var prop in window.rtqinitinfo) {
             if (rtqinitinfo.hasOwnProperty(prop)) {

@@ -38,10 +38,6 @@ activequiz.getQuizInfo = function () {
             window.alert('There was an error....' + response);
         } else if (status == 200) {
 
-            if (response.status != 'multichoice') {
-                activequiz.is_multichoice_running = false;
-            }
-
             if (response.status == 'notrunning') {
                 // do nothing as we're not running
             } else if (response.status == 'running' && activequiz.get('inquestion') != 'true') {
@@ -53,24 +49,32 @@ activequiz.getQuizInfo = function () {
 
             } else if (response.status == 'endquestion' && activequiz.get('endedquestion') != 'true') {
 
-                var currentquestion = activequiz.get('currentquestion');
+                if (activequiz.is_multichoice_running === undefined || !activequiz.is_multichoice_running) {
 
-                activequiz.handle_question(currentquestion);
-                if (activequiz.qcounter) {
-                    clearInterval(activequiz.qcounter);
-                    var questiontimertext = document.getElementById('q' + currentquestion + '_questiontimetext');
-                    var questiontimer = document.getElementById('q' + currentquestion + '_questiontime');
+                    var currentquestion = activequiz.get('currentquestion');
 
-                    // reset variables.
-                    activequiz.qcounter = false;
-                    activequiz.counter = false;
-                    questiontimertext.innerHTML = '';
-                    questiontimer.innerHTML = '';
+                    activequiz.handle_question(currentquestion);
+                    if (activequiz.qcounter) {
+                        clearInterval(activequiz.qcounter);
+                        var questiontimertext = document.getElementById('q' + currentquestion + '_questiontimetext');
+                        var questiontimer = document.getElementById('q' + currentquestion + '_questiontime');
+
+                        // reset variables.
+                        activequiz.qcounter = false;
+                        activequiz.counter = false;
+                        questiontimertext.innerHTML = '';
+                        questiontimer.innerHTML = '';
+                    }
+
+                    activequiz.set('endedquestion', 'true');
+
                 }
 
-                activequiz.set('endedquestion', 'true');
-
             } else if (response.status == 'reviewing') {
+
+                activequiz.is_multichoice_running = false;
+
+                activequiz.quiz_info(M.util.get_string('feedbackintro', 'activequiz'), true);
 
                 activequiz.set('inquestion', 'false');
 
@@ -137,12 +141,10 @@ activequiz.handle_question = function (questionid, hide) {
     var loadingtext = document.getElementById('loadingtext');
     loadingtext.innerHTML = M.util.get_string('gatheringresults', 'activequiz');
 
-    loadingbox.classList.remove('hidden');
-
     // if there are multiple tries for this question then don't hide the question container
     if (hide) {
         var qbox = document.getElementById('q' + questionid + '_container');
-        if(typeof qbox !== 'undefined') {
+        if (qbox !== null) {
             qbox.classList.add('hidden');
         }
     }

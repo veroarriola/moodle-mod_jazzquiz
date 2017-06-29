@@ -424,6 +424,14 @@ class mod_activequiz_renderer extends plugin_renderer_base {
             )
         );
 
+        // TODO: Add language string for button text
+        $inqcontrol .= html_writer::tag('button', 'Re-poll as multichoice', array(
+                'class'   => 'btn',
+                'id'      => 'runmultichoicequestion',
+                'onclick' => 'activequiz.run_multichoice_question();'
+            )
+        );
+
         $inqcontrol .= html_writer::tag('button', get_string('nextquestion', 'activequiz'), array(
                 'class'    => 'btn',
                 'id'       => 'nextquestion',
@@ -483,14 +491,6 @@ class mod_activequiz_renderer extends plugin_renderer_base {
                 'class'   => 'btn',
                 'id'      => 'showcorrectanswer',
                 'onclick' => 'activequiz.show_correct_answer();'
-            )
-        );
-
-        // TODO: Add language string for button text
-        $inqcontrol .= html_writer::tag('button', 'Run multichoice question', array(
-                'class'   => 'btn',
-                'id'      => 'runmultichoicequestion',
-                'onclick' => 'activequiz.run_multichoice_question();'
             )
         );
 

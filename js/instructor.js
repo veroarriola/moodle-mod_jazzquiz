@@ -299,6 +299,17 @@ activequiz.run_multichoice_question = function () {
             activequiz.clear_and_hide_notresponded();
             activequiz.hide_all_questionboxes();
 
+            // Hide the run re-poll as multichoice button
+            var enabled_buttons = [
+                'closesession',
+                'showfullscreenresults',
+                'showcorrectanswer',
+                'toggleresponses',
+                'endquestion'
+            ];
+
+            activequiz.control_buttons(enabled_buttons);
+
         }
 
     });
@@ -366,19 +377,23 @@ activequiz.gather_results = function () {
         // don't change buttons during the question
         if (activequiz.get('endquestion') == 'true') {
 
-            if (activequiz.get('lastquestion') != 'undefined') {
+            var enabled_buttons = [
+                'closesession',
+                'jumptoquestion',
+                'repollquestion',
+                'showfullscreenresults',
+                'showcorrectanswer',
+                'toggleresponses',
+                'reloadresults',
+                'runmultichoicequestion'
+            ];
 
-                if (activequiz.get('lastquestion') == 'true') { // don't enable the next question button
-
-                    activequiz.control_buttons(['closesession', 'reloadresults', 'jumptoquestion', 'repollquestion', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'showfullscreenresults']);
-                } else {
-                    //otherwise enable the next question button and repoll question
-
-                    activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'showfullscreenresults']);
-                }
-            } else {
-                activequiz.control_buttons(['closesession', 'nextquestion', 'jumptoquestion', 'repollquestion', 'reloadresults', 'showcorrectanswer', 'toggleresponses', 'runmultichoicequestion', 'showfullscreenresults']);
+            if (activequiz.get('lastquestion') != 'true') {
+                enabled_buttons.push('nextquestion');
             }
+
+            activequiz.control_buttons(enabled_buttons);
+
         }
 
         // only put results into the screen if
