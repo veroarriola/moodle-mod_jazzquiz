@@ -78,7 +78,7 @@ if ($session->sessionopen == 0) {
 
 } else if ($session->status == 'multichoice') {
 
-    $multichoice_options = $DB->get_records('activequiz_multichoice', ['sessionid' => $sessionid ]);
+    $multichoice_options = $DB->get_records('activequiz_multichoice', ['sessionid' => $sessionid]);
     $options = [];
     foreach ($multichoice_options as $multichoice_option) {
         $options[] = [
@@ -90,6 +90,17 @@ if ($session->sessionopen == 0) {
     $jsonlib->set('status', 'multichoice');
     $jsonlib->set('options', json_encode($options));
     $jsonlib->send_response();
+
+}
+
+else if ($session->status == 'improvisation') {
+
+
+
+    $jsonlib->set('status', 'improvisation');
+
+    $jsonlib->send_response();
+
 
 } else {
     // otherwise send a response of the current question with the next start time

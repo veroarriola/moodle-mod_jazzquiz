@@ -200,6 +200,38 @@ class quizdata {
                 }
 
                 break;
+            case 'listdummyquestions':
+
+                if ($this->RTQ->is_instructor()) {
+
+                    $questions = $DB->get_records('activequiz_dummy_questions');
+
+                    $this->jsonlib->set('status', 'success');
+                    $this->jsonlib->set('questions', json_encode($questions));
+                    $this->jsonlib->send_response();
+
+                } else {
+                    $this->jsonlib->send_error('invalidaction');
+                }
+
+                break;
+            case 'startimprovisedquestion':
+
+                if ($this->RTQ->is_instructor()) {
+
+                    // TODO: Delete all previous improvised questions for this session
+
+                    $this->session->set_status('improvisation');
+
+                    $this->jsonlib->set('status', 'success');
+
+                    $this->jsonlib->send_response();
+
+                } else {
+                    $this->jsonlib->send_error('invalidaction');
+                }
+
+                break;
             case 'runmultichoicequestion':
 
                 if ($this->RTQ->is_instructor() && isset($_POST['questions'])) {
