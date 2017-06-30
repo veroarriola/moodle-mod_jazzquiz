@@ -217,14 +217,26 @@ class quizdata {
                 break;
             case 'startimprovisedquestion':
 
-                if ($this->RTQ->is_instructor()) {
+                $questionid = optional_param('questionid', '', PARAM_INT);
 
-                    // TODO: Delete all previous improvised questions for this session
+                if (empty($questionid)) {
+                    $this->jsonlib->send_error('questionid must be set');
+                } else if ($this->RTQ->is_instructor()) {
+
+                    $sessionid = $this->session->get_session()->id;
+
+                    $DB->delete_records('activequiz_session_improvs', [
+                        'sessionid' => $sessionid
+                    ]);
+
+                    $improv = new \stdClass();
+                    $improv->activequizid = $this->RTQ->getRTQ()->id;
+                    $improv->sessionid = $sessionid;
+                    $improv->questionid = $questionid;
+                    $DB->insert_record('activequiz_session_improvs', $improv);
 
                     $this->session->set_status('improvisation');
-
                     $this->jsonlib->set('status', 'success');
-
                     $this->jsonlib->send_response();
 
                 } else {
@@ -234,30 +246,38 @@ class quizdata {
                 break;
             case 'getimprovisedquestionform':
 
-                $questionid = 17;
+                $improvised_question = $DB->get_record('activequiz_session_improvs', ['sessionid' => $this->session->get_session()->id]);
+                if (!$improvised_question) {
 
-                $qdefinition = \question_bank::load_question($questionid);
+                    $this->jsonlib->send_error('no improvised questions for this session');
 
-                $dbattempt = $this->RTQ->get_questionmanager();
+                } else {
 
-                $attempt = new \mod_activequiz\activequiz_attempt($dbattempt);
+                    $questionid = $improvised_question->questionid;
 
-                $quba = $attempt->get_quba();
-                $slot = $quba->add_question($qdefinition);
+                    $qdefinition = \question_bank::load_question($questionid);
+                    $dbattempt = $this->RTQ->get_questionmanager();
 
-                $moodle_attempt = $quba->get_question_attempt($slot);
+                    $attempt = new \mod_activequiz\activequiz_attempt($dbattempt);
 
-                $variant = rand(1, $quba->get_num_variants($slot));
+                    $quba = $attempt->get_quba();
+                    $slot = $quba->add_question($qdefinition);
 
-                $moodle_attempt->start($quba->get_preferred_behaviour(), $variant);
+                    $moodle_attempt = $quba->get_question_attempt($slot);
 
-                $renderer = $this->RTQ->get_renderer();
+                    $variant = rand(1, $quba->get_num_variants($slot));
 
-                $question_form = $renderer->render_question_form($slot, $attempt);
+                    $moodle_attempt->start($quba->get_preferred_behaviour(), $variant);
 
-                $this->jsonlib->set('status', 'success');
-                $this->jsonlib->set('question', $question_form);
-                $this->jsonlib->send_response();
+                    $renderer = $this->RTQ->get_renderer();
+
+                    $question_form = $renderer->render_question_form($slot, $attempt);
+
+                    $this->jsonlib->set('status', 'success');
+                    $this->jsonlib->set('question', $question_form);
+                    $this->jsonlib->send_response();
+
+                }
 
                 break;
             case 'runmultichoicequestion':
