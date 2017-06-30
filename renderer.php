@@ -325,6 +325,10 @@ class mod_activequiz_renderer extends plugin_renderer_base {
         // have a quiz information box to show statistics, feedback and more.
         $output .= html_writer::div('', 'activequizbox hidden', array('id' => 'quizinfobox'));
 
+        // have a box to use for improvised questions - contents are edited in javascript
+        $output .= html_writer::div('', 'activequizbox hidden', array('id' => 'improvised_question_container'));
+
+        // question form containers
         foreach ($attempt->getSlots() as $slot) {
             // render question form.
             $output .= $this->render_question_form($slot, $attempt);
@@ -373,7 +377,7 @@ class mod_activequiz_renderer extends plugin_renderer_base {
         $timercount = html_writer::div('', 'timercount', array('id' => 'q' . $qnum . '_questiontime'));
 
         $rtqQuestion = $attempt->get_question_by_slot($slot);
-        if ($rtqQuestion->getTries() > 1 && !$this->rtq->is_instructor()) {
+        if ($rtqQuestion !== false && $rtqQuestion->getTries() > 1 && !$this->rtq->is_instructor()) {
             $count = new stdClass();
             $count->tries = $rtqQuestion->getTries();
             $trytext = html_writer::div(get_string('trycount', 'activequiz', $count), 'trycount', array('id' => 'q' . $qnum . '_trycount'));
@@ -653,7 +657,7 @@ EOD;
                     // next check how many tries left
                     $jsinfo->resumequestiontries = $attempt->check_tries_left($session->get_session()->currentqnum, $nextQuestion->getTries());
                 }
-            } else if ($sessionstatus == 'reviewing' || $sessionstatus == 'endquestion' || $sessionstatus == 'multichoice') {
+            } else if ($sessionstatus == 'reviewing' || $sessionstatus == 'endquestion' || $sessionstatus == 'multichoice' || $sessionstatus == 'improvisation') {
 
                 // if we're reviewing, resume with quiz info of reviewing and just let
                 // set interval capture next question start time

@@ -95,8 +95,6 @@ if ($session->sessionopen == 0) {
 
 else if ($session->status == 'improvisation') {
 
-
-
     $jsonlib->set('status', 'improvisation');
 
     $jsonlib->send_response();

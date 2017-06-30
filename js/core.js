@@ -146,6 +146,30 @@ activequiz.ajax = {
     }
 };
 
+activequiz.load_improvised_question_form = function() {
+
+    var params = {
+        'action': 'getimprovisedquestionform',
+        'rtqid': activequiz.get('rtqid'),
+        'sessionid': activequiz.get('sessionid'),
+        'attemptid': activequiz.get('attemptid'),
+        'sesskey': activequiz.get('sesskey')
+    };
+
+    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function(status, response) {
+
+        if (status == 500) {
+            console.log('Something went wrong while requesting the question form for the improvised question');
+        } else if (status == 200) {
+
+            jQuery('#improvised_question_container').html(response.question).removeClass('hidden').children('.hidden').removeClass('hidden');
+
+        }
+
+    });
+
+};
+
 activequiz.render_maxima_equation = function(input, index, base_id) {
 
     input = encodeURIComponent(input);

@@ -232,6 +232,34 @@ class quizdata {
                 }
 
                 break;
+            case 'getimprovisedquestionform':
+
+                $questionid = 17;
+
+                $qdefinition = \question_bank::load_question($questionid);
+
+                $dbattempt = $this->RTQ->get_questionmanager();
+
+                $attempt = new \mod_activequiz\activequiz_attempt($dbattempt);
+
+                $quba = $attempt->get_quba();
+                $slot = $quba->add_question($qdefinition);
+
+                $moodle_attempt = $quba->get_question_attempt($slot);
+
+                $variant = rand(1, $quba->get_num_variants($slot));
+
+                $moodle_attempt->start($quba->get_preferred_behaviour(), $variant);
+
+                $renderer = $this->RTQ->get_renderer();
+
+                $question_form = $renderer->render_question_form($slot, $attempt);
+
+                $this->jsonlib->set('status', 'success');
+                $this->jsonlib->set('question', $question_form);
+                $this->jsonlib->send_response();
+
+                break;
             case 'runmultichoicequestion':
 
                 if ($this->RTQ->is_instructor() && isset($_POST['questions'])) {

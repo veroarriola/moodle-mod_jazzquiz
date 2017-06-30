@@ -93,6 +93,13 @@ activequiz.getQuizInfo = function () {
 
                 activequiz.get_and_show_multichoice_results();
 
+            } else if (response.status == 'improvising') {
+
+                if (jQuery('#improvised_question_container').hasClass('hidden')) {
+
+                    activequiz.load_improvised_question_form();
+
+                }
             }
         }
 
