@@ -230,29 +230,20 @@ class quizdata {
                                         $questions[] = [
                                             'questionid' => $quiz_question->questionid,
                                             'name' => 'This question does not exist.',
-                                            'slot' => -1
+                                            'slot' => 0
                                         ];
                                         continue;
                                     }
 
-                                    $ordered_questions = $this->RTQ->get_questionmanager()->orderedquestions;
+                                    $question_order = $this->RTQ->getRTQ()->questionorder;
+                                    $ordered_activequiz_question_ids = explode(',', $question_order);
 
-                                    $slot = -1;
-
-                                    foreach ($ordered_questions as $ordered_question) {
-                                        if ($ordered_question->getQuestion()->id == $question->id) {
-                                            $slot = $ordered_question->get_slot();
+                                    $slot = 0;
+                                    foreach ($ordered_activequiz_question_ids as $id) {
+                                        $slot++;
+                                        if ($id == $quiz_question->id) {
                                             break;
                                         }
-                                    }
-
-                                    if ($slot == -1) {
-                                        $questions[] = [
-                                            'questionid' => $quiz_question->questionid,
-                                            'name' => 'This question has no slot',
-                                            'slot' => '-1'
-                                        ];
-                                        continue;
                                     }
 
                                     $questions[] = [

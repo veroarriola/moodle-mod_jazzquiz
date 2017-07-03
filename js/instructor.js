@@ -255,9 +255,11 @@ activequiz.show_improvised_question_setup = function() {
 
 activequiz.start_improvised_question = function() {
 
-    var questionid = jQuery('input[name=chosenimprovquestion]').val();
+    var qnum = jQuery('input[name=chosenimprovquestion]').val();
 
-    activequiz.waitfor_question(questionid, 60, 1);
+    //activequiz.waitfor_question(qnum, 60, 1);
+
+    activequiz.submit_goto_question(qnum);
 
 };
 
@@ -634,6 +636,50 @@ activequiz.close_session = function () {
 
 };
 
+activequiz.submit_goto_question = function(qnum) {
+
+    this.hide_all_questionboxes();
+    this.clear_and_hide_qinfobox();
+    this.control_buttons([]);
+
+    var params = {
+        'action': 'gotoquestion',
+        'qnum': qnum,
+        'rtqid': activequiz.get('rtqid'),
+        'sessionid': activequiz.get('sessionid'),
+        'attemptid': activequiz.get('attemptid'),
+        'sesskey': activequiz.get('sesskey')
+    };
+
+    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+
+        if (status == 500) {
+            var loadingbox = document.getElementById('loadingbox');
+            loadingbox.classList.add('hidden');
+
+            activequiz.quiz_info('There was an error with your request', true);
+
+            window.alert('there was an error with your request ... ');
+            return;
+        }
+
+        if (response.lastquestion == 'true') {
+            // set a var to signify this is the last question
+            activequiz.set('lastquestion', 'true');
+        } else {
+            activequiz.set('lastquestion', 'false');
+        }
+
+        // reset location.hash to nothing so that the modal dialog disappears
+        window.location.hash = '';
+
+        // now go to the question
+        activequiz.control_buttons(['endquestion', 'toggleresponses', 'togglenotresponded']);
+        activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+    });
+
+};
+
 activequiz.jumpto_question = function () {
 
     if (window.location.hash === '#jumptoquestion-dialog') {
@@ -643,46 +689,7 @@ activequiz.jumpto_question = function () {
         var select = document.getElementById('jtq-selectquestion');
         var qnum = select.options[select.selectedIndex].value;
 
-        this.hide_all_questionboxes();
-        this.clear_and_hide_qinfobox();
-        this.control_buttons([]);
-
-        var params = {
-            'action': 'gotoquestion',
-            'qnum': qnum,
-            'rtqid': activequiz.get('rtqid'),
-            'sessionid': activequiz.get('sessionid'),
-            'attemptid': activequiz.get('attemptid'),
-            'sesskey': activequiz.get('sesskey')
-        };
-
-        activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
-
-            if (status == 500) {
-                var loadingbox = document.getElementById('loadingbox');
-                loadingbox.classList.add('hidden');
-
-                activequiz.quiz_info('There was an error with your request', true);
-
-                window.alert('there was an error with your request ... ');
-                return;
-            }
-
-            if (response.lastquestion == 'true') {
-                // set a var to signify this is the last question
-                activequiz.set('lastquestion', 'true');
-            } else {
-                activequiz.set('lastquestion', 'false');
-            }
-
-            // reset location.hash to nothing so that the modal dialog disappears
-            window.location.hash = '';
-
-            // now go to the question
-            activequiz.control_buttons(['endquestion', 'toggleresponses', 'togglenotresponded']);
-            activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
-        });
-
+        activequiz.submit_goto_question(qnum);
 
     } else { // otherwise open the dialog
         window.location.hash = 'jumptoquestion-dialog';
