@@ -93,7 +93,7 @@ activequiz.getQuizInfo = function () {
 
                 activequiz.get_and_show_multichoice_results();
 
-            } else if (response.status == 'improvising') {
+            } else if (response.status == 'improvisation') {
 
                 if (jQuery('#improvised_question_container').hasClass('hidden')) {
 
@@ -239,6 +239,8 @@ activequiz.show_improvised_question_setup = function() {
             var questions = JSON.parse(response.questions);
 
             var html = '';
+
+            // TODO: Submit button for each option instead of radio buttons
 
             for (var i in questions) {
                 html += '<label><input type="radio" name="chosenimprovquestion" value="' + questions[i].questionid + '"> ';

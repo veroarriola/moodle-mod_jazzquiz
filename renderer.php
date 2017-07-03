@@ -326,7 +326,7 @@ class mod_activequiz_renderer extends plugin_renderer_base {
         $output .= html_writer::div('', 'activequizbox hidden', array('id' => 'quizinfobox'));
 
         // have a box to use for improvised questions - contents are edited in javascript
-        $output .= html_writer::div('', 'activequizbox hidden', array('id' => 'improvised_question_container'));
+        $output .= html_writer::div('', 'hidden', array('id' => 'improvised_question_container'));
 
         // question form containers
         foreach ($attempt->getSlots() as $slot) {

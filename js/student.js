@@ -157,7 +157,6 @@ activequiz.handle_question = function (questionid, hide) {
         }
     }
 
-
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
     }
@@ -173,6 +172,44 @@ activequiz.handle_question = function (questionid, hide) {
     formdata.append('attemptid', activequiz.get('attemptid'));
     formdata.append('sesskey', activequiz.get('sesskey'));
     formdata.append('questionid', questionid);
+
+
+    /*
+
+    STACK:
+
+     q241:1_:sequencecheck          => 5
+     q241:1_ans1                    => sqrt(2*x+5)-y^3
+     q241:1_ans1_val                => sqrt(2*x+5)-y^3
+     --
+     slots                          => 1
+     action                         => savequestion
+     rtqid                          => 2
+     sessionid                      => 25
+     attemptid                      => 69
+     sesskey                        => 7kfKPGW1ho
+     questionid                     => 1
+
+
+    Text, Number:
+
+     q241:2_:sequencecheck          => 1
+     q241:2_answer                  => Mitt svar
+     --
+     slots                          => 2
+     action                         => savequestion
+     rtqid                          => 2
+     sessionid                      => 25
+     attemptid                      => 69
+     sesskey                        => 7kfKPGW1ho
+     questionid                     => 2
+
+     */
+
+    for (var pair of formdata.entries())
+    {
+        console.log(pair[0]+ ' => ' + pair[1]);
+    }
 
     // submit the form
     activequiz.ajax.create_request('/mod/activequiz/quizdata.php', formdata, function (status, response) {
@@ -244,4 +281,29 @@ activequiz.save_multichoice_answer = function() {
         }
 
     });
+};
+
+activequiz.submit_improvised_question_answer = function() {
+
+    var input = '';
+
+    var params = {
+        'action': 'saveimprovisedquestionanswer',
+        'rtqid': activequiz.get('rtqid'),
+        'sessionid': activequiz.get('sessionid'),
+        'attemptid': activequiz.get('attemptid'),
+        'sesskey': activequiz.get('sesskey'),
+        'answer': input
+    };
+
+    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+        if (status == '500') {
+            activequiz.quiz_info('there was an error saving the answer', true);
+        } else if (status == 200) {
+            activequiz.hide_all_questionboxes();
+            activequiz.quiz_info('<p>Answer saved. Waiting for instructor...</p>');
+        }
+
+    });
+
 };
