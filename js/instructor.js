@@ -93,13 +93,6 @@ activequiz.getQuizInfo = function () {
 
                 activequiz.get_and_show_multichoice_results();
 
-            } else if (response.status == 'improvisation') {
-
-                if (jQuery('#improvised_question_container').hasClass('hidden')) {
-
-                    activequiz.load_improvised_question_form();
-
-                }
             }
         }
 
@@ -243,9 +236,9 @@ activequiz.show_improvised_question_setup = function() {
             // TODO: Submit button for each option instead of radio buttons
 
             for (var i in questions) {
-                html += '<label><input type="radio" name="chosenimprovquestion" value="' + questions[i].questionid + '"> ';
+                html += '<label><input type="radio" name="chosenimprovquestion" value="' + questions[i].slot + '"> ';
                 html += questions[i].name;
-                html += ' (' + questions[i].questionid + ')';
+                html += ' (' + questions[i].questionid + ', ' + questions[i].slot + ')';
                 html += '</label><br>';
             }
 
@@ -264,40 +257,7 @@ activequiz.start_improvised_question = function() {
 
     var questionid = jQuery('input[name=chosenimprovquestion]').val();
 
-    var params = {
-        'action': 'startimprovisedquestion',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey'),
-        'questionid': questionid
-    };
-
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
-
-        if (status == '500') {
-            activequiz.quiz_info('there was an error starting the improvised question', true);
-        } else if (status == 200) {
-
-            // Hide unnecessary information
-            activequiz.clear_and_hide_notresponded();
-            activequiz.hide_all_questionboxes();
-
-            // Show new quiz info
-            activequiz.quiz_info('Improvisation has begun!');
-
-            // Active relevant control buttons
-            activequiz.control_buttons([
-                'closesession',
-                'showfullscreenresults',
-                // 'showcorrectanswer', // There is no correct answer for a dummy question.
-                'toggleresponses',
-                'endquestion'
-            ]);
-
-        }
-
-    });
+    activequiz.waitfor_question(questionid, 60, 1);
 
 };
 

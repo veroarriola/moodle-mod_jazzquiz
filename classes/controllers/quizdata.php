@@ -204,79 +204,76 @@ class quizdata {
 
                 if ($this->RTQ->is_instructor()) {
 
-                    $questions = $DB->get_records('activequiz_dummy_questions');
+                    $dummy_questions = $DB->get_records('activequiz_dummy_questions');
 
-                    $this->jsonlib->set('status', 'success');
-                    $this->jsonlib->set('questions', json_encode($questions));
-                    $this->jsonlib->send_response();
-
-                } else {
-                    $this->jsonlib->send_error('invalidaction');
-                }
-
-                break;
-            case 'startimprovisedquestion':
-
-                $questionid = optional_param('questionid', '', PARAM_INT);
-
-                if (empty($questionid)) {
-                    $this->jsonlib->send_error('questionid must be set');
-                } else if ($this->RTQ->is_instructor()) {
-
-                    $sessionid = $this->session->get_session()->id;
-
-                    $DB->delete_records('activequiz_session_improvs', [
-                        'sessionid' => $sessionid
+                    $quiz_questions = $DB->get_records('activequiz_questions', [
+                        'activequizid' => $this->RTQ->getRTQ()->id
                     ]);
 
-                    $improv = new \stdClass();
-                    $improv->activequizid = $this->RTQ->getRTQ()->id;
-                    $improv->sessionid = $sessionid;
-                    $improv->questionid = $questionid;
-                    $DB->insert_record('activequiz_session_improvs', $improv);
+                    if (!$dummy_questions || !$quiz_questions) {
+                        $this->jsonlib->send_error('no questions');
+                    } else {
 
-                    $this->session->set_status('improvisation');
-                    $this->jsonlib->set('status', 'success');
-                    $this->jsonlib->send_response();
+                        $questions = [];
+
+                        foreach ($dummy_questions as $dummy_question) {
+
+                            foreach ($quiz_questions as $quiz_question) {
+
+                                if ($dummy_question->questionid == $quiz_question->questionid) {
+
+                                    $question = $DB->get_record('question', [
+                                        'id' => $quiz_question->questionid
+                                    ]);
+
+                                    if (!$question) {
+                                        $questions[] = [
+                                            'questionid' => $quiz_question->questionid,
+                                            'name' => 'This question does not exist.',
+                                            'slot' => -1
+                                        ];
+                                        continue;
+                                    }
+
+                                    $ordered_questions = $this->RTQ->get_questionmanager()->orderedquestions;
+
+                                    $slot = -1;
+
+                                    foreach ($ordered_questions as $ordered_question) {
+                                        if ($ordered_question->getQuestion()->id == $question->id) {
+                                            $slot = $ordered_question->get_slot();
+                                            break;
+                                        }
+                                    }
+
+                                    if ($slot == -1) {
+                                        $questions[] = [
+                                            'questionid' => $quiz_question->questionid,
+                                            'name' => 'This question has no slot',
+                                            'slot' => '-1'
+                                        ];
+                                        continue;
+                                    }
+
+                                    $questions[] = [
+                                        'questionid' => $question->id,
+                                        'name' => $question->name,
+                                        'slot' => $slot
+                                    ];
+                                }
+
+                            }
+
+                        }
+
+                        $this->jsonlib->set('status', 'success');
+                        $this->jsonlib->set('questions', json_encode($questions));
+                        $this->jsonlib->send_response();
+
+                    }
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
-                }
-
-                break;
-            case 'getimprovisedquestionform':
-
-                $improvised_question = $DB->get_record('activequiz_session_improvs', ['sessionid' => $this->session->get_session()->id]);
-                if (!$improvised_question) {
-
-                    $this->jsonlib->send_error('no improvised questions for this session');
-
-                } else {
-
-                    $questionid = $improvised_question->questionid;
-
-                    $qdefinition = \question_bank::load_question($questionid);
-                    $dbattempt = $this->RTQ->get_questionmanager();
-
-                    $attempt = new \mod_activequiz\activequiz_attempt($dbattempt);
-
-                    $quba = $attempt->get_quba();
-                    $slot = $quba->add_question($qdefinition);
-
-                    $moodle_attempt = $quba->get_question_attempt($slot);
-
-                    $variant = rand(1, $quba->get_num_variants($slot));
-
-                    $moodle_attempt->start($quba->get_preferred_behaviour(), $variant);
-
-                    $renderer = $this->RTQ->get_renderer();
-
-                    $question_form = $renderer->render_question_form($slot, $attempt);
-
-                    $this->jsonlib->set('status', 'success');
-                    $this->jsonlib->set('question', $question_form);
-                    $this->jsonlib->send_response();
-
                 }
 
                 break;

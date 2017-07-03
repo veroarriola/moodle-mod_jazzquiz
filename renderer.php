@@ -325,9 +325,6 @@ class mod_activequiz_renderer extends plugin_renderer_base {
         // have a quiz information box to show statistics, feedback and more.
         $output .= html_writer::div('', 'activequizbox hidden', array('id' => 'quizinfobox'));
 
-        // have a box to use for improvised questions - contents are edited in javascript
-        $output .= html_writer::div('', 'hidden', array('id' => 'improvised_question_container'));
-
         // question form containers
         foreach ($attempt->getSlots() as $slot) {
             // render question form.
@@ -657,7 +654,7 @@ EOD;
                     // next check how many tries left
                     $jsinfo->resumequestiontries = $attempt->check_tries_left($session->get_session()->currentqnum, $nextQuestion->getTries());
                 }
-            } else if ($sessionstatus == 'reviewing' || $sessionstatus == 'endquestion' || $sessionstatus == 'multichoice' || $sessionstatus == 'improvisation') {
+            } else if ($sessionstatus == 'reviewing' || $sessionstatus == 'endquestion' || $sessionstatus == 'multichoice') {
 
                 // if we're reviewing, resume with quiz info of reviewing and just let
                 // set interval capture next question start time

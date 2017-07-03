@@ -159,6 +159,11 @@ class view {
                     }
 
                     if ($cantakequiz) {
+
+                        // Let's make sure the dummy questions are added before initializing the attempts.
+                        $this->RTQ->add_dummy_questions();
+
+                        // Initialize the question attempts
                         if (!$this->session->init_attempts($this->RTQ->is_instructor(), $this->pagevars['group'],
                             $this->pagevars['groupmembers'])
                         ) {

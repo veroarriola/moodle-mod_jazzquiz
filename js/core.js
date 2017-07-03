@@ -146,43 +146,6 @@ activequiz.ajax = {
     }
 };
 
-activequiz.load_improvised_question_form = function() {
-
-    console.log('Loading improvised question form...');
-
-    activequiz.clear_and_hide_qinfobox();
-
-    var params = {
-        'action': 'getimprovisedquestionform',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
-    };
-
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function(status, response) {
-
-        if (status == 500) {
-            console.log('Something went wrong while requesting the question form for the improvised question');
-        } else if (status == 200) {
-
-            var container = jQuery('#improvised_question_container');
-
-            jQuery(container).html(response.question).removeClass('hidden').children('.hidden').removeClass('hidden');
-
-            jQuery(container).find('.info').remove();
-            jQuery(container).find('.timertext').remove();
-            jQuery(container).find('.timercount').remove();
-
-            jQuery(container).find('#q1_save').attr('onclick', 'activequiz.submit_improvised_question_answer(); return false; ');
-
-
-        }
-
-    });
-
-};
-
 activequiz.render_maxima_equation = function(input, index, base_id) {
 
     input = encodeURIComponent(input);

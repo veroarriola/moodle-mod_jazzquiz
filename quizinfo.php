@@ -91,16 +91,7 @@ if ($session->sessionopen == 0) {
     $jsonlib->set('options', json_encode($options));
     $jsonlib->send_response();
 
-}
-
-else if ($session->status == 'improvisation') {
-
-    $jsonlib->set('status', 'improvisation');
-
-    $jsonlib->send_response();
-
-
-} else {
+}  else {
     // otherwise send a response of the current question with the next start time
     $jsonlib->set('status', 'running');
     $jsonlib->set('currentquestion', $session->currentquestion);
