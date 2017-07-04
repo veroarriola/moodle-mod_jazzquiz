@@ -118,23 +118,30 @@ activequiz.start_quiz = function () {
 
     this.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
 
+        var inquizcontrols = document.getElementById('inquizcontrols');
+        inquizcontrols.classList.remove('btn-hide');
+        activequiz.control_buttons([
+            'jumptoquestion',
+            'closesession',
+            'showfullscreenresults',
+            'startimprovisedquestion',
+            'toggleresponses',
+            'togglenotresponded'
+        ]);
+
         // if there's only 1 question this will return true
-        if (response.lastquestion == 'true') {
+        /*if (response.lastquestion == 'true') {
             // disable the next question button
             var nextquestionbtn = document.getElementById('nextquestion');
             nextquestionbtn.disabled = true;
             activequiz.set('lastquestion', 'true');
-        }
+        }*/
 
-        activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+       // activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 
     var startquizbtn = document.getElementById('startquiz');
     startquizbtn.classList.add('btn-hide');
-
-    var inquizcontrols = document.getElementById('inquizcontrols');
-    inquizcontrols.classList.remove('btn-hide');
-    this.control_buttons(['endquestion', 'toggleresponses', 'togglenotresponded']);
 };
 
 
@@ -678,7 +685,12 @@ activequiz.submit_goto_question = function(qnum) {
         window.location.hash = '';
 
         // now go to the question
-        activequiz.control_buttons(['endquestion', 'toggleresponses', 'togglenotresponded']);
+        activequiz.control_buttons([
+            'endquestion',
+            'toggleresponses',
+            'togglenotresponded',
+            'showfullscreenresults'
+        ]);
         activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 

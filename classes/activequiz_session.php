@@ -193,7 +193,9 @@ class activequiz_session {
             return false; // return false for no first question
         }
 
-        $this->session->currentqnum = 1;
+        $this->set_status('reviewing');
+
+        /*$this->session->currentqnum = 1;
         $this->session->nextstarttime = time() + $this->rtq->getRTQ()->waitforquestiontime;
         $this->session->currentquestion = $fQuestion->get_slot();
         if ($fQuestion->getQuestionTime() == 0 && $fQuestion->getNoTime() == 0) {
@@ -206,7 +208,7 @@ class activequiz_session {
             $questiontime = $fQuestion->getQuestionTime();
         }
 
-        $this->session->currentquestiontime = $questiontime;
+        $this->session->currentquestiontime = $questiontime;*/
 
         $this->save_session();
 

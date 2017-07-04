@@ -137,9 +137,11 @@ class quizdata {
                     $firstquestion = $this->session->start_quiz();
 
                     $this->jsonlib->set('status', 'startedquiz');
+                    $this->jsonlib->send_response();
+
+                    /*$this->jsonlib->set('status', 'startedquiz');
                     $this->jsonlib->set('questionid', $firstquestion->get_slot());
                     $this->jsonlib->set('nextstarttime', $this->session->get_session()->nextstarttime);
-
 
                     $this->jsonlib->set('notime', $firstquestion->getNoTime());
                     if ($firstquestion->getNoTime() == 0) {
@@ -159,7 +161,7 @@ class quizdata {
 
                     $qattempt = $this->session->get_open_attempt();
                     $this->jsonlib->set('lastquestion', ($qattempt->lastquestion ? 'true' : 'false'));
-                    $this->jsonlib->send_response();
+                    $this->jsonlib->send_response();*/
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
