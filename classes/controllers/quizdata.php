@@ -204,65 +204,64 @@ class quizdata {
 
                 if ($this->RTQ->is_instructor()) {
 
-                    $dummy_questions = $DB->get_records('activequiz_dummy_questions');
-
                     $quiz_questions = $DB->get_records('activequiz_questions', [
                         'activequizid' => $this->RTQ->getRTQ()->id
                     ]);
 
-                    if (!$dummy_questions || !$quiz_questions) {
+                    if (!$quiz_questions) {
                         $this->jsonlib->send_error('no questions');
                     } else {
 
                         $questions = [];
 
-                        foreach ($dummy_questions as $dummy_question) {
+                        foreach ($quiz_questions as $quiz_question) {
 
-                            foreach ($quiz_questions as $quiz_question) {
+                            // Let's get the question data
+                            $question = $DB->get_record('question', [
+                                'id' => $quiz_question->questionid
+                            ]);
 
-                                if ($dummy_question->questionid == $quiz_question->questionid) {
-
-                                    $question = $DB->get_record('question', [
-                                        'id' => $quiz_question->questionid
-                                    ]);
-
-                                    if (!$question) {
-                                        $questions[] = [
-                                            'questionid' => $quiz_question->questionid,
-                                            'name' => 'This question does not exist.',
-                                            'slot' => 0
-                                        ];
-                                        continue;
-                                    }
-
-                                    $question_order = $this->RTQ->getRTQ()->questionorder;
-                                    $ordered_activequiz_question_ids = explode(',', $question_order);
-
-                                    $slot = 0;
-                                    foreach ($ordered_activequiz_question_ids as $id) {
-                                        $slot++;
-                                        if ($id == $quiz_question->id) {
-                                            break;
-                                        }
-                                    }
-
-                                    $questions[] = [
-                                        'questionid' => $question->id,
-                                        'name' => $question->name,
-                                        'slot' => $slot
-                                    ];
-                                }
-
+                            // Did we find the question?
+                            if (!$question) {
+                                $questions[] = [
+                                    'questionid' => $quiz_question->questionid,
+                                    'name' => 'This question does not exist.',
+                                    'slot' => 0
+                                ];
+                                continue;
                             }
+
+                            // Check if it is an improvisation question
+                            if (strpos($question->name, '{IMPROV}') === false) {
+                                continue;
+                            }
+
+                            // Let's find its question number in the quiz
+                            $question_order = $this->RTQ->getRTQ()->questionorder;
+                            $ordered_activequiz_question_ids = explode(',', $question_order);
+                            $slot = 0;
+                            foreach ($ordered_activequiz_question_ids as $id) {
+                                $slot++;
+                                if ($id == $quiz_question->id) {
+                                    break;
+                                }
+                            }
+
+                            // Add it to the list
+                            $questions[] = [
+                                'questionid' => $question->id,
+                                'name' => str_replace('{IMPROV}', '', $question->name),
+                                'slot' => $slot
+                            ];
 
                         }
 
+                        // Send the response
                         $this->jsonlib->set('status', 'success');
                         $this->jsonlib->set('questions', json_encode($questions));
                         $this->jsonlib->send_response();
 
                     }
-
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }

@@ -791,13 +791,21 @@ EOD;
         echo html_writer::tag('p', get_string('no_questions', 'activequiz'));
 
         if ($isinstructor) {
-            // show a button to edit the quiz
-            $params = array(
+
+            // "Edit quiz" button
+            $params = [
                 'cmid' => $this->rtq->getCM()->id
-            );
+            ];
             $editurl = new moodle_url('/mod/activequiz/edit.php', $params);
             $editbutton = $this->output->single_button($editurl, get_string('edit', 'activequiz'), 'get');
             echo html_writer::tag('p', $editbutton);
+
+            // "Add improvisation questions" button
+            $params['redirect'] = 'view';
+            $add_improv_questions_url = new moodle_url('/mod/activequiz/improvisation.php', $params);
+            $add_improv_questions_button = $this->output->single_button($add_improv_questions_url, 'Add improvisation questions', 'get');
+            echo html_writer::tag('p', $add_improv_questions_button);
+
         }
 
         echo $this->output->box_end();

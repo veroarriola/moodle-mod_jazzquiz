@@ -100,6 +100,14 @@ class edit_renderer extends \plugin_renderer_base {
     protected function show_questionlist($questions) {
 
         $return = '<ol class="questionlist">';
+
+        $add_improv_questions_url = new \moodle_url('/mod/activequiz/improvisation.php', [
+            'cmid' => $this->activequiz->getCM()->id,
+            'redirect' => 'edit'
+        ]);
+        $add_improv_questions_button = $this->output->single_button($add_improv_questions_url, 'Add improvisation questions', 'get');
+        $return .= \html_writer::tag('p', $add_improv_questions_button);
+
         $questioncount = count($questions);
         $questionnum = 1;
         foreach ($questions as $question) {
