@@ -242,7 +242,6 @@ activequiz.show_improvised_question_setup = function() {
                 html += '<label>';
                 html += '<input type="radio" name="chosenimprov" value="' + questions[i].slot + '" onclick="activequiz.chosen_improvisation_question = this.value;"> ';
                 html += questions[i].name;
-                html += ' (' + questions[i].questionid + ', ' + questions[i].slot + ')';
                 html += '</label><br>';
             }
 
