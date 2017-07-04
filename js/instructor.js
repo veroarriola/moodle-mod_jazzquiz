@@ -236,7 +236,11 @@ activequiz.show_improvised_question_setup = function() {
             // TODO: Submit button for each option instead of radio buttons
 
             for (var i in questions) {
-                html += '<label><input type="radio" name="chosenimprovquestion" value="' + questions[i].slot + '"> ';
+                if (activequiz.chosen_improvisation_question === undefined) {
+                    activequiz.chosen_improvisation_question = questions[i].slot;
+                }
+                html += '<label>';
+                html += '<input type="radio" name="chosenimprov" value="' + questions[i].slot + '" onclick="activequiz.chosen_improvisation_question = this.value;"> ';
                 html += questions[i].name;
                 html += ' (' + questions[i].questionid + ', ' + questions[i].slot + ')';
                 html += '</label><br>';
@@ -255,9 +259,7 @@ activequiz.show_improvised_question_setup = function() {
 
 activequiz.start_improvised_question = function() {
 
-    var qnum = jQuery('input[name=chosenimprovquestion]').val();
-
-    //activequiz.waitfor_question(qnum, 60, 1);
+    var qnum = activequiz.chosen_improvisation_question;
 
     activequiz.submit_goto_question(qnum);
 
