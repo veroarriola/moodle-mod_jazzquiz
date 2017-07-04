@@ -181,10 +181,10 @@ function xmldb_activequiz_upgrade($oldversion) {
 
     if ($oldversion < 2017010433) {
 
-        // Define table activequiz_multichoice to be created.
-        $table = new xmldb_table('activequiz_multichoice');
+        // Define table activequiz_votes to be created.
+        $table = new xmldb_table('activequiz_votes');
 
-        // Adding fields to table activequiz_multichoice.
+        // Adding fields to table activequiz_votes.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('activequizid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
@@ -192,37 +192,16 @@ function xmldb_activequiz_upgrade($oldversion) {
         $table->add_field('initialcount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('finalcount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
 
-        // Adding keys to table activequiz_multichoice.
+        // Adding keys to table activequiz_votes.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
 
-        // Conditionally launch create table for activequiz_multichoice.
+        // Conditionally launch create table for activequiz_votes.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
 
         // Activequiz savepoint reached.
         upgrade_mod_savepoint(true, 2017010433, 'activequiz');
-    }
-
-    if ($oldversion < 2017010651) {
-
-        // Define table activequiz_dummy_questions to be created.
-        $table = new xmldb_table('activequiz_dummy_questions');
-
-        // Adding fields to table activequiz_dummy_questions.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('questionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-
-        // Adding keys to table activequiz_dummy_questions.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-
-        // Conditionally launch create table for activequiz_session_improvised_question.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
-
-        // Activequiz savepoint reached.
-        upgrade_mod_savepoint(true, 2017010651, 'activequiz');
     }
 
     return true;

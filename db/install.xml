@@ -109,7 +109,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="activequiz_multichoice" COMMENT="unique question attempts for the previous question in an activequiz session">
+    <TABLE NAME="activequiz_votes" COMMENT="unique question attempts for the previous question in an activequiz session">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="activequizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="the activequiz id"/>
@@ -117,15 +117,6 @@
         <FIELD NAME="attempt" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="initialcount" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="finalcount" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-    </TABLE>
-    <TABLE NAME="activequiz_dummy_questions" COMMENT="which questions are tagged for use as improvised questions">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="the question id"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

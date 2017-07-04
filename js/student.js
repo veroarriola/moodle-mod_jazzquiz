@@ -49,7 +49,7 @@ activequiz.getQuizInfo = function () {
 
             } else if (response.status == 'endquestion' && activequiz.get('endedquestion') != 'true') {
 
-                if (activequiz.is_multichoice_running === undefined || !activequiz.is_multichoice_running) {
+                if (activequiz.is_voting_running === undefined || !activequiz.is_voting_running) {
 
                     var currentquestion = activequiz.get('currentquestion');
 
@@ -72,7 +72,7 @@ activequiz.getQuizInfo = function () {
 
             } else if (response.status == 'reviewing') {
 
-                activequiz.is_multichoice_running = false;
+                activequiz.is_voting_running = false;
 
                 activequiz.quiz_info(M.util.get_string('feedbackintro', 'activequiz'), true);
 
@@ -83,29 +83,29 @@ activequiz.getQuizInfo = function () {
                 activequiz.hide_all_questionboxes();
                 activequiz.quiz_info(M.util.get_string('sessionclosed', 'activequiz'));
 
-            } else if (response.status == 'multichoice') {
+            } else if (response.status == 'voting') {
 
-                if (activequiz.is_multichoice_running === undefined || !activequiz.is_multichoice_running) {
+                if (activequiz.is_voting_running === undefined || !activequiz.is_voting_running) {
 
                     var options = JSON.parse(response.options);
 
-                    var html = '<div class="activequiz-multichoice">';
+                    var html = '<div class="activequiz-vote">';
                     for (var i = 0; i < options.length; i++) {
                         html += '<label>';
-                        html += '<input type="radio" name="multichoiceanswer" value="' + options[i].id + '" onclick="activequiz.multichoice_answer = this.value;">';
-                        html += '<span id="multichoice_answer_label' + i + '">' + options[i].text + '</span>';
+                        html += '<input type="radio" name="vote" value="' + options[i].id + '" onclick="activequiz.vote_answer = this.value;">';
+                        html += '<span id="vote_answer_label' + i + '">' + options[i].text + '</span>';
                         html += '</label><br>';
                     }
                     html += '</div>';
-                    html += '<button class="btn" onclick="activequiz.save_multichoice_answer(); return false;">Save</button>';
+                    html += '<button class="btn" onclick="activequiz.save_vote(); return false;">Save</button>';
 
                     activequiz.quiz_info(html);
 
                     for (var i = 0; i < options.length; i++) {
-                        activequiz.render_maxima_equation(options[i].text, i, 'multichoice_answer_label');
+                        activequiz.render_maxima_equation(options[i].text, i, 'vote_answer_label');
                     }
 
-                    activequiz.is_multichoice_running = true;
+                    activequiz.is_voting_running = true;
                 }
 
             }
@@ -215,20 +215,20 @@ activequiz.handle_question = function (questionid, hide) {
 };
 
 
-activequiz.save_multichoice_answer = function() {
+activequiz.save_vote = function() {
 
     var params = {
-        'action': 'savemultichoiceanswer',
+        'action': 'savevote',
         'rtqid': activequiz.get('rtqid'),
         'sessionid': activequiz.get('sessionid'),
         'attemptid': activequiz.get('attemptid'),
         'sesskey': activequiz.get('sesskey'),
-        'answer': activequiz.multichoice_answer
+        'answer': activequiz.vote_answer
     };
 
     activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
         if (status == '500') {
-            activequiz.quiz_info('there was an error saving the multichoice answer', true);
+            activequiz.quiz_info('there was an error saving the vote', true);
         } else if (status == 200) {
             activequiz.hide_all_questionboxes();
             activequiz.quiz_info('<p>Answer saved. Waiting for instructor...</p>');

@@ -89,9 +89,9 @@ activequiz.getQuizInfo = function () {
 
                 activequiz.set('inquestion', 'false');
 
-            } else if (response.status == 'multichoice') {
+            } else if (response.status == 'voting') {
 
-                activequiz.get_and_show_multichoice_results();
+                activequiz.get_and_show_vote_results();
 
             }
         }
@@ -263,13 +263,16 @@ activequiz.start_improvised_question = function() {
 
 };
 
-activequiz.get_selected_multichoice_questions = function() {
-    /*var selected = document.getElementsByClassName('multichoice-selected');
+activequiz.get_selected_answers_for_vote = function() {
+    /*var selected = document.getElementsByClassName('selected-vote');
     var result = new Array();
     for (var i = 0; i < selected.length; i++) {
         result.push({ attempt: selected[i].innerHTML, count: 0});
     }*/
-    // At the moment, just add all the attempts to the multichoice question:
+    // At the moment, just add all the attempts to the vote:
+    if (activequiz.current_responses === undefined) {
+        return [];
+    }
     var result = [];
     for (var i = 0; i < activequiz.current_responses.length; i++) {
         result.push({ text: activequiz.current_responses[i].response, count: activequiz.current_responses[i].count });
@@ -277,10 +280,10 @@ activequiz.get_selected_multichoice_questions = function() {
     return result;
 };
 
-activequiz.get_and_show_multichoice_results = function() {
+activequiz.get_and_show_vote_results = function() {
 
     var params = {
-        'action': 'getmultichoiceresults',
+        'action': 'getvoteresults',
         'rtqid': activequiz.get('rtqid'),
         'sessionid': activequiz.get('sessionid'),
         'attemptid': activequiz.get('attemptid'),
@@ -290,12 +293,12 @@ activequiz.get_and_show_multichoice_results = function() {
     activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
 
         if (status == '500') {
-            activequiz.quiz_info('there was an error getting the multichoice results', true);
+            activequiz.quiz_info('there was an error getting the vote results', true);
         } else if (status == 200) {
 
             var answers = JSON.parse(response.answers);
 
-            var target_id = 'wrapper_multichoice_responses';
+            var target_id = 'wrapper_vote_responses';
 
             var responses = [];
             for (var i in answers) {
@@ -317,7 +320,7 @@ activequiz.get_and_show_multichoice_results = function() {
             }
 
             // TOOD: Not hardcode stack here...
-            activequiz.create_response_bar_graph(responses, 'multichoice_response', 'stack', target_id);
+            activequiz.create_response_bar_graph(responses, 'vote_response', 'stack', target_id);
             activequiz.sort_response_bar_graph(target_id);
 
         }
@@ -325,13 +328,13 @@ activequiz.get_and_show_multichoice_results = function() {
     });
 };
 
-activequiz.run_multichoice_question = function () {
+activequiz.run_voting = function () {
 
-    var multichoice_questions = activequiz.get_selected_multichoice_questions();
-    var questions_param = encodeURIComponent(JSON.stringify(multichoice_questions));
+    var vote_options = activequiz.get_selected_answers_for_vote();
+    var questions_param = encodeURIComponent(JSON.stringify(vote_options));
 
     var params = {
-        'action': 'runmultichoicequestion',
+        'action': 'runvoting',
         'rtqid': activequiz.get('rtqid'),
         'sessionid': activequiz.get('sessionid'),
         'attemptid': activequiz.get('attemptid'),
@@ -342,14 +345,14 @@ activequiz.run_multichoice_question = function () {
     activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
 
         if (status == '500') {
-            activequiz.quiz_info('there was an error starting the multichoice question', true);
+            activequiz.quiz_info('there was an error starting the vote', true);
         } else if (status == 200) {
 
             // Hide unnecessary information
             activequiz.clear_and_hide_notresponded();
             activequiz.hide_all_questionboxes();
 
-            // Hide the run re-poll as multichoice button
+            // Hide the "Vote" button
             var enabled_buttons = [
                 'closesession',
                 'showfullscreenresults',
@@ -435,7 +438,7 @@ activequiz.gather_results = function () {
                 'showcorrectanswer',
                 'toggleresponses',
                 'reloadresults',
-                'runmultichoicequestion',
+                'runvoting',
                 'startimprovisedquestion'
             ];
 

@@ -76,18 +76,18 @@ if ($session->sessionopen == 0) {
     $jsonlib->set('status', 'endquestion');
     $jsonlib->send_response();
 
-} else if ($session->status == 'multichoice') {
+} else if ($session->status == 'voting') {
 
-    $multichoice_options = $DB->get_records('activequiz_multichoice', ['sessionid' => $sessionid]);
+    $vote_options = $DB->get_records('activequiz_votes', ['sessionid' => $sessionid]);
     $options = [];
-    foreach ($multichoice_options as $multichoice_option) {
+    foreach ($vote_options as $vote_option) {
         $options[] = [
-            'text' => $multichoice_option->attempt,
-            'id' => $multichoice_option->id
+            'text' => $vote_option->attempt,
+            'id' => $vote_option->id
         ];
     }
 
-    $jsonlib->set('status', 'multichoice');
+    $jsonlib->set('status', 'voting');
     $jsonlib->set('options', json_encode($options));
     $jsonlib->send_response();
 

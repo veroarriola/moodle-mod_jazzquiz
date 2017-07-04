@@ -127,7 +127,7 @@ class quizdata {
      */
     public function handle_request() {
 
-        global $DB; // TODO: Put the multichoice question logic in a new class
+        global $DB; // TODO: Put the voting logic in a new class
 
         switch ($this->action) {
             case 'startquiz':
@@ -267,7 +267,7 @@ class quizdata {
                 }
 
                 break;
-            case 'runmultichoicequestion':
+            case 'runvoting':
 
                 if ($this->RTQ->is_instructor() && isset($_POST['questions'])) {
 
@@ -277,24 +277,24 @@ class quizdata {
                         $this->jsonlib->send_error('no questions sent');
                     } else {
 
-                        // Delete previous multichoice options for this session
-                        $DB->delete_records('activequiz_multichoice', [
+                        // Delete previous voting options for this session
+                        $DB->delete_records('activequiz_votes', [
                             'sessionid' => $this->session->get_session()->id
                         ]);
 
                         // Add to database
                         foreach ($questions as $question) {
-                            $multichoice_question = new \stdClass();
-                            $multichoice_question->activequizid = $this->RTQ->getRTQ()->id;
-                            $multichoice_question->sessionid = $this->session->get_session()->id;
-                            $multichoice_question->attempt = $question['text'];
-                            $multichoice_question->initialcount = $question['count'];
-                            $multichoice_question->finalcount = 0;
-                            $DB->insert_record('activequiz_multichoice', $multichoice_question);
+                            $vote = new \stdClass();
+                            $vote->activequizid = $this->RTQ->getRTQ()->id;
+                            $vote->sessionid = $this->session->get_session()->id;
+                            $vote->attempt = $question['text'];
+                            $vote->initialcount = $question['count'];
+                            $vote->finalcount = 0;
+                            $DB->insert_record('activequiz_votes', $vote);
                         }
 
                         // Change quiz status
-                        $this->session->set_status('multichoice');
+                        $this->session->set_status('voting');
 
                         // Send response
                         $this->jsonlib->set('status', 'success');
@@ -306,17 +306,17 @@ class quizdata {
                 }
                 break;
 
-            case 'savemultichoiceanswer':
+            case 'savevote':
                 if ($this->RTQ->is_instructor() || !isset($_POST['answer'])) {
                     $this->jsonlib->send_error('invalidaction');
                 } else {
                     $answer = intval($_POST['answer']);
-                    $exists = $DB->record_exists('activequiz_multichoice', ['id' => $answer]);
+                    $exists = $DB->record_exists('activequiz_votes', ['id' => $answer]);
                     if ($exists) {
-                        $row = $DB->get_record('activequiz_multichoice', ['id' => $answer]);
+                        $row = $DB->get_record('activequiz_votes', ['id' => $answer]);
                         if ($row) {
                             $row->finalcount++;
-                            $DB->update_record('activequiz_multichoice', $row);
+                            $DB->update_record('activequiz_votes', $row);
                             $this->jsonlib->set('status', 'success');
                         } else {
                             $this->jsonlib->set('status', 'error');
@@ -328,9 +328,9 @@ class quizdata {
                 }
                 break;
 
-            case 'getmultichoiceresults':
+            case 'getvoteresults':
                 if ($this->RTQ->is_instructor()) {
-                    $answers = $DB->get_records('activequiz_multichoice', ['sessionid' => $this->session->get_session()->id]);
+                    $answers = $DB->get_records('activequiz_votes', ['sessionid' => $this->session->get_session()->id]);
                     $this->jsonlib->set('answers', json_encode($answers));
                     $this->jsonlib->set('status', 'success');
                     $this->jsonlib->send_response();
