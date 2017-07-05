@@ -55,6 +55,7 @@
         <FIELD NAME="currentquestion" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="The current question that the session is on"/>
         <FIELD NAME="currentqnum" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the current question number we're on"/>
         <FIELD NAME="currentquestiontime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the time the current question is allowed in seconds"/>
+        <FIELD NAME="nextqnum" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="If 0, currentqnum is used. Otherwise, this field is the next qnum."/>
         <FIELD NAME="classresult" TYPE="number" LENGTH="6" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="the overall class result for the session.   TODO: not sure if this will be needed or not"/>
         <FIELD NAME="nextstarttime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the timestamp of the next start time"/>
         <FIELD NAME="created" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="the timestamp that this was created"/>

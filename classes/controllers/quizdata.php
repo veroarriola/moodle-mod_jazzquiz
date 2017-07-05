@@ -392,7 +392,14 @@ class quizdata {
                 // only allow instructors to perform this action
                 if ($this->RTQ->is_instructor()) {
 
-                    $nextquestion = $this->session->next_question();
+                    if ($this->session->get_session()->nextqnum != 0) {
+                        $nextquestion = $this->session->goto_question($this->session->get_session()->nextqnum);
+                        $this->session->get_session()->nextqnum = 0;
+                        $this->session->save_session();
+                    } else {
+                        $nextquestion = $this->session->next_question();
+                    }
+
                     $this->session->set_status('running');
                     $this->jsonlib->set('status', 'startedquestion');
                     $qattempt = $this->session->get_open_attempt();
@@ -467,9 +474,20 @@ class quizdata {
                     if (empty($qnum)) {
                         $this->jsonlib->send_error('invalid question number');
                     }
+
+                    $keepflow = optional_param('keepflow', '', PARAM_TEXT);
+                    if (!empty($keepflow)) {
+                        // Only one keepflow at a time. Two improvised questions can be run after eachother.
+                        if ($this->session->get_session()->nextqnum == 0) {
+                            $this->session->get_session()->nextqnum = $this->session->get_session()->currentqnum + 1;
+                            $this->session->save_session();
+                        }
+                    }
+
                     if (!$question = $this->session->goto_question($qnum)) {
                         $this->jsonlib->send_error('invalid question number');
                     }
+
                     $this->session->set_status('running');
                     $this->jsonlib->set('status', 'startedquestion');
                     $qattempt = $this->session->get_open_attempt();

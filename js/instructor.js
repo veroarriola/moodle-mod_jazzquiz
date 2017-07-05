@@ -267,7 +267,7 @@ activequiz.start_improvised_question = function() {
 
     var qnum = activequiz.chosen_improvisation_question;
 
-    activequiz.submit_goto_question(qnum);
+    activequiz.submit_goto_question(qnum, true);
 
 };
 
@@ -647,11 +647,14 @@ activequiz.close_session = function () {
 
 };
 
-activequiz.submit_goto_question = function(qnum) {
+// keep_flow: if true, the "next question" won't change.
+activequiz.submit_goto_question = function(qnum, keep_flow) {
 
     this.hide_all_questionboxes();
     this.clear_and_hide_qinfobox();
     this.control_buttons([]);
+
+    // TODO: If two improvised in a row, make sure it still doesn't break the flow
 
     var params = {
         'action': 'gotoquestion',
@@ -661,6 +664,10 @@ activequiz.submit_goto_question = function(qnum) {
         'attemptid': activequiz.get('attemptid'),
         'sesskey': activequiz.get('sesskey')
     };
+
+    if (keep_flow === true) {
+        params['keepflow'] = 'true';
+    }
 
     activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
 
@@ -705,7 +712,7 @@ activequiz.jumpto_question = function () {
         var select = document.getElementById('jtq-selectquestion');
         var qnum = select.options[select.selectedIndex].value;
 
-        activequiz.submit_goto_question(qnum);
+        activequiz.submit_goto_question(qnum, false);
 
     } else { // otherwise open the dialog
         window.location.hash = 'jumptoquestion-dialog';
