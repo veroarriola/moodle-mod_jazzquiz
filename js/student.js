@@ -38,6 +38,8 @@ activequiz.getQuizInfo = function () {
             window.alert('There was an error....' + response);
         } else if (status == 200) {
 
+            activequiz.current_quiz_state = response.status;
+
             if (response.status == 'notrunning') {
                 // do nothing as we're not running
             } else if (response.status == 'running' && activequiz.get('inquestion') != 'true') {

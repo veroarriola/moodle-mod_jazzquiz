@@ -198,69 +198,6 @@ activequiz.get_question_body_formatted = function(questionid) {
     return questionbox.innerHTML;
 };
 
-// Create a container with fixed position that fills the entire screen
-// Grabs the already existing question text and bar graph and shows it in a minimalistic style.
-activequiz.show_fullscreen_results_view = function() {
-
-    // Hide the scrollbar - remember to always set back to auto when closing
-    document.documentElement.style.overflowY = 'hidden';
-
-    // Does the container already exist?
-    var container = document.getElementById('fullscreen_results_container');
-    if (container === null) {
-
-        // Create the container
-        container = document.createElement('div');
-        container.id = 'fullscreen_results_container';
-        document.body.appendChild(container);
-
-    }
-
-    // Set question text
-    container.innerHTML = activequiz.get_question_body_formatted(activequiz.get('currentquestion'));
-
-	// Add bar graph
-    var quizinfobox = document.getElementById('quizinfobox');
-	if (quizinfobox !== null && quizinfobox.children.length > 0) {
-	    // NOTE: Always assumes first child of quizinfobox is a table
-        container.innerHTML += '<table class="activequiz-responses-overview">' + quizinfobox.children[0].innerHTML + '</table>';
-    }
-
-    // Let's update the view every second
-    if (activequiz.fullscreen_interval_handle === undefined) {
-        activequiz.fullscreen_interval_handle = setInterval(function () {
-            activequiz.show_fullscreen_results_view();
-        }, 1000);
-    }
-};
-
-// Checks if the view currently exists, and removes it if so.
-activequiz.close_fullscreen_results_view = function() {
-
-    // Stop the interval
-    clearInterval(activequiz.fullscreen_interval_handle);
-    activequiz.fullscreen_interval_handle = undefined;
-
-    // Does the container exist?
-    var container = document.getElementById('fullscreen_results_container');
-    if (container !== null) {
-
-        // Remove the container entirely
-        container.parentNode.removeChild(container);
-
-        // Reset the overflow-y back to auto
-        document.documentElement.style.overflowY = 'auto';
-    }
-};
-
-// Listens for key event to remove the projector view container
-document.addEventListener('keyup', function(e) {
-    // Check if 'Escape' key was pressed
-    if (e.keyCode == 27) {
-        activequiz.close_fullscreen_results_view();
-    }
-});
-
 /**
  * Callback for when the quiz page is fully loaded
  * The stop parameter is there just so that people see the loading on fast browsers
