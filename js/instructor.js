@@ -24,6 +24,76 @@
 var activequiz = activequiz || {};
 activequiz.vars = activequiz.vars || {};
 
+activequiz.change_quiz_state = function(state) {
+
+    activequiz.current_quiz_state = state;
+
+    switch (state) {
+
+        case 'notrunning':
+            activequiz.control_buttons([
+                'jumptoquestion',
+                'closesession',
+                'nextquestion',
+                'startimprovisedquestion'
+            ]);
+            break;
+
+        case 'running':
+            activequiz.control_buttons([
+                'endquestion',
+                'toggleresponses',
+                'togglenotresponded',
+                'showfullscreenresults'
+            ]);
+            break;
+
+        case 'endquestion':
+            activequiz.control_buttons([
+
+            ]);
+            break;
+
+        case 'reviewing':
+            var enabled_buttons = [
+                'showcorrectanswer',
+                'runvoting',
+                'reloadresults',
+                'repollquestion',
+                'jumptoquestion',
+                'closesession',
+                'showfullscreenresults',
+                'startimprovisedquestion',
+                'toggleresponses',
+                'togglenotresponded'
+            ];
+            if (activequiz.get('lastquestion') != 'true') {
+                enabled_buttons.push('nextquestion');
+            }
+            activequiz.control_buttons(enabled_buttons);
+            break;
+
+        case 'voting':
+            activequiz.control_buttons([
+                'closesession',
+                'showfullscreenresults',
+                'showcorrectanswer',
+                'toggleresponses',
+                'endquestion'
+            ]);
+            break;
+
+        case 'sessionclosed':
+            // Fall-through
+        default:
+            activequiz.control_buttons([
+                // Intentionally left empty
+            ]);
+            break;
+    }
+
+};
+
 /**
  * The instructor's getQuizInfo function
  *
@@ -49,7 +119,7 @@ activequiz.getQuizInfo = function () {
             alert('There was an error....' + response);
         } else if (status == 200) {
 
-            activequiz.current_quiz_state = response.status;
+            activequiz.change_quiz_state(response.status);
 
             if (response.status == 'notrunning') {
                 // do nothing as we're not running
@@ -122,14 +192,6 @@ activequiz.start_quiz = function () {
 
         var inquizcontrols = document.getElementById('inquizcontrols');
         inquizcontrols.classList.remove('btn-hide');
-        activequiz.control_buttons([
-            'jumptoquestion',
-            'closesession',
-            'showfullscreenresults',
-            'startimprovisedquestion',
-            'toggleresponses',
-            'togglenotresponded'
-        ]);
 
         // if there's only 1 question this will return true
         /*if (response.lastquestion == 'true') {
@@ -362,17 +424,6 @@ activequiz.run_voting = function () {
             activequiz.clear_and_hide_notresponded();
             activequiz.hide_all_questionboxes();
 
-            // Hide the "Vote" button
-            var enabled_buttons = [
-                'closesession',
-                'showfullscreenresults',
-                'showcorrectanswer',
-                'toggleresponses',
-                'endquestion'
-            ];
-
-            activequiz.control_buttons(enabled_buttons);
-
         }
 
     });
@@ -437,29 +488,6 @@ activequiz.gather_results = function () {
         var questionbox = document.getElementById('q' + activequiz.get('currentquestion') + '_container');
         questionbox.classList.remove('hidden');
 
-        // don't change buttons during the question
-        if (activequiz.get('endquestion') == 'true') {
-
-            var enabled_buttons = [
-                'closesession',
-                'jumptoquestion',
-                'repollquestion',
-                'showfullscreenresults',
-                'showcorrectanswer',
-                'toggleresponses',
-                'reloadresults',
-                'runvoting',
-                'startimprovisedquestion'
-            ];
-
-            if (activequiz.get('lastquestion') != 'true') {
-                enabled_buttons.push('nextquestion');
-            }
-
-            activequiz.control_buttons(enabled_buttons);
-
-        }
-
         // only put results into the screen if
         if (activequiz.get('showstudentresponses') !== false) {
 
@@ -517,12 +545,6 @@ activequiz.repoll_question = function () {
         } else {
             activequiz.set('lastquestion', 'false');
         }
-        activequiz.control_buttons([
-            'endquestion',
-            'toggleresponses',
-            'togglenotresponded',
-            'showfullscreenresults'
-        ]);
         activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 
@@ -568,12 +590,6 @@ activequiz.next_question = function () {
         } else {
             activequiz.set('lastquestion', 'false');
         }
-        activequiz.control_buttons([
-            'endquestion',
-            'toggleresponses',
-            'togglenotresponded',
-            'showfullscreenresults'
-        ]);
         activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 };
@@ -704,12 +720,6 @@ activequiz.submit_goto_question = function(qnum, keep_flow) {
         window.location.hash = '';
 
         // now go to the question
-        activequiz.control_buttons([
-            'endquestion',
-            'toggleresponses',
-            'togglenotresponded',
-            'showfullscreenresults'
-        ]);
         activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 
@@ -785,7 +795,6 @@ activequiz.show_correct_answer = function () {
 
             activequiz.set('showingcorrectanswer', 'true');
 
-            activequiz.control_buttons(['showcorrectanswer']);
             activequiz.loading(null, 'hide');
 
         });
