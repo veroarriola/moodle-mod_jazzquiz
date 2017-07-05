@@ -179,6 +179,7 @@ $string['loading'] = 'Initializing Quiz';
 $string['timertext'] = 'Your question will end and auto-submit in: ';
 $string['gatheringresults'] = 'Gathering results...';
 $string['feedbackintro'] = 'Feedback for your question.  Please wait for the instructor to start the next question';
+$string['waitforinstructor'] = 'Please wait for the instructor to start the next question.';
 $string['nofeedback'] = 'There is no feedback for this question';
 $string['closingsession'] = 'Closing session...';
 $string['sessionclosed'] = 'Session is now closed';

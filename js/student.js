@@ -41,7 +41,9 @@ activequiz.getQuizInfo = function () {
             activequiz.current_quiz_state = response.status;
 
             if (response.status == 'notrunning') {
-                // do nothing as we're not running
+
+                activequiz.quiz_info(M.util.get_string('waitforinstructor', 'activequiz'), true);
+
             } else if (response.status == 'running' && activequiz.get('inquestion') != 'true') {
 
                 activequiz.loading(null, 'hide'); // make sure the loading box hides (this is a catch for when the quiz is resuming)
@@ -76,7 +78,7 @@ activequiz.getQuizInfo = function () {
 
                 activequiz.is_voting_running = false;
 
-                activequiz.quiz_info(M.util.get_string('feedbackintro', 'activequiz'), true);
+                activequiz.quiz_info(M.util.get_string('waitforinstructor', 'activequiz'), true);
 
                 activequiz.set('inquestion', 'false');
 
@@ -188,21 +190,15 @@ activequiz.handle_question = function (questionid, hide) {
         // show feedback to the students
         var quizinfobox = document.getElementById('quizinfobox');
 
+        var feedback = response.feedback;
+
         var feedbackintro = document.createElement('div');
-        feedbackintro.innerHTML = M.util.get_string('feedbackintro', 'activequiz');
+        feedbackintro.innerHTML = M.util.get_string('waitforinstructor', 'activequiz');
         activequiz.quiz_info(feedbackintro, true);
 
-        var feedback = response.feedback;
         if (feedback.length > 0) {
-
             var feedbackbox = document.createElement('div');
             feedbackbox.innerHTML = feedback;
-            activequiz.quiz_info(feedbackbox);
-        } else {
-            // no feedback
-
-            var feedbackbox = document.createElement('div');
-            feedbackbox.innerHTML = M.util.get_string('nofeedback', 'activequiz');
             activequiz.quiz_info(feedbackbox);
         }
 
@@ -230,10 +226,10 @@ activequiz.save_vote = function() {
 
     activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
         if (status == '500') {
-            activequiz.quiz_info('there was an error saving the vote', true);
+            activequiz.quiz_info('There was an error saving the vote.', true);
         } else if (status == 200) {
             activequiz.hide_all_questionboxes();
-            activequiz.quiz_info('<p>Answer saved. Waiting for instructor...</p>');
+            activequiz.quiz_info(M.util.get_string('waitforinstructor', 'activequiz'));
         }
 
     });

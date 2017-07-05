@@ -693,7 +693,8 @@ EOD;
             'hidestudentresponses',
             'showstudentresponses',
             'hidenotresponded',
-            'shownotresponded'
+            'shownotresponded',
+            'waitforinstructor'
         ), 'activequiz');
 
         $this->page->requires->strings_for_js(array('seconds'), 'moodle');
