@@ -515,7 +515,12 @@ activequiz.repoll_question = function () {
         } else {
             activequiz.set('lastquestion', 'false');
         }
-        activequiz.control_buttons(['endquestion', 'toggleresponses', 'togglenotresponded']);
+        activequiz.control_buttons([
+            'endquestion',
+            'toggleresponses',
+            'togglenotresponded',
+            'showfullscreenresults'
+        ]);
         activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 
@@ -561,7 +566,12 @@ activequiz.next_question = function () {
         } else {
             activequiz.set('lastquestion', 'false');
         }
-        activequiz.control_buttons(['endquestion', 'toggleresponses', 'togglenotresponded']);
+        activequiz.control_buttons([
+            'endquestion',
+            'toggleresponses',
+            'togglenotresponded',
+            'showfullscreenresults'
+        ]);
         activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 };
@@ -765,6 +775,7 @@ activequiz.show_correct_answer = function () {
             activequiz.clear_and_hide_qinfobox();
 
             activequiz.quiz_info(response.rightanswer, true);
+            activequiz.render_all_mathjax();
 
             // change button text
             var scaBtn = document.getElementById('showcorrectanswer');

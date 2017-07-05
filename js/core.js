@@ -146,6 +146,14 @@ activequiz.ajax = {
     }
 };
 
+activequiz.render_all_mathjax = function() {
+    Y.all('.filter_mathjaxloader_equation').each(function (node) {
+        if (typeof window.MathJax !== "undefined") {
+            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, node.getDOMNode()]);
+        }
+    });
+};
+
 activequiz.render_maxima_equation = function(input, index, base_id) {
 
     input = encodeURIComponent(input);
@@ -161,11 +169,7 @@ activequiz.render_maxima_equation = function(input, index, base_id) {
             console.log('Failed to get latex for ' + index);
         } else if (status == 200) {
             target.innerHTML = '<span class="filter_mathjaxloader_equation">' + response.latex + '</span>';
-            Y.all('.filter_mathjaxloader_equation').each(function (node) {
-                if (typeof window.MathJax !== "undefined") {
-                    window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, node.getDOMNode()]);
-                }
-            });
+            activequiz.render_all_mathjax();
         }
     };
 
@@ -201,10 +205,16 @@ activequiz.show_fullscreen_results_view = function() {
     // Hide the scrollbar - remember to always set back to auto when closing
     document.documentElement.style.overflowY = 'hidden';
 
-    // Create the container
-	var container = document.createElement('div');
-	container.id = 'fullscreen_results_container';
-    document.body.appendChild(container);
+    // Does the container already exist?
+    var container = document.getElementById('fullscreen_results_container');
+    if (container === null) {
+
+        // Create the container
+        container = document.createElement('div');
+        container.id = 'fullscreen_results_container';
+        document.body.appendChild(container);
+
+    }
 
     // Set question text
     container.innerHTML = activequiz.get_question_body_formatted(activequiz.get('currentquestion'));
@@ -215,10 +225,21 @@ activequiz.show_fullscreen_results_view = function() {
 	    // NOTE: Always assumes first child of quizinfobox is a table
         container.innerHTML += '<table class="activequiz-responses-overview">' + quizinfobox.children[0].innerHTML + '</table>';
     }
+
+    // Let's update the view every second
+    if (activequiz.fullscreen_interval_handle === undefined) {
+        activequiz.fullscreen_interval_handle = setInterval(function () {
+            activequiz.show_fullscreen_results_view();
+        }, 1000);
+    }
 };
 
 // Checks if the view currently exists, and removes it if so.
 activequiz.close_fullscreen_results_view = function() {
+
+    // Stop the interval
+    clearInterval(activequiz.fullscreen_interval_handle);
+    activequiz.fullscreen_interval_handle = undefined;
 
     // Does the container exist?
     var container = document.getElementById('fullscreen_results_container');
