@@ -51,11 +51,12 @@
         <FIELD NAME="anonymize_responses" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Anonymize student names within a session"/>
         <FIELD NAME="fully_anonymize" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Fully anonymize the session, meaning that userids will not be kept for attempts and therefore grading will not be possible for the session"/>
         <FIELD NAME="sessionopen" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not the session is open"/>
+        <FIELD NAME="showfeedback" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not students should receive feedback after answering"/>
         <FIELD NAME="status" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="the current status/state of the session"/>
         <FIELD NAME="currentquestion" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="The current question that the session is on"/>
         <FIELD NAME="currentqnum" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the current question number we're on"/>
         <FIELD NAME="currentquestiontime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the time the current question is allowed in seconds"/>
-        <FIELD NAME="nextqnum" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="If 0, currentqnum is used. Otherwise, this field is the next qnum."/>
+        <FIELD NAME="nextqnum" TYPE="int" LENGTH="11" DEFAULT="0" NOTNULL="true" SEQUENCE="false" COMMENT="If 0, currentqnum is used. Otherwise, this field is the next qnum."/>
         <FIELD NAME="classresult" TYPE="number" LENGTH="6" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="the overall class result for the session.   TODO: not sure if this will be needed or not"/>
         <FIELD NAME="nextstarttime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the timestamp of the next start time"/>
         <FIELD NAME="created" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="the timestamp that this was created"/>

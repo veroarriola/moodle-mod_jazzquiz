@@ -188,7 +188,13 @@ class quizdata {
                 if ($qattempt->save_question()) {
 
                     $this->jsonlib->set('status', 'success');
-                    $this->jsonlib->set('feedback', $qattempt->get_question_feedback());
+
+                    // Only give feedback if specified in session
+                    if ($this->session->get_session()->showfeedback) {
+                        $this->jsonlib->set('feedback', $qattempt->get_question_feedback());
+                    } else {
+                        $this->jsonlib->set('feedback', '');
+                    }
 
                     // next we need to send back the updated sequence check for javascript to update
                     // the sequence check on the question form.  this allows the question to be resubmitted again

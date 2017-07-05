@@ -101,6 +101,7 @@ class activequiz_session {
         $newSession->status = 'notrunning';
         $newSession->anonymize_responses = $data->anonymizeresponses;
         $newSession->fully_anonymize = $data->fullanonymize;
+        $newSession->showfeedback = $data->showfeedback;
         $newSession->created = time();
 
         try {

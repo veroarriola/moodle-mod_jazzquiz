@@ -52,7 +52,6 @@ class start_session extends \moodleform {
 
         $mform = $this->_form;
 
-
         $mform->addElement('text', 'sessionname', get_string('sessionname', 'activequiz'));
         $mform->setType('sessionname', PARAM_TEXT);
         $mform->addRule('sessionname', get_string('sessionname_required', 'activequiz'), 'required', null, 'client');
@@ -65,6 +64,9 @@ class start_session extends \moodleform {
         $mform->addElement('advcheckbox', 'fullanonymize', get_string('fullanonymize', 'activequiz'));
         $mform->addHelpButton('fullanonymize', 'fullanonymize', 'activequiz');
         $mform->setDefault('fullanonymize', 0);
+
+        $mform->addElement('advcheckbox', 'showfeedback', 'Show feedback');
+        $mform->setDefault('showfeedback', 0);
 
         $mform->addElement('submit', 'submitbutton', get_string('start_session', 'activequiz'));
     }
