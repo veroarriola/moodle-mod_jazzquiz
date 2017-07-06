@@ -191,6 +191,7 @@ function xmldb_activequiz_upgrade($oldversion) {
         $table->add_field('attempt', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
         $table->add_field('initialcount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('finalcount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userlist', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
 
         // Adding keys to table activequiz_votes.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));

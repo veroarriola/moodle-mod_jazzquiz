@@ -298,6 +298,7 @@ class quizdata {
                             $vote->attempt = $question['text'];
                             $vote->initialcount = $question['count'];
                             $vote->finalcount = 0;
+                            $vote->userlist = '';
                             $DB->insert_record('activequiz_votes', $vote);
                         }
 
@@ -323,9 +324,39 @@ class quizdata {
                     if ($exists) {
                         $row = $DB->get_record('activequiz_votes', ['id' => $answer]);
                         if ($row) {
-                            $row->finalcount++;
-                            $DB->update_record('activequiz_votes', $row);
-                            $this->jsonlib->set('status', 'success');
+                            $user_id = $this->session->get_current_userid();
+
+                            // Check if this user has already voted on any of the options already
+                            $already_voted = false;
+                            $all_votes = $DB->get_records('activequiz_votes', [
+                                'sessionid' => $this->session->get_session()->id
+                            ]);
+                            if ($all_votes) {
+                                foreach ($all_votes as $vote) {
+                                    $users_voted = explode(',', $vote->userlist);
+                                    if ($users_voted) {
+                                        foreach ($users_voted as $user_voted) {
+                                            if ($user_voted == $user_id) {
+                                                $already_voted = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if ($already_voted) {
+                                // Trying to cheat the results, eh?
+                                $this->jsonlib->set('status', 'alreadyvoted');
+                            } else {
+                                // Seems like an honest vote. Let's add it!
+                                $row->finalcount++;
+                                if ($row->userlist != '') {
+                                    $row->userlist .= ',';
+                                }
+                                $row->userlist .= $user_id;
+                                $DB->update_record('activequiz_votes', $row);
+                                $this->jsonlib->set('status', 'success');
+                            }
                         } else {
                             $this->jsonlib->set('status', 'error');
                         }

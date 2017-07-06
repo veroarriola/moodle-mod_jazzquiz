@@ -229,7 +229,14 @@ activequiz.save_vote = function() {
             activequiz.quiz_info('There was an error saving the vote.', true);
         } else if (status == 200) {
             activequiz.hide_all_questionboxes();
-            activequiz.quiz_info(M.util.get_string('waitforinstructor', 'activequiz'));
+            var waitforinstructor = M.util.get_string('waitforinstructor', 'activequiz');
+            if (response.status === 'success') {
+                activequiz.quiz_info(waitforinstructor);
+            } else if (response.status === 'alreadyvoted') {
+                activequiz.quiz_info('Sorry, but you have already voted. ' + waitforinstructor);
+            } else {
+                activequiz.quiz_info('An error has occurred. ' + waitforinstructor);
+            }
         }
 
     });
