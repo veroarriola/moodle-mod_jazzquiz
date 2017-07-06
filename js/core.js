@@ -372,7 +372,16 @@ activequiz.goto_question = function (questionid, questiontime, tries) {
 
     this.clear_and_hide_qinfobox();
 
+    // Get question box container
     var questionbox = document.getElementById('q' + questionid + '_container');
+
+    // Remove existing input in case this is a re-poll
+    jQuery(questionbox).find('input[type=text]').val('');
+    jQuery(questionbox).find('input[type=number]').val('');
+    jQuery(questionbox).find('input[type=radio]').removeAttr('checked');
+    jQuery(questionbox).find('input[type=checkbox]').removeAttr('checked');
+
+    // Show it
     questionbox.classList.remove('hidden');
 
     var settryno = false;
