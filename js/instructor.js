@@ -636,7 +636,7 @@ activequiz.gather_results = function () {
         'rtqid': activequiz.get('rtqid'),
         'sessionid': activequiz.get('sessionid'),
         'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey'),
+        'sesskey': activequiz.get('sesskey')
     };
 
     activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
@@ -648,6 +648,8 @@ activequiz.gather_results = function () {
 
         // only put results into the screen if
         if (activequiz.get('showstudentresponses') !== false) {
+
+            activequiz.clear_and_hide_qinfobox();
 
             activequiz.quiz_info_responses(response.responses, response.qtype);
 
