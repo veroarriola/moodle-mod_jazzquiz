@@ -508,18 +508,6 @@ activequiz.get_selected_answers_for_vote = function() {
     });
 
     return result;
-
-    /*
-
-    // At the moment, just add all the attempts to the vote:
-    if (activequiz.current_responses === undefined) {
-        return [];
-    }
-    var result = [];
-    for (var i = 0; i < activequiz.current_responses.length; i++) {
-        result.push({ text: activequiz.current_responses[i].response, count: activequiz.current_responses[i].count });
-    }
-    return result;*/
 };
 
 activequiz.get_and_show_vote_results = function() {
