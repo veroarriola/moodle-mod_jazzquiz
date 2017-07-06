@@ -652,7 +652,7 @@ class activequiz_attempt {
      * TODO: One SQL query
      *
      */
-    public function get_response_data($slot) {
+    public function get_response_data($slot, $use_live_filter) {
 
         global $DB;
 
@@ -664,27 +664,50 @@ class activequiz_attempt {
         ], 'id desc', '*', 0, 1);
 
         if (!$steps) {
-            return ['response' => 'error, no steps'];
+            return [ 'response' => 'Error. No steps.'];
         }
 
         // Get first element
         $step = reset($steps);
 
+        $step_data_max = 1;
+        if ($use_live_filter) {
+            $step_data_max = 2;
+        }
+
         // Find step data
         $data = $DB->get_records('question_attempt_step_data', [
             'attemptstepid' => $step->id
-        ], 'id desc', 'id, value', 0, 1);
+        ], 'id desc', 'id, value, name', 0, $step_data_max);
 
         if (!$data) {
-            return ['response', 'error, no step data'];
+            return [ 'response', 'Error. No step data.' ];
         }
 
-        // Get first element
-        $data = reset($data);
+        // Get the step data
+        if (count($data) > 1) {
+
+            $data_1 = array_shift($data);
+            $data_2 = array_shift($data);
+
+            // This hack is specifically meant for STACK.
+            // STACK saves two rows for some reason, and it seems impossible to tell apart the answers in a general way.
+
+            $response_data = $data_1;
+
+            if (substr($data_1->name, -4, 4) == '_val') {
+                $response_data = $data_2;
+            }
+
+        } else {
+
+            $response_data = array_shift($data);
+
+        }
 
         return [
-            'response' => $data->value,
-            'step_data_id' => $data->id // TODO: Eventually remove this from being sent, it's just for debugging purposes
+            'response' => $response_data->value,
+            'step_data_id' => $response_data->id // TODO: Eventually remove this from being sent, it's just for debugging purposes
         ];
     }
 

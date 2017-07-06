@@ -335,7 +335,7 @@ class activequiz_session {
      *
      *
      */
-    public function get_question_results_list() {
+    public function get_question_results_list($use_live_filter) {
 
         $attempts = $this->getall_open_attempts(false);
         $responses = [];
@@ -345,7 +345,7 @@ class activequiz_session {
                 continue;
             }
             $anonymous = ($this->session->anonymize_responses != 0 || $this->session->fully_anonymize != 0);
-            $responses[] = $attempt->get_response_data($this->session->currentquestion);
+            $responses[] = $attempt->get_response_data($this->session->currentquestion, $use_live_filter);
         }
 
         return $responses;

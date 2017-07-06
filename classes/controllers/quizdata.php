@@ -354,7 +354,7 @@ class quizdata {
 
                     $this->session->set_status('reviewing');
                     // get the current question results
-                    $responses = $this->session->get_question_results_list();
+                    $responses = $this->session->get_question_results_list(false);
 
                     $this->jsonlib->set('responses', $responses);
                     $this->jsonlib->set('status', 'success');
@@ -368,7 +368,7 @@ class quizdata {
                 break;
             case 'getcurrentresults': // case to get the results of the question currently going
                 if ($this->RTQ->is_instructor()) {
-                    $responses = $this->session->get_question_results_list();
+                    $responses = $this->session->get_question_results_list(true);
                     $this->jsonlib->set('responses', $responses);
                     $this->jsonlib->set('status', 'success');
                     $this->jsonlib->set('qtype', $this->RTQ->get_questionmanager()->get_questiontype_byqnum($this->session->get_session()->currentqnum));
