@@ -175,6 +175,157 @@ activequiz.getQuizInfo = function () {
 
 };
 
+activequiz.create_response_bar_graph = function (responses, name, qtype, target_id) {
+    var target = document.getElementById(target_id);
+    if (target === null) {
+        return;
+    }
+    var total = 0;
+    for (var i = 0; i < responses.length; i++) {
+        total += parseInt(responses[i].count); // in case count is a string
+    }
+    if (total === 0) {
+        total = 1;
+    }
+    for (var i = 0; i < responses.length; i++) {
+
+        var percent = (parseInt(responses[i].count) / total) * 100;
+
+        // Check if row with same response already exists
+        var row_i = -1;
+        var current_row_index = -1;
+        for (var j = 0; j < target.rows.length; j++) {
+            if (target.rows[j].dataset.response === responses[i].response) {
+                row_i = target.rows[j].dataset.row_i;
+                current_row_index = j;
+                break;
+            }
+        }
+
+        if (row_i === -1) {
+
+            row_i = target.rows.length;
+
+            var row = target.insertRow();
+            row.dataset.response = responses[i].response;
+            row.dataset.percent = percent;
+            row.dataset.row_i = row_i;
+
+            // TODO: Use classes instead of IDs for these elements. At the moment it's just easier to use an ID.
+
+            var count_html = '<span id="' + name + '_count_' + row_i + '">' + responses[i].count + '</span>';
+
+            var response_cell = row.insertCell(0);
+
+            var bar_cell = row.insertCell(1);
+            bar_cell.id = name + '_bar_' + row_i;
+            bar_cell.innerHTML = '<div style="width:' + percent + '%;">' + count_html + '</div>';
+
+            if (qtype === 'stack') {
+
+                response_cell.innerHTML = '<span id="' + name + '_latex_' + row_i + '"></span>';
+                activequiz.render_maxima_equation(responses[i].response, row_i, name + '_latex_');
+
+            } else {
+
+                response_cell.innerHTML = responses[i].response;
+
+            }
+
+        } else {
+
+            target.rows[current_row_index].dataset.percent = percent;
+
+            var count_element = document.getElementById(name + '_count_' + row_i);
+            if (count_element !== null) {
+                count_element.innerHTML = responses[i].count;
+            }
+
+            var bar_element = document.getElementById(name + '_bar_' + row_i);
+            if (bar_element !== null) {
+                bar_element.firstElementChild.style.width = percent + '%';
+            }
+
+        }
+    }
+};
+
+activequiz.sort_response_bar_graph = function(target_id) {
+    var target = document.getElementById(target_id);
+    if (target === null) {
+        return;
+    }
+    var is_sorting = true;
+    while (is_sorting) {
+        is_sorting = false;
+        for (var i = 0; i < (target.rows.length - 1); i++) {
+            var current = parseInt(target.rows[i].dataset.percent);
+            var next = parseInt(target.rows[i + 1].dataset.percent);
+            if (current < next) {
+                target.rows[i].parentNode.insertBefore(target.rows[i + 1], target.rows[i]);
+                is_sorting = true;
+                break;
+            }
+        }
+    }
+};
+
+activequiz.quiz_info_responses = function (responses, qtype) {
+
+    if (responses === undefined) {
+        console.log('Responses is undefined.');
+        return;
+    }
+
+    // Check if any responses to show
+    if (responses.length === 0) {
+        return;
+    }
+
+    // Update data
+    activequiz.current_responses = [];
+    activequiz.total_responses = responses.length;
+    for (var i = 0; i < responses.length; i++) {
+
+        var exists = false;
+
+        // Check if response is a duplicate
+        for (var j = 0; j < activequiz.current_responses.length; j++) {
+            if (activequiz.current_responses[j].response === responses[i].response) {
+                activequiz.current_responses[j].count++;
+                exists = true;
+                break;
+            }
+        }
+
+        // Add element if not a duplicate
+        if (!exists) {
+            activequiz.current_responses.push({
+                response: responses[i].response,
+                count: 1,
+                qtype: qtype
+            });
+        }
+    }
+
+    // Make sure quiz info has the wrapper for the responses
+    var wrapper_current_responses = document.getElementById('wrapper_current_responses');
+    if (wrapper_current_responses === null) {
+        activequiz.quiz_info('<table id="wrapper_current_responses" class="activequiz-responses-overview"></table>', true);
+        wrapper_current_responses = document.getElementById('wrapper_current_responses');
+
+        // This should not happen, but check just in case quiz_info fails to set the html.
+        if (wrapper_current_responses === null) {
+            return;
+        }
+    }
+
+    // Update HTML
+    activequiz.create_response_bar_graph(activequiz.current_responses, 'current_response', qtype, 'wrapper_current_responses');
+    activequiz.sort_response_bar_graph('wrapper_current_responses');
+
+};
+
 
 activequiz.start_quiz = function () {
 
@@ -336,11 +487,25 @@ activequiz.start_improvised_question = function() {
 };
 
 activequiz.get_selected_answers_for_vote = function() {
-    /*var selected = document.getElementsByClassName('selected-vote');
-    var result = new Array();
-    for (var i = 0; i < selected.length; i++) {
-        result.push({ attempt: selected[i].innerHTML, count: 0});
-    }*/
+
+    if (activequiz.current_responses === undefined) {
+        return [];
+    }
+
+    var result = [];
+
+    jQuery('.selected-vote-option').each(function(i, option) {
+        var response = activequiz.current_responses[option.dataset.response];
+        result.push({
+            text: response.response,
+            count: response.count
+        });
+    });
+
+    return result;
+
+    /*
+
     // At the moment, just add all the attempts to the vote:
     if (activequiz.current_responses === undefined) {
         return [];
@@ -349,7 +514,7 @@ activequiz.get_selected_answers_for_vote = function() {
     for (var i = 0; i < activequiz.current_responses.length; i++) {
         result.push({ text: activequiz.current_responses[i].response, count: activequiz.current_responses[i].count });
     }
-    return result;
+    return result;*/
 };
 
 activequiz.get_and_show_vote_results = function() {
