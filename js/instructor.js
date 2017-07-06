@@ -207,15 +207,20 @@ activequiz.create_response_bar_graph = function (responses, name, qtype, target_
             row_i = target.rows.length;
 
             var row = target.insertRow();
+            row.dataset.response_i = i;
             row.dataset.response = responses[i].response;
             row.dataset.percent = percent;
             row.dataset.row_i = row_i;
+            row.classList.add('selected-vote-option');
 
             // TODO: Use classes instead of IDs for these elements. At the moment it's just easier to use an ID.
 
             var count_html = '<span id="' + name + '_count_' + row_i + '">' + responses[i].count + '</span>';
 
             var response_cell = row.insertCell(0);
+            response_cell.onclick = function() {
+                jQuery(this).parent().toggleClass('selected-vote-option');
+            };
 
             var bar_cell = row.insertCell(1);
             bar_cell.id = name + '_bar_' + row_i;
@@ -495,7 +500,7 @@ activequiz.get_selected_answers_for_vote = function() {
     var result = [];
 
     jQuery('.selected-vote-option').each(function(i, option) {
-        var response = activequiz.current_responses[option.dataset.response];
+        var response = activequiz.current_responses[option.dataset.response_i];
         result.push({
             text: response.response,
             count: response.count
@@ -836,7 +841,6 @@ activequiz.close_session = function () {
         activequiz.loading(null, 'hide');
 
     });
-
 
 };
 
