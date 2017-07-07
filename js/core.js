@@ -254,6 +254,15 @@ activequiz.quiz_page_loaded = function (stop) {
 
 activequiz.resume_quiz = function () {
 
+    if (!window.jQuery) {
+        console.log('Waiting for jQuery... Trying again in 50ms');
+        setTimeout(function() {
+            console.log('Retrying...');
+            activequiz.resume_quiz();
+        }, 50);
+        return;
+    }
+
     var startquizbtn = document.getElementById('startquiz');
     var inquizcontrols = document.getElementById('inquizcontrols');
 
