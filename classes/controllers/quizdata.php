@@ -310,8 +310,6 @@ class quizdata {
                 // Let's try to save it
                 if ($qattempt->save_question()) {
 
-                    $this->jsonlib->set('status', 'success');
-
                     // Only give feedback if specified in session
                     if ($this->session->get_session()->showfeedback) {
                         $this->jsonlib->set('feedback', $qattempt->get_question_feedback());
@@ -324,6 +322,7 @@ class quizdata {
                     list($seqname, $seqvalue) = $qattempt->get_sequence_check($this->session->get_session()->currentqnum);
 
                     // Send the response
+                    $this->jsonlib->set('status', 'success');
                     $this->jsonlib->set('seqcheckname', $seqname);
                     $this->jsonlib->set('seqcheckval', $seqvalue);
                     $this->jsonlib->send_response();
