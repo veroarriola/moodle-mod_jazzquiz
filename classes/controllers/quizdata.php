@@ -121,6 +121,14 @@ class quizdata {
 
     }
 
+    private function show_question_results($use_live_filter) {
+        $responses = $this->session->get_question_results_list($use_live_filter);
+        $this->jsonlib->set('responses', $responses);
+        $this->jsonlib->set('status', 'success');
+        $this->jsonlib->set('qtype', $this->RTQ->get_questionmanager()->get_questiontype_byqnum($this->session->get_session()->currentqnum));
+        $this->jsonlib->send_response();
+    }
+
     /**
      * Start a question and send the response
      *
@@ -166,6 +174,96 @@ class quizdata {
     }
 
     /**
+     * Sends a list of all the questions tagged for use with improvisation.
+     *
+     */
+    private function show_all_improvisation_questions() {
+
+        global $DB;
+
+        $quiz_questions = $DB->get_records('activequiz_questions', [
+            'activequizid' => $this->RTQ->getRTQ()->id
+        ]);
+
+        if (!$quiz_questions) {
+            $this->jsonlib->send_error('no questions');
+        } else {
+
+            $questions = [];
+
+            foreach ($quiz_questions as $quiz_question) {
+
+                // Let's get the question data
+                $question = $DB->get_record('question', [
+                    'id' => $quiz_question->questionid
+                ]);
+
+                // Did we find the question?
+                if (!$question) {
+                    $questions[] = [
+                        'questionid' => $quiz_question->questionid,
+                        'name' => 'This question does not exist.',
+                        'slot' => 0
+                    ];
+                    continue;
+                }
+
+                // Check if it is an improvisation question
+                if (strpos($question->name, '{IMPROV}') === false) {
+                    continue;
+                }
+
+                // Let's find its question number in the quiz
+                $question_order = $this->RTQ->getRTQ()->questionorder;
+                $ordered_activequiz_question_ids = explode(',', $question_order);
+                $slot = 0;
+                foreach ($ordered_activequiz_question_ids as $id) {
+                    $slot++;
+                    if ($id == $quiz_question->id) {
+                        break;
+                    }
+                }
+
+                // Add it to the list
+                $questions[] = [
+                    'questionid' => $question->id,
+                    'name' => str_replace('{IMPROV}', '', $question->name),
+                    'slot' => $slot
+                ];
+
+            }
+
+            // Send the response
+            $this->jsonlib->set('status', 'success');
+            $this->jsonlib->set('questions', json_encode($questions));
+            $this->jsonlib->send_response();
+
+        }
+    }
+
+    private function goto_question($qnum) {
+
+        // Are we going to keep or break the flow of the quiz?
+        $keepflow = optional_param('keepflow', '', PARAM_TEXT);
+        if (!empty($keepflow)) {
+            // Only one keepflow at a time. Two improvised questions can be run after eachother.
+            if ($this->session->get_session()->nextqnum == 0) {
+                $this->session->get_session()->nextqnum = $this->session->get_session()->currentqnum + 1;
+                $this->session->save_session();
+            }
+        }
+
+        // Let's get the question
+        $question = $this->session->goto_question($qnum);
+        if (!$question) {
+            $this->jsonlib->send_error('invalid question number');
+        }
+
+        // Start the question and send the response
+        $this->start_question($question);
+    }
+
+    /**
      * Handles the incoming request
      *
      */
@@ -174,38 +272,42 @@ class quizdata {
         global $DB; // TODO: Put the voting logic in a new class
 
         switch ($this->action) {
+
             case 'startquiz':
 
-                // only allow instructors to perform this action
                 if ($this->RTQ->is_instructor()) {
-                    $firstquestion = $this->session->start_quiz();
 
+                    // Start the quiz
+                    $this->session->start_quiz();
+
+                    // Send response
                     $this->jsonlib->set('status', 'startedquiz');
                     $this->jsonlib->send_response();
-
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
 
                 break;
+
             case 'savequestion':
 
-                // check if we're working on the current question for the session
+                // Check if we're working on the current question for the session
                 $currentquestion = $this->session->get_session()->currentquestion;
                 $jscurrentquestion = required_param('questionid', PARAM_INT);
                 if ($currentquestion != $jscurrentquestion) {
                     $this->jsonlib->send_error('invalid question');
                 }
 
-                // if we pass attempt to save the question
+                // Get the attempt for the question
                 $qattempt = $this->session->get_open_attempt();
 
-                // make sure the attempt belongs to the current user
+                // Does it belong to this user?
                 if ($qattempt->userid != $this->session->get_current_userid()) {
                     $this->jsonlib->send_error('invalid user');
                 }
 
+                // Let's try to save it
                 if ($qattempt->save_question()) {
 
                     $this->jsonlib->set('status', 'success');
@@ -217,89 +319,40 @@ class quizdata {
                         $this->jsonlib->set('feedback', '');
                     }
 
-                    // next we need to send back the updated sequence check for javascript to update
-                    // the sequence check on the question form.  this allows the question to be resubmitted again
+                    // We need to send the updated sequence check for javascript to update.
+                    // Get the sequence check on the question form. This allows the question to be resubmitted again.
                     list($seqname, $seqvalue) = $qattempt->get_sequence_check($this->session->get_session()->currentqnum);
 
+                    // Send the response
                     $this->jsonlib->set('seqcheckname', $seqname);
                     $this->jsonlib->set('seqcheckval', $seqvalue);
                     $this->jsonlib->send_response();
+
                 } else {
                     $this->jsonlib->send_error('unable to save question');
                 }
 
                 break;
+
             case 'listdummyquestions':
 
                 if ($this->RTQ->is_instructor()) {
 
-                    $quiz_questions = $DB->get_records('activequiz_questions', [
-                        'activequizid' => $this->RTQ->getRTQ()->id
-                    ]);
+                    // Send a list of all the questions meant for use with improvisation
+                    $this->show_all_improvisation_questions();
 
-                    if (!$quiz_questions) {
-                        $this->jsonlib->send_error('no questions');
-                    } else {
-
-                        $questions = [];
-
-                        foreach ($quiz_questions as $quiz_question) {
-
-                            // Let's get the question data
-                            $question = $DB->get_record('question', [
-                                'id' => $quiz_question->questionid
-                            ]);
-
-                            // Did we find the question?
-                            if (!$question) {
-                                $questions[] = [
-                                    'questionid' => $quiz_question->questionid,
-                                    'name' => 'This question does not exist.',
-                                    'slot' => 0
-                                ];
-                                continue;
-                            }
-
-                            // Check if it is an improvisation question
-                            if (strpos($question->name, '{IMPROV}') === false) {
-                                continue;
-                            }
-
-                            // Let's find its question number in the quiz
-                            $question_order = $this->RTQ->getRTQ()->questionorder;
-                            $ordered_activequiz_question_ids = explode(',', $question_order);
-                            $slot = 0;
-                            foreach ($ordered_activequiz_question_ids as $id) {
-                                $slot++;
-                                if ($id == $quiz_question->id) {
-                                    break;
-                                }
-                            }
-
-                            // Add it to the list
-                            $questions[] = [
-                                'questionid' => $question->id,
-                                'name' => str_replace('{IMPROV}', '', $question->name),
-                                'slot' => $slot
-                            ];
-
-                        }
-
-                        // Send the response
-                        $this->jsonlib->set('status', 'success');
-                        $this->jsonlib->set('questions', json_encode($questions));
-                        $this->jsonlib->send_response();
-
-                    }
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
-
                 break;
+
             case 'runvoting':
+
+                // TODO: use param function rather than _POST. Not doing it right now to avoid breaking something.
 
                 if ($this->RTQ->is_instructor() && isset($_POST['questions'])) {
 
+                    // Decode the questions parameter into an array
                     $questions = json_decode(urldecode($_POST['questions']), true);
 
                     if (!$questions) {
@@ -337,14 +390,25 @@ class quizdata {
                 break;
 
             case 'savevote':
+
                 if ($this->RTQ->is_instructor() || !isset($_POST['answer'])) {
                     $this->jsonlib->send_error('invalidaction');
                 } else {
+
+                    // TODO: Use param function instead of _POST - not doing it right now to avoid breaking something
+
+                    // Get the id for the attempt that was voted on
                     $answer = intval($_POST['answer']);
+
+                    // Does it exist?
                     $exists = $DB->record_exists('activequiz_votes', ['id' => $answer]);
                     if ($exists) {
+
+                        // Let's get it from the database
                         $row = $DB->get_record('activequiz_votes', ['id' => $answer]);
                         if ($row) {
+
+                            // Get the user who voted
                             $user_id = $this->session->get_current_userid();
 
                             // Check if this user has already voted on any of the options already
@@ -353,11 +417,21 @@ class quizdata {
                                 'sessionid' => $this->session->get_session()->id
                             ]);
                             if ($all_votes) {
+
+                                // Go through all the existing votes
                                 foreach ($all_votes as $vote) {
+
+                                    // Get all the users who voted for this
                                     $users_voted = explode(',', $vote->userlist);
                                     if ($users_voted) {
+
+                                        // Go through all the users who has voted on this attempt
                                         foreach ($users_voted as $user_voted) {
+
+                                            // Is this the user who is currently trying to vote?
                                             if ($user_voted == $user_id) {
+
+                                                // Yes, the user has already voted!
                                                 $already_voted = true;
                                                 break;
                                             }
@@ -365,10 +439,14 @@ class quizdata {
                                     }
                                 }
                             }
+
+                            // Did the use already vote?
                             if ($already_voted) {
+
                                 // Trying to cheat the results, eh?
                                 $this->jsonlib->set('status', 'alreadyvoted');
                             } else {
+
                                 // Seems like an honest vote. Let's add it!
                                 $row->finalcount++;
                                 if ($row->userlist != '') {
@@ -376,6 +454,7 @@ class quizdata {
                                 }
                                 $row->userlist .= $user_id;
                                 $DB->update_record('activequiz_votes', $row);
+
                                 $this->jsonlib->set('status', 'success');
                             }
                         } else {
@@ -389,11 +468,19 @@ class quizdata {
                 break;
 
             case 'getvoteresults':
+
                 if ($this->RTQ->is_instructor()) {
-                    $answers = $DB->get_records('activequiz_votes', ['sessionid' => $this->session->get_session()->id]);
-                    $this->jsonlib->set('answers', json_encode($answers));
+
+                    // Get all the vote results
+                    $votes = $DB->get_records('activequiz_votes', [
+                        'sessionid' => $this->session->get_session()->id
+                    ]);
+
+                    // Send the response
+                    $this->jsonlib->set('answers', json_encode($votes));
                     $this->jsonlib->set('status', 'success');
                     $this->jsonlib->send_response();
+
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
@@ -401,41 +488,39 @@ class quizdata {
 
             case 'getresults':
 
-                // only allow instructors to perform this action
                 if ($this->RTQ->is_instructor()) {
 
+                    // The question is over. Go into review mode.
                     $this->session->set_status('reviewing');
-                    // get the current question results
-                    $responses = $this->session->get_question_results_list(false);
 
-                    $this->jsonlib->set('responses', $responses);
-                    $this->jsonlib->set('status', 'success');
-                    $this->jsonlib->set('qtype', $this->RTQ->get_questionmanager()->get_questiontype_byqnum($this->session->get_session()->currentqnum));
-                    $this->jsonlib->send_response();
+                    // Show the results
+                    $this->show_question_results(false);
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
-
                 break;
-            case 'getcurrentresults': // case to get the results of the question currently going
+
+            case 'getcurrentresults':
+
                 if ($this->RTQ->is_instructor()) {
-                    $responses = $this->session->get_question_results_list(true);
-                    $this->jsonlib->set('responses', $responses);
-                    $this->jsonlib->set('status', 'success');
-                    $this->jsonlib->set('qtype', $this->RTQ->get_questionmanager()->get_questiontype_byqnum($this->session->get_session()->currentqnum));
-                    $this->jsonlib->send_response();
+
+                    // Show the results for the ongoing question
+                    $this->show_question_results(true);
+
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
                 break;
+
             case 'getnotresponded':
 
-                // only allow instructors to perform this action
                 if ($this->RTQ->is_instructor()) {
 
+                    // Get list of users who have yet to respond to the question
                     $notrespondedHTML = $this->session->get_not_responded();
 
+                    // Send response
                     $this->jsonlib->set('notresponded', $notrespondedHTML);
                     $this->jsonlib->set('status', 'success');
                     $this->jsonlib->send_response();
@@ -443,90 +528,93 @@ class quizdata {
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
-
                 break;
+
             case 'nextquestion':
 
                 if ($this->RTQ->is_instructor()) {
 
-                   if ($this->session->get_session()->nextqnum != 0) {
-                        $nextquestion = $this->session->goto_question($this->session->get_session()->nextqnum);
+                    // Are we coming from an improvised question?
+                    if ($this->session->get_session()->nextqnum != 0) {
+
+                        // Yes, we likely are. Let's get that question
+                        $question = $this->session->goto_question($this->session->get_session()->nextqnum);
+
+                        // We should also reset the nextqnum, since we're back in the right quiz flow again.
                         $this->session->get_session()->nextqnum = 0;
                         $this->session->save_session();
+
                     } else {
-                        $nextquestion = $this->session->next_question();
+
+                        // Doesn't seem that way. Let's just start the next question in the ordered list.
+                        $question = $this->session->next_question();
                     }
 
-                    $this->start_question($nextquestion);
-
-                } else {
-                    $this->jsonlib->send_error('invalidaction');
-                }
-
-                break;
-            case 'repollquestion':
-
-                if ($this->RTQ->is_instructor()) {
-
-                    $repollquestion = $this->session->repoll_question();
-
-                    $this->start_question($repollquestion);
-
-                } else {
-                    $this->jsonlib->send_error('invalidaction');
-                }
-
-                break;
-            case 'gotoquestion':
-
-                if ($this->RTQ->is_instructor()) {
-
-                    $qnum = optional_param('qnum', '', PARAM_INT);
-
-                    if (empty($qnum)) {
-                        $this->jsonlib->send_error('invalid question number');
-                    }
-
-                    $keepflow = optional_param('keepflow', '', PARAM_TEXT);
-                    if (!empty($keepflow)) {
-                        // Only one keepflow at a time. Two improvised questions can be run after eachother.
-                        if ($this->session->get_session()->nextqnum == 0) {
-                            $this->session->get_session()->nextqnum = $this->session->get_session()->currentqnum + 1;
-                            $this->session->save_session();
-                        }
-                    }
-
-                    if (!$question = $this->session->goto_question($qnum)) {
-                        $this->jsonlib->send_error('invalid question number');
-                    }
-
+                    // Start the question
                     $this->start_question($question);
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
-
                 break;
-            case 'endquestion':
-                // update the session status to say that we're ending the question (this will in turn update students
+
+            case 'repollquestion':
 
                 if ($this->RTQ->is_instructor()) {
 
+                    // Get the question to re-poll
+                    $question = $this->session->repoll_question();
+
+                    // Start the question
+                    $this->start_question($question);
+
+                } else {
+                    $this->jsonlib->send_error('invalidaction');
+                }
+                break;
+
+            case 'gotoquestion':
+
+                if ($this->RTQ->is_instructor()) {
+
+                    // Get the question number to go to
+                    $qnum = optional_param('qnum', '', PARAM_INT);
+                    if (empty($qnum)) {
+                        $this->jsonlib->send_error('invalid question number');
+                    }
+
+                    // Go to the question
+                    $this->goto_question($qnum);
+
+                } else {
+                    $this->jsonlib->send_error('invalidaction');
+                }
+                break;
+
+            case 'endquestion':
+
+                if ($this->RTQ->is_instructor()) {
+
+                    // End the question
                     $this->session->end_question();
+
+                    // Send response
                     $this->jsonlib->set('status', 'success');
                     $this->jsonlib->send_response();
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
-
                 break;
+
             case 'getrightresponse':
 
                 if ($this->RTQ->is_instructor()) {
 
+                    // Get the right answer
                     $rightresponsequestion = $this->session->get_question_right_response();
 
+                    // Send response
                     $this->jsonlib->set('rightanswer', $rightresponsequestion);
                     $this->jsonlib->set('status', 'success');
                     $this->jsonlib->send_response();
@@ -534,28 +622,29 @@ class quizdata {
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
-
                 break;
+
             case 'closesession':
 
-                // only allow instructors to perform this action
                 if ($this->RTQ->is_instructor()) {
 
+                    // End the session
                     $this->session->end_session();
 
-                    // next calculate and save grades
-
+                    // Save grades
                     if (!$this->RTQ->get_grader()->save_all_grades()) {
                         $this->jsonlib->send_error('can\'t save grades');
                     }
 
+                    // Send response
                     $this->jsonlib->set('status', 'success');
                     $this->jsonlib->send_response();
+
                 } else {
                     $this->jsonlib->send_error('invalidaction');
                 }
-
                 break;
+
             default:
                 $this->jsonlib->send_error('invalidaction');
                 break;
