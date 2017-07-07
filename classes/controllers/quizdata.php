@@ -122,6 +122,50 @@ class quizdata {
     }
 
     /**
+     * Start a question and send the response
+     *
+     */
+    private function start_question($question) {;
+
+        // Get open attempt
+        $qattempt = $this->session->get_open_attempt();
+
+        // Set status
+        $this->session->set_status('running');
+        $this->jsonlib->set('status', 'startedquestion');
+
+        // Set general question info
+        $this->jsonlib->set('lastquestion', ($qattempt->lastquestion ? 'true' : 'false'));
+        $this->jsonlib->set('questionid', $question->get_slot());
+        $this->jsonlib->set('nextstarttime', $this->session->get_session()->nextstarttime);
+
+        // Set time limit
+        $this->jsonlib->set('notime', $question->getNoTime());
+        if ($question->getNoTime() == 0) {
+
+            // This question has a time limit
+            if ($question->getQuestionTime() == 0) {
+                $questiontime = $this->RTQ->getRTQ()->defaultquestiontime;
+            } else {
+                $questiontime = $question->getQuestionTime();
+            }
+            $this->jsonlib->set('questiontime', $questiontime);
+
+        } else {
+
+            // No time limit
+            $this->jsonlib->set('questiontime', 0);
+        }
+
+        // Set delay
+        $delay = $this->session->get_session()->nextstarttime - time();
+        $this->jsonlib->set('delay', $delay);
+
+        // Send the response
+        $this->jsonlib->send_response();
+    }
+
+    /**
      * Handles the incoming request
      *
      */
@@ -139,29 +183,6 @@ class quizdata {
                     $this->jsonlib->set('status', 'startedquiz');
                     $this->jsonlib->send_response();
 
-                    /*$this->jsonlib->set('status', 'startedquiz');
-                    $this->jsonlib->set('questionid', $firstquestion->get_slot());
-                    $this->jsonlib->set('nextstarttime', $this->session->get_session()->nextstarttime);
-
-                    $this->jsonlib->set('notime', $firstquestion->getNoTime());
-                    if ($firstquestion->getNoTime() == 0) {
-                        // this question has a time limit
-
-                        if ($firstquestion->getQuestionTime() == 0) {
-                            $questiontime = $this->RTQ->getRTQ()->defaultquestiontime;
-                        } else {
-                            $questiontime = $firstquestion->getQuestionTime();
-                        }
-                        $this->jsonlib->set('questiontime', $questiontime);
-                    } else {
-                        $this->jsonlib->set('questiontime', 0);
-                    }
-                    $delay = $this->session->get_session()->nextstarttime - time();
-                    $this->jsonlib->set('delay', $delay);
-
-                    $qattempt = $this->session->get_open_attempt();
-                    $this->jsonlib->set('lastquestion', ($qattempt->lastquestion ? 'true' : 'false'));
-                    $this->jsonlib->send_response();*/
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
@@ -426,10 +447,9 @@ class quizdata {
                 break;
             case 'nextquestion':
 
-                // only allow instructors to perform this action
                 if ($this->RTQ->is_instructor()) {
 
-                    if ($this->session->get_session()->nextqnum != 0) {
+                   if ($this->session->get_session()->nextqnum != 0) {
                         $nextquestion = $this->session->goto_question($this->session->get_session()->nextqnum);
                         $this->session->get_session()->nextqnum = 0;
                         $this->session->save_session();
@@ -437,30 +457,7 @@ class quizdata {
                         $nextquestion = $this->session->next_question();
                     }
 
-                    $this->session->set_status('running');
-                    $this->jsonlib->set('status', 'startedquestion');
-                    $qattempt = $this->session->get_open_attempt();
-                    $this->jsonlib->set('lastquestion', ($qattempt->lastquestion ? 'true' : 'false'));
-                    $this->jsonlib->set('questionid', $nextquestion->get_slot());
-                    $this->jsonlib->set('nextstarttime', $this->session->get_session()->nextstarttime);
-
-                    $this->jsonlib->set('notime', $nextquestion->getNoTime());
-                    if ($nextquestion->getNoTime() == 0) {
-                        // this question has a time limit
-
-                        if ($nextquestion->getQuestionTime() == 0) {
-                            $questiontime = $this->RTQ->getRTQ()->defaultquestiontime;
-                        } else {
-                            $questiontime = $nextquestion->getQuestionTime();
-                        }
-                        $this->jsonlib->set('questiontime', $questiontime);
-                    } else {
-                        $this->jsonlib->set('questiontime', 0);
-                    }
-                    $delay = $this->session->get_session()->nextstarttime - time();
-                    $this->jsonlib->set('delay', $delay);
-
-                    $this->jsonlib->send_response();
+                    $this->start_question($nextquestion);
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
@@ -472,30 +469,8 @@ class quizdata {
                 if ($this->RTQ->is_instructor()) {
 
                     $repollquestion = $this->session->repoll_question();
-                    $this->session->set_status('running');
-                    $this->jsonlib->set('status', 'startedquestion');
-                    $qattempt = $this->session->get_open_attempt();
-                    $this->jsonlib->set('lastquestion', ($qattempt->lastquestion ? 'true' : 'false'));
-                    $this->jsonlib->set('questionid', $repollquestion->get_slot());
-                    $this->jsonlib->set('nextstarttime', $this->session->get_session()->nextstarttime);
 
-                    $this->jsonlib->set('notime', $repollquestion->getNoTime());
-                    if ($repollquestion->getNoTime() == 0) {
-                        // this question has a time limit
-
-                        if ($repollquestion->getQuestionTime() == 0) {
-                            $questiontime = $this->RTQ->getRTQ()->defaultquestiontime;
-                        } else {
-                            $questiontime = $repollquestion->getQuestionTime();
-                        }
-                        $this->jsonlib->set('questiontime', $questiontime);
-                    } else {
-                        $this->jsonlib->set('questiontime', 0);
-                    }
-                    $delay = $this->session->get_session()->nextstarttime - time();
-                    $this->jsonlib->set('delay', $delay);
-
-                    $this->jsonlib->send_response();
+                    $this->start_question($repollquestion);
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
@@ -525,30 +500,7 @@ class quizdata {
                         $this->jsonlib->send_error('invalid question number');
                     }
 
-                    $this->session->set_status('running');
-                    $this->jsonlib->set('status', 'startedquestion');
-                    $qattempt = $this->session->get_open_attempt();
-                    $this->jsonlib->set('lastquestion', ($qattempt->lastquestion ? 'true' : 'false'));
-                    $this->jsonlib->set('questionid', $question->get_slot());
-                    $this->jsonlib->set('nextstarttime', $this->session->get_session()->nextstarttime);
-
-                    $this->jsonlib->set('notime', $question->getNoTime());
-                    if ($question->getNoTime() == 0) {
-                        // this question has a time limit
-
-                        if ($question->getQuestionTime() == 0) {
-                            $questiontime = $this->RTQ->getRTQ()->defaultquestiontime;
-                        } else {
-                            $questiontime = $question->getQuestionTime();
-                        }
-                        $this->jsonlib->set('questiontime', $questiontime);
-                    } else {
-                        $this->jsonlib->set('questiontime', 0);
-                    }
-                    $delay = $this->session->get_session()->nextstarttime - time();
-                    $this->jsonlib->set('delay', $delay);
-
-                    $this->jsonlib->send_response();
+                    $this->start_question($question);
 
                 } else {
                     $this->jsonlib->send_error('invalidaction');
