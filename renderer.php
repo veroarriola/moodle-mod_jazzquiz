@@ -417,7 +417,9 @@ class mod_activequiz_renderer extends plugin_renderer_base {
             )
         );
 
-        $inqcontrol .= html_writer::tag('button', get_string('repollquestion', 'activequiz'), array(
+        $inqcontrol .= '<div class="list-controls">';
+
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-repeat"></i> Re-poll', array(
                 'class'    => 'btn',
                 'id'       => 'repollquestion',
                 'onclick'  => 'activequiz.repoll_question();',
@@ -425,54 +427,21 @@ class mod_activequiz_renderer extends plugin_renderer_base {
             )
         );
 
-        // TODO: Add language string for button text
-        $inqcontrol .= html_writer::tag('button', 'Vote', array(
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-bar-chart"></i> Vote', array(
                 'class'   => 'btn',
                 'id'      => 'runvoting',
                 'onclick' => 'activequiz.run_voting();'
             )
         );
 
-        $inqcontrol .= html_writer::tag('button', 'Improvise', array(
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-edit"></i> Improvise', array(
                 'class'   => 'btn',
                 'id'      => 'startimprovisedquestion',
                 'onclick' => 'activequiz.show_improvised_question_setup();'
             )
         );
 
-        $inqcontrol .= html_writer::tag('button', get_string('nextquestion', 'activequiz'), array(
-                'class'    => 'btn',
-                'id'       => 'nextquestion',
-                'onclick'  => 'activequiz.next_question();',
-                'disabled' => 'true'
-            )
-        );
-
-        $inqcontrol .= html_writer::tag('button', get_string('endquestion', 'activequiz'), array(
-                'class'    => 'btn',
-                'id'       => 'endquestion',
-                'onclick'  => 'activequiz.end_question();',
-                'disabled' => 'true'
-            )
-        );
-
-        $inqcontrol .= html_writer::tag('button', get_string('hidestudentresponses', 'activequiz'), array(
-                'class'    => 'btn',
-                'id'       => 'toggleresponses',
-                'onclick'  => 'activequiz.toggle_responses();',
-                'disabled' => 'true'
-            )
-        );
-
-        $inqcontrol .= html_writer::tag('button', get_string('hidenotresponded', 'activequiz'), array(
-                'class'    => 'btn',
-                'id'       => 'togglenotresponded',
-                'onclick'  => 'activequiz.toggle_notresponded();',
-                'disabled' => 'true'
-            )
-        );
-
-        $inqcontrol .= html_writer::tag('button', get_string('jumptoquestion', 'activequiz'), array(
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-bars"></i> Jump to', array(
                 'class'    => 'btn',
                 'id'       => 'jumptoquestion',
                 'onclick'  => 'activequiz.jumpto_question();',
@@ -480,34 +449,68 @@ class mod_activequiz_renderer extends plugin_renderer_base {
             )
         );
 
-        $inqcontrol .= html_writer::tag('button', get_string('closesession', 'activequiz'), array(
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-forward"></i> Next', array(
                 'class'    => 'btn',
-                'id'       => 'closesession',
-                'onclick'  => 'activequiz.close_session();',
+                'id'       => 'nextquestion',
+                'onclick'  => 'activequiz.next_question();',
                 'disabled' => 'true'
             )
         );
 
-        $inqcontrol .= html_writer::tag('button', get_string('reload_results', 'activequiz'), array(
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-close"></i> End', array(
+                'class'    => 'btn',
+                'id'       => 'endquestion',
+                'onclick'  => 'activequiz.end_question();',
+                'disabled' => 'true'
+            )
+        );
+
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-refresh"></i>', array(
                 'class'   => 'btn',
                 'id'      => 'reloadresults',
                 'onclick' => 'activequiz.reload_results();'
             )
         );
 
-        $inqcontrol .= html_writer::tag('button', get_string('show_correct_answer', 'activequiz'), array(
+        $inqcontrol .= html_writer::tag('button',  '<i class="fa fa-expand"></i>', array(
+                'class'   => 'btn',
+                'id'      => 'showfullscreenresults',
+                'onclick' => 'activequiz.show_fullscreen_results_view();'
+            )
+        );
+
+
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-eye"></i> Show answer', array(
                 'class'   => 'btn',
                 'id'      => 'showcorrectanswer',
                 'onclick' => 'activequiz.show_correct_answer();'
             )
         );
 
-        $inqcontrol .= html_writer::tag('button', 'Fullscreen results', array(
-                'class'   => 'btn',
-                'id'      => 'showfullscreenresults',
-                'onclick' => 'activequiz.show_fullscreen_results_view();'
+        $inqcontrol .= html_writer::tag('button',  '<i class="fa fa-minus-square"></i> ' . get_string('hidestudentresponses', 'activequiz'), array(
+                'class'    => 'btn',
+                'id'       => 'toggleresponses',
+                'onclick'  => 'activequiz.toggle_responses();',
+                'disabled' => 'true'
             )
         );
+        /*$inqcontrol .= html_writer::tag('button', '<i class="fa fa-minus-square"></i> ' . get_string('hidenotresponded', 'activequiz'), array(
+                'class'    => 'btn',
+                'id'       => 'togglenotresponded',
+                'onclick'  => 'activequiz.toggle_notresponded();',
+                'disabled' => 'true'
+            )
+        );*/
+
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-window-close"></i> Quit', array(
+                'class'    => 'btn',
+                'id'       => 'closesession',
+                'onclick'  => 'activequiz.close_session();',
+                'disabled' => 'true',
+                'style' => 'float:right;'
+            )
+        );
+        $inqcontrol .= '</div>';
 
         $output .= html_writer::div($inqcontrol, 'btn-hide rtq_inquiz', array('id' => 'inquizcontrols'));
 
