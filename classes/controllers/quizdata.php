@@ -125,10 +125,13 @@ class quizdata
 
     private function show_question_results($use_live_filter)
     {
-        $responses = $this->session->get_question_results_list($use_live_filter);
+        $question_manager = $this->RTQ->get_questionmanager();
+        $qnum = $this->session->get_session()->currentqnum;
+        $qtype = $question_manager->get_questiontype_byqnum($qnum);
+        $responses = $this->session->get_question_results_list($use_live_filter, $qtype);
+        $this->jsonlib->set('qtype', $qtype);
         $this->jsonlib->set('responses', $responses);
         $this->jsonlib->set('status', 'success');
-        $this->jsonlib->set('qtype', $this->RTQ->get_questionmanager()->get_questiontype_byqnum($this->session->get_session()->currentqnum));
         $this->jsonlib->send_response();
     }
 
