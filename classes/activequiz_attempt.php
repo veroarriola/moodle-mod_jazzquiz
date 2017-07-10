@@ -756,6 +756,14 @@ class activequiz_attempt
 
             }
 
+        } else if ($qtype == 'truefalse') {
+
+            if ($response_value == 1) {
+                $response_value = 'True';
+            } else {
+                $response_value = 'False';
+            }
+
         }
 
         return [
