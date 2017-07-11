@@ -51,7 +51,7 @@ if (!$redirect || $redirect == 'view') {
 } else if ($redirect == 'edit') {
     $redirect = 'edit.php?cmid=';
 }
-header('Location: /moodle/mod/activequiz/' . $redirect . $course_module_id);
+header('Location: ' . $redirect . $course_module_id);
 
 // Get the course module
 $course_module = get_coursemodule_from_id('activequiz', $course_module_id, 0, false, MUST_EXIST);
