@@ -24,7 +24,7 @@
 var activequiz = activequiz || {};
 activequiz.vars = activequiz.vars || {};
 
-activequiz.change_quiz_state = function(state) {
+activequiz.change_quiz_state = function (state) {
 
     activequiz.current_quiz_state = state;
 
@@ -49,9 +49,7 @@ activequiz.change_quiz_state = function(state) {
             break;
 
         case 'endquestion':
-            activequiz.control_buttons([
-
-            ]);
+            activequiz.control_buttons([]);
             break;
 
         case 'reviewing':
@@ -84,7 +82,7 @@ activequiz.change_quiz_state = function(state) {
             break;
 
         case 'sessionclosed':
-            // Fall-through
+        // Fall-through
         default:
             activequiz.control_buttons([
                 // Intentionally left empty
@@ -218,7 +216,7 @@ activequiz.create_response_bar_graph = function (responses, name, qtype, target_
             var count_html = '<span id="' + name + '_count_' + row_i + '">' + responses[i].count + '</span>';
 
             var response_cell = row.insertCell(0);
-            response_cell.onclick = function() {
+            response_cell.onclick = function () {
                 jQuery(this).parent().toggleClass('selected-vote-option');
             };
 
@@ -255,7 +253,7 @@ activequiz.create_response_bar_graph = function (responses, name, qtype, target_
     }
 };
 
-activequiz.sort_response_bar_graph = function(target_id) {
+activequiz.sort_response_bar_graph = function (target_id) {
     var target = document.getElementById(target_id);
     if (target === null) {
         return;
@@ -351,13 +349,13 @@ activequiz.start_quiz = function () {
 
         // if there's only 1 question this will return true
         /*if (response.lastquestion == 'true') {
-            // disable the next question button
-            var nextquestionbtn = document.getElementById('nextquestion');
-            nextquestionbtn.disabled = true;
-            activequiz.set('lastquestion', 'true');
-        }*/
+         // disable the next question button
+         var nextquestionbtn = document.getElementById('nextquestion');
+         nextquestionbtn.disabled = true;
+         activequiz.set('lastquestion', 'true');
+         }*/
 
-       // activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+        // activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 
     var startquizbtn = document.getElementById('startquiz');
@@ -440,7 +438,7 @@ activequiz.handle_question = function (questionid) {
     });
 };
 
-activequiz.show_improvised_question_setup = function() {
+activequiz.show_improvised_question_setup = function () {
 
     var params = {
         'action': 'listdummyquestions',
@@ -458,24 +456,21 @@ activequiz.show_improvised_question_setup = function() {
 
             var questions = JSON.parse(response.questions);
 
-            var html = '';
-
-            // TODO: Submit button for each option instead of radio buttons
+            var menu = jQuery('.improvise-menu');
+            menu.html('').addClass('active');
 
             for (var i in questions) {
-                if (activequiz.chosen_improvisation_question === undefined) {
-                    activequiz.chosen_improvisation_question = questions[i].slot;
-                }
-                html += '<label>';
-                html += '<input type="radio" name="chosenimprov" value="' + questions[i].slot + '" onclick="activequiz.chosen_improvisation_question = this.value;"> ';
-                html += questions[i].name;
-                html += '</label><br>';
+
+                // TODO: This is a bit ugly. Redo the onclick event.
+                var html = '<button class="btn" ';
+                html += 'onclick="';
+                html += 'activequiz.chosen_improvisation_question = ' + questions[i].slot + ';';
+                html += 'activequiz.start_improvised_question();';
+                html += "jQuery('.improvise-menu').html('').removeClass('active');";
+                html += '">' + questions[i].name + '</button>';
+                menu.append(html);
+
             }
-
-            html += '<hr>';
-            html += '<button onclick="activequiz.start_improvised_question();">Start improvised question</button>';
-
-            activequiz.quiz_info(html);
 
         }
 
@@ -483,7 +478,7 @@ activequiz.show_improvised_question_setup = function() {
 
 };
 
-activequiz.start_improvised_question = function() {
+activequiz.start_improvised_question = function () {
 
     var qnum = activequiz.chosen_improvisation_question;
 
@@ -491,7 +486,7 @@ activequiz.start_improvised_question = function() {
 
 };
 
-activequiz.get_selected_answers_for_vote = function() {
+activequiz.get_selected_answers_for_vote = function () {
 
     if (activequiz.current_responses === undefined) {
         return [];
@@ -499,7 +494,7 @@ activequiz.get_selected_answers_for_vote = function() {
 
     var result = [];
 
-    jQuery('.selected-vote-option').each(function(i, option) {
+    jQuery('.selected-vote-option').each(function (i, option) {
         var response = activequiz.current_responses[option.dataset.response_i];
         result.push({
             text: response.response,
@@ -510,7 +505,7 @@ activequiz.get_selected_answers_for_vote = function() {
     return result;
 };
 
-activequiz.get_and_show_vote_results = function() {
+activequiz.get_and_show_vote_results = function () {
 
     var params = {
         'action': 'getvoteresults',
@@ -835,7 +830,7 @@ activequiz.close_session = function () {
 };
 
 // keep_flow: if true, the "next question" won't change.
-activequiz.submit_goto_question = function(qnum, keep_flow) {
+activequiz.submit_goto_question = function (qnum, keep_flow) {
 
     this.hide_all_questionboxes();
     this.clear_and_hide_qinfobox();
@@ -1034,18 +1029,11 @@ activequiz.getnotresponded = function () {
  */
 activequiz.control_buttons = function (buttons) {
 
-    var btns = document.getElementById('inquizcontrols').getElementsByClassName('btn');
+    var children = jQuery('#inquizcontrols .list-controls').children();
 
-    // loop through the btns array and find if their id is in the requested buttons
-    for (var i = 0; i < btns.length; i++) {
-        var elemid = btns[i].getAttribute("id");
-
-        if (buttons.indexOf(elemid) === -1) {
-            // it's not in our buttons array
-            btns[i].disabled = true;
-        } else {
-            btns[i].disabled = false;
-        }
+    for (var i = 0; i < children.length; i++) {
+        var id = children[i].getAttribute("id");
+        children[i].disabled = (buttons.indexOf(id) === -1);
     }
 };
 
@@ -1093,7 +1081,7 @@ activequiz.clear_and_hide_notresponded = function () {
 
 // Create a container with fixed position that fills the entire screen
 // Grabs the already existing question text and bar graph and shows it in a minimalistic style.
-activequiz.show_fullscreen_results_view = function() {
+activequiz.show_fullscreen_results_view = function () {
 
     // Hide the scrollbar - remember to always set back to auto when closing
     document.documentElement.style.overflowY = 'hidden';
@@ -1135,7 +1123,7 @@ activequiz.show_fullscreen_results_view = function() {
 };
 
 // Checks if the view currently exists, and removes it if so.
-activequiz.close_fullscreen_results_view = function() {
+activequiz.close_fullscreen_results_view = function () {
 
     // Stop the interval
     clearInterval(activequiz.fullscreen_interval_handle);
@@ -1154,9 +1142,17 @@ activequiz.close_fullscreen_results_view = function() {
 };
 
 // Listens for key event to remove the projector view container
-document.addEventListener('keyup', function(e) {
+document.addEventListener('keyup', function (e) {
     // Check if 'Escape' key was pressed
     if (e.keyCode == 27) {
         activequiz.close_fullscreen_results_view();
+    }
+});
+
+// Listens for click events to hide the improvise menu when there is an outside click
+document.addEventListener('click', function (e) {
+    var menu = jQuery(e.target).closest('.improvise-menu');
+    if (!menu.length) {
+        jQuery('.improvise-menu').html('').removeClass('active');
     }
 });

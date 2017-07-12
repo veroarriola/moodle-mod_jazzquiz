@@ -374,23 +374,28 @@
     color: white;
 }
 
-#inquizcontrols .list-controls .btn {
-    /*display: block;
-    width: 100%;*/
-}
-
 #inquizcontrols .list-controls-side .btn {
     display: block;
     width: 100%;
 }
 
-/*
-#inquizcontrols .list-controls .btn:first-child {
-    border-top-left-radius: 1rem;
-    border-top-right-radius: 1rem;
+#startimprovisedquestion {
+    position: relative;
 }
 
-#inquizcontrols .list-controls .btn:last-child {
-    border-bottom-left-radius: 1rem;
-    border-bottom-right-radius: 1rem;
-}*/
+.btn .improvise-menu {
+    position: absolute;
+    display: none;
+    margin-top: 24px;
+    margin-left: -14px;
+}
+
+.btn .improvise-menu.active {
+    display: block;
+}
+
+.btn .improvise-menu .btn {
+    display: block;
+    width: 100%;
+}
+

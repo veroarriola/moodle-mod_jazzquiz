@@ -434,7 +434,7 @@ class mod_activequiz_renderer extends plugin_renderer_base {
             )
         );
 
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-edit"></i> Improvise', array(
+        $inqcontrol .= html_writer::tag('button', '<div class="improvise-menu"></div><i class="fa fa-edit"></i> Improvise', array(
                 'class'   => 'btn',
                 'id'      => 'startimprovisedquestion',
                 'onclick' => 'activequiz.show_improvised_question_setup();'
