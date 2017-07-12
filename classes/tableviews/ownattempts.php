@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\tableviews;
+namespace mod_jazzquiz\tableviews;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -31,14 +31,14 @@ require_once($CFG->libdir . '/tablelib.php');
 class ownattempts extends \flexible_table {
 
 
-    /** @var \mod_activequiz\activequiz $rtq */
+    /** @var \mod_jazzquiz\jazzquiz $rtq */
     protected $rtq;
 
     /**
      * Contstruct this table class
      *
      * @param string                     $uniqueid The unique id for the table
-     * @param \mod_activequiz\activequiz $rtq
+     * @param \mod_jazzquiz\jazzquiz $rtq
      * @param \moodle_url                $pageurl
      */
     public function __construct($uniqueid, $rtq, $pageurl) {
@@ -62,24 +62,24 @@ class ownattempts extends \flexible_table {
 
         if ($this->rtq->group_mode()) {
             $columns = array(
-                'session'    => get_string('sessionname', 'activequiz'),
+                'session'    => get_string('sessionname', 'jazzquiz'),
                 'group'      => get_string('group'),
-                'timestart'  => get_string('startedon', 'activequiz'),
-                'timefinish' => get_string('timecompleted', 'activequiz'),
+                'timestart'  => get_string('startedon', 'jazzquiz'),
+                'timefinish' => get_string('timecompleted', 'jazzquiz'),
                 'grade'      => get_string('grade'),
             );
         } else {
             $columns = array(
-                'session'    => get_string('sessionname', 'activequiz'),
-                'timestart'  => get_string('startedon', 'activequiz'),
-                'timefinish' => get_string('timecompleted', 'activequiz'),
+                'session'    => get_string('sessionname', 'jazzquiz'),
+                'timestart'  => get_string('startedon', 'jazzquiz'),
+                'timefinish' => get_string('timecompleted', 'jazzquiz'),
                 'grade'      => get_string('grade'),
             );
         }
 
 
         if (!$isdownloading) {
-            $columns['attemptview'] = get_string('attemptview', 'activequiz');
+            $columns['attemptview'] = get_string('attemptview', 'jazzquiz');
         }
 
         $this->define_columns(array_keys($columns));
@@ -125,7 +125,7 @@ class ownattempts extends \flexible_table {
             // Add in controls column
 
             // view attempt
-            $viewattempturl = new \moodle_url('/mod/activequiz/viewquizattempt.php');
+            $viewattempturl = new \moodle_url('/mod/jazzquiz/viewquizattempt.php');
             $viewattempturl->param('quizid', $this->rtq->getRTQ()->id);
             $viewattempturl->param('sessionid', $item->sessionid);
             $viewattempturl->param('attemptid', $item->attemptid);
@@ -157,7 +157,7 @@ class ownattempts extends \flexible_table {
         $sessions = $this->rtq->get_sessions();
 
         foreach ($sessions as $session) {
-            /** @var \mod_activequiz\activequiz_session $session */
+            /** @var \mod_jazzquiz\jazzquiz_session $session */
             $sessionattempts = $session->getall_attempts(false, 'closed', $USER->id);
 
             foreach ($sessionattempts as $sattempt) {

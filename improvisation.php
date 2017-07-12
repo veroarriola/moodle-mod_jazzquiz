@@ -6,7 +6,7 @@ require_once('../../config.php');
 
 //require_sesskey();
 
-$improviser = new \mod_activequiz\improviser();
+$improviser = new \mod_jazzquiz\improviser();
 
 // Get course module id
 $course_module_id = optional_param('cmid', false, PARAM_INT);
@@ -24,15 +24,15 @@ if (!$redirect || $redirect == 'view') {
 header('Location: ' . $redirect . $course_module_id);
 
 // Get the course module
-$course_module = get_coursemodule_from_id('activequiz', $course_module_id, 0, false, MUST_EXIST);
+$course_module = get_coursemodule_from_id('jazzquiz', $course_module_id, 0, false, MUST_EXIST);
 if (!$course_module) {
     die('course module not found');
 }
 
 // Get the ActiveQuiz
-$activequiz = $DB->get_record('activequiz', ['id' => $course_module->instance]);
-if (!$activequiz) {
-    die('activequiz not found');
+$jazzquiz = $DB->get_record('jazzquiz', ['id' => $course_module->instance]);
+if (!$jazzquiz) {
+    die('jazzquiz not found');
 }
 
 // Insert the default improvised questions
@@ -47,15 +47,15 @@ if (!$dummy_questions) {
 }
 
 // Get all the existing quiz questions
-$quiz_questions = $DB->get_records('activequiz_questions', [
-    'activequizid' => $activequiz->id
+$quiz_questions = $DB->get_records('jazzquiz_questions', [
+    'jazzquizid' => $jazzquiz->id
 ]);
 
 if (!$quiz_questions) {
 
     // No questions for this quiz? Let's get right to adding the dummy ones then.
     foreach ($dummy_questions as $dummy_question) {
-        $improviser->add_improvised_question_instance($activequiz->id, $dummy_question->id);
+        $improviser->add_improvised_question_instance($jazzquiz->id, $dummy_question->id);
     }
 
 } else {
@@ -75,7 +75,7 @@ if (!$quiz_questions) {
         }
 
         if (!$exists) {
-            $improviser->add_improvised_question_instance($activequiz->id, $dummy_question->id);
+            $improviser->add_improvised_question_instance($jazzquiz->id, $dummy_question->id);
         }
     }
 

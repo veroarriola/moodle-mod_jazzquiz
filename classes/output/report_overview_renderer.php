@@ -1,5 +1,5 @@
 <?php
-namespace mod_activequiz\output;
+namespace mod_jazzquiz\output;
 
 // This file is part of Moodle - http://moodle.org/
 //
@@ -19,12 +19,12 @@ namespace mod_activequiz\output;
 /**
  * Renderer outputting the quiz editing UI.
  *
- * @package mod_activequiz
+ * @package mod_jazzquiz
  * @copyright 2015 John Hoopes <john.z.hoopes@gmail.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_activequiz\traits\renderer_base;
+use mod_jazzquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -45,14 +45,14 @@ class report_overview_renderer extends \plugin_renderer_base {
         $output = '';
 
         $selectsession = \html_writer::start_div('');
-        $selectsession .= \html_writer::tag('h3', get_string('selectsession', 'activequiz'), array('class' => 'inline-block'));
+        $selectsession .= \html_writer::tag('h3', get_string('selectsession', 'jazzquiz'), array('class' => 'inline-block'));
 
         $sessionselecturl = clone($this->pageurl);
         $sessionselecturl->param('action', 'viewsession');
 
         $sessionoptions = array();
         foreach ($sessions as $session) {
-            /** @var \mod_activequiz\activequiz_session $session */
+            /** @var \mod_jazzquiz\jazzquiz_session $session */
             $sessionoptions[ $session->get_session()->id ] = $session->get_session()->name;
         }
 
@@ -65,10 +65,10 @@ class report_overview_renderer extends \plugin_renderer_base {
 
         $regradeurl = clone($this->pageurl);
         $regradeurl->param('action', 'regradeall');
-        $regradeall = new \single_button($regradeurl, get_string('regradeallgrades', 'activequiz'), 'GET');
+        $regradeall = new \single_button($regradeurl, get_string('regradeallgrades', 'jazzquiz'), 'GET');
         $output .= \html_writer::div($this->output->render($regradeall), '');
 
-        $output = \html_writer::div($output, 'activequizbox');
+        $output = \html_writer::div($output, 'jazzquizbox');
 
         echo $output;
 
@@ -81,11 +81,11 @@ class report_overview_renderer extends \plugin_renderer_base {
     public function home() {
 
 
-        $gradestable = new \mod_activequiz\tableviews\overallgradesview('gradestable', $this->activequiz, $this->pageurl);
+        $gradestable = new \mod_jazzquiz\tableviews\overallgradesview('gradestable', $this->jazzquiz, $this->pageurl);
 
-        echo \html_writer::start_div('activequizbox');
+        echo \html_writer::start_div('jazzquizbox');
 
-        echo \html_writer::tag('h3', get_string('activitygrades', 'activequiz'));
+        echo \html_writer::tag('h3', get_string('activitygrades', 'jazzquiz'));
 
         $gradestable->setup();
         $gradestable->show_download_buttons_at(array(TABLE_P_BOTTOM));
@@ -98,9 +98,9 @@ class report_overview_renderer extends \plugin_renderer_base {
     /**
      * Renders the session attempts table
      *
-     * @param \mod_activequiz\tableviews\sessionattempts $sessionattempts
+     * @param \mod_jazzquiz\tableviews\sessionattempts $sessionattempts
      */
-    public function view_session_attempts(\mod_activequiz\tableviews\sessionattempts $sessionattempts) {
+    public function view_session_attempts(\mod_jazzquiz\tableviews\sessionattempts $sessionattempts) {
 
 
         $sessionattempts->setup();

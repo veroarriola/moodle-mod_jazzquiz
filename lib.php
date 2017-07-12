@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library of functions and constants for module activequiz
+ * Library of functions and constants for module jazzquiz
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -31,26 +31,26 @@
  * of the new instance.
  *
  * @param object $instance An object from the form in mod.html
- * @return int The id of the newly inserted activequiz record
+ * @return int The id of the newly inserted jazzquiz record
  **/
-function activequiz_add_instance($activequiz) {
+function jazzquiz_add_instance($jazzquiz) {
     global $DB;
 
-    $activequiz->timemodified = time();
-    $activequiz->timecreated = time();
-    if (empty($activequiz->graded)) {
-        $activequiz->graded = 0;
-        $activequiz->scale = 0;
+    $jazzquiz->timemodified = time();
+    $jazzquiz->timecreated = time();
+    if (empty($jazzquiz->graded)) {
+        $jazzquiz->graded = 0;
+        $jazzquiz->scale = 0;
     }
 
     // add all review options to the db object in the review options field.
-    $activequiz->reviewoptions = activequiz_process_review_options($activequiz);
+    $jazzquiz->reviewoptions = jazzquiz_process_review_options($jazzquiz);
 
-    $activequiz->id = $DB->insert_record('activequiz', $activequiz);
+    $jazzquiz->id = $DB->insert_record('jazzquiz', $jazzquiz);
 
-    activequiz_after_add_or_update($activequiz);
+    jazzquiz_after_add_or_update($jazzquiz);
 
-    return $activequiz->id;
+    return $jazzquiz->id;
 }
 
 /**
@@ -61,27 +61,27 @@ function activequiz_add_instance($activequiz) {
  * @param object $instance An object from the form in mod.html
  * @return boolean Success/Fail
  **/
-function activequiz_update_instance($activequiz) {
+function jazzquiz_update_instance($jazzquiz) {
     global $DB, $PAGE;
 
-    $activequiz->timemodified = time();
-    $activequiz->id = $activequiz->instance;
-    if (empty($activequiz->graded)) {
-        $activequiz->graded = 0;
-        $activequiz->scale = 0;
+    $jazzquiz->timemodified = time();
+    $jazzquiz->id = $jazzquiz->instance;
+    if (empty($jazzquiz->graded)) {
+        $jazzquiz->graded = 0;
+        $jazzquiz->scale = 0;
     }
     // add all review options to the db object in the review options field.
-    $activequiz->reviewoptions = activequiz_process_review_options($activequiz);
+    $jazzquiz->reviewoptions = jazzquiz_process_review_options($jazzquiz);
 
-    $DB->update_record('activequiz', $activequiz);
+    $DB->update_record('jazzquiz', $jazzquiz);
 
-    activequiz_after_add_or_update($activequiz);
+    jazzquiz_after_add_or_update($jazzquiz);
 
     // after updating grade item we need to re-grade the sessions
-    $activequiz = $DB->get_record('activequiz', array('id' => $activequiz->id));  // need the actual db record
-    $course = $DB->get_record('course', array('id' => $activequiz->course), '*', MUST_EXIST);
-    $cm = get_coursemodule_from_instance('activequiz', $activequiz->id, $course->id, false, MUST_EXIST);
-    $rtq = new \mod_activequiz\activequiz($cm, $course, $activequiz, array('pageurl' => $PAGE->url));
+    $jazzquiz = $DB->get_record('jazzquiz', array('id' => $jazzquiz->id));  // need the actual db record
+    $course = $DB->get_record('course', array('id' => $jazzquiz->course), '*', MUST_EXIST);
+    $cm = get_coursemodule_from_instance('jazzquiz', $jazzquiz->id, $course->id, false, MUST_EXIST);
+    $rtq = new \mod_jazzquiz\jazzquiz($cm, $course, $jazzquiz, array('pageurl' => $PAGE->url));
     $rtq->get_grader()->save_all_grades();
 
 
@@ -91,12 +91,12 @@ function activequiz_update_instance($activequiz) {
 /**
  * Proces the review options on the quiz settings page
  *
- * @param \mod_activequiz\activequiz $activequiz
+ * @param \mod_jazzquiz\jazzquiz $jazzquiz
  * @return string
  */
-function activequiz_process_review_options($activequiz) {
+function jazzquiz_process_review_options($jazzquiz) {
 
-    $afterreviewoptions = \mod_activequiz\activequiz::get_review_options_from_form($activequiz, 'after');
+    $afterreviewoptions = \mod_jazzquiz\jazzquiz::get_review_options_from_form($jazzquiz, 'after');
 
     $reviewoptions = new stdClass();
     $reviewoptions->after = $afterreviewoptions;
@@ -113,28 +113,28 @@ function activequiz_process_review_options($activequiz) {
  * @param int $id Id of the module instance
  * @return boolean Success/Failure
  **/
-function activequiz_delete_instance($id) {
+function jazzquiz_delete_instance($id) {
     global $DB, $CFG;
 
-    require_once($CFG->dirroot . '/mod/activequiz/locallib.php');
+    require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
     require_once($CFG->libdir . '/questionlib.php');
     require_once($CFG->dirroot . '/question/editlib.php');
 
     try {
         // make sure the record exists
-        $activequiz = $DB->get_record('activequiz', array('id' => $id), '*', MUST_EXIST);
+        $jazzquiz = $DB->get_record('jazzquiz', array('id' => $id), '*', MUST_EXIST);
 
         // go through each session and then delete them (also deletes all attempts for them)
-        $sessions = $DB->get_records('activequiz_sessions', array('activequizid' => $activequiz->id));
+        $sessions = $DB->get_records('jazzquiz_sessions', array('jazzquizid' => $jazzquiz->id));
         foreach ($sessions as $session) {
-            \mod_activequiz\activequiz_session::delete($session->id);
+            \mod_jazzquiz\jazzquiz_session::delete($session->id);
         }
 
         // delete all questions for this quiz
-        $DB->delete_records('activequiz_questions', array('activequizid' => $activequiz->id));
+        $DB->delete_records('jazzquiz_questions', array('jazzquizid' => $jazzquiz->id));
 
-        // finally delete the activequiz object
-        $DB->delete_records('activequiz', array('id' => $activequiz->id));
+        // finally delete the jazzquiz object
+        $DB->delete_records('jazzquiz', array('id' => $jazzquiz->id));
     } catch(Exception $e) {
         return false;
     }
@@ -145,40 +145,40 @@ function activequiz_delete_instance($id) {
 /**
  * Function to call other functions for after add or update of a quiz settings page
  *
- * @param int $activequiz
+ * @param int $jazzquiz
  */
-function activequiz_after_add_or_update($activequiz) {
+function jazzquiz_after_add_or_update($jazzquiz) {
 
-    activequiz_grade_item_update($activequiz);
+    jazzquiz_grade_item_update($jazzquiz);
 }
 
 /**
  * Update the grade item depending on settings passed in
  *
  *
- * @param stdClass   $activequiz
+ * @param stdClass   $jazzquiz
  * @param array|null $grades
  *
  * @return int Returns GRADE_UPDATE_OK, GRADE_UPDATE_FAILED, GRADE_UPDATE_MULTIPLE or GRADE_UPDATE_ITEM_LOCKED
  */
-function activequiz_grade_item_update($activequiz, $grades = null) {
+function jazzquiz_grade_item_update($jazzquiz, $grades = null) {
     global $CFG;
     if (!function_exists('grade_update')) { //workaround for buggy PHP versions
         require_once($CFG->libdir . '/gradelib.php');
     }
 
-    if (array_key_exists('cmidnumber', $activequiz)) { // May not be always present.
-        $params = array('itemname' => $activequiz->name, 'idnumber' => $activequiz->cmidnumber);
+    if (array_key_exists('cmidnumber', $jazzquiz)) { // May not be always present.
+        $params = array('itemname' => $jazzquiz->name, 'idnumber' => $jazzquiz->cmidnumber);
     } else {
-        $params = array('itemname' => $activequiz->name);
+        $params = array('itemname' => $jazzquiz->name);
     }
 
-    if ($activequiz->graded == 0) {
+    if ($jazzquiz->graded == 0) {
         $params['gradetype'] = GRADE_TYPE_NONE;
 
-    } else if ($activequiz->graded == 1) {
+    } else if ($jazzquiz->graded == 1) {
         $params['gradetype'] = GRADE_TYPE_VALUE;
-        $params['grademax'] = $activequiz->scale;
+        $params['grademax'] = $jazzquiz->scale;
         $params['grademin'] = 0;
 
     }
@@ -188,38 +188,38 @@ function activequiz_grade_item_update($activequiz, $grades = null) {
         $grades = null;
     }
 
-    return grade_update('mod/activequiz', $activequiz->course, 'mod', 'activequiz', $activequiz->id, 0, $grades, $params);
+    return grade_update('mod/jazzquiz', $jazzquiz->course, 'mod', 'jazzquiz', $jazzquiz->id, 0, $grades, $params);
 }
 
 
 /**
  * Update grades depending on the userid and other settings
  *
- * @param      $activequiz
+ * @param      $jazzquiz
  * @param int  $userid
  * @param bool $nullifnone
  *
  * @return int Returns GRADE_UPDATE_OK, GRADE_UPDATE_FAILED, GRADE_UPDATE_MULTIPLE or GRADE_UPDATE_ITEM_LOCKED
  */
-function activequiz_update_grades($activequiz, $userid = 0, $nullifnone = true) {
+function jazzquiz_update_grades($jazzquiz, $userid = 0, $nullifnone = true) {
     global $CFG, $DB;
     require_once($CFG->libdir . '/gradelib.php');
 
-    if (!$activequiz->graded) {
-        return activequiz_grade_item_update($activequiz);
+    if (!$jazzquiz->graded) {
+        return jazzquiz_grade_item_update($jazzquiz);
 
-    } else if ($grades = \mod_activequiz\utils\grade::get_user_grade($activequiz, $userid)) {
-        return activequiz_grade_item_update($activequiz, $grades);
+    } else if ($grades = \mod_jazzquiz\utils\grade::get_user_grade($jazzquiz, $userid)) {
+        return jazzquiz_grade_item_update($jazzquiz, $grades);
 
     } else if ($userid and $nullifnone) {
         $grade = new stdClass();
         $grade->userid = $userid;
         $grade->rawgrade = null;
 
-        return activequiz_grade_item_update($activequiz, $grade);
+        return jazzquiz_grade_item_update($jazzquiz, $grade);
 
     } else {
-        return activequiz_grade_item_update($activequiz);
+        return jazzquiz_grade_item_update($jazzquiz);
     }
 
 }
@@ -231,7 +231,7 @@ function activequiz_update_grades($activequiz, $userid = 0, $nullifnone = true) 
  * @param        $courseid
  * @param string $type
  */
-function activequiz_reset_gradebook($courseid, $type = '') {
+function jazzquiz_reset_gradebook($courseid, $type = '') {
 
 
 }
@@ -246,17 +246,17 @@ function activequiz_reset_gradebook($courseid, $type = '') {
  * @return boolean
  * @todo Finish documenting this function
  **/
-function activequiz_cron() {
+function jazzquiz_cron() {
     return true;
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////
-/// Any other activequiz functions go here.  Each of them must have a name that
-/// starts with activequiz_
+/// Any other jazzquiz functions go here.  Each of them must have a name that
+/// starts with jazzquiz_
 
 
-function activequiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+function jazzquiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
     global $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -271,17 +271,17 @@ function activequiz_pluginfile($course, $cm, $context, $filearea, $args, $forced
 
     $questionid = (int)array_shift($args);
 
-    if (!$quiz = $DB->get_record('activequiz', array('id' => $cm->instance))) {
+    if (!$quiz = $DB->get_record('jazzquiz', array('id' => $cm->instance))) {
         return false;
     }
 
-    if (!$question = $DB->get_record('activequiz_question', array('id' => $questionid, 'quizid' => $cm->instance))) {
+    if (!$question = $DB->get_record('jazzquiz_question', array('id' => $questionid, 'quizid' => $cm->instance))) {
         return false;
     }
 
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
-    $fullpath = "/$context->id/mod_activequiz/$filearea/$questionid/$relativepath";
+    $fullpath = "/$context->id/mod_jazzquiz/$filearea/$questionid/$relativepath";
     if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
         return false;
     }
@@ -309,7 +309,7 @@ function activequiz_pluginfile($course, $cm, $context, $filearea, $args, $forced
  * @param array    $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - justsend the file
  */
-function mod_activequiz_question_pluginfile($course, $context, $component,
+function mod_jazzquiz_question_pluginfile($course, $context, $component,
                                             $filearea, $qubaid, $slot, $args, $forcedownload, array $options = array()) {
     global $CFG;
     //require_once($CFG->dirroot . '/mod/quiz/locallib.php');
@@ -346,7 +346,7 @@ function mod_activequiz_question_pluginfile($course, $context, $component,
     send_stored_file($file, 0, 0, $forcedownload, $options);
 }
 
-function activequiz_supports($feature) {
+function jazzquiz_supports($feature) {
 
     if (!defined('FEATURE_PLAGIARISM')) {
         define('FEATURE_PLAGIARISM', 'plagiarism');

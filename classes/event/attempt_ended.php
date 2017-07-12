@@ -15,21 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_activequiz attempt ended event.
+ * The mod_jazzquiz attempt ended event.
  *
- * @package    mod_activequiz
+ * @package    mod_jazzquiz
  * @author     John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright  2015 University of Wisconsin - Madison
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_activequiz\event;
+namespace mod_jazzquiz\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_activequiz attempt ended event class.
+ * The mod_jazzquiz attempt ended event class.
  *
  *
- * @package    mod_activequiz
+ * @package    mod_jazzquiz
  * @since      Moodle 2.8
  * @author     John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright  2015 University of Wisconsin - Madison
@@ -41,7 +41,7 @@ class attempt_ended extends \core\event\base {
      * Init method.
      */
     protected function init() {
-        $this->data['objecttable'] = 'activequiz_attempts';
+        $this->data['objecttable'] = 'jazzquiz_attempts';
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }
@@ -71,7 +71,7 @@ class attempt_ended extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/activequiz/view.php', array('action' => 'quizstart'));
+        return new \moodle_url('/mod/jazzquiz/view.php', array('action' => 'quizstart'));
     }
 
     /**

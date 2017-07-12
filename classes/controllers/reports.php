@@ -14,24 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\controllers;
+namespace mod_jazzquiz\controllers;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * The reports controller
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class reports {
 
-    /** @var \mod_activequiz\activequiz Active quiz class */
-    protected $activequiz;
+    /** @var \mod_jazzquiz\jazzquiz Active quiz class */
+    protected $jazzquiz;
 
-    /** @var \mod_activequiz\activequiz_session $session The session class for the activequiz view */
+    /** @var \mod_jazzquiz\jazzquiz_session $session The session class for the jazzquiz view */
     protected $session;
 
     /** @var \moodle_url $pageurl The page url to base other calls on */
@@ -40,7 +40,7 @@ class reports {
     /** @var array $this ->pagevars An array of page options for the page load */
     protected $pagevars;
 
-    /** @var  \mod_activequiz\output\report_renderer $renderer */
+    /** @var  \mod_jazzquiz\output\report_renderer $renderer */
     protected $renderer;
 
     /**
@@ -61,13 +61,13 @@ class reports {
 
         // get necessary records from the DB
         if ($id) {
-            $cm = get_coursemodule_from_id('activequiz', $id, 0, false, MUST_EXIST);
+            $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('activequiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', array('id' => $cm->instance), '*', MUST_EXIST);
         } else {
-            $quiz = $DB->get_record('activequiz', array('id' => $quizid), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', array('id' => $quizid), '*', MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
-            $cm = get_coursemodule_from_instance('activequiz', $quiz->id, $course->id, false, MUST_EXIST);
+            $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
         $this->get_parameters(); // get the rest of the parameters and set them in the class
 
@@ -79,15 +79,15 @@ class reports {
         $this->pageurl->param('action', $this->pagevars['action']);
         $this->pagevars['pageurl'] = $this->pageurl;
 
-        $this->activequiz = new \mod_activequiz\activequiz($cm, $course, $quiz, $this->pageurl, $this->pagevars, 'report');
-        $this->activequiz->require_capability('mod/activequiz:seeresponses');
+        $this->jazzquiz = new \mod_jazzquiz\jazzquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars, 'report');
+        $this->jazzquiz->require_capability('mod/jazzquiz:seeresponses');
 
-        $this->renderer = $this->activequiz->get_renderer();
+        $this->renderer = $this->jazzquiz->get_renderer();
 
 
         $PAGE->set_pagelayout('incourse');
-        $PAGE->set_context($this->activequiz->getContext());
-        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "activequiz") . ': ' .
+        $PAGE->set_context($this->jazzquiz->getContext());
+        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "jazzquiz") . ': ' .
             format_string($quiz->name, true)));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
@@ -124,13 +124,13 @@ class reports {
     /**
      * Returns an instance of report based on the report type.  All report classes must implement the ireport interface
      *
-     * @return \mod_activequiz\reports\ireport
+     * @return \mod_jazzquiz\reports\ireport
      */
     protected function resolve_report_class() {
 
-        if(class_exists('\\mod_activequiz\\reports\\' . $this->pagevars['report_type'] . '\\report_' . $this->pagevars['report_type'])){
-            $class = '\\mod_activequiz\\reports\\' . $this->pagevars['report_type'] . '\\report_' . $this->pagevars['report_type'];
-            return new $class($this->activequiz);
+        if(class_exists('\\mod_jazzquiz\\reports\\' . $this->pagevars['report_type'] . '\\report_' . $this->pagevars['report_type'])){
+            $class = '\\mod_jazzquiz\\reports\\' . $this->pagevars['report_type'] . '\\report_' . $this->pagevars['report_type'];
+            return new $class($this->jazzquiz);
         }
 
     }

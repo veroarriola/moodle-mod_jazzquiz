@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\questionmodifiers;
+namespace mod_jazzquiz\questionmodifiers;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -23,12 +23,12 @@ require_once($CFG->dirroot . '/question/engine/lib.php');
 /**
  * Multiple choice question modifier class
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class multichoice implements \mod_activequiz\questionmodifiers\ibasequestionmodifier {
+class multichoice implements \mod_jazzquiz\questionmodifiers\ibasequestionmodifier {
 
 
     public function requires_jquery() {
@@ -44,7 +44,7 @@ class multichoice implements \mod_activequiz\questionmodifiers\ibasequestionmodi
     public function add_js() {
         global $PAGE;
 
-        $PAGE->requires->js('/mod/activequiz/js/chartjs/Chart.min.js');
+        $PAGE->requires->js('/mod/jazzquiz/js/chartjs/Chart.min.js');
 
     }
 
@@ -52,8 +52,8 @@ class multichoice implements \mod_activequiz\questionmodifiers\ibasequestionmodi
      * Updating output to include a graph of multiple choice answer possibilities
      * with the percentage of students that answered that option
      *
-     * @param \mod_activequiz\activequiz_question $question The realtime quiz question
-     * @param array                               $attempts An array of \mod_activequiz\activequiz_attempt classes
+     * @param \mod_jazzquiz\jazzquiz_question $question The realtime quiz question
+     * @param array                               $attempts An array of \mod_jazzquiz\jazzquiz_attempt classes
      * @param string                              $output The current output from getting the results
      * @return string Return the updated output to be passed to the client
      */
@@ -69,7 +69,7 @@ class multichoice implements \mod_activequiz\questionmodifiers\ibasequestionmodi
 
 
         foreach ($attempts as $attempt) {
-            /** @var \mod_activequiz\activequiz_attempt $attempt */
+            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
 
             // only count attempts where they have "responded"
             if ($attempt->responded == 0) {
@@ -250,7 +250,7 @@ class multichoice implements \mod_activequiz\questionmodifiers\ibasequestionmodi
         $data->datasets = array();
 
         $countdataset = new \stdClass();
-        $countdataset->label = get_string('countdatasetlabel', 'activequiz');
+        $countdataset->label = get_string('countdatasetlabel', 'jazzquiz');
         $countdataset->fillColor = "#72E07A";
         $countdataset->strokeColor = "#549C59";
         $countdataset->highlightFill = "#B7EDBA";
@@ -259,7 +259,7 @@ class multichoice implements \mod_activequiz\questionmodifiers\ibasequestionmodi
         $data->datasets[] = $countdataset;
 
         $percentagedataset = new \stdClass();
-        $percentagedataset->label = get_string('percentagedatasetlabel', 'activequiz');
+        $percentagedataset->label = get_string('percentagedatasetlabel', 'jazzquiz');
         $percentagedataset->fillColor = "rgba(220,220,220,0.5)";
         $percentagedataset->strokeColor = "rgba(220,220,220,0.8)";
         $percentagedataset->highlightFill = "rgba(220,220,220,0.75)";

@@ -1,11 +1,11 @@
 /* -*-CSS-*- */
 
-.activequizplainbox {
+.jazzquizplainbox {
     padding: 10px;
     margin: 10px;
 }
 
-.activequizbox {
+.jazzquizbox {
     border: 1px solid;
     border-radius: 8px;
 
@@ -13,13 +13,13 @@
     margin: 10px;
 }
 
-.activequizbox .row {
+.jazzquizbox .row {
     margin: 5px;
 }
 
 /** Edit page CSS **/
 
-.activequizbox .questionlist li {
+.jazzquizbox .questionlist li {
     border: 1px solid;
     border-radius: 5px;
     min-height: 30px;
@@ -28,43 +28,43 @@
     background: white;
 }
 
-.activequizbox .questionlist li:hover {
+.jazzquizbox .questionlist li:hover {
 
     background: #dbdbdb;
 }
 
-.activequizbox .questionlist li div {
+.jazzquizbox .questionlist li div {
     display: inline-block;
 }
 
-.activequizbox .questionlist .dragquestion {
+.jazzquizbox .questionlist .dragquestion {
     width: 10%;
     cursor: move;
 }
 
-.activequizbox .questionlist .icon {
+.jazzquizbox .questionlist .icon {
     vertical-align: middle;
 }
 
-.activequizbox .questionlist .name {
+.jazzquizbox .questionlist .name {
     width: 50%;
     vertical-align: middle;
 }
 
-.activequizbox .questionlist .name p {
+.jazzquizbox .questionlist .name p {
     margin: 0;
 }
 
-.activequizbox .questionlist .controls {
+.jazzquizbox .questionlist .controls {
     width: 30%;
     vertical-align: middle;
 }
 
-.activequizbox .questionlist .controls img {
+.jazzquizbox .questionlist .controls img {
     margin-right: 5px;
 }
 
-.activequizbox .questionlist .controls .space {
+.jazzquizbox .questionlist .controls .space {
     width: 12px;
 }
 
@@ -87,16 +87,16 @@
     background: #ff8e89;
 }
 
-.activequizbox .inline-block {
+.jazzquizbox .inline-block {
     display: inline-block;
 }
 
-.activequizbox .span6 {
+.jazzquizbox .span6 {
     vertical-align: top;
     width: 49.5%;
 }
 
-.activequizbox .row .span6{
+.jazzquizbox .row .span6{
     padding: 5px;
 }
 
@@ -112,19 +112,19 @@
     }
 }
 
-.activequizloading {
+.jazzquizloading {
     margin-left: auto;
     margin-right: auto;
     text-align: center;
     width: 30%
 }
 
-.activequiz_editicons {
+.jazzquiz_editicons {
     display: inline-block;
     width: 20%;
 }
 
-.activequiz_highlight_correct {
+.jazzquiz_highlight_correct {
     background: #81dca3;
 }
 
@@ -132,15 +132,15 @@
     background-color: #d9edf7;
 }
 
-.activequizbox .submit {
+.jazzquizbox .submit {
     display: none;
 }
 
-.activequizbox .rtq_inquiz {
+.jazzquizbox .rtq_inquiz {
     display: inline-block;
 }
 
-.activequizbox .btn-hide {
+.jazzquizbox .btn-hide {
     display: none;
 }
 
@@ -260,7 +260,7 @@
     visibility: hidden;
 }
 
-.activequizbox.isanonymous {
+.jazzquizbox.isanonymous {
     background-color: #d7f5d7;
 }
 
@@ -273,7 +273,7 @@
     z-index: 9000;
     font-family: monospace;
     padding: 20px;
-    /**background-image:url([[pix:mod_activequiz|footer_lodyas]]);**/
+    /**background-image:url([[pix:mod_jazzquiz|footer_lodyas]]);**/
     background: #d9edf7;
 }
 
@@ -296,46 +296,46 @@
     margin-bottom: 0;
 }
 
-.activequiz-responses-overview {
+.jazzquiz-responses-overview {
     width: 100%;
 }
 
-.activequiz-responses-overview tr td:last-child {
+.jazzquiz-responses-overview tr td:last-child {
     padding-left: 16px;
     width: 100%;
     border-top: 2px solid #AAA;
 }
 
-.activequiz-responses-overview tr td:first-child {
+.jazzquiz-responses-overview tr td:first-child {
     border-top: 2px solid #AAA;
     cursor: pointer;
 }
 
-.activequiz-responses-overview tr td:last-child div {
+.jazzquiz-responses-overview tr td:last-child div {
     background: lightseagreen;
     border-radius: 1.5rem;
     text-align: right;
 }
 
-.activequiz-responses-overview tr td:last-child div span {
+.jazzquiz-responses-overview tr td:last-child div span {
     color: #111;
     font-size: 1.6rem;
     margin-right: 1.6rem;
 }
 
-.activequiz-responses-overview tr {
+.jazzquiz-responses-overview tr {
     opacity: 0.3;
 }
 
-.activequiz-responses-overview tr.selected-vote-option {
+.jazzquiz-responses-overview tr.selected-vote-option {
     opacity: 1;
 }
 
-.activequiz-responses-overview tr td:first-child .filter_mathjaxloader_equation .MathJax:focus {
+.jazzquiz-responses-overview tr td:first-child .filter_mathjaxloader_equation .MathJax:focus {
     outline: none;
 }
 
-.activequiz-vote label {
+.jazzquiz-vote label {
     display: block;
     padding: 10px;
     cursor: pointer;
@@ -343,7 +343,7 @@
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.activequiz-vote label:hover {
+.jazzquiz-vote label:hover {
     background: rgba(255, 255, 255, 0.6);
     border: 1px solid rgba(0, 0, 0, 0.3);
 }

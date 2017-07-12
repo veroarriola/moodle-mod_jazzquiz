@@ -19,7 +19,7 @@
  *
  * Provides grading interface for instructor
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,13 +28,13 @@
 require_once("../../config.php");
 
 require_once($CFG->libdir . '/questionlib.php');
-require_once($CFG->dirroot . '/mod/activequiz/locallib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
-require_once($CFG->dirroot . '/mod/activequiz/lib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
 
-$viewquizattempt = new \mod_activequiz\controllers\viewquizattempt();
+$viewquizattempt = new \mod_jazzquiz\controllers\viewquizattempt();
 
-$viewquizattempt->setup_page('/mod/activequiz/viewquizattempt.php');
+$viewquizattempt->setup_page('/mod/jazzquiz/viewquizattempt.php');
 $viewquizattempt->handle_request();

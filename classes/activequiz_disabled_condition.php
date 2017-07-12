@@ -15,13 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    Andrew Hancox <andrewdchancox@googlemail.com>
  * @copyright 2015 Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_activequiz;
+namespace mod_jazzquiz;
 use core_question\bank\search\condition;
 defined('MOODLE_INTERNAL') || die();
 
@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2013 Ray Morris
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class activequiz_disabled_condition extends condition {
+class jazzquiz_disabled_condition extends condition {
     /**
      * Constructor.
      * @param bool $hide whether to include old "deleted" questions.
@@ -39,7 +39,7 @@ class activequiz_disabled_condition extends condition {
     public function __construct($hide = true) {
         global $DB;
 
-        $config = get_config('activequiz');
+        $config = get_config('jazzquiz');
         $enabledtypes = explode(',', $config->enabledqtypes);
         list($sql, $params) = $DB->get_in_or_equal($enabledtypes, SQL_PARAMS_NAMED, 'aqdc');
 

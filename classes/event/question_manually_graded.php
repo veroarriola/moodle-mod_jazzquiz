@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_activequiz question manually graded event.
+ * The mod_jazzquiz question manually graded event.
  *
- * @package    mod_activequiz
+ * @package    mod_jazzquiz
  * @author     John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright  2015 University of Wisconsin - Madison
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_activequiz\event;
+namespace mod_jazzquiz\event;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -32,12 +32,12 @@ defined('MOODLE_INTERNAL') || die();
  * @property-read array $other {
  *      Extra information about event.
  *
- *      - int activequizid: the id of the quiz.
+ *      - int jazzquizid: the id of the quiz.
  *      - int attemptid: the id of the attempt.
  *      - int slot: the question number in the attempt.
  * }
  *
- * @package    mod_activequiz
+ * @package    mod_jazzquiz
  * @since      Moodle 2.8
  * @author     John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright  2015 University of Wisconsin - Madison
@@ -60,7 +60,7 @@ class question_manually_graded extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventquestionmanuallygraded', 'mod_activequiz');
+        return get_string('eventquestionmanuallygraded', 'mod_jazzquiz');
     }
 
     /**
@@ -79,7 +79,7 @@ class question_manually_graded extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/activequiz/viewquizattempt.php', array('attempt' => $this->other['attemptid'],
+        return new \moodle_url('/mod/jazzquiz/viewquizattempt.php', array('attempt' => $this->other['attemptid'],
                                                                             'slot'    => $this->other['slot'], 'sessionid' => $this->other['sessionid'], 'action' => 'savecomment'));
     }
 

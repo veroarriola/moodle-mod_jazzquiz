@@ -1,17 +1,17 @@
 <?php
 
-namespace mod_activequiz\reports;
+namespace mod_jazzquiz\reports;
 
 /**
  * Interface ireport
- * @package mod_activequiz\reports
+ * @package mod_jazzquiz\reports
  * @author John Hoopes
  * @copyright 2015 John Hoopes
  */
 interface ireport {
 
 
-    public function __construct(\mod_activequiz\activequiz $activequiz);
+    public function __construct(\mod_jazzquiz\jazzquiz $jazzquiz);
 
     /**
      * @param \moodle_url $pageurl

@@ -19,7 +19,7 @@
  *
  * This callback handles saving questions as well as instructor actions
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,7 +28,7 @@
 define('AJAX_SCRIPT', true);
 
 require_once('../../config.php');
-require_once($CFG->dirroot . '/mod/activequiz/lib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->libdir . '/filelib.php');
 
 require_login();
@@ -36,7 +36,7 @@ require_sesskey();
 
 $jserror = optional_param('jserror', '', PARAM_ALPHANUMEXT);
 
-$quizdata = new \mod_activequiz\controllers\quizdata();
+$quizdata = new \mod_jazzquiz\controllers\quizdata();
 
 $quizdata->setup_page();
 $quizdata->handle_request();

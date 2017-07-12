@@ -14,19 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz;
+namespace mod_jazzquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * A realtime quiz question object
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class activequiz_question {
+class jazzquiz_question {
 
     /** @var int $id The RTQ question id */
     protected $id;
@@ -91,7 +91,7 @@ class activequiz_question {
     }
 
     /**
-     * Returns the activequiz id
+     * Returns the jazzquiz id
      *
      * @return int
      */

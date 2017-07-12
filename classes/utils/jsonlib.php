@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\utils;
+namespace mod_jazzquiz\utils;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Utils class for using json
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

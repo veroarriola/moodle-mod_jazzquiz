@@ -14,34 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\utils;
+namespace mod_jazzquiz\utils;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Grading utility class to handle grading functionality
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class grade {
 
-    /** @var \mod_activequiz\activequiz */
+    /** @var \mod_jazzquiz\jazzquiz */
     protected $rtq;
 
     /**
-     * Gets the user grade, userid can be 0, which will return all grades for the activequiz
+     * Gets the user grade, userid can be 0, which will return all grades for the jazzquiz
      *
-     * @param $activequiz
+     * @param $jazzquiz
      * @param $userid
      * @return array
      */
-    public static function get_user_grade($activequiz, $userid = 0) {
+    public static function get_user_grade($jazzquiz, $userid = 0) {
         global $DB;
 
-        $params = array($activequiz->id);
+        $params = array($jazzquiz->id);
         $usertest = '';
 
         if (is_array($userid)) {
@@ -65,11 +65,11 @@ class grade {
                 MAX(rtqa.timefinish) AS datesubmitted
 
             FROM {user} u
-            JOIN {activequiz_grades} rtqg ON u.id = rtqg.userid
-            JOIN {activequiz_sessions} rtqs ON rtqg.activequizid = rtqs.activequizid
-            JOIN {activequiz_attempts} rtqa ON rtqa.sessionid = rtqs.id
+            JOIN {jazzquiz_grades} rtqg ON u.id = rtqg.userid
+            JOIN {jazzquiz_sessions} rtqs ON rtqg.jazzquizid = rtqs.jazzquizid
+            JOIN {jazzquiz_attempts} rtqa ON rtqa.sessionid = rtqs.id
 
-            WHERE rtqg.activequizid = ?
+            WHERE rtqg.jazzquizid = ?
             $usertest
             GROUP BY u.id, rtqg.grade, rtqg.timemodified", $params);
 
@@ -79,10 +79,10 @@ class grade {
     /**
      * Construct for the grade utility class
      *
-     * @param \mod_activequiz\activequiz $activequiz
+     * @param \mod_jazzquiz\jazzquiz $jazzquiz
      */
-    public function __construct($activequiz) {
-        $this->rtq = $activequiz;
+    public function __construct($jazzquiz) {
+        $this->rtq = $jazzquiz;
     }
 
     /**
@@ -105,10 +105,10 @@ class grade {
         }
 
         // check which grading method tos end the right sessions to process.
-        if ($this->rtq->getRTQ()->grademethod == \mod_activequiz\utils\scaletypes::activequiz_FIRSTSESSION) {
+        if ($this->rtq->getRTQ()->grademethod == \mod_jazzquiz\utils\scaletypes::jazzquiz_FIRSTSESSION) {
             // only grading first session.
             return $this->process_sessions(array($sessions[0]));
-        } else if ($this->rtq->getRTQ()->grademethod == \mod_activequiz\utils\scaletypes::REALTIMQUIZ_LASTSESSION) {
+        } else if ($this->rtq->getRTQ()->grademethod == \mod_jazzquiz\utils\scaletypes::REALTIMQUIZ_LASTSESSION) {
             // only grading last session.
 
             return $this->process_sessions(array(end($sessions)));
@@ -136,10 +136,10 @@ class grade {
         }
 
         // check grading methods
-        if ($this->rtq->getRTQ()->grademethod == \mod_activequiz\utils\scaletypes::activequiz_FIRSTSESSION) {
+        if ($this->rtq->getRTQ()->grademethod == \mod_jazzquiz\utils\scaletypes::jazzquiz_FIRSTSESSION) {
             // only grading first session.
             return $this->process_sessions(array($sessions[0]), $userid);
-        } else if ($this->rtq->getRTQ()->grademethod == \mod_activequiz\utils\scaletypes::REALTIMQUIZ_LASTSESSION) {
+        } else if ($this->rtq->getRTQ()->grademethod == \mod_jazzquiz\utils\scaletypes::REALTIMQUIZ_LASTSESSION) {
             // only grading last session.
 
             return $this->process_sessions(array(end($sessions)), $userid);
@@ -160,7 +160,7 @@ class grade {
     protected function process_attempt_regrade($sessions) {
 
         foreach($sessions as $session) {
-            /** @var \mod_activequiz\activequiz_session $session */
+            /** @var \mod_jazzquiz\jazzquiz_session $session */
 
             if($session->get_session()->sessionopen === 1) {
                 continue;  // don't regrade attempts for an open session.
@@ -169,7 +169,7 @@ class grade {
             $session_attempts = $session->getall_attempts(true);
 
             foreach($session_attempts as $attempt) {
-                /** @var \mod_activequiz\activequiz_attempt $attempt */
+                /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
 
                 // regrade all questions for the question usage for this attempt.
                 $attempt->get_quba()->regrade_all_questions();
@@ -196,7 +196,7 @@ class grade {
 
         $sessionsgrades = array();
         foreach ($sessions as $session) {
-            /** @var \mod_activequiz\activequiz_session $session */
+            /** @var \mod_jazzquiz\jazzquiz_session $session */
 
             if ($session->get_session()->sessionopen === 1) {
                 continue; // don't calculate grades for open sessions.
@@ -243,11 +243,11 @@ class grade {
         // run the whole thing on a transaction (persisting to our table and gradebook updates).
         $transaction = $DB->start_delegated_transaction();
 
-        // now that we have the final grades persist the grades to activequiz grades table.
+        // now that we have the final grades persist the grades to jazzquiz grades table.
         $this->persist_grades($grades, $transaction);
 
         // update grades to gradebookapi.
-        $updated = activequiz_update_grades($this->rtq->getRTQ(), array_keys($grades));
+        $updated = jazzquiz_update_grades($this->rtq->getRTQ(), array_keys($grades));
 
 
         if ($updated === GRADE_UPDATE_FAILED) {
@@ -267,7 +267,7 @@ class grade {
      *
      * For now this will always be the last attempt for the user
      *
-     * @param \mod_activequiz\activequiz_session $session
+     * @param \mod_jazzquiz\jazzquiz_session $session
      * @param int                                $userid The userid to get the grade for
      * @return array($forgroupid, $number)
      */
@@ -313,7 +313,7 @@ class grade {
     protected function apply_session_grading_method($grades) {
 
         switch ($this->rtq->getRTQ()->grademethod) {
-            case \mod_activequiz\utils\scaletypes::activequiz_FIRSTSESSION:
+            case \mod_jazzquiz\utils\scaletypes::jazzquiz_FIRSTSESSION:
 
                 // take the first record (as there should only be one since it was filtered out earlier)
                 reset($grades);
@@ -321,13 +321,13 @@ class grade {
                 return current($grades);
 
                 break;
-            case \mod_activequiz\utils\scaletypes::REALTIMQUIZ_LASTSESSION:
+            case \mod_jazzquiz\utils\scaletypes::REALTIMQUIZ_LASTSESSION:
 
                 // take the last grade (there should only be one, as the last session was filtered out earlier)
                 return end($grades);
 
                 break;
-            case \mod_activequiz\utils\scaletypes::activequiz_SESSIONAVERAGE:
+            case \mod_jazzquiz\utils\scaletypes::jazzquiz_SESSIONAVERAGE:
 
                 // average the grades
                 $gradecount = count($grades);
@@ -340,7 +340,7 @@ class grade {
                 return $gradetotal / $gradecount;
 
                 break;
-            case \mod_activequiz\utils\scaletypes::activequiz_HIGHESTSESSIONGRADE:
+            case \mod_jazzquiz\utils\scaletypes::jazzquiz_HIGHESTSESSIONGRADE:
 
                 // find the highest grade
                 $highestgrade = 0;
@@ -362,12 +362,12 @@ class grade {
     /**
      * Calculate the grade for attempt passed in
      *
-     * This function does the scaling down to what was desired in the activequiz settings
+     * This function does the scaling down to what was desired in the jazzquiz settings
      * from what the quiz was actually set up with
      *
      * Is public function so that tableviews can get an attempt calculated grade
      *
-     * @param \mod_activequiz\activequiz_attempt $attempt
+     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
      * @return number The grade to save
      */
     public function calculate_attempt_grade($attempt) {
@@ -405,25 +405,25 @@ class grade {
 
         foreach ($grades as $userid => $grade) {
 
-            if ($usergrade = $DB->get_record('activequiz_grades', array('userid' => $userid, 'activequizid' => $this->rtq->getRTQ()->id))) {
+            if ($usergrade = $DB->get_record('jazzquiz_grades', array('userid' => $userid, 'jazzquizid' => $this->rtq->getRTQ()->id))) {
                 // we're updating
 
                 $usergrade->grade = $grade;
                 $usergrade->timemodified = time();
 
-                if (!$DB->update_record('activequiz_grades', $usergrade)) {
+                if (!$DB->update_record('jazzquiz_grades', $usergrade)) {
                     $transaction->rollback(new \Exception('Can\'t update user grades'));
                 }
             } else {
                 // we're adding
 
                 $usergrade = new \stdClass();
-                $usergrade->activequizid = $this->rtq->getRTQ()->id;
+                $usergrade->jazzquizid = $this->rtq->getRTQ()->id;
                 $usergrade->userid = $userid;
                 $usergrade->grade = $grade;
                 $usergrade->timemodified = time();
 
-                if (!$DB->insert_record('activequiz_grades', $usergrade)) {
+                if (!$DB->insert_record('jazzquiz_grades', $usergrade)) {
                     $transaction->rollback(new \Exception('Can\'t insert user grades'));
                 }
 
@@ -439,12 +439,12 @@ class grade {
      *
      * @param array $attempts
      *
-     * @return \mod_activequiz\activequiz_attempt
+     * @return \mod_jazzquiz\jazzquiz_attempt
      */
     protected function get_last_attempt($attempts) {
 
         // sort attempts by time finish
-        usort($attempts, array('\mod_activequiz\activequiz_attempt', 'sortby_timefinish'));
+        usort($attempts, array('\mod_jazzquiz\jazzquiz_attempt', 'sortby_timefinish'));
 
         return end($attempts);
 

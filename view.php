@@ -19,21 +19,21 @@
  *
  * It handles displaying a quiz onto the page as well as setup for sessions and attmepts
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once("../../config.php");
-require_once($CFG->dirroot . '/mod/activequiz/lib.php');
-require_once($CFG->dirroot . '/mod/activequiz/locallib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 
-$viewlib = new \mod_activequiz\controllers\view();
+$viewlib = new \mod_jazzquiz\controllers\view();
 
-$viewlib->setup_page('/mod/activequiz/view.php');
+$viewlib->setup_page('/mod/jazzquiz/view.php');
 
 $viewlib->handle_request();
 

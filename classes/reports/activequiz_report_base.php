@@ -1,27 +1,27 @@
 <?php
 
-namespace mod_activequiz\reports;
+namespace mod_jazzquiz\reports;
 
 /**
- * Class activequiz_report_base
+ * Class jazzquiz_report_base
  *
  *
- * @package mod_activequiz\reports
+ * @package mod_jazzquiz\reports
  * @author John Hoopes
  * @copyright 2015 John Hoopes
  */
-class activequiz_report_base {
+class jazzquiz_report_base {
 
 
     /**
-     * @var \mod_activequiz\activequiz $active quiz
+     * @var \mod_jazzquiz\jazzquiz $active quiz
      */
-    protected $activequiz;
+    protected $jazzquiz;
 
 
-    public function __construct(\mod_activequiz\activequiz $activequiz)
+    public function __construct(\mod_jazzquiz\jazzquiz $jazzquiz)
     {
-        $this->activequiz = $activequiz;
+        $this->jazzquiz = $jazzquiz;
     }
 
 

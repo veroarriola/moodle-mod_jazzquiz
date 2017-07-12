@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->version = 2017010741;  // The current module version (Date: YYYYMMDDXX)
 $plugin->requires = 2016052304;  // Moodle 3.1 (or above)
 $plugin->cron = 0;           // Period for cron to check this module (secs)
-$plugin->component = 'mod_activequiz';
+$plugin->component = 'mod_jazzquiz';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.7.1 (Build: 2017010400)';
+$plugin->release = '3.7.1 (Build: 2017010741)';
 

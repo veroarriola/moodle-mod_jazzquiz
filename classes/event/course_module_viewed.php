@@ -17,20 +17,20 @@
 /**
  * The mod_quiz course module viewed event.
  *
- * @package    mod_activequiz
+ * @package    mod_jazzquiz
  * @author     John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright  2015 University of Wisconsin - Madison
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_activequiz\event;
+namespace mod_jazzquiz\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * The mod_quiz course module viewed event class.
  *
- * @package    mod_activequiz
+ * @package    mod_jazzquiz
  * @since      Moodle 2.8
  * @author     John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright  2015 University of Wisconsin - Madison
@@ -46,6 +46,6 @@ class course_module_viewed extends \core\event\course_module_viewed {
     protected function init() {
         $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'activequiz';
+        $this->data['objecttable'] = 'jazzquiz';
     }
 }

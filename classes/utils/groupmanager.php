@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\utils;
+namespace mod_jazzquiz\utils;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Group manager class for activequiz
+ * Group manager class for jazzquiz
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,14 +29,14 @@ defined('MOODLE_INTERNAL') || die();
 class groupmanager {
 
 
-    /** @var \mod_activequiz\activequiz $rtq */
+    /** @var \mod_jazzquiz\jazzquiz $rtq */
     protected $rtq;
 
 
     /**
      * Construct new instance
      *
-     * @param \mod_activequiz\activequiz
+     * @param \mod_jazzquiz\jazzquiz
      */
     public function __construct($rtq) {
         $this->rtq = $rtq;
@@ -140,20 +140,20 @@ class groupmanager {
      *
      * If no field values are specified an empty array is returned
      *
-     * @param int $activequizid
+     * @param int $jazzquizid
      * @param int $sessionid
      * @param int $attemptid
      * @param int $groupid
      *
      * @return array
      */
-    public function get_attendance($activequizid = null, $sessionid = null, $attemptid = null, $groupid = null) {
+    public function get_attendance($jazzquizid = null, $sessionid = null, $attemptid = null, $groupid = null) {
         global $DB;
 
         $conditions = array();
 
-        if (!empty($activequizid)) {
-            $conditions['activequizid'] = $activequizid;
+        if (!empty($jazzquizid)) {
+            $conditions['jazzquizid'] = $jazzquizid;
         }
         if (!empty($sessionid)) {
             $conditions['sessionid'] = $sessionid;
@@ -170,7 +170,7 @@ class groupmanager {
             return array();
         }
 
-        return $DB->get_records('activequiz_groupattendance', $conditions);
+        return $DB->get_records('jazzquiz_groupattendance', $conditions);
 
     }
 

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\controllers;
+namespace mod_jazzquiz\controllers;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -24,14 +24,14 @@ require_once($CFG->dirroot . '/question/editlib.php');
 /**
  * edit controller class to act as a controller for the edit page
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class edit {
-    /** @var \mod_activequiz\activequiz Realtime quiz class. */
-    protected $activequiz;
+    /** @var \mod_jazzquiz\jazzquiz Realtime quiz class. */
+    protected $jazzquiz;
 
     /** @var string $action The specified action to take. */
     protected $action;
@@ -48,7 +48,7 @@ class edit {
     /** @var array $this ->pagevars An array of page options for the page load. */
     protected $pagevars;
 
-    /** @var  \mod_activequiz\output\edit_renderer $renderer. */
+    /** @var  \mod_jazzquiz\output\edit_renderer $renderer. */
     protected $renderer;
 
     /**
@@ -71,13 +71,13 @@ class edit {
 
         // get necessary records from the DB.
         if ($id) {
-            $cm = get_coursemodule_from_id('activequiz', $id, 0, false, MUST_EXIST);
+            $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('activequiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', array('id' => $cm->instance), '*', MUST_EXIST);
         } else {
-            $quiz = $DB->get_record('activequiz', array('id' => $quizid), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', array('id' => $quizid), '*', MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
-            $cm = get_coursemodule_from_instance('activequiz', $quiz->id, $course->id, false, MUST_EXIST);
+            $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
         $this->get_parameters(); // get the rest of the parameters and set them in the class.
 
@@ -90,20 +90,20 @@ class edit {
         // set up question lib.
 
         list($this->pageurl, $this->contexts, $cmid, $cm, $quiz, $this->pagevars) =
-            question_edit_setup('editq', '/mod/activequiz/edit.php', true);
+            question_edit_setup('editq', '/mod/jazzquiz/edit.php', true);
 
 
         $PAGE->set_url($this->pageurl);
         $this->pagevars['pageurl'] = $this->pageurl;
 
-        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "activequiz")
+        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "jazzquiz")
             . ': ' . format_string($quiz->name, true)));
         $PAGE->set_heading($course->fullname);
 
 
         // setup classes needed for the edit page
-        $this->activequiz = new \mod_activequiz\activequiz($cm, $course, $quiz, $this->pageurl, $this->pagevars, 'edit');
-        $this->renderer = $this->activequiz->get_renderer(); // set the renderer for this controller.  Done really for code completion.
+        $this->jazzquiz = new \mod_jazzquiz\jazzquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars, 'edit');
+        $this->renderer = $this->jazzquiz->get_renderer(); // set the renderer for this controller.  Done really for code completion.
 
     }
 
@@ -115,7 +115,7 @@ class edit {
         global $PAGE, $DB;
 
         // check if a session is open.  If so display error.
-        if($sessions = $DB->get_records('activequiz_sessions', array('activequizid' => $this->activequiz->getRTQ()->id, 'sessionopen'=> '1'))){
+        if($sessions = $DB->get_records('jazzquiz_sessions', array('jazzquizid' => $this->jazzquiz->getRTQ()->id, 'sessionopen'=> '1'))){
             $this->renderer->print_header();
             $this->renderer->opensession();
             $this->renderer->footer();
@@ -125,7 +125,7 @@ class edit {
 
         switch ($this->action) {
             case 'dragdrop': // this is a javascript callack case for the drag and drop of questions using ajax.
-                $jsonlib = new \mod_activequiz\utils\jsonlib();
+                $jsonlib = new \mod_jazzquiz\utils\jsonlib();
 
                 $questionorder = optional_param('questionorder', '', PARAM_RAW);
 
@@ -135,7 +135,7 @@ class edit {
 
                 $questionorder = explode(',', $questionorder);
 
-                if ($this->activequiz->get_questionmanager()->set_full_order($questionorder) === true) {
+                if ($this->jazzquiz->get_questionmanager()->set_full_order($questionorder) === true) {
                     $jsonlib->set('success', 'true');
                     $jsonlib->send_response();
                 } else {
@@ -147,12 +147,12 @@ class edit {
 
                 $questionid = required_param('questionid', PARAM_INT);
 
-                if ($this->activequiz->get_questionmanager()->move_question('up', $questionid)) {
+                if ($this->jazzquiz->get_questionmanager()->move_question('up', $questionid)) {
                     $type = 'success';
-                    $message = get_string('qmovesuccess', 'activequiz');
+                    $message = get_string('qmovesuccess', 'jazzquiz');
                 } else {
                     $type = 'error';
-                    $message = get_string('qmoveerror', 'activequiz');
+                    $message = get_string('qmoveerror', 'jazzquiz');
                 }
 
                 $this->renderer->setMessage($type, $message);
@@ -165,12 +165,12 @@ class edit {
 
                 $questionid = required_param('questionid', PARAM_INT);
 
-                if ($this->activequiz->get_questionmanager()->move_question('down', $questionid)) {
+                if ($this->jazzquiz->get_questionmanager()->move_question('down', $questionid)) {
                     $type = 'success';
-                    $message = get_string('qmovesuccess', 'activequiz');
+                    $message = get_string('qmovesuccess', 'jazzquiz');
                 } else {
                     $type = 'error';
-                    $message = get_string('qmoveerror', 'activequiz');
+                    $message = get_string('qmoveerror', 'jazzquiz');
                 }
 
                 $this->renderer->setMessage($type, $message);
@@ -182,24 +182,24 @@ class edit {
             case 'addquestion':
 
                 $questionid = required_param('questionid', PARAM_INT);
-                $this->activequiz->get_questionmanager()->add_question($questionid);
+                $this->jazzquiz->get_questionmanager()->add_question($questionid);
 
                 break;
             case 'editquestion':
 
                 $questionid = required_param('rtqquestionid', PARAM_INT);
-                $this->activequiz->get_questionmanager()->edit_question($questionid);
+                $this->jazzquiz->get_questionmanager()->edit_question($questionid);
 
                 break;
             case 'deletequestion':
 
                 $questionid = required_param('questionid', PARAM_INT);
-                if ($this->activequiz->get_questionmanager()->delete_question($questionid)) {
+                if ($this->jazzquiz->get_questionmanager()->delete_question($questionid)) {
                     $type = 'success';
-                    $message = get_string('qdeletesucess', 'activequiz');
+                    $message = get_string('qdeletesucess', 'jazzquiz');
                 } else {
                     $type = 'error';
-                    $message = get_string('qdeleteerror', 'activequiz');
+                    $message = get_string('qdeleteerror', 'jazzquiz');
                 }
 
                 $this->renderer->setMessage($type, $message);
@@ -220,20 +220,20 @@ class edit {
     /**
      * Returns the RTQ instance
      *
-     * @return \mod_activequiz\activequiz
+     * @return \mod_jazzquiz\jazzquiz
      */
     public function getRTQ() {
-        return $this->activequiz;
+        return $this->jazzquiz;
     }
 
     /**
-     * Echos the list of questions using the renderer for activequiz.
+     * Echos the list of questions using the renderer for jazzquiz.
      *
      */
     protected function list_questions() {
 
         $questionbankview = $this->get_questionbank_view();
-        $questions = $this->activequiz->get_questionmanager()->get_questions();
+        $questions = $this->jazzquiz->get_questionmanager()->get_questions();
         $this->renderer->listquestions($questions, $questionbankview);
 
     }
@@ -251,7 +251,7 @@ class edit {
 
         ob_start(); // capture question bank display in buffer to have the renderer render output.
 
-        $questionbank = new \mod_activequiz\activequiz_question_bank_view($this->contexts, $this->pageurl, $this->activequiz->getCourse(), $this->activequiz->getCM());
+        $questionbank = new \mod_jazzquiz\jazzquiz_question_bank_view($this->contexts, $this->pageurl, $this->jazzquiz->getCourse(), $this->jazzquiz->getCM());
         $questionbank->display('editq', $qpage, $qperpage, $this->pagevars['cat'], true, true, true);
 
         return ob_get_clean();

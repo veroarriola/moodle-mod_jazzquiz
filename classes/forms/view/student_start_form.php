@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\forms\view;
+namespace mod_jazzquiz\forms\view;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -25,7 +25,7 @@ require_once($CFG->libdir . '/formslib.php');
  * Student start form to display the group to use if they have more than one
  * to start their session attempt
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -55,7 +55,7 @@ class student_start_form extends \moodleform {
 
         $custdata = $this->_customdata;
         $mform = $this->_form;
-        /** @var \mod_activequiz\activequiz $rtq */
+        /** @var \mod_jazzquiz\jazzquiz $rtq */
         $rtq = $custdata['rtq'];
         $validgroups = $custdata['validgroups'];
 
@@ -88,7 +88,7 @@ class student_start_form extends \moodleform {
             } else {
                 // add the choose dots string to the begining of the array for selecting
                 $groups = array('' => get_string('choosedots')) + $groups;
-                $mform->addElement('select', 'group', get_string('select_group', 'mod_activequiz'), $groups);
+                $mform->addElement('select', 'group', get_string('select_group', 'mod_jazzquiz'), $groups);
                 $mform->setType('group', PARAM_INT);
             }
 
@@ -99,7 +99,7 @@ class student_start_form extends \moodleform {
         if ($rtq->group_mode() && $rtq->getRTQ()->groupattendance == 1) {
             $mform->addElement('submit', 'submitbutton', get_string('continue'));
         } else {
-            $mform->addElement('submit', 'submitbutton', get_string('joinquiz', 'mod_activequiz'));
+            $mform->addElement('submit', 'submitbutton', get_string('joinquiz', 'mod_jazzquiz'));
         }
 
     }
@@ -125,14 +125,14 @@ class student_start_form extends \moodleform {
                 if (isset($data['hidden_group'])) {
                     $data['group'] = $data['hidden_group'];
                 } else {
-                    $errors['group'] = get_string('notingroup', 'mod_activequiz');
+                    $errors['group'] = get_string('notingroup', 'mod_jazzquiz');
                 }
             }
 
 
             // make sure the user is in the group selected (shouldn't happen)
             if (!groups_is_member($data['group'], $USER->id)) {
-                $errors['group'] = get_string('notingroup', 'mod_activequiz');
+                $errors['group'] = get_string('notingroup', 'mod_jazzquiz');
             }
 
         }

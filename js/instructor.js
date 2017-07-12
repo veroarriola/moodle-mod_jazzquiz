@@ -14,24 +14,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 // ensure that the namespace is defined
-var activequiz = activequiz || {};
-activequiz.vars = activequiz.vars || {};
+var jazzquiz = jazzquiz || {};
+jazzquiz.vars = jazzquiz.vars || {};
 
-activequiz.change_quiz_state = function (state) {
+jazzquiz.change_quiz_state = function (state) {
 
-    activequiz.current_quiz_state = state;
+    jazzquiz.current_quiz_state = state;
 
     switch (state) {
 
         case 'notrunning':
-            activequiz.control_buttons([
+            jazzquiz.control_buttons([
                 'jumptoquestion',
                 'closesession',
                 'nextquestion',
@@ -40,7 +40,7 @@ activequiz.change_quiz_state = function (state) {
             break;
 
         case 'running':
-            activequiz.control_buttons([
+            jazzquiz.control_buttons([
                 'endquestion',
                 'toggleresponses',
                 'togglenotresponded',
@@ -49,7 +49,7 @@ activequiz.change_quiz_state = function (state) {
             break;
 
         case 'endquestion':
-            activequiz.control_buttons([]);
+            jazzquiz.control_buttons([]);
             break;
 
         case 'reviewing':
@@ -65,14 +65,14 @@ activequiz.change_quiz_state = function (state) {
                 'toggleresponses',
                 'togglenotresponded'
             ];
-            if (activequiz.get('lastquestion') != 'true') {
+            if (jazzquiz.get('lastquestion') != 'true') {
                 enabled_buttons.push('nextquestion');
             }
-            activequiz.control_buttons(enabled_buttons);
+            jazzquiz.control_buttons(enabled_buttons);
             break;
 
         case 'voting':
-            activequiz.control_buttons([
+            jazzquiz.control_buttons([
                 'closesession',
                 'showfullscreenresults',
                 'showcorrectanswer',
@@ -84,7 +84,7 @@ activequiz.change_quiz_state = function (state) {
         case 'sessionclosed':
         // Fall-through
         default:
-            activequiz.control_buttons([
+            jazzquiz.control_buttons([
                 // Intentionally left empty
             ]);
             break;
@@ -98,82 +98,82 @@ activequiz.change_quiz_state = function (state) {
  * This function works to maintain instructor state as well as to assist in getting student responses
  * while the question is still running.  There are 2 variables that are set/get which are important
  *
- * "inquestion" signifies that the activequiz is in a question, and is updated in other functions to signify
+ * "inquestion" signifies that the jazzquiz is in a question, and is updated in other functions to signify
  *              the end of a question
  * "endquestion" This variable is needed to help to keep the "inquestion" variable from being overwritten on the
  *               interval this function defines.  It is also updated by other functions in conjunction with "inquestion"
  *
  */
-activequiz.getQuizInfo = function () {
+jazzquiz.getQuizInfo = function () {
 
     var params = {
-        'sesskey': activequiz.get('sesskey'),
-        'sessionid': activequiz.get('sessionid')
+        'sesskey': jazzquiz.get('sesskey'),
+        'sessionid': jazzquiz.get('sessionid')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizinfo.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizinfo.php', params, function (status, response) {
 
         if (status == 500) {
             alert('There was an error....' + response);
         } else if (status == 200) {
 
-            activequiz.change_quiz_state(response.status);
+            jazzquiz.change_quiz_state(response.status);
 
             if (response.status == 'notrunning') {
                 // do nothing as we're not running
-                activequiz.set('endquestion', 'false');
+                jazzquiz.set('endquestion', 'false');
 
-            } else if (response.status == 'running' && activequiz.get('inquestion') != 'true' && activequiz.get('endquestion') != 'true') {
+            } else if (response.status == 'running' && jazzquiz.get('inquestion') != 'true' && jazzquiz.get('endquestion') != 'true') {
 
                 if (response.delay <= 0) {
                     // only set in question if we're in it, not waiting for it to start
-                    activequiz.set('inquestion', 'true');
+                    jazzquiz.set('inquestion', 'true');
                 }
 
-            } else if (response.status == 'running' && activequiz.get('inquestion') != 'true') {
+            } else if (response.status == 'running' && jazzquiz.get('inquestion') != 'true') {
 
                 // set endquestion to false as we're now "waiting" for a new question
-                activequiz.set('endquestion', 'false');
+                jazzquiz.set('endquestion', 'false');
 
-            } else if (response.status == 'running' && activequiz.get('inquestion') == 'true') {
+            } else if (response.status == 'running' && jazzquiz.get('inquestion') == 'true') {
 
                 // gether the current results
-                if (activequiz.get('delayrefreshresults') === 'undefined' || activequiz.get('delayrefreshresults') === 'false') {
-                    activequiz.gather_current_results();
+                if (jazzquiz.get('delayrefreshresults') === 'undefined' || jazzquiz.get('delayrefreshresults') === 'false') {
+                    jazzquiz.gather_current_results();
                 }
 
                 // also get the students/groups not responded
-                if (activequiz.get('shownotresponded') !== false) {
-                    activequiz.getnotresponded();
+                if (jazzquiz.get('shownotresponded') !== false) {
+                    jazzquiz.getnotresponded();
                 }
 
             } else if (response.status == 'endquestion') {
 
-                activequiz.set('inquestion', 'false');
+                jazzquiz.set('inquestion', 'false');
 
             } else if (response.status == 'reviewing') {
 
-                activequiz.set('inquestion', 'false');
+                jazzquiz.set('inquestion', 'false');
 
             } else if (response.status == 'sessionclosed') {
 
-                activequiz.set('inquestion', 'false');
+                jazzquiz.set('inquestion', 'false');
 
             } else if (response.status == 'voting') {
 
-                activequiz.get_and_show_vote_results();
+                jazzquiz.get_and_show_vote_results();
 
             }
         }
 
         var time = 3000 + Math.floor(Math.random() * (100 + 100) - 100);
-        setTimeout(activequiz.getQuizInfo, time);
+        setTimeout(jazzquiz.getQuizInfo, time);
 
     });
 
 };
 
-activequiz.create_response_bar_graph = function (responses, name, qtype, target_id) {
+jazzquiz.create_response_bar_graph = function (responses, name, qtype, target_id) {
     var target = document.getElementById(target_id);
     if (target === null) {
         return;
@@ -227,7 +227,7 @@ activequiz.create_response_bar_graph = function (responses, name, qtype, target_
             if (qtype === 'stack') {
 
                 response_cell.innerHTML = '<span id="' + name + '_latex_' + row_i + '"></span>';
-                activequiz.render_maxima_equation(responses[i].response, row_i, name + '_latex_');
+                jazzquiz.render_maxima_equation(responses[i].response, row_i, name + '_latex_');
 
             } else {
 
@@ -253,7 +253,7 @@ activequiz.create_response_bar_graph = function (responses, name, qtype, target_
     }
 };
 
-activequiz.sort_response_bar_graph = function (target_id) {
+jazzquiz.sort_response_bar_graph = function (target_id) {
     var target = document.getElementById(target_id);
     if (target === null) {
         return;
@@ -273,7 +273,7 @@ activequiz.sort_response_bar_graph = function (target_id) {
     }
 };
 
-activequiz.quiz_info_responses = function (responses, qtype) {
+jazzquiz.quiz_info_responses = function (responses, qtype) {
 
     if (responses === undefined) {
         console.log('Responses is undefined.');
@@ -286,16 +286,16 @@ activequiz.quiz_info_responses = function (responses, qtype) {
     }
 
     // Update data
-    activequiz.current_responses = [];
-    activequiz.total_responses = responses.length;
+    jazzquiz.current_responses = [];
+    jazzquiz.total_responses = responses.length;
     for (var i = 0; i < responses.length; i++) {
 
         var exists = false;
 
         // Check if response is a duplicate
-        for (var j = 0; j < activequiz.current_responses.length; j++) {
-            if (activequiz.current_responses[j].response === responses[i].response) {
-                activequiz.current_responses[j].count++;
+        for (var j = 0; j < jazzquiz.current_responses.length; j++) {
+            if (jazzquiz.current_responses[j].response === responses[i].response) {
+                jazzquiz.current_responses[j].count++;
                 exists = true;
                 break;
             }
@@ -303,7 +303,7 @@ activequiz.quiz_info_responses = function (responses, qtype) {
 
         // Add element if not a duplicate
         if (!exists) {
-            activequiz.current_responses.push({
+            jazzquiz.current_responses.push({
                 response: responses[i].response,
                 count: 1,
                 qtype: qtype
@@ -314,7 +314,7 @@ activequiz.quiz_info_responses = function (responses, qtype) {
     // Make sure quiz info has the wrapper for the responses
     var wrapper_current_responses = document.getElementById('wrapper_current_responses');
     if (wrapper_current_responses === null) {
-        activequiz.quiz_info('<table id="wrapper_current_responses" class="activequiz-responses-overview"></table>', true);
+        jazzquiz.quiz_info('<table id="wrapper_current_responses" class="jazzquiz-responses-overview"></table>', true);
         wrapper_current_responses = document.getElementById('wrapper_current_responses');
 
         // This should not happen, but check just in case quiz_info fails to set the html.
@@ -324,25 +324,25 @@ activequiz.quiz_info_responses = function (responses, qtype) {
     }
 
     // Update HTML
-    activequiz.create_response_bar_graph(activequiz.current_responses, 'current_response', qtype, 'wrapper_current_responses');
-    activequiz.sort_response_bar_graph('wrapper_current_responses');
+    jazzquiz.create_response_bar_graph(jazzquiz.current_responses, 'current_response', qtype, 'wrapper_current_responses');
+    jazzquiz.sort_response_bar_graph('wrapper_current_responses');
 
 };
 
 
-activequiz.start_quiz = function () {
+jazzquiz.start_quiz = function () {
 
     // make an ajax callback to quizdata to start the quiz
 
     var params = {
         'action': 'startquiz',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    this.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         var inquizcontrols = document.getElementById('inquizcontrols');
         inquizcontrols.classList.remove('btn-hide');
@@ -352,10 +352,10 @@ activequiz.start_quiz = function () {
          // disable the next question button
          var nextquestionbtn = document.getElementById('nextquestion');
          nextquestionbtn.disabled = true;
-         activequiz.set('lastquestion', 'true');
+         jazzquiz.set('lastquestion', 'true');
          }*/
 
-        // activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+        // jazzquiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 
     var startquizbtn = document.getElementById('startquiz');
@@ -363,9 +363,9 @@ activequiz.start_quiz = function () {
 };
 
 
-activequiz.handle_question = function (questionid) {
+jazzquiz.handle_question = function (questionid) {
 
-    this.loading(M.util.get_string('gatheringresults', 'activequiz'), 'show');
+    this.loading(M.util.get_string('gatheringresults', 'jazzquiz'), 'show');
 
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
@@ -377,14 +377,14 @@ activequiz.handle_question = function (questionid) {
     var formdata = new FormData(qform);
 
     formdata.append('action', 'savequestion');
-    formdata.append('rtqid', activequiz.get('rtqid'));
-    formdata.append('sessionid', activequiz.get('sessionid'));
-    formdata.append('attemptid', activequiz.get('attemptid'));
-    formdata.append('sesskey', activequiz.get('sesskey'));
+    formdata.append('rtqid', jazzquiz.get('rtqid'));
+    formdata.append('sessionid', jazzquiz.get('sessionid'));
+    formdata.append('attemptid', jazzquiz.get('attemptid'));
+    formdata.append('sesskey', jazzquiz.get('sesskey'));
     formdata.append('questionid', questionid);
 
     // submit the form
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', formdata, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', formdata, function (status, response) {
 
         if (status == 500) {
             window.alert('there was an error with your request ... ' + response.error);
@@ -399,30 +399,30 @@ activequiz.handle_question = function (questionid) {
         // we don't really care about the response for instructors as we're going to set timeout
         // for gathering response
 
-        activequiz.set('endquestion', 'true');
-        activequiz.set('inquestion', 'false');
+        jazzquiz.set('endquestion', 'true');
+        jazzquiz.set('inquestion', 'false');
 
         var params = {
             'action': 'endquestion',
-            'question': activequiz.get('currentquestion'),
-            'rtqid': activequiz.get('rtqid'),
-            'sessionid': activequiz.get('sessionid'),
-            'attemptid': activequiz.get('attemptid'),
-            'sesskey': activequiz.get('sesskey')
+            'question': jazzquiz.get('currentquestion'),
+            'rtqid': jazzquiz.get('rtqid'),
+            'sessionid': jazzquiz.get('sessionid'),
+            'attemptid': jazzquiz.get('attemptid'),
+            'sesskey': jazzquiz.get('sesskey')
         };
 
         // make sure we end the question (on end_question function call this is re-doing what we just did)
         // but handle_request is also called on ending of the question timer in core.js
-        activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+        jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
             if (status == 500) {
                 var loadingbox = document.getElementById('loadingbox');
                 loadingbox.classList.add('hidden');
 
-                activequiz.quiz_info('There was an error with your request', true);
+                jazzquiz.quiz_info('There was an error with your request', true);
             } else if (status == 200) {
 
-                var currentquestion = activequiz.get('currentquestion');
+                var currentquestion = jazzquiz.get('currentquestion');
                 var questiontimertext = document.getElementById('q' + currentquestion + '_questiontimetext');
                 var questiontimer = document.getElementById('q' + currentquestion + '_questiontime');
 
@@ -432,26 +432,26 @@ activequiz.handle_question = function (questionid) {
             }
         });
 
-        setTimeout(activequiz.gather_results, 3500);
-        setTimeout(activequiz.getnotresponded, 3500);
+        setTimeout(jazzquiz.gather_results, 3500);
+        setTimeout(jazzquiz.getnotresponded, 3500);
 
     });
 };
 
-activequiz.show_improvised_question_setup = function () {
+jazzquiz.show_improvised_question_setup = function () {
 
     var params = {
         'action': 'listdummyquestions',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == '500') {
-            activequiz.quiz_info('there was an error listing the improvised questions', true);
+            jazzquiz.quiz_info('there was an error listing the improvised questions', true);
         } else if (status == 200) {
 
             var questions = JSON.parse(response.questions);
@@ -464,8 +464,8 @@ activequiz.show_improvised_question_setup = function () {
                 // TODO: This is a bit ugly. Redo the onclick event.
                 var html = '<button class="btn" ';
                 html += 'onclick="';
-                html += 'activequiz.chosen_improvisation_question = ' + questions[i].slot + ';';
-                html += 'activequiz.start_improvised_question();';
+                html += 'jazzquiz.chosen_improvisation_question = ' + questions[i].slot + ';';
+                html += 'jazzquiz.start_improvised_question();';
                 html += "jQuery('.improvise-menu').html('').removeClass('active');";
                 html += '">' + questions[i].name + '</button>';
                 menu.append(html);
@@ -478,24 +478,24 @@ activequiz.show_improvised_question_setup = function () {
 
 };
 
-activequiz.start_improvised_question = function () {
+jazzquiz.start_improvised_question = function () {
 
-    var qnum = activequiz.chosen_improvisation_question;
+    var qnum = jazzquiz.chosen_improvisation_question;
 
-    activequiz.submit_goto_question(qnum, true);
+    jazzquiz.submit_goto_question(qnum, true);
 
 };
 
-activequiz.get_selected_answers_for_vote = function () {
+jazzquiz.get_selected_answers_for_vote = function () {
 
-    if (activequiz.current_responses === undefined) {
+    if (jazzquiz.current_responses === undefined) {
         return [];
     }
 
     var result = [];
 
     jQuery('.selected-vote-option').each(function (i, option) {
-        var response = activequiz.current_responses[option.dataset.response_i];
+        var response = jazzquiz.current_responses[option.dataset.response_i];
         result.push({
             text: response.response,
             count: response.count
@@ -505,20 +505,20 @@ activequiz.get_selected_answers_for_vote = function () {
     return result;
 };
 
-activequiz.get_and_show_vote_results = function () {
+jazzquiz.get_and_show_vote_results = function () {
 
     var params = {
         'action': 'getvoteresults',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == '500') {
-            activequiz.quiz_info('there was an error getting the vote results', true);
+            jazzquiz.quiz_info('there was an error getting the vote results', true);
         } else if (status == 200) {
 
             var answers = JSON.parse(response.answers);
@@ -535,7 +535,7 @@ activequiz.get_and_show_vote_results = function () {
 
             var target = document.getElementById(target_id);
             if (target === null) {
-                activequiz.quiz_info('<table id="' + target_id + '" class="activequiz-responses-overview"></table>', true);
+                jazzquiz.quiz_info('<table id="' + target_id + '" class="jazzquiz-responses-overview"></table>', true);
                 target = document.getElementById(target_id);
 
                 // This should not happen, but check just in case quiz_info fails to set the html.
@@ -545,37 +545,37 @@ activequiz.get_and_show_vote_results = function () {
             }
 
             // TOOD: Not hardcode stack here...
-            activequiz.create_response_bar_graph(responses, 'vote_response', 'stack', target_id);
-            activequiz.sort_response_bar_graph(target_id);
+            jazzquiz.create_response_bar_graph(responses, 'vote_response', 'stack', target_id);
+            jazzquiz.sort_response_bar_graph(target_id);
 
         }
 
     });
 };
 
-activequiz.run_voting = function () {
+jazzquiz.run_voting = function () {
 
-    var vote_options = activequiz.get_selected_answers_for_vote();
+    var vote_options = jazzquiz.get_selected_answers_for_vote();
     var questions_param = encodeURIComponent(JSON.stringify(vote_options));
 
     var params = {
         'action': 'runvoting',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey'),
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey'),
         'questions': questions_param
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == '500') {
-            activequiz.quiz_info('there was an error starting the vote', true);
+            jazzquiz.quiz_info('there was an error starting the vote', true);
         } else if (status == 200) {
 
             // Hide unnecessary information
-            activequiz.clear_and_hide_notresponded();
-            activequiz.hide_all_questionboxes();
+            jazzquiz.clear_and_hide_notresponded();
+            jazzquiz.hide_all_questionboxes();
 
         }
 
@@ -587,28 +587,28 @@ activequiz.run_voting = function () {
  * but just get the results of the quesiton and display them in the quiz info box
  *
  */
-activequiz.gather_current_results = function () {
+jazzquiz.gather_current_results = function () {
 
 
-    if (activequiz.get('showstudentresponses') === false) {
+    if (jazzquiz.get('showstudentresponses') === false) {
         return; // return if there we aren't showing student responses
     }
 
     var params = {
         'action': 'getcurrentresults',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == '500') {
-            activequiz.quiz_info('there was an error getting current results', true);
+            jazzquiz.quiz_info('there was an error getting current results', true);
         } else if (status == 200) {
 
-            activequiz.quiz_info_responses(response.responses, response.qtype);
+            jazzquiz.quiz_info_responses(response.responses, response.qtype);
 
             // after the responses have been inserted, we see if any question type javascript was added and evaluate
             if (document.getElementById(response.qtype + '_js') !== null) {
@@ -624,29 +624,29 @@ activequiz.gather_current_results = function () {
  * updates the instructor's interface with the buttons allowed for this state of the quiz
  *
  */
-activequiz.gather_results = function () {
+jazzquiz.gather_results = function () {
 
     var params = {
         'action': 'getresults',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
-        activequiz.loading('', 'hide');
+        jazzquiz.loading('', 'hide');
 
-        var questionbox = document.getElementById('q' + activequiz.get('currentquestion') + '_container');
+        var questionbox = document.getElementById('q' + jazzquiz.get('currentquestion') + '_container');
         questionbox.classList.remove('hidden');
 
         // only put results into the screen if
-        if (activequiz.get('showstudentresponses') !== false) {
+        if (jazzquiz.get('showstudentresponses') !== false) {
 
-            activequiz.clear_and_hide_qinfobox();
+            jazzquiz.clear_and_hide_qinfobox();
 
-            activequiz.quiz_info_responses(response.responses, response.qtype);
+            jazzquiz.quiz_info_responses(response.responses, response.qtype);
 
             // after the responses have been inserted, we see if any question type javascript was added and evaluate
             if (document.getElementById(response.qtype + '_js') !== null) {
@@ -657,17 +657,17 @@ activequiz.gather_results = function () {
 
 };
 
-activequiz.reload_results = function () {
+jazzquiz.reload_results = function () {
 
     this.hide_all_questionboxes();
     this.clear_and_hide_qinfobox();
 
-    this.loading(M.util.get_string('gatheringresults', 'activequiz'), 'show');
+    this.loading(M.util.get_string('gatheringresults', 'jazzquiz'), 'show');
 
     this.gather_results();
 };
 
-activequiz.repoll_question = function () {
+jazzquiz.repoll_question = function () {
 
     this.hide_all_questionboxes();
     this.clear_and_hide_qinfobox();
@@ -676,19 +676,19 @@ activequiz.repoll_question = function () {
     // we want to send a request to re-poll the previous question, or the one we're reviewing now
     var params = {
         'action': 'repollquestion',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == 500) {
             var loadingbox = document.getElementById('loadingbox');
             loadingbox.classList.add('hidden');
 
-            activequiz.quiz_info('There was an error with your request', true);
+            jazzquiz.quiz_info('There was an error with your request', true);
 
             window.alert('there was an error with your request ... ');
             return;
@@ -696,16 +696,16 @@ activequiz.repoll_question = function () {
 
         if (response.lastquestion == 'true') {
             // set a var to signify this is the last question
-            activequiz.set('lastquestion', 'true');
+            jazzquiz.set('lastquestion', 'true');
         } else {
-            activequiz.set('lastquestion', 'false');
+            jazzquiz.set('lastquestion', 'false');
         }
-        activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+        jazzquiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 
 };
 
-activequiz.next_question = function () {
+jazzquiz.next_question = function () {
 
     // hide all question boxes and disable certain buttons
 
@@ -714,26 +714,26 @@ activequiz.next_question = function () {
     this.control_buttons([]);
 
     // ensure that the previous question's form is hidden
-    if (activequiz.get('currentquestion') != 'undefined') {
-        var qformbox = document.getElementById('q' + activequiz.get('currentquestion') + '_container');
+    if (jazzquiz.get('currentquestion') != 'undefined') {
+        var qformbox = document.getElementById('q' + jazzquiz.get('currentquestion') + '_container');
         qformbox.classList.add('hidden');
     }
 
     var params = {
         'action': 'nextquestion',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == 500) {
             var loadingbox = document.getElementById('loadingbox');
             loadingbox.classList.add('hidden');
 
-            activequiz.quiz_info('There was an error with your request', true);
+            jazzquiz.quiz_info('There was an error with your request', true);
 
             window.alert('there was an error with your request ... ');
             return;
@@ -741,96 +741,96 @@ activequiz.next_question = function () {
 
         if (response.lastquestion == 'true') {
             // set a var to signify this is the last question
-            activequiz.set('lastquestion', 'true');
+            jazzquiz.set('lastquestion', 'true');
         } else {
-            activequiz.set('lastquestion', 'false');
+            jazzquiz.set('lastquestion', 'false');
         }
-        activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+        jazzquiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 };
 
-activequiz.end_question = function () {
+jazzquiz.end_question = function () {
 
     // we want to send a request to re-poll the previous question, or the one we're reviewing now
     var params = {
         'action': 'endquestion',
-        'question': activequiz.get('currentquestion'),
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'question': jazzquiz.get('currentquestion'),
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == 500) {
             var loadingbox = document.getElementById('loadingbox');
             loadingbox.classList.add('hidden');
 
-            activequiz.quiz_info('There was an error with your request', true);
+            jazzquiz.quiz_info('There was an error with your request', true);
 
             window.alert('there was an error with your request ... ');
             return;
         }
 
-        // clear the activequiz counter interval
-        if (activequiz.qcounter) {
-            clearInterval(activequiz.qcounter);
+        // clear the jazzquiz counter interval
+        if (jazzquiz.qcounter) {
+            clearInterval(jazzquiz.qcounter);
         }
-        var currentquestion = activequiz.get('currentquestion');
+        var currentquestion = jazzquiz.get('currentquestion');
         var questiontimertext = document.getElementById('q' + currentquestion + '_questiontimetext');
         var questiontimer = document.getElementById('q' + currentquestion + '_questiontime');
 
         questiontimertext.innerHTML = '';
         questiontimer.innerHTML = '';
 
-        activequiz.set('inquestion', 'false'); // set inquestion to false as we've ended the question
-        activequiz.set('endquestion', 'true');
+        jazzquiz.set('inquestion', 'false'); // set inquestion to false as we've ended the question
+        jazzquiz.set('endquestion', 'true');
 
         // after getting endquestion response, go through the normal handle_question flow
-        activequiz.handle_question(activequiz.get('currentquestion'));
+        jazzquiz.handle_question(jazzquiz.get('currentquestion'));
     });
 };
 
-activequiz.close_session = function () {
+jazzquiz.close_session = function () {
 
-    activequiz.loading(M.util.get_string('closingsession', 'activequiz'), 'show');
+    jazzquiz.loading(M.util.get_string('closingsession', 'jazzquiz'), 'show');
 
     var params = {
         'action': 'closesession',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == 500) {
             var loadingbox = document.getElementById('loadingbox');
             loadingbox.classList.add('hidden');
 
-            activequiz.quiz_info('There was an error with your request', true);
+            jazzquiz.quiz_info('There was an error with your request', true);
 
             window.alert('there was an error with your request ... ');
             return;
         }
 
-        activequiz.hide_all_questionboxes();
-        activequiz.clear_and_hide_qinfobox();
+        jazzquiz.hide_all_questionboxes();
+        jazzquiz.clear_and_hide_qinfobox();
 
         var controlsbox = document.getElementById('controlbox');
         controlsbox.classList.add('hidden');
 
-        activequiz.quiz_info(M.util.get_string('sessionclosed', 'activequiz'));
-        activequiz.loading(null, 'hide');
+        jazzquiz.quiz_info(M.util.get_string('sessionclosed', 'jazzquiz'));
+        jazzquiz.loading(null, 'hide');
 
     });
 
 };
 
 // keep_flow: if true, the "next question" won't change.
-activequiz.submit_goto_question = function (qnum, keep_flow) {
+jazzquiz.submit_goto_question = function (qnum, keep_flow) {
 
     this.hide_all_questionboxes();
     this.clear_and_hide_qinfobox();
@@ -841,23 +841,23 @@ activequiz.submit_goto_question = function (qnum, keep_flow) {
     var params = {
         'action': 'gotoquestion',
         'qnum': qnum,
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
     if (keep_flow === true) {
         params['keepflow'] = 'true';
     }
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == 500) {
             var loadingbox = document.getElementById('loadingbox');
             loadingbox.classList.add('hidden');
 
-            activequiz.quiz_info('There was an error with your request', true);
+            jazzquiz.quiz_info('There was an error with your request', true);
 
             window.alert('there was an error with your request ... ');
             return;
@@ -865,21 +865,21 @@ activequiz.submit_goto_question = function (qnum, keep_flow) {
 
         if (response.lastquestion == 'true') {
             // set a var to signify this is the last question
-            activequiz.set('lastquestion', 'true');
+            jazzquiz.set('lastquestion', 'true');
         } else {
-            activequiz.set('lastquestion', 'false');
+            jazzquiz.set('lastquestion', 'false');
         }
 
         // reset location.hash to nothing so that the modal dialog disappears
         window.location.hash = '';
 
         // now go to the question
-        activequiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+        jazzquiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
     });
 
 };
 
-activequiz.jumpto_question = function () {
+jazzquiz.jumpto_question = function () {
 
     if (window.location.hash === '#jumptoquestion-dialog') {
         // if the dialog is open, assume that we want to go to that the question in the select (as the x/close removes the hash and doesn't re-call this function)
@@ -888,7 +888,7 @@ activequiz.jumpto_question = function () {
         var select = document.getElementById('jtq-selectquestion');
         var qnum = select.options[select.selectedIndex].value;
 
-        activequiz.submit_goto_question(qnum, false);
+        jazzquiz.submit_goto_question(qnum, false);
 
     } else { // otherwise open the dialog
         window.location.hash = 'jumptoquestion-dialog';
@@ -896,60 +896,60 @@ activequiz.jumpto_question = function () {
 
 };
 
-activequiz.show_correct_answer = function () {
+jazzquiz.show_correct_answer = function () {
 
     var hide = false;
-    if (activequiz.get('showingcorrectanswer') != "undefined") {
-        if (activequiz.get('showingcorrectanswer') == 'true') {
+    if (jazzquiz.get('showingcorrectanswer') != "undefined") {
+        if (jazzquiz.get('showingcorrectanswer') == 'true') {
             hide = true;
         }
     }
 
     if (hide) {
-        activequiz.quiz_info(null, '');
+        jazzquiz.quiz_info(null, '');
         // change button text
         var scaBtn = document.getElementById('showcorrectanswer');
-        scaBtn.innerHTML = M.util.get_string('show_correct_answer', 'activequiz');
-        activequiz.set('showingcorrectanswer', 'false');
+        scaBtn.innerHTML = M.util.get_string('show_correct_answer', 'jazzquiz');
+        jazzquiz.set('showingcorrectanswer', 'false');
         this.reload_results();
     } else {
-        activequiz.loading(M.util.get_string('loading', 'activequiz'), 'show');
+        jazzquiz.loading(M.util.get_string('loading', 'jazzquiz'), 'show');
 
         var params = {
             'action': 'getrightresponse',
-            'rtqid': activequiz.get('rtqid'),
-            'sessionid': activequiz.get('sessionid'),
-            'attemptid': activequiz.get('attemptid'),
-            'sesskey': activequiz.get('sesskey')
+            'rtqid': jazzquiz.get('rtqid'),
+            'sessionid': jazzquiz.get('sessionid'),
+            'attemptid': jazzquiz.get('attemptid'),
+            'sesskey': jazzquiz.get('sesskey')
         };
 
         // make sure we end the question (on end_question function call this is re-doing what we just did)
         // but handle_request is also called on ending of the question timer in core.js
-        activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+        jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
             if (status == 500) {
                 var loadingbox = document.getElementById('loadingbox');
                 loadingbox.classList.add('hidden');
 
-                activequiz.quiz_info('There was an error with your request', true);
+                jazzquiz.quiz_info('There was an error with your request', true);
 
                 window.alert('there was an error with your request ... ');
                 return;
             }
 
-            activequiz.hide_all_questionboxes();
-            activequiz.clear_and_hide_qinfobox();
+            jazzquiz.hide_all_questionboxes();
+            jazzquiz.clear_and_hide_qinfobox();
 
-            activequiz.quiz_info(response.rightanswer, true);
-            activequiz.render_all_mathjax();
+            jazzquiz.quiz_info(response.rightanswer, true);
+            jazzquiz.render_all_mathjax();
 
             // change button text
             var scaBtn = document.getElementById('showcorrectanswer');
-            scaBtn.innerHTML = M.util.get_string('hide_correct_answer', 'activequiz');
+            scaBtn.innerHTML = M.util.get_string('hide_correct_answer', 'jazzquiz');
 
-            activequiz.set('showingcorrectanswer', 'true');
+            jazzquiz.set('showingcorrectanswer', 'true');
 
-            activequiz.loading(null, 'hide');
+            jazzquiz.loading(null, 'hide');
 
         });
     }
@@ -958,21 +958,21 @@ activequiz.show_correct_answer = function () {
 /**
  * Toggles the "show student responses" variable
  */
-activequiz.toggle_responses = function () {
+jazzquiz.toggle_responses = function () {
 
     var toggleresponsesBtn = document.getElementById('toggleresponses');
 
-    if (activequiz.get('showstudentresponses') === false) { // if it is false, set it back to true for the student responses to show
+    if (jazzquiz.get('showstudentresponses') === false) { // if it is false, set it back to true for the student responses to show
 
-        toggleresponsesBtn.innerHTML = M.util.get_string('hidestudentresponses', 'activequiz');
+        toggleresponsesBtn.innerHTML = M.util.get_string('hidestudentresponses', 'jazzquiz');
 
-        activequiz.set('showstudentresponses', true);
-        activequiz.gather_current_results();
+        jazzquiz.set('showstudentresponses', true);
+        jazzquiz.gather_current_results();
     } else { // if it's set to true, or not set at all, then set it to false when this button is clicked
 
-        toggleresponsesBtn.innerHTML = M.util.get_string('showstudentresponses', 'activequiz');
-        activequiz.set('showstudentresponses', false);
-        activequiz.clear_and_hide_qinfobox();
+        toggleresponsesBtn.innerHTML = M.util.get_string('showstudentresponses', 'jazzquiz');
+        jazzquiz.set('showstudentresponses', false);
+        jazzquiz.clear_and_hide_qinfobox();
     }
 };
 
@@ -980,41 +980,41 @@ activequiz.toggle_responses = function () {
 /**
  * Toggles the "show not responded" variable
  */
-activequiz.toggle_notresponded = function () {
+jazzquiz.toggle_notresponded = function () {
 
     var togglenotrespondedBtn = document.getElementById('togglenotresponded');
 
-    if (activequiz.get('shownotresponded') === false) { // if it is false, set it back to true for the student responses to show
+    if (jazzquiz.get('shownotresponded') === false) { // if it is false, set it back to true for the student responses to show
 
-        togglenotrespondedBtn.innerHTML = M.util.get_string('hidenotresponded', 'activequiz');
+        togglenotrespondedBtn.innerHTML = M.util.get_string('hidenotresponded', 'jazzquiz');
 
-        activequiz.set('shownotresponded', true);
-        activequiz.getnotresponded();
+        jazzquiz.set('shownotresponded', true);
+        jazzquiz.getnotresponded();
     } else { // if it's set to true, or not set at all, then set it to false when this button is clicked
 
-        togglenotrespondedBtn.innerHTML = M.util.get_string('shownotresponded', 'activequiz');
-        activequiz.set('shownotresponded', false);
-        activequiz.clear_and_hide_notresponded();
+        togglenotrespondedBtn.innerHTML = M.util.get_string('shownotresponded', 'jazzquiz');
+        jazzquiz.set('shownotresponded', false);
+        jazzquiz.clear_and_hide_notresponded();
     }
 };
 
 
-activequiz.getnotresponded = function () {
+jazzquiz.getnotresponded = function () {
 
     var params = {
         'action': 'getnotresponded',
-        'rtqid': activequiz.get('rtqid'),
-        'sessionid': activequiz.get('sessionid'),
-        'attemptid': activequiz.get('attemptid'),
-        'sesskey': activequiz.get('sesskey')
+        'rtqid': jazzquiz.get('rtqid'),
+        'sessionid': jazzquiz.get('sessionid'),
+        'attemptid': jazzquiz.get('attemptid'),
+        'sesskey': jazzquiz.get('sesskey')
     };
 
-    activequiz.ajax.create_request('/mod/activequiz/quizdata.php', params, function (status, response) {
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status == '500') {
-            activequiz.not_responded_info('there was an error getting not responded students', true);
+            jazzquiz.not_responded_info('there was an error getting not responded students', true);
         } else if (status == 200) {
-            activequiz.not_responded_info(response.notresponded, true);
+            jazzquiz.not_responded_info(response.notresponded, true);
         }
 
     });
@@ -1027,7 +1027,7 @@ activequiz.getnotresponded = function () {
  *
  * @param buttons An array of button ids to have enabled in the in quiz controls buttons
  */
-activequiz.control_buttons = function (buttons) {
+jazzquiz.control_buttons = function (buttons) {
 
     var children = jQuery('#inquizcontrols .list-controls').children();
 
@@ -1038,7 +1038,7 @@ activequiz.control_buttons = function (buttons) {
 };
 
 
-activequiz.not_responded_info = function (notresponded, clear) {
+jazzquiz.not_responded_info = function (notresponded, clear) {
 
     var notrespondedbox = document.getElementById('notrespondedbox');
 
@@ -1067,7 +1067,7 @@ activequiz.not_responded_info = function (notresponded, clear) {
     }
 };
 
-activequiz.clear_and_hide_notresponded = function () {
+jazzquiz.clear_and_hide_notresponded = function () {
 
     var notrespondedbox = document.getElementById('notrespondedbox');
 
@@ -1081,7 +1081,7 @@ activequiz.clear_and_hide_notresponded = function () {
 
 // Create a container with fixed position that fills the entire screen
 // Grabs the already existing question text and bar graph and shows it in a minimalistic style.
-activequiz.show_fullscreen_results_view = function () {
+jazzquiz.show_fullscreen_results_view = function () {
 
     // Hide the scrollbar - remember to always set back to auto when closing
     document.documentElement.style.overflowY = 'hidden';
@@ -1098,10 +1098,10 @@ activequiz.show_fullscreen_results_view = function () {
     }
 
     // Set question text
-    container.innerHTML = activequiz.get_question_body_formatted(activequiz.get('currentquestion'));
+    container.innerHTML = jazzquiz.get_question_body_formatted(jazzquiz.get('currentquestion'));
 
     // Do we want to show the results?
-    var show_results = (activequiz.current_quiz_state !== 'running');
+    var show_results = (jazzquiz.current_quiz_state !== 'running');
 
     if (show_results) {
 
@@ -1109,25 +1109,25 @@ activequiz.show_fullscreen_results_view = function () {
         var quizinfobox = document.getElementById('quizinfobox');
         if (quizinfobox !== null && quizinfobox.children.length > 0) {
             // NOTE: Always assumes first child of quizinfobox is a table
-            container.innerHTML += '<table class="activequiz-responses-overview">' + quizinfobox.children[0].innerHTML + '</table>';
+            container.innerHTML += '<table class="jazzquiz-responses-overview">' + quizinfobox.children[0].innerHTML + '</table>';
         }
 
     }
 
     // Let's update the view every second
-    if (activequiz.fullscreen_interval_handle === undefined) {
-        activequiz.fullscreen_interval_handle = setInterval(function () {
-            activequiz.show_fullscreen_results_view();
+    if (jazzquiz.fullscreen_interval_handle === undefined) {
+        jazzquiz.fullscreen_interval_handle = setInterval(function () {
+            jazzquiz.show_fullscreen_results_view();
         }, 1000);
     }
 };
 
 // Checks if the view currently exists, and removes it if so.
-activequiz.close_fullscreen_results_view = function () {
+jazzquiz.close_fullscreen_results_view = function () {
 
     // Stop the interval
-    clearInterval(activequiz.fullscreen_interval_handle);
-    activequiz.fullscreen_interval_handle = undefined;
+    clearInterval(jazzquiz.fullscreen_interval_handle);
+    jazzquiz.fullscreen_interval_handle = undefined;
 
     // Does the container exist?
     var container = document.getElementById('fullscreen_results_container');
@@ -1145,7 +1145,7 @@ activequiz.close_fullscreen_results_view = function () {
 document.addEventListener('keyup', function (e) {
     // Check if 'Escape' key was pressed
     if (e.keyCode == 27) {
-        activequiz.close_fullscreen_results_view();
+        jazzquiz.close_fullscreen_results_view();
     }
 });
 

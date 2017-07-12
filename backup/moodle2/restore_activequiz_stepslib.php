@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @author    Davo Smith
  * @copyright 2014 University of Wisconsin - Madison
@@ -25,13 +25,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Define all the restore steps that will be used by the restore_activequiz_activity_task
+ * Define all the restore steps that will be used by the restore_jazzquiz_activity_task
  */
 
 /**
- * Structure step to restore one activequiz activity
+ * Structure step to restore one jazzquiz activity
  */
-class restore_activequiz_activity_structure_step extends restore_questions_activity_structure_step {
+class restore_jazzquiz_activity_structure_step extends restore_questions_activity_structure_step {
 
     /** @var \stdClass $currentrtqattempt Store the current attempt until the inform_new_usage_id is called */
     private $currentrtqattempt;
@@ -45,28 +45,28 @@ class restore_activequiz_activity_structure_step extends restore_questions_activ
         $paths = array();
         $userinfo = $this->get_setting_value('userinfo');
 
-        $paths[] = new restore_path_element('activequiz', '/activity/activequiz');
-        $paths[] = new restore_path_element('activequiz_question', '/activity/activequiz/questions/question');
+        $paths[] = new restore_path_element('jazzquiz', '/activity/jazzquiz');
+        $paths[] = new restore_path_element('jazzquiz_question', '/activity/jazzquiz/questions/question');
 
         if ($userinfo) {
-            $paths[] = new restore_path_element('activequiz_grade', '/activity/activequiz/grades/grade');
-            $paths[] = new restore_path_element('activequiz_session', '/activity/activequiz/sessions/session');
+            $paths[] = new restore_path_element('jazzquiz_grade', '/activity/jazzquiz/grades/grade');
+            $paths[] = new restore_path_element('jazzquiz_session', '/activity/jazzquiz/sessions/session');
 
-            $quizattempt = new restore_path_element('activequiz_attempt', '/activity/activequiz/sessions/session/attempts/attempt');
+            $quizattempt = new restore_path_element('jazzquiz_attempt', '/activity/jazzquiz/sessions/session/attempts/attempt');
             $paths[] = $quizattempt;
 
             // Add states and question usages for the attempts.
             $this->add_question_usages($quizattempt, $paths);
 
-            $paths[] = new restore_path_element('activequiz_groupattendance',
-                '/activity/activequiz/sessions/session/attempts/attempt/groupattendances/groupattendance');
+            $paths[] = new restore_path_element('jazzquiz_groupattendance',
+                '/activity/jazzquiz/sessions/session/attempts/attempt/groupattendances/groupattendance');
         }
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
 
-    protected function process_activequiz($data) {
+    protected function process_jazzquiz($data) {
         global $DB;
 
         $data = (object)$data;
@@ -79,60 +79,60 @@ class restore_activequiz_activity_structure_step extends restore_questions_activ
         $this->oldquestionorder = $data->questionorder;
         $data->questionorder = null; // set to null,  This will be updated in after_execute
 
-        $newitemid = $DB->insert_record('activequiz', $data);
+        $newitemid = $DB->insert_record('jazzquiz', $data);
         $this->apply_activity_instance($newitemid);
     }
 
-    protected function process_activequiz_question($data) {
+    protected function process_jazzquiz_question($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
-        $data->activequizid = $this->get_new_parentid('activequiz');
+        $data->jazzquizid = $this->get_new_parentid('jazzquiz');
         if ($questionid = $this->get_mappingid('question', $data->questionid)) {
             $data->questionid = $questionid;
         } else {
             return;
         }
 
-        $newitemid = $DB->insert_record('activequiz_questions', $data);
+        $newitemid = $DB->insert_record('jazzquiz_questions', $data);
 
-        $this->set_mapping('activequiz_question', $oldid, $newitemid);
+        $this->set_mapping('jazzquiz_question', $oldid, $newitemid);
     }
 
-    protected function process_activequiz_grade($data) {
+    protected function process_jazzquiz_grade($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
-        $data->activequizid = $this->get_new_parentid('activequiz');
+        $data->jazzquizid = $this->get_new_parentid('jazzquiz');
         $data->grade = $data->gradeval;
         $data->userid = $this->get_mappingid('user', $data->userid);
         $data->timemodified = $this->apply_date_offset($data->timemodified);
 
-        $newitemid = $DB->insert_record('activequiz_grades', $data);
-        $this->set_mapping('activequiz_grade', $oldid, $newitemid);
+        $newitemid = $DB->insert_record('jazzquiz_grades', $data);
+        $this->set_mapping('jazzquiz_grade', $oldid, $newitemid);
     }
 
-    protected function process_activequiz_session($data) {
+    protected function process_jazzquiz_session($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
 
-        $data->activequizid = $this->get_new_parentid('activequiz');
+        $data->jazzquizid = $this->get_new_parentid('jazzquiz');
         $data->created = $this->apply_date_offset($data->created);
 
-        $newitemid = $DB->insert_record('activequiz_sessions', $data);
-        $this->set_mapping('activequiz_session', $oldid, $newitemid);
+        $newitemid = $DB->insert_record('jazzquiz_sessions', $data);
+        $this->set_mapping('jazzquiz_session', $oldid, $newitemid);
     }
 
-    protected function process_activequiz_attempt($data) {
+    protected function process_jazzquiz_attempt($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
-        $data->sessionid = $this->get_new_parentid('activequiz_session');
+        $data->sessionid = $this->get_new_parentid('jazzquiz_session');
 
         $data->userid = $this->get_mappingid('user', $data->userid);
         $data->forgroupid = $this->get_mappingid('group', $data->forgroupid);
@@ -153,45 +153,45 @@ class restore_activequiz_activity_structure_step extends restore_questions_activ
         $oldid = $data->id;
         $data->questionengid = $newusageid;
 
-        $newitemid = $DB->insert_record('activequiz_attempts', $data);
+        $newitemid = $DB->insert_record('jazzquiz_attempts', $data);
 
-        $this->set_mapping('activequiz_attempt', $oldid, $newitemid, false);
+        $this->set_mapping('jazzquiz_attempt', $oldid, $newitemid, false);
     }
 
-    protected function process_activequiz_groupattendance($data) {
+    protected function process_jazzquiz_groupattendance($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
 
-        $data->activequizid = $this->task->get_activityid();
-        $data->sessionid = $this->get_mappingid('activequiz_session', $data->sessionid);
-        $data->attemptid = $this->get_new_parentid('activequiz_attempt');
+        $data->jazzquizid = $this->task->get_activityid();
+        $data->sessionid = $this->get_mappingid('jazzquiz_session', $data->sessionid);
+        $data->attemptid = $this->get_new_parentid('jazzquiz_attempt');
         $data->groupid = $this->get_mappingid('group', $data->groupid);
         $data->userid = $this->get_mappingid('user', $data->userid);
 
-        $newitemid = $DB->insert_record('activequiz_groupattendance', $data);
+        $newitemid = $DB->insert_record('jazzquiz_groupattendance', $data);
 
-        $this->set_mapping('activequiz_groupattendance', $oldid, $newitemid);
+        $this->set_mapping('jazzquiz_groupattendance', $oldid, $newitemid);
     }
 
     protected function after_execute() {
         global $DB;
 
-        $this->recode_activequiz_questionorder();
+        $this->recode_jazzquiz_questionorder();
 
         // Add intro files
-        $this->add_related_files('mod_activequiz', 'intro', null);
+        $this->add_related_files('mod_jazzquiz', 'intro', null);
     }
 
     /**
-     * Recodes the questionorder field for the activequiz object
+     * Recodes the questionorder field for the jazzquiz object
      * base on what we stored in the class var earlier
      *
      * Also deletes unused question records in case a random question record didn't match up with the question order
      *
      */
-    protected function recode_activequiz_questionorder() {
+    protected function recode_jazzquiz_questionorder() {
         global $DB;
 
         $oldqorder = explode(',', $this->oldquestionorder);
@@ -199,13 +199,13 @@ class restore_activequiz_activity_structure_step extends restore_questions_activ
 
         foreach ($oldqorder as $oldq) {
 
-            $newqid = $this->get_mappingid('activequiz_question', $oldq);
+            $newqid = $this->get_mappingid('jazzquiz_question', $oldq);
             if ($newqid) {
                 $newqorder[] = $newqid;
             }
         }
 
         $newqorder = implode(',', $newqorder);
-        $DB->set_field('activequiz', 'questionorder', $newqorder, array('id' => $this->get_task()->get_activityid()));
+        $DB->set_field('jazzquiz', 'questionorder', $newqorder, array('id' => $this->get_task()->get_activityid()));
     }
 }

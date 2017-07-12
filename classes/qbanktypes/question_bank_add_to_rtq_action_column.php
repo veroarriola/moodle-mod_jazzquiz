@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\qbanktypes;
+namespace mod_jazzquiz\qbanktypes;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Custom action column for adding a question to the realtime quiz from the question bank view
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -32,7 +32,7 @@ class question_bank_add_to_rtq_action_column extends \core_question\bank\action_
 
     public function init() {
         parent::init();
-        $this->stradd = get_string('addtoquiz', 'activequiz');
+        $this->stradd = get_string('addtoquiz', 'jazzquiz');
     }
 
     public function get_name() {

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines backup_activequiz_activity_structure_step class
+ * Defines backup_jazzquiz_activity_structure_step class
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @author      Davo Smith
  * @copyright   2014 University of Wisconsin - Madison
@@ -28,13 +28,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Define all the backup steps that will be used by the backup_activequiz_activity_task
+ * Define all the backup steps that will be used by the backup_jazzquiz_activity_task
  */
 
 /**
- * Define the complete activequiz structure for backup, with file and id annotations
+ * Define the complete jazzquiz structure for backup, with file and id annotations
  */
-class backup_activequiz_activity_structure_step extends backup_questions_activity_structure_step {
+class backup_jazzquiz_activity_structure_step extends backup_questions_activity_structure_step {
 
     protected function define_structure() {
 
@@ -43,7 +43,7 @@ class backup_activequiz_activity_structure_step extends backup_questions_activit
 
         // Define each element separated.
 
-        $activequiz = new backup_nested_element('activequiz', array('id'), array(
+        $jazzquiz = new backup_nested_element('jazzquiz', array('id'), array(
             'name', 'intro', 'introformat', 'graded', 'scale', 'grademethod', 'workedingroups',
             'grouping', 'groupattendance', 'reviewoptions', 'timecreated', 'timemodified', 'defaultquestiontime',
             'waitforquestiontime', 'questionorder'
@@ -77,17 +77,17 @@ class backup_activequiz_activity_structure_step extends backup_questions_activit
 
         $groupattendances = new backup_nested_element('groupattendances');
         $groupattendance = new backup_nested_element('groupattendance', array('id'), array(
-            'activequizid', 'sessionid', 'groupid', 'userid'
+            'jazzquizid', 'sessionid', 'groupid', 'userid'
         ));
 
         // Build the tree.
-        $activequiz->add_child($questions);
+        $jazzquiz->add_child($questions);
         $questions->add_child($question);
 
-        $activequiz->add_child($grades);
+        $jazzquiz->add_child($grades);
         $grades->add_child($grade);
 
-        $activequiz->add_child($sessions);
+        $jazzquiz->add_child($sessions);
         $sessions->add_child($session);
 
         $session->add_child($attempts);
@@ -97,22 +97,22 @@ class backup_activequiz_activity_structure_step extends backup_questions_activit
         $groupattendances->add_child($groupattendance);
 
         // Define sources.
-        $activequiz->set_source_table('activequiz', array('id' => backup::VAR_ACTIVITYID));
-        $question->set_source_table('activequiz_questions', array('activequizid' => backup::VAR_PARENTID));
+        $jazzquiz->set_source_table('jazzquiz', array('id' => backup::VAR_ACTIVITYID));
+        $question->set_source_table('jazzquiz_questions', array('jazzquizid' => backup::VAR_PARENTID));
 
         // If user info backup grades table.
         if ($userinfo) {
-            $grade->set_source_table('activequiz_grades', array('activequizid' => backup::VAR_PARENTID));
-            $session->set_source_table('activequiz_sessions', array('activequizid' => backup::VAR_PARENTID));
-            $attempt->set_source_table('activequiz_attempts', array('sessionid' => backup::VAR_PARENTID));
-            $groupattendance->set_source_table('activequiz_groupattendance', array('attemptid' => backup::VAR_PARENTID));
+            $grade->set_source_table('jazzquiz_grades', array('jazzquizid' => backup::VAR_PARENTID));
+            $session->set_source_table('jazzquiz_sessions', array('jazzquizid' => backup::VAR_PARENTID));
+            $attempt->set_source_table('jazzquiz_attempts', array('sessionid' => backup::VAR_PARENTID));
+            $groupattendance->set_source_table('jazzquiz_groupattendance', array('attemptid' => backup::VAR_PARENTID));
         }
 
         // Define source alias.
         $grade->set_source_alias('grade', 'gradeval');
 
         // Define id annotations.
-        $activequiz->annotate_ids('grouping', 'grouping');
+        $jazzquiz->annotate_ids('grouping', 'grouping');
         $grade->annotate_ids('user', 'userid');
         $attempt->annotate_ids('user', 'userid');
         $attempt->annotate_ids('group', 'forgroupid');
@@ -121,10 +121,10 @@ class backup_activequiz_activity_structure_step extends backup_questions_activit
         $groupattendance->annotate_ids('user', 'userid');
 
         // Define file annotations.
-        $activequiz->annotate_files('mod_activequiz', 'intro', null); // This file area hasn't itemid.
+        $jazzquiz->annotate_files('mod_jazzquiz', 'intro', null); // This file area hasn't itemid.
 
-        // Return the root element (activequiz), wrapped into standard activity structure.
-        return $this->prepare_activity_structure($activequiz);
+        // Return the root element (jazzquiz), wrapped into standard activity structure.
+        return $this->prepare_activity_structure($jazzquiz);
     }
 
 }

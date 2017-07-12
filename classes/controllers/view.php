@@ -14,24 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\controllers;
+namespace mod_jazzquiz\controllers;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * view controller class for the view page
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class view {
 
-    /** @var \mod_activequiz\activequiz Realtime quiz class */
+    /** @var \mod_jazzquiz\jazzquiz Realtime quiz class */
     protected $RTQ;
 
-    /** @var \mod_activequiz\activequiz_session $session The session class for the activequiz view */
+    /** @var \mod_jazzquiz\jazzquiz_session $session The session class for the jazzquiz view */
     protected $session;
 
     /** @var string $action The specified action to take */
@@ -67,13 +67,13 @@ class view {
 
         // get necessary records from the DB
         if ($id) {
-            $cm = get_coursemodule_from_id('activequiz', $id, 0, false, MUST_EXIST);
+            $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('activequiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', array('id' => $cm->instance), '*', MUST_EXIST);
         } else {
-            $quiz = $DB->get_record('activequiz', array('id' => $quizid), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', array('id' => $quizid), '*', MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
-            $cm = get_coursemodule_from_instance('activequiz', $quiz->id, $course->id, false, MUST_EXIST);
+            $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
         $this->get_parameters(); // get the rest of the parameters and set them in the class
 
@@ -84,17 +84,17 @@ class view {
         $this->pageurl->param('action', $this->pagevars['action']);
         $this->pagevars['pageurl'] = $this->pageurl;
 
-        $this->RTQ = new \mod_activequiz\activequiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
-        $this->RTQ->require_capability('mod/activequiz:attempt');
+        $this->RTQ = new \mod_jazzquiz\jazzquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
+        $this->RTQ->require_capability('mod/jazzquiz:attempt');
         $this->pagevars['isinstructor'] = $this->RTQ->is_instructor(); // set this up in the page vars so it can be passed to things like the renderer
 
-        // finally set up the question manager and the possible activequiz session
-        $this->session = new \mod_activequiz\activequiz_session($this->RTQ, $this->pageurl, $this->pagevars);
+        // finally set up the question manager and the possible jazzquiz session
+        $this->session = new \mod_jazzquiz\jazzquiz_session($this->RTQ, $this->pageurl, $this->pagevars);
 
         $PAGE->set_pagelayout('incourse');
         $PAGE->set_context($this->RTQ->getContext());
         $PAGE->set_cm($this->RTQ->getCM());
-        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "activequiz") . ': ' .
+        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "jazzquiz") . ': ' .
             format_string($quiz->name, true)));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
@@ -138,7 +138,7 @@ class view {
                     $redirurl = clone($this->pageurl);
                     $redirurl->remove_params('action');
 
-                    redirect($redirurl, get_string('nosession', 'activequiz'), 5);
+                    redirect($redirurl, get_string('nosession', 'jazzquiz'), 5);
                 } else {
 
                     // this is here to help prevent race conditions for multiple group members trying to take the
@@ -147,7 +147,7 @@ class view {
                     if ($this->RTQ->group_mode()) {
 
                         if(!$this->RTQ->is_instructor() && $this->pagevars['group'] == 0){
-                            print_error('invalidgroupid', 'mod_activequiz');
+                            print_error('invalidgroupid', 'mod_jazzquiz');
                         }
 
                         // check if the user can take the quiz for the group
@@ -164,7 +164,7 @@ class view {
                         if (!$this->session->init_attempts($this->RTQ->is_instructor(), $this->pagevars['group'],
                             $this->pagevars['groupmembers'])
                         ) {
-                            print_error('cantinitattempts', 'activequiz');
+                            print_error('cantinitattempts', 'jazzquiz');
                         }
 
                         // set the session as running
@@ -194,10 +194,10 @@ class view {
                 if (empty($this->pagevars['group'])) {
                     $viewhome = clone($this->pageurl);
                     $viewhome->remove_params('action');
-                    redirect($viewhome, get_string('invalid_group_selected', 'activequiz'), 5);
+                    redirect($viewhome, get_string('invalid_group_selected', 'jazzquiz'), 5);
                 } else {
                     $this->pageurl->param('group', $this->pagevars['group']);
-                    $groupselectform = new \mod_activequiz\forms\view\groupselectmembers(
+                    $groupselectform = new \mod_jazzquiz\forms\view\groupselectmembers(
                         $this->pageurl,
                         array(
                             'rtq'           => $this->RTQ,
@@ -234,7 +234,7 @@ class view {
                 // default is to show view to start quiz (for instructors/quiz controllers) or join quiz (for everyone else)
 
                 // trigger event for course module viewed
-                $event = \mod_activequiz\event\course_module_viewed::create(array(
+                $event = \mod_jazzquiz\event\course_module_viewed::create(array(
                     'objectid' => $PAGE->cm->instance,
                     'context'  => $PAGE->context,
                 ));
@@ -245,22 +245,22 @@ class view {
 
                 // determine home display based on role
                 if ($this->RTQ->is_instructor()) {
-                    $startsessionform = new \mod_activequiz\forms\view\start_session($this->pageurl);
+                    $startsessionform = new \mod_jazzquiz\forms\view\start_session($this->pageurl);
 
                     if ($data = $startsessionform->get_data()) {
                         // create a new quiz session
 
                         // first check to see if there are any open sessions
                         // this shouldn't occur, but never hurts to check
-                        $sessions = $DB->get_records('activequiz_sessions', array(
-                                'activequizid' => $this->RTQ->getRTQ()->id,
+                        $sessions = $DB->get_records('jazzquiz_sessions', array(
+                                'jazzquizid' => $this->RTQ->getRTQ()->id,
                                 'sessionopen'  => 1
                             )
                         );
 
                         if (!empty($sessions)) {
                             // error out with that there are existing sessions
-                            $this->RTQ->get_renderer()->setMessage(get_string('alreadyexisting_sessions', 'activequiz'), 'error');
+                            $this->RTQ->get_renderer()->setMessage(get_string('alreadyexisting_sessions', 'jazzquiz'), 'error');
                             $this->RTQ->get_renderer()->view_header();
                             $this->RTQ->get_renderer()->view_inst_home($startsessionform, $this->session->get_session());
                             $this->RTQ->get_renderer()->view_footer();
@@ -268,7 +268,7 @@ class view {
                         } else {
                             if (!$this->session->create_session($data)) {
                                 // error handling
-                                $this->RTQ->get_renderer()->setMessage(get_string('unabletocreate_session', 'activequiz'), 'error');
+                                $this->RTQ->get_renderer()->setMessage(get_string('unabletocreate_session', 'jazzquiz'), 'error');
                                 $this->RTQ->get_renderer()->view_header();
                                 $this->RTQ->get_renderer()->view_inst_home($startsessionform, $this->session->get_session());
                                 $this->RTQ->get_renderer()->view_footer();
@@ -302,7 +302,7 @@ class view {
                         }
                     }
                     $studentstartformparams = array('rtq' => $this->RTQ, 'validgroups' => $validgroups);
-                    $studentstartform = new \mod_activequiz\forms\view\student_start_form($this->pageurl, $studentstartformparams);
+                    $studentstartform = new \mod_jazzquiz\forms\view\student_start_form($this->pageurl, $studentstartformparams);
                     if ($data = $studentstartform->get_data()) {
 
                         $quizstarturl = clone($this->pageurl);

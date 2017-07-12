@@ -14,31 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz;
+namespace mod_jazzquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * A class holder for a activequiz session
+ * A class holder for a jazzquiz session
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class activequiz_session
+class jazzquiz_session
 {
 
-    /** @var activequiz $rtq activequiz object */
+    /** @var jazzquiz $rtq jazzquiz object */
     protected $rtq;
 
     /** @var \stdClass db object for the session */
     protected $session;
 
-    /** @var  array An array of activequiz_attempts for the session */
+    /** @var  array An array of jazzquiz_attempts for the session */
     protected $attempts;
 
-    /** @var activequiz_attempt $openAttempt The current open attempt */
+    /** @var jazzquiz_attempt $openAttempt The current open attempt */
     protected $openAttempt;
 
     /** @var \moodle_url $pageurl */
@@ -51,7 +51,7 @@ class activequiz_session
     /**
      * Construct a session class
      *
-     * @param activequiz $rtq
+     * @param jazzquiz $rtq
      * @param \moodle_url $pageurl
      * @param array $pagevars
      * @param \stdClass $session (optional) This is optional, and if sent will tell the construct to not load
@@ -70,7 +70,7 @@ class activequiz_session
         } else {
             // next attempt to get a "current" session for this quiz
             // returns false if no record is found
-            $this->session = $DB->get_record('activequiz_sessions', array('activequizid' => $this->rtq->getRTQ()->id, 'sessionopen' => 1));
+            $this->session = $DB->get_record('jazzquiz_sessions', array('jazzquizid' => $this->rtq->getRTQ()->id, 'sessionopen' => 1));
         }
 
     }
@@ -100,7 +100,7 @@ class activequiz_session
 
         $newSession = new \stdClass();
         $newSession->name = $data->sessionname;
-        $newSession->activequizid = $this->rtq->getRTQ()->id;
+        $newSession->jazzquizid = $this->rtq->getRTQ()->id;
         $newSession->sessionopen = 1;
         $newSession->status = 'notrunning';
         $newSession->anonymize_responses = $data->anonymizeresponses;
@@ -109,7 +109,7 @@ class activequiz_session
         $newSession->created = time();
 
         try {
-            $newSessionId = $DB->insert_record('activequiz_sessions', $newSession);
+            $newSessionId = $DB->insert_record('jazzquiz_sessions', $newSession);
         } catch (\Exception $e) {
             return false;
         }
@@ -147,14 +147,14 @@ class activequiz_session
 
         if (isset($this->session->id)) { // update the record
             try {
-                $DB->update_record('activequiz_sessions', $this->session);
+                $DB->update_record('jazzquiz_sessions', $this->session);
             } catch (\Exception $e) {
                 return false; // return false on failure
             }
         } else {
             // insert new record
             try {
-                $newId = $DB->insert_record('activequiz_sessions', $this->session);
+                $newId = $DB->insert_record('jazzquiz_sessions', $this->session);
                 $this->session->id = $newId;
             } catch (\Exception $e) {
                 return false; // return false on failure
@@ -177,10 +177,10 @@ class activequiz_session
         global $DB;
 
         // delete all attempt qubaids, then all realtime quiz attempts, and then finally itself
-        \question_engine::delete_questions_usage_by_activities(new \mod_activequiz\utils\qubaids_for_rtq($sessionid));
-        $DB->delete_records('activequiz_attempts', array('sessionid' => $sessionid));
-        $DB->delete_records('activequiz_groupattendance', array('sessionid' => $sessionid));
-        $DB->delete_records('activequiz_sessions', array('id' => $sessionid));
+        \question_engine::delete_questions_usage_by_activities(new \mod_jazzquiz\utils\qubaids_for_rtq($sessionid));
+        $DB->delete_records('jazzquiz_attempts', array('sessionid' => $sessionid));
+        $DB->delete_records('jazzquiz_groupattendance', array('sessionid' => $sessionid));
+        $DB->delete_records('jazzquiz_sessions', array('id' => $sessionid));
 
         return true;
     }
@@ -192,7 +192,7 @@ class activequiz_session
      * All attempts are already running so basically we get and add the current question
      * to the session and pick a start time so all clients start at the same time
      *
-     * @return \mod_activequiz\activequiz_question
+     * @return \mod_jazzquiz\jazzquiz_question
      */
     public function start_quiz()
     {
@@ -245,7 +245,7 @@ class activequiz_session
         // get all attempts and close them
         $attempts = $this->getall_open_attempts(true);
         foreach ($attempts as $attempt) {
-            /** @var \mod_activequiz\activequiz_attempt $attempt */
+            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             $attempt->close_attempt($this->rtq);
         }
         // save the session as closed
@@ -255,9 +255,9 @@ class activequiz_session
     }
 
     /**
-     * The next activequiz question instance
+     * The next jazzquiz question instance
      *
-     * @return \mod_activequiz\activequiz_question
+     * @return \mod_jazzquiz\jazzquiz_question
      * @throws \Exception Throws exception when invalid question number
      */
     public function next_question()
@@ -275,7 +275,7 @@ class activequiz_session
      * Re-poll the "active" question.  really we're just updating times and things to re-poll
      * The question.
      *
-     * @return \mod_activequiz\activequiz_question
+     * @return \mod_jazzquiz\jazzquiz_question
      * @throws \Exception Throws exception when invalid question number
      */
     public function repoll_question()
@@ -289,10 +289,10 @@ class activequiz_session
 
     /**
      * Tells the session to go to the specified question number
-     * That activequiz_question is then returned
+     * That jazzquiz_question is then returned
      *
      * @param int|bool $qnum The question number to go to
-     * @return \mod_activequiz\activequiz_question|bool
+     * @return \mod_jazzquiz\jazzquiz_question|bool
      */
     public function goto_question($qnum = false)
     {
@@ -324,7 +324,7 @@ class activequiz_session
         $attempts = $this->getall_open_attempts(true);
 
         foreach ($attempts as $attempt) {
-            /** @var \mod_activequiz\activequiz_attempt $attempt */
+            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
 
             $attempt->responded = 0;
             $attempt->responded_count = 0;
@@ -379,7 +379,7 @@ class activequiz_session
         $totalresponsesummary = '';
         $responded = 0;
         foreach ($attempts as $attempt) {
-            /** @var \mod_activequiz\activequiz_attempt $attempt */
+            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             if ($attempt->responded == 1) {
                 $responded++;
                 $attempt->summarize_response($this->session->currentquestion);
@@ -419,7 +419,7 @@ class activequiz_session
 
         $notresponded = array();
         foreach ($attempts as $attempt) {
-            /** @var \mod_activequiz\activequiz_attempt $attempt */
+            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             if ($attempt->responded == 0) {
 
                 if (!is_null($attempt->forgroupid) && $attempt->forgroupid != 0) {
@@ -502,11 +502,11 @@ class activequiz_session
 
         if ($openAttempt === false) { // create a new attempt
 
-            $attempt = new activequiz_attempt($this->rtq->get_questionmanager());
+            $attempt = new jazzquiz_attempt($this->rtq->get_questionmanager());
             $attempt->sessionid = $this->session->id;
             $attempt->userid = $this->get_current_userid();
             $attempt->attemptnum = count($this->attempts) + 1;
-            $attempt->status = activequiz_attempt::NOTSTARTED;
+            $attempt->status = jazzquiz_attempt::NOTSTARTED;
             $attempt->preview = $preview;
             $attempt->timemodified = time();
             $attempt->timestart = time();
@@ -530,9 +530,9 @@ class activequiz_session
                     'courseid' => $this->rtq->getCourse()->id,
                     'context' => $this->rtq->getContext()
                 );
-                $event = \mod_activequiz\event\attempt_started::create($params);
-                $event->add_record_snapshot('activequiz', $this->rtq->getRTQ());
-                $event->add_record_snapshot('activequiz_attempts', $attempt->get_attempt());
+                $event = \mod_jazzquiz\event\attempt_started::create($params);
+                $event->add_record_snapshot('jazzquiz', $this->rtq->getRTQ());
+                $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
                 $event->trigger();
             }
 
@@ -542,13 +542,13 @@ class activequiz_session
                 $groupmembers = explode(',', $groupmembers);
                 foreach ($groupmembers as $userid) {
                     $gattendance = new \stdClass();
-                    $gattendance->activequizid = $this->rtq->getRTQ()->id;
+                    $gattendance->jazzquizid = $this->rtq->getRTQ()->id;
                     $gattendance->sessionid = $this->session->id;
                     $gattendance->attemptid = $attempt->id;
                     $gattendance->groupid = $group;
                     $gattendance->userid = $userid;
 
-                    if (!$DB->insert_record('activequiz_groupattendance', $gattendance)) {
+                    if (!$DB->insert_record('jazzquiz_groupattendance', $gattendance)) {
                         throw new \Exception('cant and groups for group attendance');
                     }
                 }
@@ -586,11 +586,11 @@ class activequiz_session
         }
 
         // Full Anonymisation is on, so generate a random ID and store it in the USER variable (kept until the user logs out).
-        if (empty($USER->mod_activequiz_anon_userid)) {
-            $USER->mod_activequiz_anon_userid = -mt_rand(100000, mt_getrandmax());
+        if (empty($USER->mod_jazzquiz_anon_userid)) {
+            $USER->mod_jazzquiz_anon_userid = -mt_rand(100000, mt_getrandmax());
         }
 
-        return $USER->mod_activequiz_anon_userid;
+        return $USER->mod_jazzquiz_anon_userid;
     }
 
 
@@ -599,7 +599,7 @@ class activequiz_session
     /**
      * get the open attempt for the user
      *
-     * @return activequiz_attempt
+     * @return jazzquiz_attempt
      */
     public function get_open_attempt()
     {
@@ -611,7 +611,7 @@ class activequiz_session
      * Normally this is only called on the quizdata callback because
      * validation of the attempt occurs before the openAttempt is set for the session
      *
-     * @param \mod_activequiz\activequiz_attempt $attempt
+     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
      */
     public function set_open_attempt($attempt)
     {
@@ -644,9 +644,9 @@ class activequiz_session
         foreach ($groups as $group) {
 
             list($sql, $params) = $DB->get_in_or_equal(array($group));
-            $query = 'SELECT * FROM {activequiz_attempts} WHERE forgroupid ' . $sql .
+            $query = 'SELECT * FROM {jazzquiz_attempts} WHERE forgroupid ' . $sql .
                 ' AND status = ? AND sessionid = ? AND userid != ?';
-            $params[] = \mod_activequiz\activequiz_attempt::INPROGRESS;
+            $params[] = \mod_jazzquiz\jazzquiz_attempt::INPROGRESS;
             $params[] = $this->session->id;
             $params[] = $USER->id;
             $recs = $DB->get_records_sql($query, $params);
@@ -679,10 +679,10 @@ class activequiz_session
         }
 
         // get open attempts for the groupid passed, and determine if the current user can make/resume an attempt for it
-        $query = 'SELECT * FROM {activequiz_attempts} WHERE forgroupid = ? AND status = ? AND sessionid = ?';
+        $query = 'SELECT * FROM {jazzquiz_attempts} WHERE forgroupid = ? AND status = ? AND sessionid = ?';
         $params = array();
         $params[] = $groupid;
-        $params[] = \mod_activequiz\activequiz_attempt::INPROGRESS;
+        $params[] = \mod_jazzquiz\jazzquiz_attempt::INPROGRESS;
         $params[] = $this->session->id;
         $attempts = $DB->get_records_sql($query, $params);
 
@@ -720,7 +720,7 @@ class activequiz_session
             return array();  // if there is no session return empty array
         }
 
-        $sql = 'SELECT DISTINCT userid FROM {activequiz_attempts} WHERE sessionid = :sessionid';
+        $sql = 'SELECT DISTINCT userid FROM {jazzquiz_attempts} WHERE sessionid = :sessionid';
 
         return $DB->get_records_sql($sql, array('sessionid' => $this->session->id));
     }
@@ -730,7 +730,7 @@ class activequiz_session
      *
      * @param int $attemptid
      *
-     * @return \mod_activequiz\activequiz_attempt
+     * @return \mod_jazzquiz\jazzquiz_attempt
      */
     public function get_user_attempt($attemptid)
     {
@@ -741,16 +741,16 @@ class activequiz_session
             return null;
         }
 
-        $dbattempt = $DB->get_record('activequiz_attempts', array('id' => $attemptid));
+        $dbattempt = $DB->get_record('jazzquiz_attempts', array('id' => $attemptid));
 
-        return new \mod_activequiz\activequiz_attempt($this->rtq->get_questionmanager(), $dbattempt, $this->rtq->getContext());
+        return new \mod_jazzquiz\jazzquiz_attempt($this->rtq->get_questionmanager(), $dbattempt, $this->rtq->getContext());
     }
 
     /**
      * Get the current attempt for the current user, if there is one open.  If there is no open attempt
      * for the current user, false is returned
      *
-     * @return \mod_activequiz\activequiz_attempt|bool Returns the open attempt or false if there is none
+     * @return \mod_jazzquiz\jazzquiz_attempt|bool Returns the open attempt or false if there is none
      */
     public function get_open_attempt_for_current_user()
     {
@@ -763,7 +763,7 @@ class activequiz_session
         $openAttempt = false;
         foreach ($this->attempts as $attempt) {
 
-            /** @var activequiz_attempt $attempt doc comment for type hinting */
+            /** @var jazzquiz_attempt $attempt doc comment for type hinting */
             if ($attempt->getStatus() == 'inprogress' || $attempt->getStatus() == 'notstarted') {
                 $openAttempt = $attempt;
             }
@@ -824,11 +824,11 @@ class activequiz_session
         switch ($open) {
             case 'open':
                 $where[] = 'status = ?';
-                $sqlparams[] = activequiz_attempt::INPROGRESS;
+                $sqlparams[] = jazzquiz_attempt::INPROGRESS;
                 break;
             case 'closed':
                 $where[] = 'status = ?';
-                $sqlparams[] = activequiz_attempt::FINISHED;
+                $sqlparams[] = jazzquiz_attempt::FINISHED;
                 break;
             default:
                 // add no condition for status when 'all' or something other than open/closed
@@ -870,13 +870,13 @@ class activequiz_session
 
         $wherestring = implode(' AND ', $where);
 
-        $sql = "SELECT * FROM {activequiz_attempts} WHERE $wherestring";
+        $sql = "SELECT * FROM {jazzquiz_attempts} WHERE $wherestring";
 
         $dbattempts = $DB->get_records_sql($sql, $sqlparams);
 
         $attempts = array();
         foreach ($dbattempts as $dbattempt) {
-            $attempts[$dbattempt->id] = new activequiz_attempt($this->rtq->get_questionmanager(), $dbattempt,
+            $attempts[$dbattempt->id] = new jazzquiz_attempt($this->rtq->get_questionmanager(), $dbattempt,
                 $this->rtq->getContext());
         }
 

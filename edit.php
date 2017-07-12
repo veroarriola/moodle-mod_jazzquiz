@@ -17,7 +17,7 @@
 /**
  * Edit page for editing questions on the quiz
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,17 +25,17 @@
 
 
 require_once('../../config.php');
-require_once($CFG->dirroot . '/mod/activequiz/lib.php');
-require_once($CFG->dirroot . '/mod/activequiz/locallib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 
 
 global $OUTPUT;
 
 
-$editlib = new \mod_activequiz\controllers\edit();
+$editlib = new \mod_jazzquiz\controllers\edit();
 
 // set up the edit page
-$editlib->setup_page('/mod/activequiz/edit.php');
+$editlib->setup_page('/mod/jazzquiz/edit.php');
 $editlib->handle_action();
 
 

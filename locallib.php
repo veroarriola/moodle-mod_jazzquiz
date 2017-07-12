@@ -17,7 +17,7 @@
 /**
  * Local lib
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,25 +27,25 @@
 /**
  * Prints local lib tabs
  *
- * @param \mod_activequiz\activequiz $RTQ Realtime quiz class
+ * @param \mod_jazzquiz\jazzquiz $RTQ Realtime quiz class
  * @param                            $currenttab
  *
  * @return string HTML string of the tabs
  */
-function activequiz_view_tabs($RTQ, $currenttab) {
+function jazzquiz_view_tabs($RTQ, $currenttab) {
     $tabs = array();
     $row = array();
     $inactive = array();
     $activated = array();
 
-    if ($RTQ->has_capability('mod/activequiz:attempt')) {
-        $row[] = new tabobject('view', new moodle_url('/mod/activequiz/view.php', array('id' => $RTQ->getCM()->id)), get_string('view', 'activequiz'));
+    if ($RTQ->has_capability('mod/jazzquiz:attempt')) {
+        $row[] = new tabobject('view', new moodle_url('/mod/jazzquiz/view.php', array('id' => $RTQ->getCM()->id)), get_string('view', 'jazzquiz'));
     }
-    if ($RTQ->has_capability('mod/activequiz:editquestions')) {
-        $row[] = new tabobject('edit', new moodle_url('/mod/activequiz/edit.php', array('cmid' => $RTQ->getCM()->id)), get_string('edit', 'activequiz'));
+    if ($RTQ->has_capability('mod/jazzquiz:editquestions')) {
+        $row[] = new tabobject('edit', new moodle_url('/mod/jazzquiz/edit.php', array('cmid' => $RTQ->getCM()->id)), get_string('edit', 'jazzquiz'));
     }
-    if ($RTQ->has_capability('mod/activequiz:seeresponses')) {
-        $row[] = new tabobject('reports', new moodle_url('/mod/activequiz/reports.php', array('id' => $RTQ->getCM()->id)), get_string('responses', 'activequiz'));
+    if ($RTQ->has_capability('mod/jazzquiz:seeresponses')) {
+        $row[] = new tabobject('reports', new moodle_url('/mod/jazzquiz/reports.php', array('id' => $RTQ->getCM()->id)), get_string('responses', 'jazzquiz'));
     }
 
     if ($currenttab == 'view' && count($row) == 1) {

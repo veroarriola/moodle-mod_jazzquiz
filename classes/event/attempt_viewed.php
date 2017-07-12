@@ -15,28 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_activequiz attempt viewed event.
+ * The mod_jazzquiz attempt viewed event.
  *
- * @package    mod_activequiz
+ * @package    mod_jazzquiz
  * @author     John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright  2015 University of Wisconsin - Madison
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_activequiz\event;
+namespace mod_jazzquiz\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_activequiz attempt viewed event class.
+ * The mod_jazzquiz attempt viewed event class.
  *
  * @property-read array $other {
  *      Extra information about event.
  *
- *      - int activequizid: the id of the quiz.
+ *      - int jazzquizid: the id of the quiz.
  * }
  *
- * @package    mod_activequiz
+ * @package    mod_jazzquiz
  * @since      Moodle 2.7
  * @author     John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright  2015 University of Wisconsin - Madison
@@ -48,7 +48,7 @@ class attempt_viewed extends \core\event\base {
      * Init method.
      */
     protected function init() {
-        $this->data['objecttable'] = 'activequiz_attempts';
+        $this->data['objecttable'] = 'jazzquiz_attempts';
         $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }
@@ -59,7 +59,7 @@ class attempt_viewed extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventattemptviewed', 'mod_activequiz');
+        return get_string('eventattemptviewed', 'mod_jazzquiz');
     }
 
     /**
@@ -78,7 +78,7 @@ class attempt_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/activequiz/viewquizattempt.php', array('attemptid' => $this->objectid,
+        return new \moodle_url('/mod/jazzquiz/viewquizattempt.php', array('attemptid' => $this->objectid,
                                                                             'sessionid' => $this->data['sessionid']));
     }
 
@@ -96,12 +96,12 @@ class attempt_viewed extends \core\event\base {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
 
-        if (!isset($this->other['activequizid'])) {
-            throw new \coding_exception('The \'activequizid\' value must be set in other.');
+        if (!isset($this->other['jazzquizid'])) {
+            throw new \coding_exception('The \'jazzquizid\' value must be set in other.');
         }
 
         if (!isset($this->other['sessionid'])) {
-            throw new \coding_exception('The \'activequizid\' value must be set in other.');
+            throw new \coding_exception('The \'jazzquizid\' value must be set in other.');
         }
     }
 }

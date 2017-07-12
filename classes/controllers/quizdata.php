@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\controllers;
+namespace mod_jazzquiz\controllers;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * The controller for handling quiz data callbacks from javascript
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,10 +29,10 @@ defined('MOODLE_INTERNAL') || die();
 class quizdata
 {
 
-    /** @var \mod_activequiz\activequiz Realtime quiz class */
+    /** @var \mod_jazzquiz\jazzquiz Realtime quiz class */
     protected $RTQ;
 
-    /** @var \mod_activequiz\activequiz_session $session The session class for the activequiz view */
+    /** @var \mod_jazzquiz\jazzquiz_session $session The session class for the jazzquiz view */
     protected $session;
 
     /** @var string $action The specified action to take */
@@ -47,7 +47,7 @@ class quizdata
     /** @var array $this ->pagevars An array of page options for the page load */
     protected $pagevars = array();
 
-    /** @var \mod_activequiz\utils\jsonlib $jsonlib The jsonlib for returning json */
+    /** @var \mod_jazzquiz\utils\jsonlib $jsonlib The jsonlib for returning json */
     protected $jsonlib;
 
     /**
@@ -61,7 +61,7 @@ class quizdata
 
         // no page url as this is just a callback.
         $this->pageurl = null;
-        $this->jsonlib = new \mod_activequiz\utils\jsonlib();
+        $this->jsonlib = new \mod_jazzquiz\utils\jsonlib();
 
 
         // first check if this is a jserror, if so, log it and end execution so we're not wasting time.
@@ -84,10 +84,10 @@ class quizdata
             $this->pagevars['inquesetion'] = optional_param('inquestion', '', PARAM_ALPHAEXT);
 
             // only load things asked for, don't assume that we're loading whatever.
-            $quiz = $DB->get_record('activequiz', array('id' => $rtqid), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', array('id' => $rtqid), '*', MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
-            $cm = get_coursemodule_from_instance('activequiz', $quiz->id, $course->id, false, MUST_EXIST);
-            $session = $DB->get_record('activequiz_sessions', array('id' => $sessionid), '*', MUST_EXIST);
+            $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
+            $session = $DB->get_record('jazzquiz_sessions', array('id' => $sessionid), '*', MUST_EXIST);
 
             require_login($course->id, false, $cm, false, true);
         } catch (\moodle_exception $e) {
@@ -107,9 +107,9 @@ class quizdata
         $this->pagevars['action'] = $this->action;
 
 
-        $this->RTQ = new \mod_activequiz\activequiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
+        $this->RTQ = new \mod_jazzquiz\jazzquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
 
-        $this->session = new \mod_activequiz\activequiz_session($this->RTQ, $this->pageurl, $this->pagevars, $session);
+        $this->session = new \mod_jazzquiz\jazzquiz_session($this->RTQ, $this->pageurl, $this->pagevars, $session);
 
         // get and validate the attempt.
         $attempt = $this->session->get_user_attempt($attemptid);
@@ -189,8 +189,8 @@ class quizdata
 
         global $DB;
 
-        $quiz_questions = $DB->get_records('activequiz_questions', [
-            'activequizid' => $this->RTQ->getRTQ()->id
+        $quiz_questions = $DB->get_records('jazzquiz_questions', [
+            'jazzquizid' => $this->RTQ->getRTQ()->id
         ]);
 
         if (!$quiz_questions) {
@@ -224,9 +224,9 @@ class quizdata
 
                 // Let's find its question number in the quiz
                 $question_order = $this->RTQ->getRTQ()->questionorder;
-                $ordered_activequiz_question_ids = explode(',', $question_order);
+                $ordered_jazzquiz_question_ids = explode(',', $question_order);
                 $slot = 0;
-                foreach ($ordered_activequiz_question_ids as $id) {
+                foreach ($ordered_jazzquiz_question_ids as $id) {
                     $slot++;
                     if ($id == $quiz_question->id) {
                         break;
@@ -340,7 +340,7 @@ class quizdata
         } else {
 
             // Initialize the votes
-            $vote = new \mod_activequiz\activequiz_vote($this->session->get_session()->id);
+            $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id);
             $vote->prepare_options($this->RTQ->getRTQ()->id, $questions);
 
             // Change quiz status
@@ -368,7 +368,7 @@ class quizdata
         $user_id = $this->session->get_current_userid();
 
         // Save the vote
-        $vote = new \mod_activequiz\activequiz_vote($this->session->get_session()->id);
+        $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id);
         $status = $vote->save_vote($vote_id, $user_id);
 
         // Send response
@@ -380,7 +380,7 @@ class quizdata
     private function get_vote_results()
     {
         // Get all the vote results
-        $vote = new \mod_activequiz\activequiz_vote($this->session->get_session()->id);
+        $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id);
         $votes = $vote->get_results();
 
         // Send the response

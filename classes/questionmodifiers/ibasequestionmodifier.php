@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\questionmodifiers;
+namespace mod_jazzquiz\questionmodifiers;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * The controller for handling quiz data callbacks from javascript
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -50,8 +50,8 @@ interface ibasequestionmodifier {
      * Allows a question modifier to change the output of a particular question when displaying
      * results to the instructor
      *
-     * @param \mod_activequiz\activequiz_question $question The realtime quiz question that we're currently on
-     * @param array                               $attempts An array of \mod_activequiz\activequiz_attempt classes
+     * @param \mod_jazzquiz\jazzquiz_question $question The realtime quiz question that we're currently on
+     * @param array                               $attempts An array of \mod_jazzquiz\jazzquiz_attempt classes
      * @param string                              $output The current output from getting the results
      * @return string Return the updated output to be passed to the client
      */

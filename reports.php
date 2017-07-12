@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The responses page for realtime quizzes
+ * The responses page
  *
  * This handles displaying results
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,14 +28,14 @@
 require_once("../../config.php");
 global $CFG;
 require_once($CFG->libdir . '/questionlib.php');
-require_once($CFG->dirroot . '/mod/activequiz/locallib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
-require_once($CFG->dirroot . '/mod/activequiz/lib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
 
-$reports = new \mod_activequiz\controllers\reports();
+$reports = new \mod_jazzquiz\controllers\reports();
 
-$reports->setup_page('/mod/activequiz/reports.php');
+$reports->setup_page('/mod/jazzquiz/reports.php');
 $reports->handle_request();
 

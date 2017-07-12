@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\tableviews;
+namespace mod_jazzquiz\tableviews;
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/tablelib.php');
@@ -22,7 +22,7 @@ require_once($CFG->libdir . '/tablelib.php');
 /**
  * Table lib subclass for showing a session attempts
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,18 +30,18 @@ require_once($CFG->libdir . '/tablelib.php');
 class sessionattempts extends \flexible_table implements \renderable {
 
 
-    /** @var \mod_activequiz\activequiz $rtq */
+    /** @var \mod_jazzquiz\jazzquiz $rtq */
     protected $rtq;
 
-    /** @var \mod_activequiz\activequiz_session $session The session we're showing attempts for */
+    /** @var \mod_jazzquiz\jazzquiz_session $session The session we're showing attempts for */
     protected $session;
 
     /**
      * Contstruct this table class
      *
      * @param string                             $uniqueid The unique id for the table
-     * @param \mod_activequiz\activequiz         $rtq
-     * @param \mod_activequiz\activequiz_session $session
+     * @param \mod_jazzquiz\jazzquiz         $rtq
+     * @param \mod_jazzquiz\jazzquiz_session $session
      * @param \moodle_url                        $pageurl
      */
     public function __construct($uniqueid, $rtq, $session, $pageurl) {
@@ -66,17 +66,17 @@ class sessionattempts extends \flexible_table implements \renderable {
 
         $columns = array(
             'fullname'     => get_string('name'),
-            'attempt'      => get_string('attemptno', 'activequiz'),
+            'attempt'      => get_string('attemptno', 'jazzquiz'),
             'preview'      => get_string('preview'),
-            'timestart'    => get_string('startedon', 'activequiz'),
-            'timefinish'   => get_string('timecompleted', 'activequiz'),
-            'timemodified' => get_string('timemodified', 'activequiz'),
+            'timestart'    => get_string('startedon', 'jazzquiz'),
+            'timefinish'   => get_string('timecompleted', 'jazzquiz'),
+            'timemodified' => get_string('timemodified', 'jazzquiz'),
             'status'       => get_string('status'),
-            'attemptgrade' => get_string('attempt_grade', 'activequiz'),
+            'attemptgrade' => get_string('attempt_grade', 'jazzquiz'),
         );
 
         if (!$isdownloading) {
-            $columns['edit'] = get_string('response_attempt_controls', 'activequiz');
+            $columns['edit'] = get_string('response_attempt_controls', 'jazzquiz');
         }
 
         $this->define_columns(array_keys($columns));
@@ -167,7 +167,7 @@ class sessionattempts extends \flexible_table implements \renderable {
             // Add in controls column
 
             // view attempt
-            $viewattempturl = new \moodle_url('/mod/activequiz/viewquizattempt.php');
+            $viewattempturl = new \moodle_url('/mod/jazzquiz/viewquizattempt.php');
             $viewattempturl->param('quizid', $this->rtq->getRTQ()->id);
             $viewattempturl->param('sessionid', $item->sessionid);
             $viewattempturl->param('attemptid', $item->attemptid);
@@ -214,7 +214,7 @@ class sessionattempts extends \flexible_table implements \renderable {
         }
 
         foreach ($attempts as $attempt) {
-            /** @var \mod_activequiz\activequiz_attempt $attempt */
+            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             $ditem = new \stdClass();
             $ditem->attemptid = $attempt->id;
             $ditem->sessionid = $attempt->sessionid;
@@ -223,7 +223,7 @@ class sessionattempts extends \flexible_table implements \renderable {
                 $name = fullname($userrecs[$attempt->userid]);
                 $userid = $attempt->userid;
             }else {
-                $name = get_string('anonymoususer', 'mod_activequiz');
+                $name = get_string('anonymoususer', 'mod_jazzquiz');
                 $userid = null;
             }
 

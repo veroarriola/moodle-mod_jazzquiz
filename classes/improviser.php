@@ -1,25 +1,25 @@
 <?php
 
-namespace mod_activequiz;
+namespace mod_jazzquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
 class improviser
 {
 
-    public function add_improvised_question_instance($activequizid, $questionid)
+    public function add_improvised_question_instance($jazzquizid, $questionid)
     {
         global $DB;
 
-        // Get the ActiveQuiz
-        $activequiz = $DB->get_record('activequiz', ['id' => $activequizid]);
-        if (!$activequiz) {
+        // Get the JazzQuiz
+        $jazzquiz = $DB->get_record('jazzquiz', ['id' => $jazzquizid]);
+        if (!$jazzquiz) {
             return;
         }
 
-        // Create the new ActiveQuiz question
+        // Create the new JazzQuiz question
         $question = new \stdClass();
-        $question->activequizid = $activequizid;
+        $question->jazzquizid = $jazzquizid;
         $question->questionid = $questionid;
         $question->notime = 0;
         $question->questiontime = 60;
@@ -28,14 +28,14 @@ class improviser
         $question->showhistoryduringquiz = 0;
 
         // Save to database
-        $activequiz_question_id = $DB->insert_record('activequiz_questions', $question);
+        $jazzquiz_question_id = $DB->insert_record('jazzquiz_questions', $question);
 
-        // We must also update the question order for the ActiveQuiz
-        if ($activequiz->questionorder != '') {
-            $activequiz->questionorder .= ',';
+        // We must also update the question order for the JazzQuiz
+        if ($jazzquiz->questionorder != '') {
+            $jazzquiz->questionorder .= ',';
         }
-        $activequiz->questionorder .= $activequiz_question_id;
-        $DB->update_record('activequiz', $activequiz);
+        $jazzquiz->questionorder .= $jazzquiz_question_id;
+        $DB->update_record('jazzquiz', $jazzquiz);
 
     }
 
@@ -121,7 +121,7 @@ class improviser
         $question->id = $DB->insert_record('question', $question);
 
         // Add options
-        $options = $this->ake_multichoice_options($question->id);
+        $options = $this->make_multichoice_options($question->id);
         $DB->insert_record('qtype_multichoice_options', $options);
 
         // Add answers

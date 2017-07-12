@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\forms\view;
+namespace mod_jazzquiz\forms\view;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -24,7 +24,7 @@ require_once($CFG->libdir . '/formslib.php');
 /**
  *
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -40,7 +40,7 @@ class groupselectmembers extends \moodleform {
         global $USER;
         $custdata = $this->_customdata;
         $mform = $this->_form;
-        /** @var \mod_activequiz\activequiz $rtq */
+        /** @var \mod_jazzquiz\jazzquiz $rtq */
         $rtq = $custdata['rtq'];
         $selectedgroup = $custdata['selectedgroup'];
 
@@ -62,7 +62,7 @@ class groupselectmembers extends \moodleform {
         }
         $this->add_checkbox_controller(1);
 
-        $mform->addElement('submit', 'submitbutton', get_string('joinquiz', 'mod_activequiz'));
+        $mform->addElement('submit', 'submitbutton', get_string('joinquiz', 'mod_jazzquiz'));
 
     }
 }

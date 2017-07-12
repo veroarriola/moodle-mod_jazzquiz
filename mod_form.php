@@ -17,7 +17,7 @@
 /**
  * The main configuration form
  *
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @author    Davo Smith
  * @copyright 2014 University of Wisconsin - Madison
@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
-class mod_activequiz_mod_form extends moodleform_mod {
+class mod_jazzquiz_mod_form extends moodleform_mod {
 
 
     public function __construct($current, $section, $cm, $course) {
@@ -56,73 +56,73 @@ class mod_activequiz_mod_form extends moodleform_mod {
 
         //-------------------------------------------------------------------------------
 
-        $mform->addElement('header', 'activequizsettings', get_string('activequizsettings', 'activequiz'));
+        $mform->addElement('header', 'jazzquizsettings', get_string('jazzquizsettings', 'jazzquiz'));
 
-        $mform->addElement('duration', 'defaultquestiontime', get_string('defaultquestiontime', 'activequiz'));
+        $mform->addElement('duration', 'defaultquestiontime', get_string('defaultquestiontime', 'jazzquiz'));
         $mform->setDefault('defaultquestiontime', 30);
         $mform->setType('defaultquestiontime', PARAM_INT);
-        $mform->addHelpButton('defaultquestiontime', 'defaultquestiontime', 'activequiz');
+        $mform->addHelpButton('defaultquestiontime', 'defaultquestiontime', 'jazzquiz');
 
-        $mform->addElement('duration', 'waitforquestiontime', get_string('waitforquestiontime', 'activequiz'));
+        $mform->addElement('duration', 'waitforquestiontime', get_string('waitforquestiontime', 'jazzquiz'));
         $mform->setDefault('waitforquestiontime', 5);
         $mform->setType('waitforquestiontime', PARAM_INT);
-        $mform->addHelpButton('waitforquestiontime', 'waitforquestiontime', 'activequiz');
+        $mform->addHelpButton('waitforquestiontime', 'waitforquestiontime', 'jazzquiz');
 
-        /*$mform->addElement('checkbox', 'anonymizeresponses', get_string('anonymousresponses', 'activequiz'));
-        $mform->addHelpButton('anonymizeresponses', 'anonymousresponses', 'activequiz');
+        /*$mform->addElement('checkbox', 'anonymizeresponses', get_string('anonymousresponses', 'jazzquiz'));
+        $mform->addHelpButton('anonymizeresponses', 'anonymousresponses', 'jazzquiz');
         $mform->setDefault('anonymizeresponses', 0); */
 
-        $mform->addElement('header', 'gradesettings', get_string('gradesettings', 'activequiz'));
+        $mform->addElement('header', 'gradesettings', get_string('gradesettings', 'jazzquiz'));
 
-        $mform->addElement('checkbox', 'graded', get_string('assessed', 'activequiz'));
-        $mform->addHelpButton('graded', 'assessed', 'activequiz');
+        $mform->addElement('checkbox', 'graded', get_string('assessed', 'jazzquiz'));
+        $mform->addHelpButton('graded', 'assessed', 'jazzquiz');
         $mform->setDefault('graded', 1);
 
-        $mform->addElement('text', 'scale', get_string('scale', 'activequiz'));
+        $mform->addElement('text', 'scale', get_string('scale', 'jazzquiz'));
         $mform->addRule('scale', null, 'numeric', null, 'client');
         $mform->disabledIf('scale', 'graded');
         $mform->setDefault('scale', 10);
         $mform->setType('scale', PARAM_INT);
-        $mform->addHelpButton('scale', 'scale', 'activequiz');
+        $mform->addHelpButton('scale', 'scale', 'jazzquiz');
 
         $mform->addElement('select', 'grademethod',
-            get_string('grademethod', 'activequiz'),
-            \mod_activequiz\utils\scaletypes::get_display_types());
+            get_string('grademethod', 'jazzquiz'),
+            \mod_jazzquiz\utils\scaletypes::get_display_types());
         $mform->setType('grademethod', PARAM_INT);
-        $mform->addHelpButton('grademethod', 'grademethod', 'activequiz');
+        $mform->addHelpButton('grademethod', 'grademethod', 'jazzquiz');
 
 
         // check if there are any sessions on this realtime quiz
         $changegroups = true;
         if (!empty($this->_instance)) {
             global $DB;
-            $sessions = $DB->get_records('activequiz_sessions', array('activequizid' => $this->_instance));
+            $sessions = $DB->get_records('jazzquiz_sessions', array('jazzquizid' => $this->_instance));
             if (!empty($sessions)) {
                 $changegroups = false;
             }
         }
 
         // group settings
-        $mform->addElement('header', 'groupsettings', get_string('groupworksettings', 'activequiz'));
+        $mform->addElement('header', 'groupsettings', get_string('groupworksettings', 'jazzquiz'));
 
         $coursegroupings = $this->get_groupings();
 
         if ($changegroups == false || empty($coursegroupings)) {
-            $mform->addElement('static', 'nogroups', get_string('nochangegroups_label', 'activequiz'), get_string('nochangegroups', 'activequiz'));
+            $mform->addElement('static', 'nogroups', get_string('nochangegroups_label', 'jazzquiz'), get_string('nochangegroups', 'jazzquiz'));
         }
 
-        $mform->addElement('advcheckbox', 'workedingroups', get_string('workedingroups', 'activequiz'));
-        $mform->addHelpButton('workedingroups', 'workedingroups', 'activequiz');
+        $mform->addElement('advcheckbox', 'workedingroups', get_string('workedingroups', 'jazzquiz'));
+        $mform->addHelpButton('workedingroups', 'workedingroups', 'jazzquiz');
         $mform->setDefault('workedingroups', 0);
 
 
-        $mform->addElement('select', 'grouping', get_string('grouping', 'activequiz'), $coursegroupings);
+        $mform->addElement('select', 'grouping', get_string('grouping', 'jazzquiz'), $coursegroupings);
         $mform->disabledIf('grouping', 'workedingroups');
         $mform->setType('grouping', PARAM_INT);
-        $mform->addHelpButton('grouping', 'grouping', 'activequiz');
+        $mform->addHelpButton('grouping', 'grouping', 'jazzquiz');
 
-        $mform->addElement('advcheckbox', 'groupattendance', get_string('groupattendance', 'activequiz'));
-        $mform->addHelpButton('groupattendance', 'groupattendance', 'activequiz');
+        $mform->addElement('advcheckbox', 'groupattendance', get_string('groupattendance', 'jazzquiz'));
+        $mform->addHelpButton('groupattendance', 'groupattendance', 'jazzquiz');
         $mform->disabledIf('groupattendance', 'workedingroups');
         $mform->setDefault('groupattendance', 0);
 
@@ -133,7 +133,7 @@ class mod_activequiz_mod_form extends moodleform_mod {
         }
 
         // review option settings
-        $mform->addElement('header', 'reviewoptionsettings', get_string('reviewoptionsettings', 'activequiz'));
+        $mform->addElement('header', 'reviewoptionsettings', get_string('reviewoptionsettings', 'jazzquiz'));
 
         $this->add_review_options_group($mform, 'after', true);
 
@@ -184,14 +184,13 @@ class mod_activequiz_mod_form extends moodleform_mod {
      * @param      $whenname
      * @param bool $withhelp
      */
-    protected function add_review_options_group($mform, $whenname,
-                                                $withhelp = false) {
+    protected function add_review_options_group($mform, $whenname, $withhelp = false) {
         global $OUTPUT;
 
         /** @var MoodleQuickForm $mform */
 
         $group = array();
-        foreach (\mod_activequiz\activequiz::$reviewfields as $field => $string) {
+        foreach (\mod_jazzquiz\jazzquiz::$reviewfields as $field => $string) {
             list($identifier, $component) = $string;
 
             $label = get_string($identifier, $component);
@@ -202,9 +201,9 @@ class mod_activequiz_mod_form extends moodleform_mod {
             $group[] = $mform->createElement('advcheckbox', $field, '', $label);
         }
         $mform->addGroup($group, $whenname . 'optionsgrp',
-            get_string('review' . $whenname, 'activequiz'), null, true);
+            get_string('review' . $whenname, 'jazzquiz'), null, true);
 
-        foreach (\mod_activequiz\activequiz::$reviewfields as $field => $notused) {
+        foreach (\mod_jazzquiz\jazzquiz::$reviewfields as $field => $notused) {
             $mform->setDefault($whenname . 'optionsgrp[' . $field . ']', 1);
             if ($whenname != 'during' && $field != 'attempt') {
                 $mform->disabledIf($whenname . 'optionsgrp[' . $field . ']', $whenname . 'optionsgrp[attempt]');

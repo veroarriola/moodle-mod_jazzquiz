@@ -1,10 +1,10 @@
 // assign top level namespace
-var activequiz = activequiz || {};
-activequiz.vars = activequiz.vars || {};
-activequiz.questionmodifiers = activequiz.questionmodifiers || {};
+var jazzquiz = jazzquiz || {};
+jazzquiz.vars = jazzquiz.vars || {};
+jazzquiz.questionmodifiers = jazzquiz.questionmodifiers || {};
 
 // create a poodll recording namespace on the question modifiers
-activequiz.questionmodifiers.poodllrecording = activequiz.questionmodifiers.poodllrecording || {};
+jazzquiz.questionmodifiers.poodllrecording = jazzquiz.questionmodifiers.poodllrecording || {};
 
 /**
  * Add a light-box effect to the images for results.
@@ -13,7 +13,7 @@ activequiz.questionmodifiers.poodllrecording = activequiz.questionmodifiers.pood
  * This function is called by javascript inserted into the returning results for poodll recording question type
  * that has a response type of "picture"
  */
-activequiz.questionmodifiers.poodllrecording.lightbox_images = function () {
+jazzquiz.questionmodifiers.poodllrecording.lightbox_images = function () {
 
     // get all answer elements (most of which contain the images for the poodll question type
     var answers = document.getElementsByClassName('answer');
@@ -59,16 +59,16 @@ activequiz.questionmodifiers.poodllrecording.lightbox_images = function () {
         captions: false,
         responsive: true,
         onopen: function () {
-            activequiz.set('delayrefreshresults', 'true');
+            jazzquiz.set('delayrefreshresults', 'true');
         },
         onclose: function () {
-            activequiz.set('delayrefreshresults', 'false');
+            jazzquiz.set('delayrefreshresults', 'false');
         }
     };
 
-    if (typeof activequiz.questionmodifiers.poodllrecording.lightbox == 'undefined') {
-        activequiz.questionmodifiers.poodllrecording.lightbox = new Lightbox();
+    if (typeof jazzquiz.questionmodifiers.poodllrecording.lightbox == 'undefined') {
+        jazzquiz.questionmodifiers.poodllrecording.lightbox = new Lightbox();
     }
 
-    activequiz.questionmodifiers.poodllrecording.lightbox.load(options);
+    jazzquiz.questionmodifiers.poodllrecording.lightbox.load(options);
 };

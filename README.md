@@ -27,7 +27,7 @@ Click on "Install now" within the plugins directory, and then select your site f
 ### Manually
 
 Unzip all the files into a temporary directory.
-Copy the 'activequiz' folder into 'moodlehomedir/mod'.
+Copy the 'jazzquiz' folder into 'moodlehomedir/mod'.
 The system administrator should then log in to moodle and click on the 'Notifications' link in the Site administration
 block.
 

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>
  * @author    Davo Smith
  * @copyright 2014 University of Wisconsin - Madison
@@ -32,7 +32,7 @@ $string['modulename_help'] = '
 <p>Active Quizzes may be used as a vehicle for delivering Team Based Learning inside Moodle.</p>
 ';
 $string['modulenameplural'] = 'Active quizzes';
-$string['activequizsettings'] = 'General active quiz settings';
+$string['jazzquizsettings'] = 'General active quiz settings';
 $string['pluginadministration'] = 'Active quiz administration';
 $string['pluginname'] = 'Active quiz';
 $string['view'] = 'View quiz';
@@ -41,12 +41,12 @@ $string['responses'] = 'View responses';
 $string['attempts'] = 'Attempts';
 $string['overallgrade'] = 'Overall grade: {$a->overallgrade} / {$a->scale}';
 
-$string['activequiz:addinstance'] = 'Add an instance of activequiz';
-$string['activequiz:attempt'] = 'Attempt an active quiz';
-$string['activequiz:control'] = 'Control an active quiz. (Usually for instructors only)';
-$string['activequiz:editquestions'] = 'Edit questions for an active quiz.';
-$string['activequiz:seeresponses'] = 'View other student responses to grade them';
-$string['activequiz:viewownattempts'] = 'Allows students to see their own attempts at a quiz';
+$string['jazzquiz:addinstance'] = 'Add an instance of jazzquiz';
+$string['jazzquiz:attempt'] = 'Attempt an active quiz';
+$string['jazzquiz:control'] = 'Control an active quiz. (Usually for instructors only)';
+$string['jazzquiz:editquestions'] = 'Edit questions for an active quiz.';
+$string['jazzquiz:seeresponses'] = 'View other student responses to grade them';
+$string['jazzquiz:viewownattempts'] = 'Allows students to see their own attempts at a quiz';
 
 $string['invalidattemptaccess'] = 'You do not have permission to access this attempt';
 
@@ -64,8 +64,8 @@ $string['highestsessiongrade'] = 'Highest session grade';
 
 
 // Mod form strings.
-$string['activequizsettings'] = 'General Active quiz settings';
-$string['activequizintro'] = 'Introduction';
+$string['jazzquizsettings'] = 'General Active quiz settings';
+$string['jazzquizintro'] = 'Introduction';
 $string['defaultquestiontime'] = 'Default question time';
 $string['defaultquestiontime_help'] = 'The default time to display each question.<br />
 This can be overriden by individual questions.';
@@ -77,7 +77,7 @@ $string['gradesettings'] = 'Grade settings';
 $string['scale'] = 'Maximum Grade';
 $string['scale_help'] = 'This value (integer) will scale whatever points that are received on the quiz to this value.';
 $string['grademethod'] = 'Session grading method';
-$string['grademethod_help'] = 'This is the method that is used when grading.  This method is for figuring out the grading with multiple sessions in the same activequiz';
+$string['grademethod_help'] = 'This is the method that is used when grading.  This method is for figuring out the grading with multiple sessions in the same jazzquiz';
 $string['assessed'] = 'Assessed';
 $string['assessed_help'] = 'Check this box to make your quiz assessed';
 

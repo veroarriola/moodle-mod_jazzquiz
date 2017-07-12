@@ -14,20 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz;
+namespace mod_jazzquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * activequiz Attempt wrapper class to encapsulate functions needed to individual
+ * jazzquiz Attempt wrapper class to encapsulate functions needed to individual
  * attempt records
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class activequiz_attempt
+class jazzquiz_attempt
 {
 
     /** Constants for the status of the attempt */
@@ -66,8 +66,8 @@ class activequiz_attempt
     /**
      * Sort function function for usort.  Is callable outside this class
      *
-     * @param \mod_activequiz\activequiz_attempt $a
-     * @param \mod_activequiz\activequiz_attempt $b
+     * @param \mod_jazzquiz\jazzquiz_attempt $a
+     * @param \mod_jazzquiz\jazzquiz_attempt $b
      * @return int
      */
     public static function sortby_timefinish($a, $b)
@@ -96,7 +96,7 @@ class activequiz_attempt
             $this->attempt = new \stdClass();
 
             // create a new quba since we're creating a new attempt
-            $this->quba = \question_engine::make_questions_usage_by_activity('mod_activequiz',
+            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz',
                 $this->questionmanager->getRTQ()->getContext());
             $this->quba->set_preferred_behaviour('immediatefeedback');
 
@@ -257,7 +257,7 @@ class activequiz_attempt
                 $options->history = \question_display_options::VISIBLE;
             } else if ($reviewoptions instanceof \stdClass) {
 
-                foreach (\mod_activequiz\activequiz::$reviewfields as $field => $notused) {
+                foreach (\mod_jazzquiz\jazzquiz::$reviewfields as $field => $notused) {
                     if ($reviewoptions->$field == 1) {
                         if ($field == 'specificfeedback') {
                             $field = 'feedback';
@@ -319,13 +319,13 @@ class activequiz_attempt
     }
 
     /**
-     * Gets the slot for the activequiz question
+     * Gets the slot for the jazzquiz question
      *
-     * @param \mod_activequiz\activequiz_question $q
+     * @param \mod_jazzquiz\jazzquiz_question $q
      *
      * @return int
      */
-    public function get_question_slot(\mod_activequiz\activequiz_question $q)
+    public function get_question_slot(\mod_jazzquiz\jazzquiz_question $q)
     {
 
         // build if not available
@@ -343,11 +343,11 @@ class activequiz_attempt
     }
 
     /**
-     * Gets the activequiz question class object for the slotid
+     * Gets the jazzquiz question class object for the slotid
      *
      * @param int $askedslot
      *
-     * @return \mod_activequiz\activequiz_question
+     * @return \mod_jazzquiz\jazzquiz_question
      */
     public function get_question_by_slot($askedslot)
     {
@@ -371,7 +371,7 @@ class activequiz_attempt
 
         foreach ($this->get_questions() as $question) {
 
-            /** @var \mod_activequiz\activequiz_question $question */
+            /** @var \mod_jazzquiz\jazzquiz_question $question */
             if ($question->getQuestion()->id == $qid) {
                 return $question;
             }
@@ -449,7 +449,7 @@ class activequiz_attempt
         $this->attempt->timemodified = time();
         if (isset($this->attempt->id)) { // update the record
             try {
-                $DB->update_record('activequiz_attempts', $this->attempt);
+                $DB->update_record('jazzquiz_attempts', $this->attempt);
             } catch (\Exception $e) {
                 error_log($e->getMessage());
 
@@ -458,7 +458,7 @@ class activequiz_attempt
         } else {
             // insert new record
             try {
-                $newid = $DB->insert_record('activequiz_attempts', $this->attempt);
+                $newid = $DB->insert_record('jazzquiz_attempts', $this->attempt);
                 $this->attempt->id = $newid;
             } catch (\Exception $e) {
                 return false; // return false on failure
@@ -469,7 +469,7 @@ class activequiz_attempt
     }
 
     /**
-     * Saves a question attempt from the activequiz question
+     * Saves a question attempt from the jazzquiz question
      *
      * @return bool
      */
@@ -551,7 +551,7 @@ class activequiz_attempt
      * Process a comment for a particular question on an attempt
      *
      * @param int $slot
-     * @param \mod_activequiz\activequiz $rtq
+     * @param \mod_jazzquiz\jazzquiz $rtq
      *
      * @return bool
      */
@@ -586,7 +586,7 @@ class activequiz_attempt
                         'sessionid' => $this->attempt->sessionid
                     )
                 );
-                $event = \mod_activequiz\event\question_manually_graded::create($params);
+                $event = \mod_jazzquiz\event\question_manually_graded::create($params);
                 $event->trigger();
 
                 return true;
@@ -808,7 +808,7 @@ class activequiz_attempt
     /**
      * Closes the attempt
      *
-     * @param \mod_activequiz\activequiz $rtq
+     * @param \mod_jazzquiz\jazzquiz $rtq
      *
      * @return bool Weather or not it was successful
      */
@@ -824,8 +824,8 @@ class activequiz_attempt
             'context' => $rtq->getContext(),
             'relateduserid' => $this->attempt->userid
         );
-        $event = \mod_activequiz\event\attempt_ended::create($params);
-        $event->add_record_snapshot('activequiz_attempts', $this->attempt);
+        $event = \mod_jazzquiz\event\attempt_ended::create($params);
+        $event->add_record_snapshot('jazzquiz_attempts', $this->attempt);
         $event->trigger();
 
         return true;
@@ -893,7 +893,7 @@ class activequiz_attempt
         }
 
         // otherwise throw a new exception
-        throw new \Exception('undefined property(' . $prop . ') on activequiz attempt');
+        throw new \Exception('undefined property(' . $prop . ') on jazzquiz attempt');
 
     }
 
@@ -904,7 +904,7 @@ class activequiz_attempt
      * @param string $prop
      * @param mixed $value
      *
-     * @return activequiz_attempt
+     * @return jazzquiz_attempt
      */
     public function __set($prop, $value)
     {

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\utils;
+namespace mod_jazzquiz\utils;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -22,7 +22,7 @@ defined('MOODLE_INTERNAL') || die();
  * Class to define grade types for the module
  * Is used in multiple classes/functions
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,10 +30,10 @@ defined('MOODLE_INTERNAL') || die();
 class scaletypes {
 
     /** Define grading scale types */
-    const activequiz_FIRSTSESSION = 1;
+    const jazzquiz_FIRSTSESSION = 1;
     const REALTIMQUIZ_LASTSESSION = 2;
-    const activequiz_SESSIONAVERAGE = 3;
-    const activequiz_HIGHESTSESSIONGRADE = 4;
+    const jazzquiz_SESSIONAVERAGE = 3;
+    const jazzquiz_HIGHESTSESSIONGRADE = 4;
 
 
     /**
@@ -44,10 +44,10 @@ class scaletypes {
     public static function get_types() {
 
         return array(
-            'firstattempt' => self::activequiz_FIRSTSESSION,
+            'firstattempt' => self::jazzquiz_FIRSTSESSION,
             'lastattempt'  => self::REALTIMQUIZ_LASTSESSION,
-            'average'      => self::activequiz_SESSIONAVERAGE,
-            'highestgrade' => self::activequiz_HIGHESTSESSIONGRADE,
+            'average'      => self::jazzquiz_SESSIONAVERAGE,
+            'highestgrade' => self::jazzquiz_HIGHESTSESSIONGRADE,
         );
     }
 
@@ -60,10 +60,10 @@ class scaletypes {
     public static function get_display_types() {
 
         return array(
-            self::activequiz_FIRSTSESSION        => get_string('firstsession', 'activequiz'),
-            self::REALTIMQUIZ_LASTSESSION        => get_string('lastsession', 'activequiz'),
-            self::activequiz_SESSIONAVERAGE      => get_string('sessionaverage', 'activequiz'),
-            self::activequiz_HIGHESTSESSIONGRADE => get_string('highestsessiongrade', 'activequiz'),
+            self::jazzquiz_FIRSTSESSION        => get_string('firstsession', 'jazzquiz'),
+            self::REALTIMQUIZ_LASTSESSION        => get_string('lastsession', 'jazzquiz'),
+            self::jazzquiz_SESSIONAVERAGE      => get_string('sessionaverage', 'jazzquiz'),
+            self::jazzquiz_HIGHESTSESSIONGRADE => get_string('highestsessiongrade', 'jazzquiz'),
         );
     }
 

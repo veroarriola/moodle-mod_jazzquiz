@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\utils;
+namespace mod_jazzquiz\utils;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -24,7 +24,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * Adapted from Quiz module's qubaids_for_quiz
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -40,9 +40,9 @@ class qubaids_for_rtq extends \qubaid_join {
 
         if ($onlyfinished) {
             $where .= ' AND state == :statefinished';
-            $params['statefinished'] = \mod_activequiz\activequiz_attempt::FINISHED;
+            $params['statefinished'] = \mod_jazzquiz\jazzquiz_attempt::FINISHED;
         }
 
-        parent::__construct('{activequiz_attempts} rtqa', 'rtqa.questionengid', $where, $params);
+        parent::__construct('{jazzquiz_attempts} rtqa', 'rtqa.questionengid', $where, $params);
     }
 }

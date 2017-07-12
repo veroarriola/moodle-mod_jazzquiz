@@ -1,5 +1,5 @@
 <?php
-namespace mod_activequiz\output;
+namespace mod_jazzquiz\output;
 
 // This file is part of Moodle - http://moodle.org/
 //
@@ -19,12 +19,12 @@ namespace mod_activequiz\output;
 /**
  * Renderer outputting the quiz editing UI.
  *
- * @package mod_activequiz
+ * @package mod_jazzquiz
  * @copyright 2016 John Hoopes <john.z.hoopes@gmail.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_activequiz\traits\renderer_base;
+use mod_jazzquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -40,7 +40,7 @@ class edit_renderer extends \plugin_renderer_base {
     public function print_header() {
 
         $this->base_header('edit');
-        echo $this->output->box_start('generalbox boxaligncenter activequizbox');
+        echo $this->output->box_start('generalbox boxaligncenter jazzquizbox');
     }
 
     /**
@@ -55,7 +55,7 @@ class edit_renderer extends \plugin_renderer_base {
         echo \html_writer::start_div('row', array('id' => 'questionrow'));
 
         echo \html_writer::start_div('inline-block span6');
-        echo \html_writer::tag('h2', get_string('questionlist', 'activequiz'));
+        echo \html_writer::tag('h2', get_string('questionlist', 'jazzquiz'));
         echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', array('id' => 'editstatus'));
 
         echo $this->show_questionlist($questions);
@@ -68,15 +68,15 @@ class edit_renderer extends \plugin_renderer_base {
 
         echo \html_writer::end_div();
 
-        $this->page->requires->js('/mod/activequiz/js/core.js');
-        $this->page->requires->js('/mod/activequiz/js/sortable/sortable.min.js');
-        $this->page->requires->js('/mod/activequiz/js/edit_quiz.js');
+        $this->page->requires->js('/mod/jazzquiz/js/core.js');
+        $this->page->requires->js('/mod/jazzquiz/js/sortable/sortable.min.js');
+        $this->page->requires->js('/mod/jazzquiz/js/edit_quiz.js');
 
         // next set up a class to pass to js for js info
         $jsinfo = new \stdClass();
         $jsinfo->sesskey = sesskey();
         $jsinfo->siteroot = $CFG->wwwroot;
-        $jsinfo->cmid = $this->activequiz->getCM()->id;
+        $jsinfo->cmid = $this->jazzquiz->getCM()->id;
 
         // print jsinfo to javascript
         echo \html_writer::start_tag('script', array('type' => 'text/javascript'));
@@ -94,15 +94,15 @@ class edit_renderer extends \plugin_renderer_base {
     /**
      * Builds the question list from the questions passed in
      *
-     * @param array $questions an array of \mod_activequiz\activequiz_question
+     * @param array $questions an array of \mod_jazzquiz\jazzquiz_question
      * @return string
      */
     protected function show_questionlist($questions) {
 
         $return = '<ol class="questionlist">';
 
-        $add_improv_questions_url = new \moodle_url('/mod/activequiz/improvisation.php', [
-            'cmid' => $this->activequiz->getCM()->id,
+        $add_improv_questions_url = new \moodle_url('/mod/jazzquiz/improvisation.php', [
+            'cmid' => $this->jazzquiz->getCM()->id,
             'redirect' => 'edit'
         ]);
         $add_improv_questions_button = $this->output->single_button($add_improv_questions_url, 'Add improvisation questions', 'get');
@@ -111,7 +111,7 @@ class edit_renderer extends \plugin_renderer_base {
         $questioncount = count($questions);
         $questionnum = 1;
         foreach ($questions as $question) {
-            /** @var \mod_activequiz\activequiz_question $question */
+            /** @var \mod_jazzquiz\jazzquiz_question $question */
             $return .= '<li data-questionid="' . $question->getId() . '">';
             $return .= $this->display_question_block($question, $questionnum, $questioncount);
             $return .= '</li>';
@@ -125,7 +125,7 @@ class edit_renderer extends \plugin_renderer_base {
     /**
      * sets up what is displayed for each question on the edit quiz question listing
      *
-     * @param \mod_activequiz\activequiz_question $question
+     * @param \mod_jazzquiz\jazzquiz_question $question
      * @param int                                 $qnum The question number we're currently on
      * @param int                                 $qcount The total number of questions
      *
@@ -143,7 +143,7 @@ class edit_renderer extends \plugin_renderer_base {
         $namehtml = \html_writer::start_tag('p');
 
         $namehtml .= $question->getQuestion()->name . '<br />';
-        $namehtml .= get_string('points', 'activequiz') . ': ' . $question->getPoints();
+        $namehtml .= get_string('points', 'jazzquiz') . ': ' . $question->getPoints();
         $namehtml .= \html_writer::end_tag('p');
 
         $return .= \html_writer::div($namehtml, 'name');
@@ -158,7 +158,7 @@ class edit_renderer extends \plugin_renderer_base {
             $moveupurl->param('action', 'moveup');
             $moveupurl->param('questionid', $question->getId()); // add the rtqqid so that the question manager handles the translation
 
-            $alt = get_string('questionmoveup', 'mod_activequiz', $qnum);
+            $alt = get_string('questionmoveup', 'mod_jazzquiz', $qnum);
 
             $upicon = new \pix_icon('t/up', $alt);
             $controlHTML .= \html_writer::link($moveupurl, $this->output->render($upicon));
@@ -171,7 +171,7 @@ class edit_renderer extends \plugin_renderer_base {
             $movedownurl->param('action', 'movedown');
             $movedownurl->param('questionid', $question->getId());
 
-            $alt = get_string('questionmovedown', 'mod_activequiz', $qnum);
+            $alt = get_string('questionmovedown', 'mod_jazzquiz', $qnum);
 
             $downicon = new \pix_icon('t/down', $alt);
             $controlHTML .= \html_writer::link($movedownurl, $this->output->render($downicon));
@@ -186,7 +186,7 @@ class edit_renderer extends \plugin_renderer_base {
         $editurl = clone($this->pageurl);
         $editurl->param('action', 'editquestion');
         $editurl->param('rtqquestionid', $question->getId());
-        $alt = get_string('questionedit', 'activequiz', $qnum);
+        $alt = get_string('questionedit', 'jazzquiz', $qnum);
         $deleteicon = new \pix_icon('t/edit', $alt);
         $controlHTML .= \html_writer::link($editurl, $this->output->render($deleteicon));
 
@@ -194,7 +194,7 @@ class edit_renderer extends \plugin_renderer_base {
         $deleteurl = clone($this->pageurl);
         $deleteurl->param('action', 'deletequestion');
         $deleteurl->param('questionid', $question->getId());
-        $alt = get_string('questiondelete', 'mod_activequiz', $qnum);
+        $alt = get_string('questiondelete', 'mod_jazzquiz', $qnum);
         $deleteicon = new \pix_icon('t/delete', $alt);
         $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
 
@@ -218,7 +218,7 @@ class edit_renderer extends \plugin_renderer_base {
 
     public function opensession(){
 
-        echo \html_writer::tag('h3', get_string('editpage_opensession_error', 'activequiz'));
+        echo \html_writer::tag('h3', get_string('editpage_opensession_error', 'jazzquiz'));
 
     }
 

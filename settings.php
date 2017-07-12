@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   mod_activequiz
+ * @package   mod_jazzquiz
  * @author    Andrew Hancox <andrewdchancox@googlemail.com>
  * @copyright 2015 Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,9 +37,9 @@ if ($ADMIN->fulltree) {
         $defaults[$qtypepluginname] = 1;
     }
     $settings->add(new admin_setting_configmulticheckbox(
-        'activequiz/enabledqtypes',
-        get_string('enabledquestiontypes', 'activequiz'),
-        get_string('enabledquestiontypes_info', 'activequiz'),
+        'jazzquiz/enabledqtypes',
+        get_string('enabledquestiontypes', 'jazzquiz'),
+        get_string('enabledquestiontypes_info', 'jazzquiz'),
         $defaults,
         $choices));
 }

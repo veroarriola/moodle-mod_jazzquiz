@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz;
+namespace mod_jazzquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
-use \mod_activequiz\forms\edit\add_question_form;
+use \mod_jazzquiz\forms\edit\add_question_form;
 
 /**
  * Question manager class
@@ -27,23 +27,23 @@ use \mod_activequiz\forms\edit\add_question_form;
  *
  * Basically this class provides an interface to internally map the questions added to a realtime quiz to
  * questions in the question bank.  calling get_questions() will return an ordered array of question objects
- * from the questions table and not the activequiz_questions table.  That table is only used internally by this
+ * from the questions table and not the jazzquiz_questions table.  That table is only used internally by this
  * class.
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class questionmanager {
 
-    /** @var activequiz */
+    /** @var jazzquiz */
     protected $rtq;
 
     /** @var array */
     protected $pagevars;
 
-    /** @var \mod_activequiz_renderer */
+    /** @var \mod_jazzquiz_renderer */
     protected $renderer;
 
     /** @var array internal use only as we'll always just give out the qbank ordered questions */
@@ -59,8 +59,8 @@ class questionmanager {
     /**
      * Construct an instance of question manager
      *
-     * @param activequiz $rtq
-     * @param \mod_activequiz_renderer $renderer The realtime quiz renderer to render visual elements
+     * @param jazzquiz $rtq
+     * @param \mod_jazzquiz_renderer $renderer The realtime quiz renderer to render visual elements
      * @param array $pagevars page variables array
      */
     public function __construct($rtq, $renderer, $pagevars = array())
@@ -76,7 +76,7 @@ class questionmanager {
             $this->baseurl = $this->pagevars['pageurl'];
         } else {
             $params = array('id' => $this->rtq->getCM()->id);
-            $this->baseurl = new \moodle_url('/mod/activequiz/edit.php', $params);
+            $this->baseurl = new \moodle_url('/mod/jazzquiz/edit.php', $params);
         }
 
         // load questions
@@ -84,9 +84,9 @@ class questionmanager {
     }
 
     /**
-     * return this class's reference of activequiz
+     * return this class's reference of jazzquiz
      *
-     * @return activequiz
+     * @return jazzquiz
      */
     public function getRTQ()
     {
@@ -114,7 +114,7 @@ class questionmanager {
             /** @var \moodle_url $redurl */
             $redurl->remove_params('action'); // go back to base edit page
 
-            redirect($redurl, get_string('cantaddquestiontwice', 'activequiz'));
+            redirect($redurl, get_string('cantaddquestiontwice', 'jazzquiz'));
         }
 
         $actionurl = clone($this->baseurl);
@@ -141,7 +141,7 @@ class questionmanager {
             // process data from the form
 
             $question = new \stdClass();
-            $question->activequizid = $this->rtq->getRTQ()->id;
+            $question->jazzquizid = $this->rtq->getRTQ()->id;
             $question->questionid = $questionid;
             $question->notime = $data->notime;
             $question->questiontime = $data->indvquestiontime;
@@ -149,7 +149,7 @@ class questionmanager {
             $question->points = number_format($data->points, 2);
             $question->showhistoryduringquiz = $data->showhistoryduringquiz;
 
-            $RTQquestionid = $DB->insert_record('activequiz_questions', $question);
+            $RTQquestionid = $DB->insert_record('jazzquiz_questions', $question);
 
             $this->update_questionorder('addquestion', $RTQquestionid);
 
@@ -180,7 +180,7 @@ class questionmanager {
         $actionurl->param('action', 'editquestion');
         $actionurl->param('rtqquestionid', $questionid);
 
-        $rtqquestion = $DB->get_record('activequiz_questions', array('id' => $questionid), '*', MUST_EXIST);
+        $rtqquestion = $DB->get_record('jazzquiz_questions', array('id' => $questionid), '*', MUST_EXIST);
         $qrecord = $DB->get_record('question', array('id' => $rtqquestion->questionid), '*', MUST_EXIST);
 
         $mform = new add_question_form($actionurl,
@@ -210,14 +210,14 @@ class questionmanager {
 
             $question = new \stdClass();
             $question->id = $rtqquestion->id;
-            $question->activequizid = $this->rtq->getRTQ()->id;
+            $question->jazzquizid = $this->rtq->getRTQ()->id;
             $question->questionid = $rtqquestion->questionid;
             $question->notime = $data->notime;
             $question->questiontime = $data->indvquestiontime;
             $question->tries = $data->numberoftries;
             $question->points = number_format($data->points, 2);
 
-            $DB->update_record('activequiz_questions', $question);
+            $DB->update_record('jazzquiz_questions', $question);
 
             // ensure there is no action or questionid in the baseurl
             $this->baseurl->remove_params('action', 'questionid');
@@ -244,7 +244,7 @@ class questionmanager {
         global $DB;
 
         try {
-            $DB->delete_records('activequiz_questions', array('id' => $questionid));
+            $DB->delete_records('jazzquiz_questions', array('id' => $questionid));
             $this->update_questionorder('deletequestion', $questionid);
         } catch(\Exception $e) {
             return false; // return false on error
@@ -273,7 +273,7 @@ class questionmanager {
     }
 
     /**
-     * Public API function for setting the full order of the questions on the activequiz
+     * Public API function for setting the full order of the questions on the jazzquiz
      *
      * Please note that full order must be an array with no specialized keys as only array values are taken
      *
@@ -295,7 +295,7 @@ class questionmanager {
     /**
      * Returns the questions in the specified question order
      *
-     * @return array of the question bank ordered questions of \mod_activequiz\activequiz_question objects
+     * @return array of the question bank ordered questions of \mod_jazzquiz\jazzquiz_question objects
      */
     public function get_questions()
     {
@@ -324,9 +324,9 @@ class questionmanager {
     /**
      * shortcut to get the first question
      *
-     * @param \mod_activequiz\activequiz_attempt $attempt
+     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
      *
-     * @return \mod_activequiz\activequiz_question
+     * @return \mod_jazzquiz\jazzquiz_question
      */
     public function get_first_question($attempt)
     {
@@ -334,12 +334,12 @@ class questionmanager {
     }
 
     /**
-     * Gets a activequiz_question object with the slot set
+     * Gets a jazzquiz_question object with the slot set
      *
      * @param int $slotnum The index of the slot we want, i.e. the question number
-     * @param \mod_activequiz\activequiz_attempt $attempt The current attempt
+     * @param \mod_jazzquiz\jazzquiz_attempt $attempt The current attempt
      *
-     * @return \mod_activequiz\activequiz_question
+     * @return \mod_jazzquiz\jazzquiz_question
      */
     public function get_question_with_slot($slotnum, $attempt)
     {
@@ -362,7 +362,7 @@ class questionmanager {
         $qubaQuestion = $quba->get_question($slots[$slotnum]);
 
         foreach ($this->qbankOrderedQuestions as $qbankQuestion) {
-            /** @var \mod_activequiz\activequiz_question $qbankQuestion */
+            /** @var \mod_jazzquiz\jazzquiz_question $qbankQuestion */
 
             if ( $qbankQuestion->getQuestion()->id == $qubaQuestion->id ) {
                 // set the slot on the qbank question as this is the actual id we're using for question number
@@ -391,7 +391,7 @@ class questionmanager {
         // we need the questionids of our questions
         $questionids = array();
         foreach ($this->qbankOrderedQuestions as $qbankquestion) {
-            /** @var activequiz_question $qbankquestion */
+            /** @var jazzquiz_question $qbankquestion */
 
             if ( !in_array($qbankquestion->getQuestion()->id, $questionids) ) {
                 $questionids[] = $qbankquestion->getQuestion()->id;
@@ -637,7 +637,7 @@ class questionmanager {
     private function init_rtq_questions()
     {
         global $DB;
-        $this->rtqQuestions = $DB->get_records('activequiz_questions', array('activequizid' => $this->rtq->getRTQ()->id));
+        $this->rtqQuestions = $DB->get_records('jazzquiz_questions', array('jazzquizid' => $this->rtq->getRTQ()->id));
     }
 
     /**
@@ -682,7 +682,7 @@ class questionmanager {
             if ( !empty($questions[$questionid]) ) {
 
                 // create realtime quiz question and add it to the array
-                $quizquestion = new \mod_activequiz\activequiz_question($rtqqid,
+                $quizquestion = new \mod_jazzquiz\jazzquiz_question($rtqqid,
                     $this->rtqQuestions[$rtqqid]->notime,
                     $this->rtqQuestions[$rtqqid]->questiontime,
                     $this->rtqQuestions[$rtqqid]->tries,
@@ -709,7 +709,7 @@ class questionmanager {
     {
         global $DB;
 
-        $q = new \mod_activequiz\activequiz_question(
+        $q = new \mod_jazzquiz\jazzquiz_question(
             $questionrecord->id,
             $questionrecord->notime,
             $questionrecord->questiontime,
@@ -723,7 +723,7 @@ class questionmanager {
 
         foreach ($sessions as $session) {
 
-            /** @var \mod_activequiz\activequiz_session $session */
+            /** @var \mod_jazzquiz\jazzquiz_session $session */
 
             if ( $session->get_session()->sessionopen === 1 ) {
                 continue;  // don't regrade attempts for an open session.
@@ -732,7 +732,7 @@ class questionmanager {
             $session_attempts = $session->getall_attempts(true);
 
             foreach ($session_attempts as $attempt) {
-                /** @var \mod_activequiz\activequiz_attempt $attempt */
+                /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
                 if ( $slot = $attempt->get_question_slot($q) ) {
                     $quba = $attempt->get_quba();
                     $quba->set_max_mark($slot, $newpoints);
@@ -740,7 +740,7 @@ class questionmanager {
 
                     $attempt->save();
                 } else {
-                    throw new \moodle_exception('invalidslot', 'mod_activequiz', '', null, $attempt->get_attempt());
+                    throw new \moodle_exception('invalidslot', 'mod_jazzquiz', '', null, $attempt->get_attempt());
                 }
             }
 
@@ -749,7 +749,7 @@ class questionmanager {
         if ( $this->rtq->get_grader()->save_all_grades() ) {
             return true;
         }else {
-            throw new \moodle_exception('cannotgrade', 'mod_activequiz');
+            throw new \moodle_exception('cannotgrade', 'mod_jazzquiz');
         }
     }
 }

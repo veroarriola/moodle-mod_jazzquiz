@@ -14,24 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\controllers;
+namespace mod_jazzquiz\controllers;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * view quiz attempt controller
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class viewquizattempt {
 
-    /** @var \mod_activequiz\activequiz Realtime quiz class */
+    /** @var \mod_jazzquiz\jazzquiz Realtime quiz class */
     protected $RTQ;
 
-    /** @var \mod_activequiz\activequiz_session $session The session class for the activequiz view */
+    /** @var \mod_jazzquiz\jazzquiz_session $session The session class for the jazzquiz view */
     protected $session;
 
     /** @var \moodle_url $pageurl The page url to base other calls on */
@@ -58,13 +58,13 @@ class viewquizattempt {
 
         // get necessary records from the DB
         if ($id) {
-            $cm = get_coursemodule_from_id('activequiz', $id, 0, false, MUST_EXIST);
+            $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('activequiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', array('id' => $cm->instance), '*', MUST_EXIST);
         } else {
-            $quiz = $DB->get_record('activequiz', array('id' => $quizid), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', array('id' => $quizid), '*', MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
-            $cm = get_coursemodule_from_instance('activequiz', $quiz->id, $course->id, false, MUST_EXIST);
+            $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
 
         $this->get_parameters(); // get the rest of the parameters and set them in the class
@@ -78,13 +78,13 @@ class viewquizattempt {
         $this->pageurl->params($this->pagevars); // add the page vars variable to the url
         $this->pagevars['pageurl'] = $this->pageurl;
 
-        $this->RTQ = new \mod_activequiz\activequiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
+        $this->RTQ = new \mod_jazzquiz\jazzquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
 
-        $this->RTQ->require_capability('mod/activequiz:viewownattempts');
+        $this->RTQ->require_capability('mod/jazzquiz:viewownattempts');
 
         $PAGE->set_pagelayout('popup');
         $PAGE->set_context($this->RTQ->getContext());
-        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "activequiz") . ': ' .
+        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "jazzquiz") . ': ' .
             format_string($quiz->name, true)));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
@@ -130,7 +130,7 @@ class viewquizattempt {
 
                 $hascapability = true;
 
-                if (!$this->RTQ->has_capability('mod/activequiz:seeresponses')) {
+                if (!$this->RTQ->has_capability('mod/jazzquiz:seeresponses')) {
 
                     // if the current user doesn't have the ability to see responses (or all responses)
                     // check that the current one is theirs
@@ -144,11 +144,11 @@ class viewquizattempt {
                             $usergroups = $this->RTQ->get_groupmanager()->get_user_groups();
                             $usergroupids = array_keys($usergroups);
                             if (!in_array($attempt->forgroupid, $usergroupids)) {
-                                $this->RTQ->get_renderer()->render_popup_error(get_string('invalidattemptaccess', 'activequiz'));
+                                $this->RTQ->get_renderer()->render_popup_error(get_string('invalidattemptaccess', 'jazzquiz'));
                                 $hascapability = false;
                             }
                         } else {
-                            $this->RTQ->get_renderer()->render_popup_error(get_string('invalidattemptaccess', 'activequiz'));
+                            $this->RTQ->get_renderer()->render_popup_error(get_string('invalidattemptaccess', 'jazzquiz'));
                             $hascapability = false;
                         }
                     }
@@ -161,7 +161,7 @@ class viewquizattempt {
                         'objectid'      => $attempt->id,
                         'context'       => $this->RTQ->getContext(),
                         'other'         => array(
-                            'activequizid' => $this->RTQ->getRTQ()->id,
+                            'jazzquizid' => $this->RTQ->getRTQ()->id,
                             'sessionid'    => $attempt->sessionid
                         )
                     );
@@ -170,8 +170,8 @@ class viewquizattempt {
                         $params['relateduserid'] = 0;
                     }
 
-                    $event = \mod_activequiz\event\attempt_viewed::create($params);
-                    $event->add_record_snapshot('activequiz_attempts', $attempt->get_attempt());
+                    $event = \mod_jazzquiz\event\attempt_viewed::create($params);
+                    $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
                     $event->trigger();
 
                     $this->RTQ->get_renderer()->render_attempt($attempt, $session);

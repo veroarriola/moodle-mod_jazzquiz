@@ -14,21 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz;
+namespace mod_jazzquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
-use mod_activequiz\qbanktypes\question_bank_add_to_rtq_action_column;
+use mod_jazzquiz\qbanktypes\question_bank_add_to_rtq_action_column;
 
 /**
  * Subclass of the question bank view class to change the way it works/looks
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class activequiz_question_bank_view extends \core_question\bank\view {
+class jazzquiz_question_bank_view extends \core_question\bank\view {
 
 
     /**
@@ -48,13 +48,13 @@ class activequiz_question_bank_view extends \core_question\bank\view {
 
         foreach ($defaultqbankcolums as $fullname) {
             if (!class_exists($fullname)) {
-                if (class_exists('mod_activequiz\\qbanktypes\\' . $fullname)) {
-                    $fullname = 'mod_activequiz\\qbanktypes\\' . $fullname;
+                if (class_exists('mod_jazzquiz\\qbanktypes\\' . $fullname)) {
+                    $fullname = 'mod_jazzquiz\\qbanktypes\\' . $fullname;
                 } else if (class_exists('core_question\\bank\\' . $fullname)) {
                     $fullname = 'core_question\\bank\\' . $fullname;
                 } else if (class_exists('question_bank_' . $fullname)) {
                     // debugging('Legacy question bank column class question_bank_' .
-                    //    $fullname . ' should be renamed to mod_activequiz\\qbanktypes\\' .
+                    //    $fullname . ' should be renamed to mod_jazzquiz\\qbanktypes\\' .
                     //    $fullname, DEBUG_DEVELOPER);
                     $fullname = 'question_bank_' . $fullname;
                 } else {
@@ -93,8 +93,8 @@ class activequiz_question_bank_view extends \core_question\bank\view {
         array_unshift($this->searchconditions, new \core_question\bank\search\hidden_condition(!$showhidden));
         array_unshift($this->searchconditions, new \core_question\bank\search\category_condition(
             $cat, $recurse, $editcontexts, $this->baseurl, $this->course));
-        array_unshift($this->searchconditions, new activequiz_disabled_condition());
-        $this->display_options_form($showquestiontext, '/mod/activequiz/edit.php');
+        array_unshift($this->searchconditions, new jazzquiz_disabled_condition());
+        $this->display_options_form($showquestiontext, '/mod/jazzquiz/edit.php');
 
         // Continues with list of questions.
         $this->display_question_list($this->contexts->having_one_edit_tab_cap($tabname),
@@ -119,7 +119,7 @@ class activequiz_question_bank_view extends \core_question\bank\view {
         $params['action'] = 'addquestion';
         $params['sesskey'] = sesskey();
 
-        return new \moodle_url('/mod/activequiz/edit.php', $params);
+        return new \moodle_url('/mod/jazzquiz/edit.php', $params);
 
     }
 
@@ -162,7 +162,7 @@ class activequiz_question_bank_view extends \core_question\bank\view {
         global $CFG, $PAGE, $OUTPUT;
         static $choiceformprinted = false;
 
-        $config = get_config('activequiz');
+        $config = get_config('jazzquiz');
         $enabledtypes = explode(',', $config->enabledqtypes);
 
         $params['category'] = $categoryid;

@@ -1,6 +1,6 @@
 <?php
 //
-// Capability definitions for the activequiz module.
+// Capability definitions for the jazzquiz module.
 //
 // The capabilities are loaded into the database table when the module is
 // installed or updated. Whenever the capability definitions are updated,
@@ -35,7 +35,7 @@ $capabilities = array(
 
     // Can start a quiz and move on to the next question
     // NB: must have 'attempt' as well to be able to see the questions
-    'mod/activequiz:control'         => array(
+    'mod/jazzquiz:control'         => array(
 
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -47,7 +47,7 @@ $capabilities = array(
     ),
 
     // Can try to answer the quiz
-    'mod/activequiz:attempt'         => array(
+    'mod/jazzquiz:attempt'         => array(
 
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -60,7 +60,7 @@ $capabilities = array(
     ),
 
     // Can view own attempts
-    'mod/activequiz:viewownattempts' => array(
+    'mod/jazzquiz:viewownattempts' => array(
         'captype'      => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy'       => array(
@@ -72,7 +72,7 @@ $capabilities = array(
     ),
 
     // Can see who gave what answer
-    'mod/activequiz:seeresponses'    => array(
+    'mod/jazzquiz:seeresponses'    => array(
 
         'captype'      => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -84,7 +84,7 @@ $capabilities = array(
     ),
 
     // Can add / delete / update questions
-    'mod/activequiz:editquestions'   => array(
+    'mod/jazzquiz:editquestions'   => array(
 
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -95,7 +95,7 @@ $capabilities = array(
     ),
 
     // Can add an instance of this module to a course
-    'mod/activequiz:addinstance'     => array(
+    'mod/jazzquiz:addinstance'     => array(
         'captype'      => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'legacy'       => array(

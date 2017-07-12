@@ -1,11 +1,11 @@
 <?php
 
-namespace mod_activequiz\reports\overview;
+namespace mod_jazzquiz\reports\overview;
 
-use mod_activequiz\reports\ireport;
-use mod_activequiz\tableviews\overallgradesview;
+use mod_jazzquiz\reports\ireport;
+use mod_jazzquiz\tableviews\overallgradesview;
 
-class report_overview extends \mod_activequiz\reports\activequiz_report_base implements ireport {
+class report_overview extends \mod_jazzquiz\reports\jazzquiz_report_base implements ireport {
 
     /**
      * The tableview for the current request.  is added by the handle request function.
@@ -15,19 +15,19 @@ class report_overview extends \mod_activequiz\reports\activequiz_report_base imp
     protected $tableview;
 
     /**
-     * @var \mod_activequiz\output\report_overview_renderer $renderer
+     * @var \mod_jazzquiz\output\report_overview_renderer $renderer
      */
     protected $renderer;
 
     /**
      * report_overview constructor.
-     * @param \mod_activequiz\activequiz $activequiz
+     * @param \mod_jazzquiz\jazzquiz $jazzquiz
      */
-    public function __construct(\mod_activequiz\activequiz $activequiz) {
+    public function __construct(\mod_jazzquiz\jazzquiz $jazzquiz) {
         global $PAGE;
 
-        $this->renderer = $PAGE->get_renderer('mod_activequiz', 'report_overview');
-        parent::__construct($activequiz);
+        $this->renderer = $PAGE->get_renderer('mod_jazzquiz', 'report_overview');
+        parent::__construct($jazzquiz);
     }
 
     /**
@@ -39,19 +39,19 @@ class report_overview extends \mod_activequiz\reports\activequiz_report_base imp
      */
     public function handle_request($pageurl, $pagevars) {
 
-        $this->renderer->init($this->activequiz, $pageurl, $pagevars);
+        $this->renderer->init($this->jazzquiz, $pageurl, $pagevars);
 
         // switch the action
         switch($pagevars['action']) {
             case 'regradeall':
 
-                if($this->activequiz->get_grader()->save_all_grades(true)) {
-                    $this->renderer->setMessage('success',  get_string('successregrade', 'activequiz'));
+                if($this->jazzquiz->get_grader()->save_all_grades(true)) {
+                    $this->renderer->setMessage('success',  get_string('successregrade', 'jazzquiz'));
                 }else {
-                    $this->renderer->setMessage('error',  get_string('errorregrade', 'activequiz'));
+                    $this->renderer->setMessage('error',  get_string('errorregrade', 'jazzquiz'));
                 }
 
-                $sessions = $this->activequiz->get_sessions();
+                $sessions = $this->jazzquiz->get_sessions();
                 $this->renderer->showMessage();
                 $this->renderer->select_session($sessions);
                 $this->renderer->home();
@@ -63,19 +63,19 @@ class report_overview extends \mod_activequiz\reports\activequiz_report_base imp
 
                 if (empty($session_id)) { // if no session id just go to the home page
 
-                    $redirecturl = new \moodle_url('/mod/activequiz/reports.php', [
-                        'id' => $this->activequiz->getCM()->id,
-                        'quizid' => $this->activequiz->getRTQ()->id
+                    $redirecturl = new \moodle_url('/mod/jazzquiz/reports.php', [
+                        'id' => $this->jazzquiz->getCM()->id,
+                        'quizid' => $this->jazzquiz->getRTQ()->id
                     ]);
                     redirect($redirecturl, null, 3);
                 }
 
-                $session = $this->activequiz->get_session($session_id);
+                $session = $this->jazzquiz->get_session($session_id);
                 $pageurl->param('sessionid', $session_id);
-                $sessionattempts = new \mod_activequiz\tableviews\sessionattempts('sessionattempts', $this->activequiz,
+                $sessionattempts = new \mod_jazzquiz\tableviews\sessionattempts('sessionattempts', $this->jazzquiz,
                     $session, $pageurl);
 
-                $sessions = $this->activequiz->get_sessions();
+                $sessions = $this->jazzquiz->get_sessions();
                 $this->renderer->select_session($sessions, $session_id);
                 $this->renderer->view_session_attempts($sessionattempts);
 
@@ -83,7 +83,7 @@ class report_overview extends \mod_activequiz\reports\activequiz_report_base imp
                 break;
             default:
 
-                $sessions = $this->activequiz->get_sessions();
+                $sessions = $this->jazzquiz->get_sessions();
                 $this->renderer->select_session($sessions);
                 $this->renderer->home();
 

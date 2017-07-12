@@ -1,6 +1,6 @@
 <?php
 
-namespace mod_activequiz\traits;
+namespace mod_jazzquiz\traits;
 
 
 trait renderer_base {
@@ -12,8 +12,8 @@ trait renderer_base {
     /** @var \moodle_url $pageurl easy access to the pageurl */
     protected $pageurl;
 
-    /** @var \mod_activequiz\activequiz $activequiz */
-    protected $activequiz;
+    /** @var \mod_jazzquiz\jazzquiz $jazzquiz */
+    protected $jazzquiz;
 
     /**
      * Sets a page message to display when the page is loaded into view
@@ -36,7 +36,7 @@ trait renderer_base {
     public function base_header($tab = 'view')
     {
         echo $this->output->header();
-        echo activequiz_view_tabs($this->activequiz, $tab);
+        echo jazzquiz_view_tabs($this->jazzquiz, $tab);
         $this->showMessage(); // shows a message if there is one
     }
 
@@ -97,15 +97,15 @@ trait renderer_base {
     /**
      * Initialize the renderer with some variables
      *
-     * @param \mod_activequiz\activequiz $activequiz
+     * @param \mod_jazzquiz\jazzquiz $jazzquiz
      * @param \moodle_url $pageurl Always require the page url
      * @param array $pagevars (optional)
      */
-    public function init($activequiz, $pageurl, $pagevars = array())
+    public function init($jazzquiz, $pageurl, $pagevars = array())
     {
         $this->pagevars = $pagevars;
         $this->pageurl = $pageurl;
-        $this->activequiz = $activequiz;
+        $this->jazzquiz = $jazzquiz;
     }
 
 }

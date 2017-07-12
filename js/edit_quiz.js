@@ -16,7 +16,7 @@
 /**
  * Edit quiz javascript to implement drag and drop on the page
  *
- * @package    mod_activequiz
+ * @package    mod_jazzquiz
  * @author     John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright  2015 University of Wisconsin - Madison
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -24,9 +24,9 @@
 
 window.addEventListener('load', function () {
 
-    activequiz.set('sesskey', window.rtqinitinfo.sesskey);
-    activequiz.set('siteroot', window.rtqinitinfo.siteroot);
-    activequiz.set('cmid', window.rtqinitinfo.cmid)
+    jazzquiz.set('sesskey', window.rtqinitinfo.sesskey);
+    jazzquiz.set('siteroot', window.rtqinitinfo.siteroot);
+    jazzquiz.set('cmid', window.rtqinitinfo.cmid)
 
     var questionList = document.getElementsByClassName('questionlist')[0];
 
@@ -43,13 +43,13 @@ window.addEventListener('load', function () {
             }
 
             var params = {
-                'sesskey': activequiz.get('sesskey'),
-                'cmid': activequiz.get('cmid'),
+                'sesskey': jazzquiz.get('sesskey'),
+                'cmid': jazzquiz.get('cmid'),
                 'questionorder': questionOrder,
                 'action': 'dragdrop'
             };
 
-            activequiz.ajax.create_request('/mod/activequiz/edit.php', params, function (status, response) {
+            jazzquiz.ajax.create_request('/mod/jazzquiz/edit.php', params, function (status, response) {
 
                 var editStatus = document.getElementById('editstatus');
                 editStatus.innerHTMl = '';

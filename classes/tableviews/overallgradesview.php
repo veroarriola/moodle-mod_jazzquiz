@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz\tableviews;
+namespace mod_jazzquiz\tableviews;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/tablelib.php');
 
 /**
- * Table lib subclass for showing the overall grades for a realtime quiz activity
+ * Table lib subclass for showing the overall grades
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -31,19 +31,19 @@ require_once($CFG->libdir . '/tablelib.php');
 class overallgradesview extends \flexible_table implements \renderable {
 
 
-    /** @var \mod_activequiz\activequiz $activequiz */
-    protected $activequiz;
+    /** @var \mod_jazzquiz\jazzquiz $jazzquiz */
+    protected $jazzquiz;
 
     /**
      * Contstruct this table class
      *
      * @param string                     $uniqueid The unique id for the table
-     * @param \mod_activequiz\activequiz $activequiz
+     * @param \mod_jazzquiz\jazzquiz $jazzquiz
      * @param \moodle_url                $pageurl
      */
-    public function __construct($uniqueid, $activequiz, $pageurl) {
+    public function __construct($uniqueid, $jazzquiz, $pageurl) {
 
-        $this->rtq = $activequiz;
+        $this->rtq = $jazzquiz;
         $this->baseurl = $pageurl;
 
         parent::__construct($uniqueid);
@@ -63,15 +63,15 @@ class overallgradesview extends \flexible_table implements \renderable {
         if ($this->rtq->group_mode()) {
             $columns = array(
                 'fullname'     => get_string('name'),
-                'group'        => get_string('groupmembership', 'activequiz'),
+                'group'        => get_string('groupmembership', 'jazzquiz'),
                 'grade'        => get_string('grade'),
-                'timemodified' => get_string('timemodified', 'activequiz'),
+                'timemodified' => get_string('timemodified', 'jazzquiz'),
             );
         } else {
             $columns = array(
                 'fullname'     => get_string('name'),
                 'grade'        => get_string('grade'),
-                'timemodified' => get_string('timemodified', 'activequiz'),
+                'timemodified' => get_string('timemodified', 'jazzquiz'),
             );
         }
 
@@ -133,7 +133,7 @@ class overallgradesview extends \flexible_table implements \renderable {
         $data = array();
 
 
-        $grades = \mod_activequiz\utils\grade::get_user_grade($this->rtq->getRTQ());
+        $grades = \mod_jazzquiz\utils\grade::get_user_grade($this->rtq->getRTQ());
 
 
         $userids = array();

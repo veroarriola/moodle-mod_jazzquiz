@@ -1,5 +1,5 @@
 <?php
-namespace mod_activequiz\output;
+namespace mod_jazzquiz\output;
 
 // This file is part of Moodle - http://moodle.org/
 //
@@ -19,12 +19,12 @@ namespace mod_activequiz\output;
 /**
  * Renderer outputting the quiz editing UI.
  *
- * @package mod_activequiz
+ * @package mod_jazzquiz
  * @copyright 2015 John Hoopes <john.z.hoopes@gmail.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_activequiz\traits\renderer_base;
+use mod_jazzquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 

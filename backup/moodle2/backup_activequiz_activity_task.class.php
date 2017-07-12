@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines backup_activequiz_activity_task class
+ * Defines backup_jazzquiz_activity_task class
  *
- * @package     mod_activequiz
+ * @package     mod_jazzquiz
  * @author      John Hoopes <smoodle@madisoncreativeweb.com>
  * @author      Davo Smith
  * @copyright   2014 University of Wisconsin - Madison
@@ -26,13 +26,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/activequiz/backup/moodle2/backup_activequiz_stepslib.php');
-require_once($CFG->dirroot . '/mod/activequiz/backup/moodle2/backup_activequiz_settingslib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/backup/moodle2/backup_jazzquiz_stepslib.php');
+require_once($CFG->dirroot . '/mod/jazzquiz/backup/moodle2/backup_jazzquiz_settingslib.php');
 
 /**
  * Provides the steps to perform one complete backup of the Forum instance
  */
-class backup_activequiz_activity_task extends backup_activity_task {
+class backup_jazzquiz_activity_task extends backup_activity_task {
 
     /**
      * No specific settings for this activity
@@ -41,12 +41,12 @@ class backup_activequiz_activity_task extends backup_activity_task {
     }
 
     /**
-     * Defines a backup step to store the instance data in the activequiz.xml file
+     * Defines a backup step to store the instance data in the jazzquiz.xml file
      */
     protected function define_my_steps() {
-        // Generate the activequiz.xml file containing all information
+        // Generate the jazzquiz.xml file containing all information
         // and annotating used questions.
-        $this->add_step(new backup_activequiz_activity_structure_step('activequiz_structure', 'activequiz.xml'));
+        $this->add_step(new backup_jazzquiz_activity_structure_step('jazzquiz_structure', 'jazzquiz.xml'));
 
         // Note: Following  steps must be present
         // in all the activities using question banks (only quiz for now)
@@ -74,12 +74,12 @@ class backup_activequiz_activity_task extends backup_activity_task {
 
         $base = preg_quote($CFG->wwwroot, "/");
 
-        // Link to the list of activequizs.
-        $search = "/(" . $base . "\/mod\/activequiz\/index.php\?id\=)([0-9]+)/";
+        // Link to the list of jazzquizs.
+        $search = "/(" . $base . "\/mod\/jazzquiz\/index.php\?id\=)([0-9]+)/";
         $content = preg_replace($search, '$@ACTIVEQUIZINDEX*$2@$', $content);
 
-        // Link to activequiz view by moduleid.
-        $search = "/(" . $base . "\/mod\/activequiz\/view.php\?id\=)([0-9]+)/";
+        // Link to jazzquiz view by moduleid.
+        $search = "/(" . $base . "\/mod\/jazzquiz\/view.php\?id\=)([0-9]+)/";
         $content = preg_replace($search, '$@ACTIVEQUIZVIEWBYID*$2@$', $content);
 
         return $content;

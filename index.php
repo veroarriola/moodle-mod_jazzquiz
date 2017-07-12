@@ -1,6 +1,6 @@
 <?php
 //
-// Capability definitions for the activequiz module.
+// Capability definitions for the jazzquiz module.
 //
 // The capabilities are loaded into the database table when the module is
 // installed or updated. Whenever the capability definitions are updated,
@@ -31,10 +31,10 @@
 // For the core capabilities, the variable is $moodle_capabilities.
 
 /**
- * This page lists all the instances of activequiz in a particular course
+ * This page lists all the instances of jazzquiz in a particular course
  *
  * @author: Davosmith
- * @package activequiz
+ * @package jazzquiz
  **/
 
 require_once("../../config.php");
@@ -46,25 +46,25 @@ if (!$course = $DB->get_record('course', array('id' => $id))) {
     error("Course ID is incorrect");
 }
 
-$PAGE->set_url(new moodle_url('/mod/activequiz/index.php', array('id' => $course->id)));
+$PAGE->set_url(new moodle_url('/mod/jazzquiz/index.php', array('id' => $course->id)));
 require_course_login($course);
 $PAGE->set_pagelayout('incourse');
 
 
 /// Get all required strings
 
-$stractivequizzes = get_string("modulenameplural", "activequiz");
-$stractivequiz = get_string("modulename", "activequiz");
+$strjazzquizzes = get_string("modulenameplural", "jazzquiz");
+$strjazzquiz = get_string("modulename", "jazzquiz");
 
-$PAGE->navbar->add($stractivequizzes);
-$PAGE->set_title(strip_tags($course->shortname . ': ' . $stractivequizzes));
+$PAGE->navbar->add($strjazzquizzes);
+$PAGE->set_title(strip_tags($course->shortname . ': ' . $strjazzquizzes));
 //$PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
 /// Get all the appropriate data
 
-if (!$activequizs = get_all_instances_in_course("activequiz", $course)) {
-    notice("There are no activequizes", "../../course/view.php?id=$course->id");
+if (!$jazzquizs = get_all_instances_in_course("jazzquiz", $course)) {
+    notice("There are no jazzquizes", "../../course/view.php?id=$course->id");
     die;
 }
 
@@ -88,18 +88,18 @@ if ($course->format == "weeks") {
     $table->align = array("left", "left");
 }
 
-foreach ($activequizs as $activequiz) {
-    $url = new moodle_url('/mod/activequiz/view.php', array('id' => $activequiz->coursemodule));
-    if (!$activequiz->visible) {
+foreach ($jazzquizs as $jazzquiz) {
+    $url = new moodle_url('/mod/jazzquiz/view.php', array('id' => $jazzquiz->coursemodule));
+    if (!$jazzquiz->visible) {
         //Show dimmed if the mod is hidden
-        $link = '<a class="dimmed" href="' . $url . '">' . $activequiz->name . '</a>';
+        $link = '<a class="dimmed" href="' . $url . '">' . $jazzquiz->name . '</a>';
     } else {
         //Show normal if the mod is visible
-        $link = '<a href="' . $url . '">' . $activequiz->name . '</a>';
+        $link = '<a href="' . $url . '">' . $jazzquiz->name . '</a>';
     }
 
     if ($course->format == 'weeks' or $course->format == 'topics') {
-        $table->data[] = array($activequiz->section, $link);
+        $table->data[] = array($jazzquiz->section, $link);
     } else {
         $table->data[] = array($link);
     }

@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_activequiz;
+namespace mod_jazzquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
-class activequiz_vote
+class jazzquiz_vote
 {
 
     public $session_id;
@@ -32,7 +32,7 @@ class activequiz_vote
     {
         global $DB;
 
-        $votes = $DB->get_records('activequiz_votes', [
+        $votes = $DB->get_records('jazzquiz_votes', [
             'sessionid' => $this->session_id
         ]);
 
@@ -43,7 +43,7 @@ class activequiz_vote
     {
         global $DB;
 
-        $all_votes = $DB->get_records('activequiz_votes', [
+        $all_votes = $DB->get_records('jazzquiz_votes', [
             'sessionid' => $this->session_id
         ]);
 
@@ -84,13 +84,13 @@ class activequiz_vote
         }
 
         // Does it exist?
-        $exists = $DB->record_exists('activequiz_votes', ['id' => $vote_id]);
+        $exists = $DB->record_exists('jazzquiz_votes', ['id' => $vote_id]);
         if (!$exists) {
             return 'error';
         }
 
         // Let's get it from the database
-        $row = $DB->get_record('activequiz_votes', ['id' => $vote_id]);
+        $row = $DB->get_record('jazzquiz_votes', ['id' => $vote_id]);
         if (!$row) {
             return 'error';
         }
@@ -101,7 +101,7 @@ class activequiz_vote
             $row->userlist .= ',';
         }
         $row->userlist .= $user_id;
-        $DB->update_record('activequiz_votes', $row);
+        $DB->update_record('jazzquiz_votes', $row);
 
         return 'success';
     }
@@ -111,20 +111,20 @@ class activequiz_vote
         global $DB;
 
         // Delete previous voting options for this session
-        $DB->delete_records('activequiz_votes', [
+        $DB->delete_records('jazzquiz_votes', [
             'sessionid' => $this->session_id
         ]);
 
         // Add to database
         foreach ($options as $option) {
             $vote = new \stdClass();
-            $vote->activequizid = $rtq_id;
+            $vote->jazzquizid = $rtq_id;
             $vote->sessionid = $this->session_id;
             $vote->attempt = $option['text'];
             $vote->initialcount = $option['count'];
             $vote->finalcount = 0;
             $vote->userlist = '';
-            $DB->insert_record('activequiz_votes', $vote);
+            $DB->insert_record('jazzquiz_votes', $vote);
         }
 
     }
