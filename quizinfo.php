@@ -40,7 +40,7 @@ if (!$session = $DB->get_record('jazzquiz_sessions', array('id' => $sessionid)))
     $jsonlib->send_error('invalid session');
 }
 
-// Next we need to get the active quiz object and course module object to make sure a student can log in
+// Next we need to get the JazzQuiz object and course module object to make sure a student can log in
 // for the session asked for
 if(!$jazzquiz = $DB->get_record('jazzquiz', array('id'=> $session->jazzquizid))){
     $jsonlib->send_error('invalid request');

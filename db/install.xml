@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="jazzquiz" COMMENT="Defines active quizzes">
+    <TABLE NAME="jazzquiz" COMMENT="Defines JazzQuizzes">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="id of the table, please edit me"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -28,7 +28,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for jazzquiz"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="jazzquiz_questions" COMMENT="table to hold question information for active quizzes">
+    <TABLE NAME="jazzquiz_questions" COMMENT="table to hold question information for JazzQuizzes">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="jazzquizid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The realtime quiz this question instance is associated with"/>
@@ -65,7 +65,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="jazzquiz_groupattendance" COMMENT="table to specify users that were a part of the group when a active quiz session took place.">
+    <TABLE NAME="jazzquiz_groupattendance" COMMENT="table to specify users that were a part of the group when a JazzQuiz session took place.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="jazzquizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The realtime quiz id that this particular matching matches to"/>

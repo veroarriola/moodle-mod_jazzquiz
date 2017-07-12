@@ -14,7 +14,7 @@ class jazzquiz_report_base {
 
 
     /**
-     * @var \mod_jazzquiz\jazzquiz $active quiz
+     * @var \mod_jazzquiz\jazzquiz $jazzquiz
      */
     protected $jazzquiz;
 
