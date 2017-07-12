@@ -23,18 +23,18 @@
  */
 
 // General Strings.
-$string['modulename'] = 'Active quiz';
+$string['modulename'] = 'JazzQuiz';
 $string['modulename_help'] = '
-<p>The Active quiz activity enables an instructor to create and administer quizzes in real-time.  All regular quiz question types can be used in the Active Quiz.</p>
-<p>Active Quiz allows individual or group participation. Group attendance is possible so points given during the active quiz will only be applied to the participants that attended the session.  Questions can be set to allow multiple attempts. A time limit may be set to automatically end the question, or the instructor can manually end the question and move on to the next one.  The instructor also has the ability to jump to different questions while  running the session. Instructors can monitor group or individual participation, real-time responses of the participants and the question being polled. </p>
+<p>The JazzQuiz activity enables an instructor to create and administer quizzes in real-time.  All regular quiz question types can be used in the JazzQuiz.</p>
+<p>JazzQuiz allows individual or group participation. Group attendance is possible so points given during the JazzQuiz will only be applied to the participants that attended the session.  Questions can be set to allow multiple attempts. A time limit may be set to automatically end the question, or the instructor can manually end the question and move on to the next one.  The instructor also has the ability to jump to different questions while  running the session. Instructors can monitor group or individual participation, real-time responses of the participants and the question being polled. </p>
 <p>Each quiz attempt is marked automatically like a regular quiz (with the exception of essay and PoodLL questions) and the grade is recorded in the gradebook. Grading for group participation can be done automatically by transferring the grade from the single responder to the other group members. </p>
 <p>The instructor has options to show hints, give feedback and show correct answers to students upon quiz completion.</p>
-<p>Active Quizzes may be used as a vehicle for delivering Team Based Learning inside Moodle.</p>
+<p>JazzQuizzes may be used as a vehicle for delivering Team Based Learning inside Moodle.</p>
 ';
-$string['modulenameplural'] = 'Active quizzes';
-$string['jazzquizsettings'] = 'General active quiz settings';
-$string['pluginadministration'] = 'Active quiz administration';
-$string['pluginname'] = 'Active quiz';
+$string['modulenameplural'] = 'JazzQuizzes';
+$string['jazzquizsettings'] = 'General JazzQuiz settings';
+$string['pluginadministration'] = 'JazzQuiz administration';
+$string['pluginname'] = 'JazzQuiz';
 $string['view'] = 'View quiz';
 $string['edit'] = 'Edit quiz';
 $string['responses'] = 'View responses';
@@ -42,9 +42,9 @@ $string['attempts'] = 'Attempts';
 $string['overallgrade'] = 'Overall grade: {$a->overallgrade} / {$a->scale}';
 
 $string['jazzquiz:addinstance'] = 'Add an instance of jazzquiz';
-$string['jazzquiz:attempt'] = 'Attempt an active quiz';
-$string['jazzquiz:control'] = 'Control an active quiz. (Usually for instructors only)';
-$string['jazzquiz:editquestions'] = 'Edit questions for an active quiz.';
+$string['jazzquiz:attempt'] = 'Attempt an JazzQuiz';
+$string['jazzquiz:control'] = 'Control an JazzQuiz. (Usually for instructors only)';
+$string['jazzquiz:editquestions'] = 'Edit questions for an JazzQuiz.';
 $string['jazzquiz:seeresponses'] = 'View other student responses to grade them';
 $string['jazzquiz:viewownattempts'] = 'Allows students to see their own attempts at a quiz';
 
@@ -64,7 +64,7 @@ $string['highestsessiongrade'] = 'Highest session grade';
 
 
 // Mod form strings.
-$string['jazzquizsettings'] = 'General Active quiz settings';
+$string['jazzquizsettings'] = 'General JazzQuiz settings';
 $string['jazzquizintro'] = 'Introduction';
 $string['defaultquestiontime'] = 'Default question time';
 $string['defaultquestiontime_help'] = 'The default time to display each question.<br />
@@ -87,7 +87,7 @@ $string['anonymousresponses_help'] = 'Anonymize student responses for the instru
 $string['fullanonymize'] = 'Fully anonymize student responses';
 $string['fullanonymize_help'] = 'Fully anonymize student responses.  Please note, that if you select this option, this session\'s responses will not be graded and applied to students.';
 $string['anonymoususer'] = 'Anonymous user';
-$string['isanonymous'] = 'All responses to this active quiz are anonymous';
+$string['isanonymous'] = 'All responses to this JazzQuiz are anonymous';
 
 $string['groupworksettings'] = 'Group settings';
 $string['nochangegroups_label'] = '&nbsp;';
@@ -301,4 +301,4 @@ $string['countdatasetlabel'] = 'Number of Answers';
 $string['percentagedatasetlabel'] = 'Percentage of total answers';
 
 $string['enabledquestiontypes'] = 'Enable question types';
-$string['enabledquestiontypes_info'] = 'Question types that are enabled for use within instances of the active quiz activity.';
+$string['enabledquestiontypes_info'] = 'Question types that are enabled for use within instances of the JazzQuiz activity.';
