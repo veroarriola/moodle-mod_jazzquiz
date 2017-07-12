@@ -208,11 +208,12 @@ class quizdata
 
                 // Did we find the question?
                 if (!$question) {
-                    $questions[] = [
+                    // Only use for debugging.
+                    /*$questions[] = [
                         'questionid' => $quiz_question->questionid,
                         'name' => 'This question does not exist.',
                         'slot' => 0
-                    ];
+                    ];*/
                     continue;
                 }
 
