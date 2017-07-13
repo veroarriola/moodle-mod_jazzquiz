@@ -100,11 +100,11 @@ jazzquiz.ajax = {
         }
 
         httpRequest.onreadystatechange = function () {
-            if (this.readyState == 4) {
+            if (this.readyState === 4) {
 
                 var status = this.status;
                 var response = '';
-                if (status == 500) {
+                if (status === 500) {
                     try {
                         response = JSON.parse(this.responseText);
                     } catch (Error) {
@@ -164,10 +164,10 @@ jazzquiz.render_maxima_equation = function(input, index, base_id) {
             console.log('Target element #' + base_id + index + ' not found.');
             return;
         }
-        if (status == 500) {
+        if (status === 500) {
             target.innerHTML = input;
             console.log('Failed to get latex for ' + index);
-        } else if (status == 200) {
+        } else if (status === 200) {
             target.innerHTML = '<span class="filter_mathjaxloader_equation">' + response.latex + '</span>';
             jazzquiz.render_all_mathjax();
         }
@@ -229,7 +229,7 @@ jazzquiz.quiz_page_loaded = function (stop) {
         jazzquiz.set('quizinfobox', document.getElementById('quizinfobox'));
 
         // see if we're resuming a quiz or not
-        if (jazzquiz.get('resumequiz') == "true") {
+        if (jazzquiz.get('resumequiz') === "true") {
             if (controls) {
                 controls.classList.remove('hidden');
             }
@@ -267,7 +267,9 @@ jazzquiz.resume_quiz = function () {
     var inquizcontrols = document.getElementById('inquizcontrols');
 
     switch (this.get('resumequizaction')) {
+
         case 'waitforquestion':
+
             // we're waiting for a question so let the quiz info handle that
             // note that there is up to a 3 second offset due to set interval, but, this within an acceptable time offset
             // for the next question to start
@@ -279,13 +281,15 @@ jazzquiz.resume_quiz = function () {
                 startquizbtn.classList.add('btn-hide');
             }
 
-            if (jazzquiz.get('isinstructor') == 'true') {
+            if (jazzquiz.get('isinstructor') === 'true') {
                 // instructor resume waitfor question needs to be instantiated as their quizinfo doesn't handle the wait for question case
                 this.waitfor_question(this.get('resumequizcurrentquestion'), this.get('resumequizquestiontime'), this.get('resumequizdelay'));
             }
 
             break;
+
         case 'startquestion':
+
             if (inquizcontrols) {
                 inquizcontrols.classList.remove('btn-hide');
                 startquizbtn.classList.add('btn-hide');
@@ -293,7 +297,6 @@ jazzquiz.resume_quiz = function () {
                     // enable the "end question button"
                     this.control_buttons(['endquestion', 'toggleresponses', 'togglenotresponded']);
                 }
-
             }
 
             this.goto_question(this.get('resumequizcurrentquestion'), this.get('resumequizquestiontime'), this.get('resumequestiontries'));
@@ -301,12 +304,12 @@ jazzquiz.resume_quiz = function () {
             jazzquiz.getQuizInfo();
             this.loading(null, 'hide');
 
-
             break;
+
         case 'reviewing':
 
             // setup review for instructors, otherwise display reviewing for students
-            if (jazzquiz.get('isinstructor') == 'true') {
+            if (jazzquiz.get('isinstructor') === 'true') {
                 jazzquiz.getQuizInfo(); // still start quiz info
                 this.loading(null, 'hide');
                 // load right controls if available
@@ -323,8 +326,16 @@ jazzquiz.resume_quiz = function () {
                 this.loading(null, 'hide');
                 this.quiz_info(M.util.get_string('waitforrevewingend', 'jazzquiz'), true);
             }
+            break;
 
+        case 'voting':
+            jazzquiz.getQuizInfo();
+            this.loading(null, 'hide');
+            break;
 
+        case 'preparing':
+            jazzquiz.getQuizInfo();
+            this.loading(null, 'hide');
             break;
     }
 
@@ -400,7 +411,7 @@ jazzquiz.goto_question = function (questionid, questiontime, tries) {
     var settryno = false;
 
     // make sure the trycount is always correct (this is for re-polling of questions for students, and for resuming of a quiz.
-    if (jazzquiz.get('isinstructor') == 'false') {
+    if (jazzquiz.get('isinstructor') === 'false') {
 
         var questions = jazzquiz.get('questions');
         var question = questions[questionid];
@@ -544,14 +555,14 @@ jazzquiz.save_question = function () {
  */
 jazzquiz.hide_all_questionboxes = function () {
 
-    if (jazzquiz.get('questions') != 'undefined') {
+    if (jazzquiz.get('questions') !== 'undefined') {
         var allquestions = jazzquiz.get('questions');
         for (var prop in allquestions) {
             if (allquestions.hasOwnProperty(prop)) {
                 var qnum = allquestions[prop].slot;
                 var qcont = document.getElementById('q' + qnum + '_container');
                 // only do this for elements actually found
-                if (typeof qcont != 'undefined') {
+                if (typeof qcont !== 'undefined') {
                     if (qcont.classList.contains('hidden')) {
                         // already hidden
                     } else {

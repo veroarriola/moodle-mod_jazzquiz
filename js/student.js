@@ -74,7 +74,7 @@ jazzquiz.getQuizInfo = function () {
 
                 }
 
-            } else if (response.status == 'reviewing') {
+            } else if (response.status === 'reviewing') {
 
                 jazzquiz.hide_instructions();
 
@@ -84,12 +84,12 @@ jazzquiz.getQuizInfo = function () {
 
                 jazzquiz.set('inquestion', 'false');
 
-            } else if (response.status == 'sessionclosed') {
+            } else if (response.status === 'sessionclosed') {
 
                 jazzquiz.hide_all_questionboxes();
                 jazzquiz.quiz_info(M.util.get_string('sessionclosed', 'jazzquiz'));
 
-            } else if (response.status == 'voting') {
+            } else if (response.status === 'voting') {
 
                 if (jazzquiz.is_voting_running === undefined || !jazzquiz.is_voting_running) {
 
@@ -114,11 +114,16 @@ jazzquiz.getQuizInfo = function () {
                     jazzquiz.is_voting_running = true;
                 }
 
+            } else if (response.status === 'preparing') {
+
+                jazzquiz.hide_instructions();
+
+                jazzquiz.quiz_info(M.util.get_string('waitforinstructor', 'jazzquiz'), true);
+
             }
         }
 
-        var time = 3000 + Math.floor(Math.random() * (100 + 100) - 100);
-        setTimeout(jazzquiz.getQuizInfo, time);
+        setTimeout(jazzquiz.getQuizInfo, 3000);
 
     });
 };
@@ -135,7 +140,7 @@ jazzquiz.handle_question = function (questionid, hide) {
     var alreadysaving = jazzquiz.get('savingquestion');
     if (alreadysaving == 'undefined') {
         jazzquiz.set('savingquestion', 'saving');
-    } else if (alreadysaving == 'saving') {
+    } else if (alreadysaving === 'saving') {
         // Don't try and save again
         return;
     } else {
@@ -175,7 +180,7 @@ jazzquiz.handle_question = function (questionid, hide) {
     // submit the form
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', formdata, function (status, response) {
 
-        if (status == 500) {
+        if (status === 500) {
             jazzquiz.set('savingquestion', 'done');
             var loadingbox = document.getElementById('loadingbox');
             loadingbox.classList.add('hidden');
@@ -228,9 +233,9 @@ jazzquiz.save_vote = function() {
     };
 
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
-        if (status == '500') {
+        if (status == 500) {
             jazzquiz.quiz_info('There was an error saving the vote.', true);
-        } else if (status == 200) {
+        } else if (status === 200) {
             jazzquiz.hide_all_questionboxes();
             var waitforinstructor = M.util.get_string('waitforinstructor', 'jazzquiz');
             if (response.status === 'success') {

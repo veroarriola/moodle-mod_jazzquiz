@@ -122,15 +122,15 @@ class view {
             $this->pageurl->param('action', ''); // remove the action
         }
 
+        $renderer = $this->RTQ->get_renderer();
 
         switch ($this->pagevars['action']) {
 
-
             case 'noquestions':
 
-                $this->RTQ->get_renderer()->view_header();
-                $this->RTQ->get_renderer()->no_questions($this->RTQ->is_instructor());
-                $this->RTQ->get_renderer()->view_footer();
+                $renderer->view_header();
+                $renderer->no_questions($this->RTQ->is_instructor());
+                $renderer->view_footer();
                 break;
 
             case 'quizstart':
@@ -182,15 +182,15 @@ class view {
                         $attempt->setStatus('inprogress');
 
                         // Show the quiz start landing page
-                        $this->RTQ->get_renderer()->view_header(true);
-                        $this->RTQ->get_renderer()->render_quiz($attempt, $this->session);
-                        $this->RTQ->get_renderer()->view_footer();
+                        $renderer->view_header(true);
+                        $renderer->render_quiz($attempt, $this->session);
+                        $renderer->view_footer();
 
                     } else {
 
-                        $this->RTQ->get_renderer()->view_header();
-                        $this->RTQ->get_renderer()->group_session_started();
-                        $this->RTQ->get_renderer()->view_footer();
+                        $renderer->view_header();
+                        $renderer->group_session_started();
+                        $renderer->view_footer();
                     }
 
                 }
@@ -233,9 +233,9 @@ class view {
 
                     } else {
 
-                        $this->RTQ->get_renderer()->view_header();
-                        $this->RTQ->get_renderer()->group_member_select($groupselectform);
-                        $this->RTQ->get_renderer()->view_footer();
+                        $renderer->view_header();
+                        $renderer->group_member_select($groupselectform);
+                        $renderer->view_footer();
 
                     }
                 }
@@ -276,20 +276,20 @@ class view {
                         if (!empty($sessions)) {
 
                             // Error out with that there are existing sessions
-                            $this->RTQ->get_renderer()->setMessage(get_string('alreadyexisting_sessions', 'jazzquiz'), 'error');
-                            $this->RTQ->get_renderer()->view_header();
-                            $this->RTQ->get_renderer()->view_inst_home($startsessionform, $this->session->get_session());
-                            $this->RTQ->get_renderer()->view_footer();
+                            $renderer->setMessage(get_string('alreadyexisting_sessions', 'jazzquiz'), 'error');
+                            $renderer->view_header();
+                            $renderer->view_inst_home($startsessionform, $this->session->get_session());
+                            $renderer->view_footer();
                             break;
 
                         } else {
 
                             if (!$this->session->create_session($data)) {
                                 // Error handling
-                                $this->RTQ->get_renderer()->setMessage(get_string('unabletocreate_session', 'jazzquiz'), 'error');
-                                $this->RTQ->get_renderer()->view_header();
-                                $this->RTQ->get_renderer()->view_inst_home($startsessionform, $this->session->get_session());
-                                $this->RTQ->get_renderer()->view_footer();
+                                $renderer->setMessage(get_string('unabletocreate_session', 'jazzquiz'), 'error');
+                                $renderer->view_header();
+                                $renderer->view_inst_home($startsessionform, $this->session->get_session());
+                                $renderer->view_footer();
                                 break; // break out of the switch
                             }
                         }
@@ -301,9 +301,9 @@ class view {
 
                     } else {
 
-                        $this->RTQ->get_renderer()->view_header();
-                        $this->RTQ->get_renderer()->view_inst_home($startsessionform, $this->session->get_session());
-                        $this->RTQ->get_renderer()->view_footer();
+                        $renderer->view_header();
+                        $renderer->view_inst_home($startsessionform, $this->session->get_session());
+                        $renderer->view_footer();
 
                     }
 
@@ -320,9 +320,9 @@ class view {
 
                         if (empty($validgroups) && $validgroups !== false) {
 
-                            $this->RTQ->get_renderer()->view_header();
-                            $this->RTQ->get_renderer()->group_session_started();
-                            $this->RTQ->get_renderer()->view_footer();
+                            $renderer->view_header();
+                            $renderer->group_session_started();
+                            $renderer->view_footer();
                             break;
 
                         } else if ($validgroups === false) {
@@ -366,9 +366,9 @@ class view {
                         // Display student home
                         // Form will display only if there is an active session.
 
-                        $this->RTQ->get_renderer()->view_header();
-                        $this->RTQ->get_renderer()->view_student_home($studentstartform, $this->session);
-                        $this->RTQ->get_renderer()->view_footer();
+                        $renderer->view_header();
+                        $renderer->view_student_home($studentstartform, $this->session);
+                        $renderer->view_footer();
 
                     }
                 }

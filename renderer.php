@@ -415,6 +415,27 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         return $output;
     }
 
+    private function write_control_button($prefix, $icon, $text, $id) {
+
+        return html_writer::tag('button', $prefix . '<i class="fa fa-' . $icon . '"></i> ' . $text, [
+            'class' => 'btn',
+            'id' => $id,
+            'onclick' => 'jazzquiz.execute_control_action(\'' . $id . '\');'
+        ]);
+
+    }
+
+    private function write_control_buttons($buttons) {
+        $html = '';
+        foreach ($buttons as $button) {
+            if (count($button) < 4) {
+                continue;
+            }
+            $html .= $this->write_control_button($button[0], $button[1], $button[2], $button[3]);
+        }
+        return $html;
+    }
+
     /**
      * Renders the controls for the quiz for the instructor
      *
@@ -422,117 +443,32 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
      */
     public function render_controls()
     {
-        $output = '';
-            $inqcontrol = '<div class="quiz-list-buttons quiz-control-buttons">';
+        $html = '<div class="quiz-list-buttons quiz-control-buttons hidden">'
+        . $this->write_control_buttons([
 
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-repeat"></i> Re-poll', array(
-                'class' => 'btn',
-                'id' => 'repollquestion',
-                'onclick' => 'jazzquiz.repoll_question();',
-                'disabled' => 'true'
-            )
-        );
+            [ '', 'repeat', 'Re-poll', 'repollquestion' ],
+            [ '', 'bar-chart', 'Vote', 'runvoting' ],
+            [ '<div class="improvise-menu"></div>', 'edit', 'Improvise', 'startimprovisedquestion' ],
+            [ '', 'bars', 'Jump to', 'jumptoquestion' ],
+            [ '', 'forward', 'Next', 'nextquestion' ],
+            [ '', 'close', 'End', 'endquestion' ],
+            [ '', 'refresh', '', 'reloadresults' ],
+            [ '', 'expand', '', 'showfullscreenresults' ],
+            [ '', 'eye', 'Show answer', 'showcorrectanswer' ],
+            [ '', 'minus-square', 'Hide responses', 'toggleresponses' ],
+            [ '', 'minus-square', 'Hide not responded', 'togglenotresponded' ],
+            [ '', 'window-close', 'Quit', 'closesession' ]
 
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-bar-chart"></i> Vote', array(
-                'class' => 'btn',
-                'id' => 'runvoting',
-                'onclick' => 'jazzquiz.run_voting();'
-            )
-        );
+        ])
+        . '</div>'
 
-        $inqcontrol .= html_writer::tag('button', '<div class="improvise-menu"></div><i class="fa fa-edit"></i> Improvise', array(
-                'class' => 'btn',
-                'id' => 'startimprovisedquestion',
-                'onclick' => 'jazzquiz.show_improvised_question_setup();'
-            )
-        );
+        . '<div class="quiz-list-buttons">'
+        .     $this->write_control_button('', 'start', 'Start quiz', 'startquiz')
+        . '</div>';
 
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-bars"></i> Jump to', array(
-                'class' => 'btn',
-                'id' => 'jumptoquestion',
-                'onclick' => 'jazzquiz.jumpto_question();',
-                'disabled' => 'true'
-            )
-        );
-
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-forward"></i> Next', array(
-                'class' => 'btn',
-                'id' => 'nextquestion',
-                'onclick' => 'jazzquiz.next_question();',
-                'disabled' => 'true'
-            )
-        );
-
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-close"></i> End', array(
-                'class' => 'btn',
-                'id' => 'endquestion',
-                'onclick' => 'jazzquiz.end_question();',
-                'disabled' => 'true'
-            )
-        );
-
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-refresh"></i>', array(
-                'class' => 'btn',
-                'id' => 'reloadresults',
-                'onclick' => 'jazzquiz.reload_results();'
-            )
-        );
-
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-expand"></i>', array(
-                'class' => 'btn',
-                'id' => 'showfullscreenresults',
-                'onclick' => 'jazzquiz.show_fullscreen_results_view();'
-            )
-        );
-
-
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-eye"></i> Show answer', array(
-                'class' => 'btn',
-                'id' => 'showcorrectanswer',
-                'onclick' => 'jazzquiz.show_correct_answer();'
-            )
-        );
-
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-minus-square"></i> ' . get_string('hidestudentresponses', 'jazzquiz'), array(
-                'class' => 'btn',
-                'id' => 'toggleresponses',
-                'onclick' => 'jazzquiz.toggle_responses();',
-                'disabled' => 'true'
-            )
-        );
-        /*$inqcontrol .= html_writer::tag('button', '<i class="fa fa-minus-square"></i> ' . get_string('hidenotresponded', 'jazzquiz'), array(
-                'class'    => 'btn',
-                'id'       => 'togglenotresponded',
-                'onclick'  => 'jazzquiz.toggle_notresponded();',
-                'disabled' => 'true'
-            )
-        );*/
-
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-window-close"></i> Quit', array(
-                'class' => 'btn',
-                'id' => 'closesession',
-                'onclick' => 'jazzquiz.close_session();',
-                'disabled' => 'true',
-                'style' => 'float:right;'
-            )
-        );
-
-        $inqcontrol .= '</div>';
-
-        $inqcontrol .= '<div class="quiz-list-buttons">';
-
-        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-start"></i>' . get_string('startquiz', 'jazzquiz'), array(
-                'class' => 'btn',
-                'id' => 'startquiz',
-                'onclick' => 'jazzquiz.start_quiz();'
-            )
-        );
-
-        $inqcontrol .= '</div>';
-
-        $output .= html_writer::div($inqcontrol, 'btn-hide rtq_inquiz', array('id' => 'inquizcontrols'));
-
-        return $output;
+        return html_writer::div($html, 'btn-hide rtq_inquiz', [
+            'id' => 'inquizcontrols'
+        ]);
     }
 
     /**
@@ -677,7 +613,7 @@ EOD;
                     // next check how many tries left
                     $jsinfo->resumequestiontries = $attempt->check_tries_left($session->get_session()->currentqnum, $nextQuestion->getTries());
                 }
-            } else if ($sessionstatus == 'reviewing' || $sessionstatus == 'endquestion' || $sessionstatus == 'voting') {
+            } else if ($sessionstatus == 'reviewing' || $sessionstatus == 'endquestion') {
 
                 // if we're reviewing, resume with quiz info of reviewing and just let
                 // set interval capture next question start time
@@ -685,11 +621,27 @@ EOD;
                 $jsinfo->resumequizaction = 'reviewing';
                 $jsinfo->resumequizstatus = $sessionstatus;
                 $jsinfo->resumequizcurrentquestion = $currentquestion;
+
                 if ($attempt->lastquestion) {
                     $jsinfo->lastquestion = 'true';
                 } else {
                     $jsinfo->lastquestion = 'false';
                 }
+
+            } else if ($sessionstatus == 'voting') {
+
+                $jsinfo->resumequiz = 'true';
+                $jsinfo->resumequizaction = 'voting';
+                $jsinfo->resumequizstatus = $sessionstatus;
+                $jsinfo->resumequizcurrentquestion = $currentquestion;
+
+            } else if ($sessionstatus == 'preparing') {
+
+                $jsinfo->resumequiz = 'true';
+                $jsinfo->resumequizaction = 'preparing';
+                $jsinfo->resumequizstatus = $sessionstatus;
+                $jsinfo->resumequizcurrentquestion = $currentquestion;
+
             }
         }
 

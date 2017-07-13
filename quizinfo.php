@@ -29,92 +29,85 @@ define('AJAX_SCRIPT', true);
 require_once('../../config.php');
 require_sesskey();
 
-// if they've passed the sesskey information grab the session info
+// If they've passed the sesskey information grab the session info
 $sessionid = required_param('sessionid', PARAM_INT);
 
-// get JSONlib to return json response
+// Get JSONlib to return json response
 $jsonlib = new \mod_jazzquiz\utils\jsonlib();
 
 // First determine if we get a session.
-if (!$session = $DB->get_record('jazzquiz_sessions', array('id' => $sessionid))) {
+$session = $DB->get_record('jazzquiz_sessions', array('id' => $sessionid));
+if (!$session) {
     $jsonlib->send_error('invalid session');
 }
 
-// Next we need to get the JazzQuiz object and course module object to make sure a student can log in
-// for the session asked for
-if(!$jazzquiz = $DB->get_record('jazzquiz', array('id'=> $session->jazzquizid))){
+// Next we need to get the JazzQuiz object and course module object to make sure a student can log in for the session asked for
+$jazzquiz = $DB->get_record('jazzquiz', array('id' => $session->jazzquizid));
+if (!$jazzquiz) {
     $jsonlib->send_error('invalid request');
-}else{
-    // place within try/catch in order to catch errors/redirects and just display invalid request.
-    try{
-        $course = $DB->get_record('course', array('id' => $jazzquiz->course), '*', MUST_EXIST);
-        $cm = get_coursemodule_from_instance('jazzquiz', $jazzquiz->id, $course->id, false, MUST_EXIST);
-
-        require_login($course->id, false, $cm, false, true);
-    }catch(Exception $e){
-        $jsonlib->send_error('invalid request');
-    }
 }
 
-// if we have a session determine the response
-if ($session->sessionopen == 0) {
+// Catch errors/redirects and just display invalid request.
+try {
+    $course = $DB->get_record('course', array('id' => $jazzquiz->course), '*', MUST_EXIST);
+    $cm = get_coursemodule_from_instance('jazzquiz', $jazzquiz->id, $course->id, false, MUST_EXIST);
+    require_login($course->id, false, $cm, false, true);
+} catch (Exception $e) {
+    $jsonlib->send_error('invalid request');
+}
 
+// Check if the session is open
+if ($session->sessionopen == 0) {
     $jsonlib->set('status', 'sessionclosed');
     $jsonlib->send_response();
+}
 
-} /*else if (empty($session->currentquestion)) {
-    // send a status of quiz not running
-    $jsonlib->set('status', 'notrunning');
-    $jsonlib->send_response();
-}*/ else if ($session->status == 'reviewing') {
+switch ($session->status) {
 
-    $jsonlib->set('status', 'reviewing');
-    $jsonlib->send_response();
+    // Just a generic response with the state
+    case 'reviewing':
+    case 'notrunning':
+    case 'endquestion':
+    case 'preparing':
+        $jsonlib->set('status', $session->status);
+        $jsonlib->send_response();
+        break;
 
-} else if ($session->status == 'notrunning') {
+    // TODO: Not send options here. Quizdata should probably take care of that.
+    case 'voting':
+        $vote_options = $DB->get_records('jazzquiz_votes', ['sessionid' => $sessionid]);
+        $options = [];
+        foreach ($vote_options as $vote_option) {
+            $options[] = [
+                'text' => $vote_option->attempt,
+                'id' => $vote_option->id
+            ];
+        }
 
-    $jsonlib->set('status', 'notrunning');
-    $jsonlib->send_response();
+        $jsonlib->set('status', 'voting');
+        $jsonlib->set('options', json_encode($options));
+        $jsonlib->send_response();
+        break;
 
-} else if ($session->status == 'endquestion') {
+    // Send the currently active question
+    case 'running':
+        if (empty($session->currentquestion)) {
+            $jsonlib->set('status', 'notrunning');
+            $jsonlib->send_response();
+        }
+        // otherwise send a response of the current question with the next start time
+        $jsonlib->set('status', 'running');
+        $jsonlib->set('currentquestion', $session->currentquestion);
+        $jsonlib->set('questiontime', $session->currentquestiontime);
+        $delay = $session->nextstarttime - time();
+        $jsonlib->set('delay', $delay);
+        $jsonlib->send_response();
+        break;
 
-    $jsonlib->set('status', 'endquestion');
-    $jsonlib->send_response();
-
-} else if ($session->status == 'voting') {
-
-    $vote_options = $DB->get_records('jazzquiz_votes', ['sessionid' => $sessionid]);
-    $options = [];
-    foreach ($vote_options as $vote_option) {
-        $options[] = [
-            'text' => $vote_option->attempt,
-            'id' => $vote_option->id
-        ];
-    }
-
-    $jsonlib->set('status', 'voting');
-    $jsonlib->set('options', json_encode($options));
-    $jsonlib->send_response();
-
-} else if ($session->status == 'running') {
-    if (empty($session->currentquestion)) {
+    // This should not be reached, but if it ever is, let's just assume the quiz is not running.
+    default:
         $jsonlib->set('status', 'notrunning');
+        $jsonlib->set('debug', 'Unknown error. State: ' . $session->status);
         $jsonlib->send_response();
-        //$jsonlib->set('status', 'error');
-        //$jsonlib->set('debug', 'State is running, but there is no current question.');
-        $jsonlib->send_response();
-    }
-    // otherwise send a response of the current question with the next start time
-    $jsonlib->set('status', 'running');
-    $jsonlib->set('currentquestion', $session->currentquestion);
-    $jsonlib->set('questiontime', $session->currentquestiontime);
-    $delay = $session->nextstarttime - time();
-    $jsonlib->set('delay', $delay);
-    $jsonlib->send_response();
-} else {
-
-    $jsonlib->set('status', 'error');
-    $jsonlib->set('debug', 'Unknown error. State: ' . $session->status);
-    $jsonlib->send_response();
-
+        break;
 }

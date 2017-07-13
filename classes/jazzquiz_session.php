@@ -202,7 +202,7 @@ class jazzquiz_session
             return false; // return false for no first question
         }
 
-        $this->set_status('reviewing');
+        $this->set_status('preparing');
 
         /*$this->session->currentqnum = 1;
         $this->session->nextstarttime = time() + $this->rtq->getRTQ()->waitforquestiontime;

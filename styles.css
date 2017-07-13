@@ -400,3 +400,6 @@
     width: 100%;
 }
 
+#closesession {
+    float: right;
+}
