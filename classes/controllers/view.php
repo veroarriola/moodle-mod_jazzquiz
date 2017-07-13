@@ -65,7 +65,7 @@ class view {
         $id = optional_param('id', false, PARAM_INT);
         $quizid = optional_param('quizid', false, PARAM_INT);
 
-        // get necessary records from the DB
+        // Get necessary records from the DB
         if ($id) {
             $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
@@ -75,7 +75,9 @@ class view {
             $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
-        $this->get_parameters(); // get the rest of the parameters and set them in the class
+
+        // Get the rest of the parameters and set them in the class
+        $this->get_parameters();
 
         require_login($course->id, false, $cm);
 
@@ -86,16 +88,20 @@ class view {
 
         $this->RTQ = new \mod_jazzquiz\jazzquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
         $this->RTQ->require_capability('mod/jazzquiz:attempt');
-        $this->pagevars['isinstructor'] = $this->RTQ->is_instructor(); // set this up in the page vars so it can be passed to things like the renderer
 
-        // finally set up the question manager and the possible jazzquiz session
+        // Set this up in the page vars so it can be passed to things like the renderer
+        $this->pagevars['isinstructor'] = $this->RTQ->is_instructor();
+
+        // Set up the question manager and the possible JazzQuiz session
         $this->session = new \mod_jazzquiz\jazzquiz_session($this->RTQ, $this->pageurl, $this->pagevars);
+
+        $module_name = get_string("modulename", "jazzquiz");
+        $quiz_name = format_string($quiz->name, true);
 
         $PAGE->set_pagelayout('incourse');
         $PAGE->set_context($this->RTQ->getContext());
         $PAGE->set_cm($this->RTQ->getCM());
-        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "jazzquiz") . ': ' .
-            format_string($quiz->name, true)));
+        $PAGE->set_title(strip_tags($course->shortname . ': ' . $module_name . ': ' . $quiz_name));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
 
@@ -126,62 +132,62 @@ class view {
                 $this->RTQ->get_renderer()->no_questions($this->RTQ->is_instructor());
                 $this->RTQ->get_renderer()->view_footer();
                 break;
-            case 'quizstart':
-                // case for the quiz start landing page
 
-                // set the quiz view page to the base layout for 1 column layout
+            case 'quizstart':
+
+                // Set the quiz view page to the base layout for 1 column layout
                 $PAGE->set_pagelayout('base');
 
                 if ($this->session->get_session() === false) {
-                    // redirect them to the default page with a quick message first
 
+                    // Redirect them to the default page with a quick message first
                     $redirurl = clone($this->pageurl);
                     $redirurl->remove_params('action');
-
                     redirect($redirurl, get_string('nosession', 'jazzquiz'), 5);
+
                 } else {
 
-                    // this is here to help prevent race conditions for multiple group members trying to take the
-                    // quiz at the same time
+                    // This is here to help prevent race conditions for multiple
+                    // group members trying to take thequiz at the same time.
                     $cantakequiz = false;
+
                     if ($this->RTQ->group_mode()) {
 
                         if(!$this->RTQ->is_instructor() && $this->pagevars['group'] == 0){
                             print_error('invalidgroupid', 'mod_jazzquiz');
                         }
 
-                        // check if the user can take the quiz for the group
+                        // Check if the user can take the quiz for the group
                         if ($this->session->can_take_quiz_for_group($this->pagevars['group'])) {
                             $cantakequiz = true;
                         }
-                    } else { // if no group mode, user will always be able to take quiz
+
+                    } else {
+
+                        // If no group mode, user will always be able to take quiz
                         $cantakequiz = true;
                     }
 
                     if ($cantakequiz) {
 
                         // Initialize the question attempts
-                        if (!$this->session->init_attempts($this->RTQ->is_instructor(), $this->pagevars['group'],
-                            $this->pagevars['groupmembers'])
-                        ) {
+                        if (!$this->session->init_attempts($this->RTQ->is_instructor(), $this->pagevars['group'], $this->pagevars['groupmembers'])) {
                             print_error('cantinitattempts', 'jazzquiz');
                         }
 
-                        // set the session as running
-                        if ($this->RTQ->is_instructor() && $this->session->get_session()->status == 'notrunning') {
-                            $this->session->set_status('running');
-                        }
-
-                        // get the current attempt an initialize the head contributions
+                        // Get the current attempt and initialize the head contributions
                         $attempt = $this->session->get_open_attempt();
                         $attempt->get_html_head_contributions();
 
                         $attempt->setStatus('inprogress');
-                        // now show the quiz start landing page
+
+                        // Show the quiz start landing page
                         $this->RTQ->get_renderer()->view_header(true);
                         $this->RTQ->get_renderer()->render_quiz($attempt, $this->session);
                         $this->RTQ->get_renderer()->view_footer();
+
                     } else {
+
                         $this->RTQ->get_renderer()->view_header();
                         $this->RTQ->get_renderer()->group_session_started();
                         $this->RTQ->get_renderer()->view_footer();
@@ -189,26 +195,28 @@ class view {
 
                 }
                 break;
+
             case 'selectgroupmembers':
 
                 if (empty($this->pagevars['group'])) {
+
                     $viewhome = clone($this->pageurl);
                     $viewhome->remove_params('action');
                     redirect($viewhome, get_string('invalid_group_selected', 'jazzquiz'), 5);
+
                 } else {
+
                     $this->pageurl->param('group', $this->pagevars['group']);
-                    $groupselectform = new \mod_jazzquiz\forms\view\groupselectmembers(
-                        $this->pageurl,
-                        array(
-                            'rtq'           => $this->RTQ,
-                            'selectedgroup' => $this->pagevars['group']
-                        ));
+                    $groupselectform = new \mod_jazzquiz\forms\view\groupselectmembers($this->pageurl, [
+                        'rtq'           => $this->RTQ,
+                        'selectedgroup' => $this->pagevars['group']
+                    ]);
 
                     if ($data = $groupselectform->get_data()) {
 
-                        // basically we want to get all gm* fields
+                        // Basically we want to get all gm* fields
                         $gmemnum = 1;
-                        $groupmembers = array();
+                        $groupmembers = [];
                         $data = get_object_vars($data);
                         while (isset($data[ 'gm' . $gmemnum ])) {
                             if ($data[ 'gm' . $gmemnum ] != 0) {
@@ -219,39 +227,46 @@ class view {
 
                         $this->pageurl->param('groupmembers', implode(',', $groupmembers));
                         $this->pageurl->param('action', 'quizstart');
-                        // redirect to the quiz start page
+
+                        // Redirect to the quiz start page
                         redirect($this->pageurl, null, 0);
 
                     } else {
+
                         $this->RTQ->get_renderer()->view_header();
                         $this->RTQ->get_renderer()->group_member_select($groupselectform);
                         $this->RTQ->get_renderer()->view_footer();
+
                     }
                 }
 
                 break;
-            default:
-                // default is to show view to start quiz (for instructors/quiz controllers) or join quiz (for everyone else)
 
-                // trigger event for course module viewed
-                $event = \mod_jazzquiz\event\course_module_viewed::create(array(
+            default:
+
+                // Default is to show view to start quiz (for instructors/quiz controllers)
+                // or join quiz (for everyone else)
+
+                // Trigger event for course module viewed
+                $event = \mod_jazzquiz\event\course_module_viewed::create([
                     'objectid' => $PAGE->cm->instance,
                     'context'  => $PAGE->context,
-                ));
+                ]);
 
                 $event->add_record_snapshot('course', $this->RTQ->getCourse());
                 $event->add_record_snapshot($PAGE->cm->modname, $this->RTQ->getRTQ());
                 $event->trigger();
 
-                // determine home display based on role
+                // Determine home display based on role
                 if ($this->RTQ->is_instructor()) {
+
                     $startsessionform = new \mod_jazzquiz\forms\view\start_session($this->pageurl);
 
                     if ($data = $startsessionform->get_data()) {
-                        // create a new quiz session
+                        // Create a new quiz session
 
-                        // first check to see if there are any open sessions
-                        // this shouldn't occur, but never hurts to check
+                        // First check to see if there are any open sessions
+                        // This shouldn't occur, but never hurts to check
                         $sessions = $DB->get_records('jazzquiz_sessions', array(
                                 'jazzquizid' => $this->RTQ->getRTQ()->id,
                                 'sessionopen'  => 1
@@ -259,15 +274,18 @@ class view {
                         );
 
                         if (!empty($sessions)) {
-                            // error out with that there are existing sessions
+
+                            // Error out with that there are existing sessions
                             $this->RTQ->get_renderer()->setMessage(get_string('alreadyexisting_sessions', 'jazzquiz'), 'error');
                             $this->RTQ->get_renderer()->view_header();
                             $this->RTQ->get_renderer()->view_inst_home($startsessionform, $this->session->get_session());
                             $this->RTQ->get_renderer()->view_footer();
                             break;
+
                         } else {
+
                             if (!$this->session->create_session($data)) {
-                                // error handling
+                                // Error handling
                                 $this->RTQ->get_renderer()->setMessage(get_string('unabletocreate_session', 'jazzquiz'), 'error');
                                 $this->RTQ->get_renderer()->view_header();
                                 $this->RTQ->get_renderer()->view_inst_home($startsessionform, $this->session->get_session());
@@ -275,34 +293,52 @@ class view {
                                 break; // break out of the switch
                             }
                         }
-                        // redirect to the quiz start
+
+                        // Redirect to the quiz start
                         $quizstarturl = clone($this->pageurl);
                         $quizstarturl->param('action', 'quizstart');
                         redirect($quizstarturl, null, 0);
 
                     } else {
+
                         $this->RTQ->get_renderer()->view_header();
                         $this->RTQ->get_renderer()->view_inst_home($startsessionform, $this->session->get_session());
                         $this->RTQ->get_renderer()->view_footer();
+
                     }
+
                 } else {
 
-                    // check to see if the group already started a quiz
-                    $validgroups = array();
+                    // Check to see if the group already started a quiz
+                    $validgroups = [];
+
                     if ($this->RTQ->group_mode()) {
-                        // if there is already an attempt for this session for this group for this user don't allow them to start another
+
+                        // If there is already an attempt for this session for this group for this user:
+                        //  Don't allow them to start another
                         $validgroups = $this->session->check_attempt_for_group();
+
                         if (empty($validgroups) && $validgroups !== false) {
+
                             $this->RTQ->get_renderer()->view_header();
                             $this->RTQ->get_renderer()->group_session_started();
                             $this->RTQ->get_renderer()->view_footer();
                             break;
+
                         } else if ($validgroups === false) {
-                            $validgroups = array();
+
+                            $validgroups = [];
+
                         }
                     }
-                    $studentstartformparams = array('rtq' => $this->RTQ, 'validgroups' => $validgroups);
+
+                    $studentstartformparams = [
+                        'rtq' => $this->RTQ,
+                        'validgroups' => $validgroups
+                    ];
+
                     $studentstartform = new \mod_jazzquiz\forms\view\student_start_form($this->pageurl, $studentstartformparams);
+
                     if ($data = $studentstartform->get_data()) {
 
                         $quizstarturl = clone($this->pageurl);
@@ -325,7 +361,10 @@ class view {
                             redirect($quizstarturl, null, 0);
                         }
 
-                    } else { // display student home.  (form will display only if there is an active session
+                    } else {
+
+                        // Display student home
+                        // Form will display only if there is an active session.
 
                         $this->RTQ->get_renderer()->view_header();
                         $this->RTQ->get_renderer()->view_student_home($studentstartform, $this->session);
@@ -333,7 +372,6 @@ class view {
 
                     }
                 }
-
 
                 break;
         }

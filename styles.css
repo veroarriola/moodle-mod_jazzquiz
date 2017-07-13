@@ -358,7 +358,7 @@
     display: block;
 }
 
-#inquizcontrols .list-controls {
+#inquizcontrols .quiz-list-buttons {
 
 }
 
@@ -374,9 +374,10 @@
     color: white;
 }
 
-#inquizcontrols .list-controls-side .btn {
-    display: block;
-    width: 100%;
+#inquizcontrols .quiz-list-buttons #startquiz.btn {
+    font-size: 2rem;
+    padding: 16px 32px;
+    margin: 16px;
 }
 
 #startimprovisedquestion {

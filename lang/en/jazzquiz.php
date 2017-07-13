@@ -272,7 +272,7 @@ $string['instructorquizinst'] = '<p>Please wait on this page until students have
 </p>
 ';
 
-$string['studentquizinst'] = '<p>Please wait for the instructor to start the quiz.  Once started you will see a timer counting down to the first question start</p>';
+$string['studentquizinst'] = '<p>Please wait for the instructor to start the quiz.</p>';
 
 // Responses page.
 $string['selectsession'] = 'Select session to view:&nbsp;&nbsp;&nbsp;&nbsp;';

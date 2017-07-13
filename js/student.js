@@ -42,7 +42,7 @@ jazzquiz.getQuizInfo = function () {
 
             if (response.status == 'notrunning') {
 
-                jazzquiz.quiz_info(M.util.get_string('waitforinstructor', 'jazzquiz'), true);
+
 
             } else if (response.status == 'running' && jazzquiz.get('inquestion') != 'true') {
 
@@ -75,6 +75,8 @@ jazzquiz.getQuizInfo = function () {
                 }
 
             } else if (response.status == 'reviewing') {
+
+                jazzquiz.hide_instructions();
 
                 jazzquiz.is_voting_running = false;
 
@@ -133,8 +135,9 @@ jazzquiz.handle_question = function (questionid, hide) {
     var alreadysaving = jazzquiz.get('savingquestion');
     if (alreadysaving == 'undefined') {
         jazzquiz.set('savingquestion', 'saving');
-    } else if (alreadysaving == "saving") {
-        return; // don't try and save again
+    } else if (alreadysaving == 'saving') {
+        // Don't try and save again
+        return;
     } else {
         jazzquiz.set('savingquestion', 'saving');
     }
@@ -241,3 +244,4 @@ jazzquiz.save_vote = function() {
 
     });
 };
+

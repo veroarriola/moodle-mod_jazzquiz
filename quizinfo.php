@@ -62,13 +62,18 @@ if ($session->sessionopen == 0) {
     $jsonlib->set('status', 'sessionclosed');
     $jsonlib->send_response();
 
-} else if (empty($session->currentquestion)) {
+} /*else if (empty($session->currentquestion)) {
     // send a status of quiz not running
     $jsonlib->set('status', 'notrunning');
     $jsonlib->send_response();
-} else if ($session->status == 'reviewing') {
+}*/ else if ($session->status == 'reviewing') {
 
     $jsonlib->set('status', 'reviewing');
+    $jsonlib->send_response();
+
+} else if ($session->status == 'notrunning') {
+
+    $jsonlib->set('status', 'notrunning');
     $jsonlib->send_response();
 
 } else if ($session->status == 'endquestion') {
@@ -91,7 +96,14 @@ if ($session->sessionopen == 0) {
     $jsonlib->set('options', json_encode($options));
     $jsonlib->send_response();
 
-}  else {
+} else if ($session->status == 'running') {
+    if (empty($session->currentquestion)) {
+        $jsonlib->set('status', 'notrunning');
+        $jsonlib->send_response();
+        //$jsonlib->set('status', 'error');
+        //$jsonlib->set('debug', 'State is running, but there is no current question.');
+        $jsonlib->send_response();
+    }
     // otherwise send a response of the current question with the next start time
     $jsonlib->set('status', 'running');
     $jsonlib->set('currentquestion', $session->currentquestion);
@@ -99,4 +111,10 @@ if ($session->sessionopen == 0) {
     $delay = $session->nextstarttime - time();
     $jsonlib->set('delay', $delay);
     $jsonlib->send_response();
+} else {
+
+    $jsonlib->set('status', 'error');
+    $jsonlib->set('debug', 'Unknown error. State: ' . $session->status);
+    $jsonlib->send_response();
+
 }

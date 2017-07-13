@@ -330,6 +330,11 @@ jazzquiz.resume_quiz = function () {
 
 };
 
+jazzquiz.hide_instructions = function() {
+    var instructionsbox = jazzquiz.get('instructionsbox');
+    instructionsbox.classList.add('hidden');
+};
+
 /**
  * General function for waiting for the question
  *
@@ -372,8 +377,7 @@ jazzquiz.waitfor_question = function (questionid, questiontime, delay) {
 
     quizinfobox.classList.remove('hidden');
 
-    var instructionsbox = jazzquiz.get('instructionsbox');
-    instructionsbox.classList.add('hidden');
+    jazzquiz.hide_instructions();
 };
 
 

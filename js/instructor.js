@@ -120,7 +120,7 @@ jazzquiz.getQuizInfo = function () {
             jazzquiz.change_quiz_state(response.status);
 
             if (response.status == 'notrunning') {
-                // do nothing as we're not running
+
                 jazzquiz.set('endquestion', 'false');
 
             } else if (response.status == 'running' && jazzquiz.get('inquestion') != 'true' && jazzquiz.get('endquestion') != 'true') {
@@ -360,6 +360,9 @@ jazzquiz.start_quiz = function () {
 
     var startquizbtn = document.getElementById('startquiz');
     startquizbtn.classList.add('btn-hide');
+
+    jQuery('#instructionsbox').addClass('hidden');
+
 };
 
 
@@ -1029,7 +1032,13 @@ jazzquiz.getnotresponded = function () {
  */
 jazzquiz.control_buttons = function (buttons) {
 
-    var children = jQuery('#inquizcontrols .list-controls').children();
+    if (!window.jQuery) {
+        console.log('jQuery not loaded. ' + jazzquiz.current_quiz_state + ': Failed to activate the following buttons:');
+        console.log(buttons);
+        return;
+    }
+
+    var children = jQuery('#inquizcontrols .quiz-control-buttons').children();
 
     for (var i = 0; i < children.length; i++) {
         var id = children[i].getAttribute("id");

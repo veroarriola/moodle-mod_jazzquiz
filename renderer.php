@@ -422,18 +422,8 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
      */
     public function render_controls()
     {
-
         $output = '';
-        $inqcontrol = '';
-
-        $output .= html_writer::tag('button', get_string('startquiz', 'jazzquiz'), array(
-                'class' => 'btn',
-                'id' => 'startquiz',
-                'onclick' => 'jazzquiz.start_quiz();'
-            )
-        );
-
-        $inqcontrol .= '<div class="list-controls">';
+            $inqcontrol = '<div class="quiz-list-buttons quiz-control-buttons">';
 
         $inqcontrol .= html_writer::tag('button', '<i class="fa fa-repeat"></i> Re-poll', array(
                 'class' => 'btn',
@@ -526,6 +516,18 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
                 'style' => 'float:right;'
             )
         );
+
+        $inqcontrol .= '</div>';
+
+        $inqcontrol .= '<div class="quiz-list-buttons">';
+
+        $inqcontrol .= html_writer::tag('button', '<i class="fa fa-start"></i>' . get_string('startquiz', 'jazzquiz'), array(
+                'class' => 'btn',
+                'id' => 'startquiz',
+                'onclick' => 'jazzquiz.start_quiz();'
+            )
+        );
+
         $inqcontrol .= '</div>';
 
         $output .= html_writer::div($inqcontrol, 'btn-hide rtq_inquiz', array('id' => 'inquizcontrols'));
