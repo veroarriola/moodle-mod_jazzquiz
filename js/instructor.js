@@ -467,7 +467,7 @@ jazzquiz.show_improvised_question_setup = function () {
                 html += 'onclick="';
                 html += 'jazzquiz.chosen_improvisation_question = ' + questions[i].slot + ';';
                 html += 'jazzquiz.start_improvised_question();';
-                html += "jQuery('.improvise-menu').html('').removeClass('active');";
+                html += "jQuery('.improvise-menu').html('').parent().removeClass('active');";
                 html += '">' + questions[i].name + '</button>';
                 menu.append(html);
 
@@ -752,7 +752,6 @@ jazzquiz.next_question = function () {
 
 jazzquiz.end_question = function () {
 
-    // we want to send a request to re-poll the previous question, or the one we're reviewing now
     var params = {
         'action': 'endquestion',
         'question': jazzquiz.get('currentquestion'),
@@ -762,8 +761,13 @@ jazzquiz.end_question = function () {
         'sesskey': jazzquiz.get('sesskey')
     };
 
-    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    var vote_callback = function(status, response) {
+        if (status === 500) {
+            console.log('Failed to end vote.');
+        }
+    };
 
+    var callback = function(status, response) {
         if (status === 500) {
             var loadingbox = document.getElementById('loadingbox');
             loadingbox.classList.add('hidden');
@@ -774,7 +778,7 @@ jazzquiz.end_question = function () {
             return;
         }
 
-        // clear the jazzquiz counter interval
+        // clear the counter interval
         if (jazzquiz.qcounter) {
             clearInterval(jazzquiz.qcounter);
         }
@@ -785,12 +789,19 @@ jazzquiz.end_question = function () {
         questiontimertext.innerHTML = '';
         questiontimer.innerHTML = '';
 
-        jazzquiz.set('inquestion', 'false'); // set inquestion to false as we've ended the question
+        // Set inquestion to false as we've ended the question
+        jazzquiz.set('inquestion', 'false');
         jazzquiz.set('endquestion', 'true');
 
         // after getting endquestion response, go through the normal handle_question flow
         jazzquiz.handle_question(jazzquiz.get('currentquestion'));
-    });
+    };
+
+    if (jazzquiz.is_voting_running === true) {
+        callback = vote_callback;
+    }
+
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, callback);
 };
 
 jazzquiz.close_session = function () {

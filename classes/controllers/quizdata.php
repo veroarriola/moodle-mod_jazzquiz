@@ -460,8 +460,18 @@ class quizdata
 
     private function end_question()
     {
-        // End the question
-        $this->session->end_question();
+        // Check state
+        if ($this->session->get_session()->status === 'voting') {
+
+            // End the voting
+            $this->session->set_status('reviewing');
+
+        } else {
+
+            // End the question
+            $this->session->end_question();
+        }
+
 
         // Send response
         $this->jsonlib->set('status', 'success');
