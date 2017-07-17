@@ -108,7 +108,9 @@ jazzquiz.getQuizInfo = function () {
                     jazzquiz.quiz_info(html);
 
                     for (var i = 0; i < options.length; i++) {
-                        jazzquiz.render_maxima_equation(options[i].text, i, 'vote_answer_label');
+                        if (options[i].qtype === 'stack') {
+                            jazzquiz.render_maxima_equation(options[i].text, i, 'vote_answer_label');
+                        }
                     }
 
                     jazzquiz.is_voting_running = true;

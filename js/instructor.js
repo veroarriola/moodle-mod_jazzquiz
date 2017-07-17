@@ -169,8 +169,6 @@ jazzquiz.getQuizInfo = function () {
 
             } else if (response.status === 'voting') {
 
-                jazzquiz.is_voting_running = true;
-
                 jazzquiz.get_and_show_vote_results();
 
                 document.getElementById('startquiz').classList.add('hidden');
@@ -495,18 +493,10 @@ jazzquiz.get_selected_answers_for_vote = function () {
     var result = [];
 
     jQuery('.selected-vote-option').each(function (i, option) {
-        if (jazzquiz.current_responses === undefined || jazzquiz.current_responses.length === 0) {
-            result.push({
-                text: jQuery(this).attr('data-response'),
-                count: jQuery(this).attr('data-count')
-            })
-        } else {
-            var response = jazzquiz.current_responses[option.dataset.response_i];
-            result.push({
-                text: response.response,
-                count: response.count
-            });
-        }
+        result.push({
+            text: option.dataset.response,
+            count: option.dataset.count
+        });
     });
 
     return result;
@@ -551,8 +541,7 @@ jazzquiz.get_and_show_vote_results = function () {
                 }
             }
 
-            // TOOD: Not hardcode stack here...
-            jazzquiz.create_response_bar_graph(responses, 'vote_response', 'stack', target_id);
+            jazzquiz.create_response_bar_graph(responses, 'vote_response', response.qtype, target_id);
             jazzquiz.sort_response_bar_graph(target_id);
 
         }
@@ -571,7 +560,8 @@ jazzquiz.run_voting = function () {
         'sessionid': jazzquiz.get('sessionid'),
         'attemptid': jazzquiz.get('attemptid'),
         'sesskey': jazzquiz.get('sesskey'),
-        'questions': questions_param
+        'questions': questions_param,
+        'qtype': jazzquiz.vars.questions[jazzquiz.get('currentquestion')].question.qtype
     };
 
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
@@ -803,7 +793,7 @@ jazzquiz.end_question = function () {
         jazzquiz.handle_question(jazzquiz.get('currentquestion'));
     };
 
-    if (jazzquiz.is_voting_running === true) {
+    if (jazzquiz.current_quiz_state === 'voting') {
         callback = vote_callback;
     }
 
@@ -1188,7 +1178,10 @@ jazzquiz.close_fullscreen_results_view = function () {
 jazzquiz.execute_control_action = function (action) {
 
     // Prevent duplicate clicks
-    jazzquiz.control_buttons([]);
+    // TODO: Find a better way to check if this is a direct action or not. Perhaps a class?
+    if (action !== 'startimprovisedquestion') {
+        jazzquiz.control_buttons([]);
+    }
 
     // Execute action
     switch (action) {

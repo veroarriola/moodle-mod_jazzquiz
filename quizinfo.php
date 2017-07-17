@@ -80,7 +80,8 @@ switch ($session->status) {
         foreach ($vote_options as $vote_option) {
             $options[] = [
                 'text' => $vote_option->attempt,
-                'id' => $vote_option->id
+                'id' => $vote_option->id,
+                'qtype' => $vote_option->qtype
             ];
         }
 

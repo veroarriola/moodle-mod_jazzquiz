@@ -120,6 +120,7 @@
         <FIELD NAME="initialcount" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="finalcount" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="userlist" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="qtype" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

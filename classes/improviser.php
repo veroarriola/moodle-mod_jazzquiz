@@ -129,7 +129,7 @@ class improviser
         $end = $begin + intval($option_count);
         for ($a = $begin; $a < $end; $a++) {
             $letter = chr($a);
-            $answer = $this->make_generic_question_answer($question->id, 1, '<p>' . $letter . '</p>');
+            $answer = $this->make_generic_question_answer($question->id, 1, $letter);
             $DB->insert_record('question_answers', $answer);
         }
 

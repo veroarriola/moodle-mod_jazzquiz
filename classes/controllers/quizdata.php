@@ -332,8 +332,16 @@ class quizdata
             $this->jsonlib->send_error('no questions sent');
         }
 
+        // TODO: Not use _POST
+
         // Decode the questions parameter into an array
         $questions = json_decode(urldecode($_POST['questions']), true);
+
+        // Get qtype
+        $qtype = '';
+        if (isset($_POST['qtype'])) {
+            $qtype = $_POST['qtype'];
+        }
 
         if (!$questions) {
             $this->jsonlib->send_error('no questions sent');
@@ -341,7 +349,7 @@ class quizdata
 
             // Initialize the votes
             $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id);
-            $vote->prepare_options($this->RTQ->getRTQ()->id, $questions);
+            $vote->prepare_options($this->RTQ->getRTQ()->id, $qtype, $questions);
 
             // Change quiz status
             $this->session->set_status('voting');
@@ -471,7 +479,6 @@ class quizdata
             // End the question
             $this->session->end_question();
         }
-
 
         // Send response
         $this->jsonlib->set('status', 'success');
