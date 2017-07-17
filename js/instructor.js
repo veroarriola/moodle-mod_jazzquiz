@@ -169,6 +169,8 @@ jazzquiz.getQuizInfo = function () {
 
             } else if (response.status === 'voting') {
 
+                jazzquiz.is_voting_running = true;
+
                 jazzquiz.get_and_show_vote_results();
 
                 document.getElementById('startquiz').classList.add('hidden');
@@ -222,6 +224,7 @@ jazzquiz.create_response_bar_graph = function (responses, name, qtype, target_id
             row.dataset.response = responses[i].response;
             row.dataset.percent = percent;
             row.dataset.row_i = row_i;
+            row.dataset.count = responses[i].count;
             row.classList.add('selected-vote-option');
 
             // TODO: Use classes instead of IDs for these elements. At the moment it's just easier to use an ID.
@@ -489,18 +492,21 @@ jazzquiz.start_improvised_question = function () {
 
 jazzquiz.get_selected_answers_for_vote = function () {
 
-    if (jazzquiz.current_responses === undefined) {
-        return [];
-    }
-
     var result = [];
 
     jQuery('.selected-vote-option').each(function (i, option) {
-        var response = jazzquiz.current_responses[option.dataset.response_i];
-        result.push({
-            text: response.response,
-            count: response.count
-        });
+        if (jazzquiz.current_responses === undefined || jazzquiz.current_responses.length === 0) {
+            result.push({
+                text: jQuery(this).attr('data-response'),
+                count: jQuery(this).attr('data-count')
+            })
+        } else {
+            var response = jazzquiz.current_responses[option.dataset.response_i];
+            result.push({
+                text: response.response,
+                count: response.count
+            });
+        }
     });
 
     return result;
@@ -974,15 +980,19 @@ jazzquiz.toggle_responses = function () {
 
     var toggleresponsesBtn = document.getElementById('toggleresponses');
 
-    if (jazzquiz.get('showstudentresponses') == false) { // if it is false, set it back to true for the student responses to show
+    if (jazzquiz.get('showstudentresponses') == false) {
 
+        // If it is false, set it back to true for the student responses to show
         toggleresponsesBtn.innerHTML = M.util.get_string('hidestudentresponses', 'jazzquiz');
 
         jazzquiz.set('showstudentresponses', true);
         jazzquiz.gather_current_results();
-    } else { // if it's set to true, or not set at all, then set it to false when this button is clicked
 
+    } else {
+
+        // If it's set to true, or not set at all, then set it to false when this button is clicked
         toggleresponsesBtn.innerHTML = M.util.get_string('showstudentresponses', 'jazzquiz');
+
         jazzquiz.set('showstudentresponses', false);
         jazzquiz.clear_and_hide_qinfobox();
     }
@@ -996,15 +1006,19 @@ jazzquiz.toggle_notresponded = function () {
 
     var togglenotrespondedBtn = document.getElementById('togglenotresponded');
 
-    if (jazzquiz.get('shownotresponded') == false) { // if it is false, set it back to true for the student responses to show
+    if (jazzquiz.get('shownotresponded') == false) {
 
+        // If it is false, set it back to true for the student responses to show
         togglenotrespondedBtn.innerHTML = M.util.get_string('hidenotresponded', 'jazzquiz');
 
         jazzquiz.set('shownotresponded', true);
         jazzquiz.getnotresponded();
-    } else { // if it's set to true, or not set at all, then set it to false when this button is clicked
 
+    } else {
+
+        // If it's set to true, or not set at all, then set it to false when this button is clicked
         togglenotrespondedBtn.innerHTML = M.util.get_string('shownotresponded', 'jazzquiz');
+
         jazzquiz.set('shownotresponded', false);
         jazzquiz.clear_and_hide_notresponded();
     }
@@ -1173,6 +1187,10 @@ jazzquiz.close_fullscreen_results_view = function () {
 
 jazzquiz.execute_control_action = function (action) {
 
+    // Prevent duplicate clicks
+    jazzquiz.control_buttons([]);
+
+    // Execute action
     switch (action) {
         case 'repollquestion':
             jazzquiz.repoll_question();
