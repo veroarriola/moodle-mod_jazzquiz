@@ -171,6 +171,8 @@ jazzquiz.getQuizInfo = function () {
 
                 jazzquiz.get_and_show_vote_results();
 
+                document.getElementById('startquiz').classList.add('hidden');
+
             } else if (response.status === 'preparing') {
 
                 document.getElementById('startquiz').classList.add('hidden');
