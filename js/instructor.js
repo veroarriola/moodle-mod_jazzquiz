@@ -456,7 +456,7 @@ jazzquiz.show_improvised_question_setup = function () {
             var questions = JSON.parse(response.questions);
 
             var menu = jQuery('.improvise-menu');
-            menu.html('').addClass('active');
+            menu.html('').parent().addClass('active');
 
             for (var i in questions) {
 
@@ -1219,6 +1219,6 @@ document.addEventListener('keyup', function (e) {
 document.addEventListener('click', function (e) {
     var menu = jQuery(e.target).closest('.improvise-menu');
     if (!menu.length) {
-        jQuery('.improvise-menu').html('').removeClass('active');
+        jQuery('.improvise-menu').html('').parent().removeClass('active');
     }
 });
