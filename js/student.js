@@ -20,114 +20,107 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// ensure that the namespace is defined
+// Ensure that the namespace is defined
 var jazzquiz = jazzquiz || {};
 jazzquiz.vars = jazzquiz.vars || {};
 
+jazzquiz.change_quiz_state = function(state, data) {
 
-jazzquiz.getQuizInfo = function () {
+    jazzquiz.current_quiz_state = state;
 
-    var params = {
-        'sesskey': jazzquiz.get('sesskey'),
-        'sessionid': jazzquiz.get('sessionid')
-    };
+    switch (state) {
 
-    jazzquiz.ajax.create_request('/mod/jazzquiz/quizinfo.php', params, function (status, response) {
+        case 'notrunning':
+            break;
 
-        if (status == 500) {
-            window.alert('There was an error....' + response);
-        } else if (status == 200) {
+        case 'preparing':
+            jazzquiz.hide_instructions();
+            jazzquiz.quiz_info(M.util.get_string('waitforinstructor', 'jazzquiz'), true);
+            break;
 
-            jazzquiz.current_quiz_state = response.status;
+        case 'running':
+            if (jazzquiz.get('inquestion') != 'true') {
+                // Make sure the loading box hides (this is a catch for when the quiz is resuming)
+                jazzquiz.loading(null, 'hide');
 
-            if (response.status == 'notrunning') {
+                // Set this to true so that we don't keep calling this over and over
+                jazzquiz.set('inquestion', 'true');
 
+                // Set this to false if we're going to a new question
+                jazzquiz.set('endedquestion', 'false');
 
+                jazzquiz.waitfor_question(data.currentquestion, data.questiontime, data.delay);
+            }
+            break;
 
-            } else if (response.status == 'running' && jazzquiz.get('inquestion') != 'true') {
+        case 'endquestion':
+            if (jazzquiz.get('endedquestion') != 'true' && (jazzquiz.is_voting_running === undefined || !jazzquiz.is_voting_running)) {
 
-                jazzquiz.loading(null, 'hide'); // make sure the loading box hides (this is a catch for when the quiz is resuming)
-                jazzquiz.set('inquestion', 'true'); // set this to true so that we don't keep calling this over and over
-                jazzquiz.set('endedquestion', 'false'); // set this to false if we're going to a new question
-                jazzquiz.waitfor_question(response.currentquestion, response.questiontime, response.delay);
+                var currentquestion = jazzquiz.get('currentquestion');
 
-            } else if (response.status == 'endquestion' && jazzquiz.get('endedquestion') != 'true') {
+                jazzquiz.handle_question(currentquestion);
+                if (jazzquiz.qcounter) {
+                    clearInterval(jazzquiz.qcounter);
+                    var questiontimertext = document.getElementById('q' + currentquestion + '_questiontimetext');
+                    var questiontimer = document.getElementById('q' + currentquestion + '_questiontime');
 
-                if (jazzquiz.is_voting_running === undefined || !jazzquiz.is_voting_running) {
-
-                    var currentquestion = jazzquiz.get('currentquestion');
-
-                    jazzquiz.handle_question(currentquestion);
-                    if (jazzquiz.qcounter) {
-                        clearInterval(jazzquiz.qcounter);
-                        var questiontimertext = document.getElementById('q' + currentquestion + '_questiontimetext');
-                        var questiontimer = document.getElementById('q' + currentquestion + '_questiontime');
-
-                        // reset variables.
-                        jazzquiz.qcounter = false;
-                        jazzquiz.counter = false;
-                        questiontimertext.innerHTML = '';
-                        questiontimer.innerHTML = '';
-                    }
-
-                    jazzquiz.set('endedquestion', 'true');
-
+                    // reset variables.
+                    jazzquiz.qcounter = false;
+                    jazzquiz.counter = false;
+                    questiontimertext.innerHTML = '';
+                    questiontimer.innerHTML = '';
                 }
 
-            } else if (response.status === 'reviewing') {
-
-                jazzquiz.hide_instructions();
-
-                jazzquiz.is_voting_running = false;
-
-                jazzquiz.quiz_info(M.util.get_string('waitforinstructor', 'jazzquiz'), true);
-
-                jazzquiz.set('inquestion', 'false');
-
-            } else if (response.status === 'sessionclosed') {
-
-                jazzquiz.hide_all_questionboxes();
-                jazzquiz.quiz_info(M.util.get_string('sessionclosed', 'jazzquiz'));
-
-            } else if (response.status === 'voting') {
-
-                if (jazzquiz.is_voting_running === undefined || !jazzquiz.is_voting_running) {
-
-                    var options = JSON.parse(response.options);
-
-                    var html = '<div class="jazzquiz-vote">';
-                    for (var i = 0; i < options.length; i++) {
-                        html += '<label>';
-                        html += '<input type="radio" name="vote" value="' + options[i].id + '" onclick="jazzquiz.vote_answer = this.value;">';
-                        html += '<span id="vote_answer_label' + i + '">' + options[i].text + '</span>';
-                        html += '</label><br>';
-                    }
-                    html += '</div>';
-                    html += '<button class="btn" onclick="jazzquiz.save_vote(); return false;">Save</button>';
-
-                    jazzquiz.quiz_info(html);
-
-                    for (var i = 0; i < options.length; i++) {
-                        if (options[i].qtype === 'stack') {
-                            jazzquiz.render_maxima_equation(options[i].text, i, 'vote_answer_label');
-                        }
-                    }
-
-                    jazzquiz.is_voting_running = true;
-                }
-
-            } else if (response.status === 'preparing') {
-
-                jazzquiz.hide_instructions();
-
-                jazzquiz.quiz_info(M.util.get_string('waitforinstructor', 'jazzquiz'), true);
+                jazzquiz.set('endedquestion', 'true');
 
             }
-        }
+            break;
 
-        setTimeout(jazzquiz.getQuizInfo, 3000);
+        case 'reviewing':
+            jazzquiz.is_voting_running = false;
+            jazzquiz.hide_instructions();
+            jazzquiz.quiz_info(M.util.get_string('waitforinstructor', 'jazzquiz'), true);
+            jazzquiz.set('inquestion', 'false');
 
-    });
+            break;
+
+        case 'sessionclosed':
+            jazzquiz.hide_all_questionboxes();
+            jazzquiz.quiz_info(M.util.get_string('sessionclosed', 'jazzquiz'));
+            break;
+
+        case 'voting':
+            if (jazzquiz.is_voting_running === undefined || !jazzquiz.is_voting_running) {
+
+                var options = JSON.parse(data.options);
+
+                var html = '<div class="jazzquiz-vote">';
+                for (var i = 0; i < options.length; i++) {
+                    html += '<label>';
+                    html += '<input type="radio" name="vote" value="' + options[i].id + '" onclick="jazzquiz.vote_answer = this.value;">';
+                    html += '<span id="vote_answer_label' + i + '">' + options[i].text + '</span>';
+                    html += '</label><br>';
+                }
+                html += '</div>';
+                html += '<button class="btn" onclick="jazzquiz.save_vote(); return false;">Save</button>';
+
+                jazzquiz.quiz_info(html);
+
+                for (var i = 0; i < options.length; i++) {
+                    if (options[i].qtype === 'stack') {
+                        jazzquiz.render_maxima_equation(options[i].text, i, 'vote_answer_label');
+                    }
+                }
+
+                jazzquiz.is_voting_running = true;
+            }
+            break;
+
+        default:
+            break;
+
+    }
+
 };
 
 /**
@@ -155,7 +148,7 @@ jazzquiz.handle_question = function (questionid, hide) {
     var loadingtext = document.getElementById('loadingtext');
     loadingtext.innerHTML = M.util.get_string('gatheringresults', 'jazzquiz');
 
-    // if there are multiple tries for this question then don't hide the question container
+    // If there are multiple tries for this question then don't hide the question container
     if (hide) {
         var qbox = document.getElementById('q' + questionid + '_container');
         if (qbox !== null) {
@@ -167,8 +160,6 @@ jazzquiz.handle_question = function (questionid, hide) {
         tinyMCE.triggerSave();
     }
 
-    // will only work on Modern browsers
-    // of course the problem child is always IE...
     var qform = document.forms.namedItem('q' + questionid);
     var formdata = new FormData(qform);
 
@@ -179,25 +170,27 @@ jazzquiz.handle_question = function (questionid, hide) {
     formdata.append('sesskey', jazzquiz.get('sesskey'));
     formdata.append('questionid', questionid);
 
-    // submit the form
+    // Send request
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', formdata, function (status, response) {
 
-        if (status === 500) {
+        if (status !== HTTP_STATUS.OK) {
+
             jazzquiz.set('savingquestion', 'done');
+
             var loadingbox = document.getElementById('loadingbox');
             loadingbox.classList.add('hidden');
 
             jazzquiz.quiz_info('There was an error with your request', true);
 
-            window.alert('there was an error with your request ... ');
             return;
         }
-        //update the sequence check for the question
+
+        // Update the sequence check for the question
         var sequencecheck = document.getElementsByName(response.seqcheckname);
         var field = sequencecheck[0];
         field.value = response.seqcheckval;
 
-        // show feedback to the students
+        // Show feedback to the students
         var quizinfobox = document.getElementById('quizinfobox');
 
         var feedback = response.feedback;
@@ -223,8 +216,9 @@ jazzquiz.handle_question = function (questionid, hide) {
 };
 
 
-jazzquiz.save_vote = function() {
+jazzquiz.save_vote = function () {
 
+    // Setup parameters
     var params = {
         'action': 'savevote',
         'rtqid': jazzquiz.get('rtqid'),
@@ -234,19 +228,28 @@ jazzquiz.save_vote = function() {
         'answer': jazzquiz.vote_answer
     };
 
+    // Send request
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
-        if (status == 500) {
+
+        if (status !== HTTP_STATUS.OK) {
             jazzquiz.quiz_info('There was an error saving the vote.', true);
-        } else if (status === 200) {
-            jazzquiz.hide_all_questionboxes();
-            var waitforinstructor = M.util.get_string('waitforinstructor', 'jazzquiz');
-            if (response.status === 'success') {
+            return;
+        }
+
+        jazzquiz.hide_all_questionboxes();
+        var waitforinstructor = M.util.get_string('waitforinstructor', 'jazzquiz');
+
+        // Output info depending on the status
+        switch (response.status) {
+            case 'success':
                 jazzquiz.quiz_info(waitforinstructor);
-            } else if (response.status === 'alreadyvoted') {
+                break;
+            case 'alreadyvoted':
                 jazzquiz.quiz_info('Sorry, but you have already voted. ' + waitforinstructor);
-            } else {
+                break;
+            default:
                 jazzquiz.quiz_info('An error has occurred. ' + waitforinstructor);
-            }
+                break;
         }
 
     });

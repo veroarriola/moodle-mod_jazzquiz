@@ -24,7 +24,19 @@
 var jazzquiz = jazzquiz || {};
 jazzquiz.vars = jazzquiz.vars || {};
 
-jazzquiz.change_quiz_state = function (state) {
+/**
+ * The instructor's quiz state change handler
+ *
+ * This function works to maintain instructor state as well as to assist in getting student responses
+ * while the question is still running.  There are 2 variables that are set/get which are important
+ *
+ * "inquestion" signifies that the jazzquiz is in a question, and is updated in other functions to signify
+ *              the end of a question
+ * "endquestion" This variable is needed to help to keep the "inquestion" variable from being overwritten on the
+ *               interval this function defines.  It is also updated by other functions in conjunction with "inquestion"
+ *
+ */
+jazzquiz.change_quiz_state = function (state, data) {
 
     jazzquiz.current_quiz_state = state;
 
@@ -35,6 +47,7 @@ jazzquiz.change_quiz_state = function (state) {
         case 'notrunning':
             jazzquiz.control_buttons([]);
             jazzquiz.hide_controls();
+            jazzquiz.set('endquestion', 'false');
             break;
 
         case 'preparing':
@@ -45,19 +58,52 @@ jazzquiz.change_quiz_state = function (state) {
                 'showfullscreenresults',
                 'closesession'
             ]);
+            document.getElementById('startquiz').classList.add('hidden');
             break;
 
         case 'running':
+
             jazzquiz.control_buttons([
                 'endquestion',
                 'toggleresponses',
                 'togglenotresponded',
                 'showfullscreenresults'
             ]);
+
+            if (jazzquiz.get('inquestion') === 'true') {
+
+                // Gather the current results
+                if (jazzquiz.get('delayrefreshresults') === 'undefined' || jazzquiz.get('delayrefreshresults') === 'false') {
+                    jazzquiz.gather_current_results();
+                }
+
+                // Also get the students/groups not responded
+                if (jazzquiz.get('shownotresponded') !== false) {
+                    jazzquiz.getnotresponded();
+                }
+
+            } else {
+
+                if (jazzquiz.get('endquestion') !== 'true') {
+
+                    if (data.delay <= 0) {
+                        // Only set in question if we're in it, not waiting for it to start
+                        jazzquiz.set('inquestion', 'true');
+                    }
+
+                } else {
+
+                    // Set endquestion to false as we're now "waiting" for a new question
+                    jazzquiz.set('endquestion', 'false');
+
+                }
+            }
+
             break;
 
         case 'endquestion':
             jazzquiz.control_buttons([]);
+            jazzquiz.set('inquestion', 'false');
             break;
 
         case 'reviewing':
@@ -77,6 +123,7 @@ jazzquiz.change_quiz_state = function (state) {
                 enabled_buttons.push('nextquestion');
             }
             jazzquiz.control_buttons(enabled_buttons);
+            jazzquiz.set('inquestion', 'false');
             break;
 
         case 'voting':
@@ -87,104 +134,19 @@ jazzquiz.change_quiz_state = function (state) {
                 'toggleresponses',
                 'endquestion'
             ]);
+            jazzquiz.get_and_show_vote_results();
+            document.getElementById('startquiz').classList.add('hidden');
             break;
 
         case 'sessionclosed':
-        // Fall-through
+            jazzquiz.control_buttons([]);
+            jazzquiz.set('inquestion', 'false');
+            break;
+
         default:
-            jazzquiz.control_buttons([
-                // Intentionally left empty
-            ]);
+            jazzquiz.control_buttons([]);
             break;
     }
-
-};
-
-/**
- * The instructor's getQuizInfo function
- *
- * This function works to maintain instructor state as well as to assist in getting student responses
- * while the question is still running.  There are 2 variables that are set/get which are important
- *
- * "inquestion" signifies that the jazzquiz is in a question, and is updated in other functions to signify
- *              the end of a question
- * "endquestion" This variable is needed to help to keep the "inquestion" variable from being overwritten on the
- *               interval this function defines.  It is also updated by other functions in conjunction with "inquestion"
- *
- */
-jazzquiz.getQuizInfo = function () {
-
-    // Setup parameters
-    var params = {
-        'sesskey': jazzquiz.get('sesskey'),
-        'sessionid': jazzquiz.get('sessionid')
-    };
-
-    // Send request
-    jazzquiz.ajax.create_request('/mod/jazzquiz/quizinfo.php', params, function (status, response) {
-
-        if (status !== HTTP_STATUS.OK) {
-            console.log('There was an error....' + response);
-            return;
-        }
-
-        jazzquiz.change_quiz_state(response.status);
-
-        if (response.status === 'notrunning') {
-
-            jazzquiz.set('endquestion', 'false');
-
-        } else if (response.status === 'running' && jazzquiz.get('inquestion') !== 'true' && jazzquiz.get('endquestion') !== 'true') {
-
-            if (response.delay <= 0) {
-                // only set in question if we're in it, not waiting for it to start
-                jazzquiz.set('inquestion', 'true');
-            }
-
-        } else if (response.status === 'running' && jazzquiz.get('inquestion') !== 'true') {
-
-            // set endquestion to false as we're now "waiting" for a new question
-            jazzquiz.set('endquestion', 'false');
-
-        } else if (response.status === 'running' && jazzquiz.get('inquestion') === 'true') {
-
-            // gether the current results
-            if (jazzquiz.get('delayrefreshresults') === 'undefined' || jazzquiz.get('delayrefreshresults') === 'false') {
-                jazzquiz.gather_current_results();
-            }
-
-            // also get the students/groups not responded
-            if (jazzquiz.get('shownotresponded') !== false) {
-                jazzquiz.getnotresponded();
-            }
-
-        } else if (response.status === 'endquestion') {
-
-            jazzquiz.set('inquestion', 'false');
-
-        } else if (response.status === 'reviewing') {
-
-            jazzquiz.set('inquestion', 'false');
-
-        } else if (response.status === 'sessionclosed') {
-
-            jazzquiz.set('inquestion', 'false');
-
-        } else if (response.status === 'voting') {
-
-            jazzquiz.get_and_show_vote_results();
-
-            document.getElementById('startquiz').classList.add('hidden');
-
-        } else if (response.status === 'preparing') {
-
-            document.getElementById('startquiz').classList.add('hidden');
-
-        }
-
-        setTimeout(jazzquiz.getQuizInfo, 3000);
-
-    });
 
 };
 
@@ -522,6 +484,7 @@ jazzquiz.get_selected_answers_for_vote = function () {
 
 jazzquiz.get_and_show_vote_results = function () {
 
+    // Setup parameters
     var params = {
         'action': 'getvoteresults',
         'rtqid': jazzquiz.get('rtqid'),
@@ -530,40 +493,41 @@ jazzquiz.get_and_show_vote_results = function () {
         'sesskey': jazzquiz.get('sesskey')
     };
 
+    // Send request
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
-        if (status === 500) {
-            jazzquiz.quiz_info('there was an error getting the vote results', true);
-        } else if (status === 200) {
-
-            var answers = JSON.parse(response.answers);
-
-            var target_id = 'wrapper_vote_responses';
-
-            var responses = [];
-            for (var i in answers) {
-                responses.push({
-                    response: answers[i].attempt,
-                    count: answers[i].finalcount,
-                    qtype: response.qtype
-                });
-            }
-
-            var target = document.getElementById(target_id);
-            if (target === null) {
-                jazzquiz.quiz_info('<table id="' + target_id + '" class="jazzquiz-responses-overview"></table>', true);
-                target = document.getElementById(target_id);
-
-                // This should not happen, but check just in case quiz_info fails to set the html.
-                if (target === null) {
-                    return;
-                }
-            }
-
-            jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id);
-            jazzquiz.sort_response_bar_graph(target_id);
-
+        if (status !== HTTP_STATUS.OK) {
+            jazzquiz.quiz_info('There was an error getting the vote results.', true);
+            return;
         }
+
+        var answers = JSON.parse(response.answers);
+
+        var target_id = 'wrapper_vote_responses';
+
+        var responses = [];
+        for (var i in answers) {
+            responses.push({
+                response: answers[i].attempt,
+                count: answers[i].finalcount,
+                qtype: response.qtype
+            });
+        }
+
+        var target = document.getElementById(target_id);
+        if (target === null) {
+            jazzquiz.quiz_info('<table id="' + target_id + '" class="jazzquiz-responses-overview"></table>', true);
+            target = document.getElementById(target_id);
+
+            // This should not happen, but check just in case quiz_info fails to set the html.
+            if (target === null) {
+                return;
+            }
+        }
+
+        jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id);
+        jazzquiz.sort_response_bar_graph(target_id);
+
 
     });
 };
@@ -573,6 +537,7 @@ jazzquiz.run_voting = function () {
     var vote_options = jazzquiz.get_selected_answers_for_vote();
     var questions_param = encodeURIComponent(JSON.stringify(vote_options));
 
+    // Setup parameters
     var params = {
         'action': 'runvoting',
         'rtqid': jazzquiz.get('rtqid'),
@@ -583,17 +548,17 @@ jazzquiz.run_voting = function () {
         'qtype': jazzquiz.vars.questions[jazzquiz.get('currentquestion')].question.qtype
     };
 
+    // Send request
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
-        if (status === 500) {
-            jazzquiz.quiz_info('there was an error starting the vote', true);
-        } else if (status === 200) {
-
-            // Hide unnecessary information
-            jazzquiz.clear_and_hide_notresponded();
-            jazzquiz.hide_all_questionboxes();
-
+        if (status !== HTTP_STATUS.OK) {
+            jazzquiz.quiz_info('There was an error starting the vote.', true);
+            return;
         }
+
+        // Hide unnecessary information
+        jazzquiz.clear_and_hide_notresponded();
+        jazzquiz.hide_all_questionboxes();
 
     });
 };
@@ -648,6 +613,7 @@ jazzquiz.gather_current_results = function () {
  */
 jazzquiz.gather_results = function () {
 
+    // Setup parameters
     var params = {
         'action': 'getresults',
         'rtqid': jazzquiz.get('rtqid'),
@@ -656,6 +622,7 @@ jazzquiz.gather_results = function () {
         'sesskey': jazzquiz.get('sesskey')
     };
 
+    // Send request
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         jazzquiz.loading('', 'hide');
@@ -663,14 +630,14 @@ jazzquiz.gather_results = function () {
         var questionbox = document.getElementById('q' + jazzquiz.get('currentquestion') + '_container');
         questionbox.classList.remove('hidden');
 
-        // only put results into the screen if
+        // Only put results into the screen if
         if (jazzquiz.get('showstudentresponses') !== false) {
 
             jazzquiz.clear_and_hide_qinfobox();
 
             jazzquiz.quiz_info_responses(response.responses, response.qtype);
 
-            // after the responses have been inserted, we see if any question type javascript was added and evaluate
+            // After the responses have been inserted, we see if any question type javascript was added and evaluate
             if (document.getElementById(response.qtype + '_js') !== null) {
                 eval(document.getElementById(response.qtype + '_js').innerHTML);
             }
@@ -704,6 +671,7 @@ jazzquiz.repoll_question = function () {
         'sesskey': jazzquiz.get('sesskey')
     };
 
+    // Send request
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         if (status !== HTTP_STATUS.OK) {

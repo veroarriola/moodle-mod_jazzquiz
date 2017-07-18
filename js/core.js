@@ -170,6 +170,32 @@ jazzquiz.ajax = {
     }
 };
 
+jazzquiz.getQuizInfo = function () {
+
+    // Setup parameters
+    var params = {
+        'sesskey': jazzquiz.get('sesskey'),
+        'sessionid': jazzquiz.get('sessionid')
+    };
+
+    // Send request
+    jazzquiz.ajax.create_request('/mod/jazzquiz/quizinfo.php', params, function (status, response) {
+
+        if (status !== HTTP_STATUS.OK) {
+            console.log('There was an error....' + response);
+            return;
+        }
+
+        // Change the local state
+        jazzquiz.change_quiz_state(response.status, response);
+
+        // Query again in 3 seconds
+        setTimeout(jazzquiz.getQuizInfo, 3000);
+
+    });
+
+};
+
 jazzquiz.render_all_mathjax = function () {
     Y.all('.filter_mathjaxloader_equation').each(function (node) {
         if (typeof window.MathJax !== "undefined") {
@@ -306,8 +332,6 @@ jazzquiz.resume_quiz = function () {
             // note that there is up to a 3 second offset due to set interval, but, this within an acceptable time offset
             // for the next question to start
 
-            jazzquiz.getQuizInfo();
-
             if (inquizcontrols) {
                 inquizcontrols.classList.remove('btn-hide');
                 startquizbtn.classList.add('btn-hide');
@@ -333,7 +357,6 @@ jazzquiz.resume_quiz = function () {
 
             this.goto_question(this.get('resumequizcurrentquestion'), this.get('resumequizquestiontime'), this.get('resumequestiontries'));
             jazzquiz.set('inquestion', 'true');
-            jazzquiz.getQuizInfo();
             this.loading(null, 'hide');
 
             break;
@@ -342,7 +365,6 @@ jazzquiz.resume_quiz = function () {
 
             // setup review for instructors, otherwise display reviewing for students
             if (jazzquiz.get('isinstructor') === 'true') {
-                jazzquiz.getQuizInfo(); // still start quiz info
                 this.loading(null, 'hide');
                 // load right controls if available
                 if (inquizcontrols) {
@@ -354,22 +376,21 @@ jazzquiz.resume_quiz = function () {
                 jazzquiz.set('endquestion', 'true');
                 this.reload_results();
             } else {
-                jazzquiz.getQuizInfo(); // still start quiz info
                 this.loading(null, 'hide');
                 this.quiz_info(M.util.get_string('waitforrevewingend', 'jazzquiz'), true);
             }
             break;
 
         case 'voting':
-            jazzquiz.getQuizInfo();
             this.loading(null, 'hide');
             break;
 
         case 'preparing':
-            jazzquiz.getQuizInfo();
             this.loading(null, 'hide');
             break;
     }
+
+    jazzquiz.getQuizInfo();
 
 };
 
