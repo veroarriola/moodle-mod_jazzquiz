@@ -228,7 +228,7 @@ class improviser
         $input->questionid = $question->id;
         $input->name = 'ans1';
         $input->type = 'algebraic';
-        $input->tans = 'ans1';
+        $input->tans = '1';
         $input->boxsize = 15;
         $input->strictsyntax = 1;
         $input->insertstars = 0;
