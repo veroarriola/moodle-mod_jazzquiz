@@ -7,6 +7,7 @@ require_once( __DIR__ . '/../../config.php');
 $input = required_param('input', PARAM_RAW);
 $input_name = required_param('name', PARAM_ALPHANUMEXT);
 $jazzquiz_attempt_id = required_param('id', PARAM_INT);
+$slot = required_param('slot', PARAM_INT);
 
 $path_stack_utils = __DIR__ . '/../../question/type/stack/stack/utils.class.php';
 $path_stack_mathsoutput = __DIR__ . '/../../question/type/stack/stack/mathsoutput/mathsoutput.class.php';
@@ -28,8 +29,14 @@ $PAGE->set_context(context_system::instance());
 
 $result = stack_maths::process_display_castext($input);
 
-$jazzquiz_attempt = $DB->get_record('jazzquiz_attempts', ['id' => $jazzquiz_attempt_id]);
-$question_attempt = $DB->get_record('question_attempts', ['questionusageid' => $jazzquiz_attempt->questionengid]);
+$jazzquiz_attempt = $DB->get_record('jazzquiz_attempts', [
+    'id' => $jazzquiz_attempt_id
+]);
+
+$question_attempt = $DB->get_record('question_attempts', [
+    'slot' => $slot,
+    'questionusageid' => $jazzquiz_attempt->questionengid
+]);
 
 $data_mapper = new question_engine_data_mapper();
 $qa = $data_mapper->load_question_attempt($question_attempt->id);
