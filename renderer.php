@@ -452,7 +452,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             [ '', 'forward', 'Next', 'nextquestion' ],
             [ '', 'close', 'End', 'endquestion' ],
             [ '', 'refresh', '', 'reloadresults' ],
-            [ '', 'expand', '', 'showfullscreenresults' ],
+            [ '', 'expand', 'Fullscreen', 'showfullscreenresults' ],
             [ '', 'eye', 'Show answer', 'showcorrectanswer' ],
             [ '', 'minus-square', 'Hide responses', 'toggleresponses' ],
             [ '', 'minus-square', 'Hide not responded', 'togglenotresponded' ],
