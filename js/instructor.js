@@ -444,6 +444,22 @@ jazzquiz.handle_question = function (questionid) {
 
 jazzquiz.show_improvised_question_setup = function () {
 
+    var button = jQuery('.improvise-menu').parent();
+
+    if (button.hasClass('active')) {
+        // It's already open. Let's not send another request.
+        return;
+    }
+
+    // The dropdown lies within the button, so we have to do this extra step
+    // This attribute is set in the onclick function for one of the buttons in the dropdown
+    // TODO: Redo the dropdown so we don't have to do this.
+    if (button.attr('data-isclosed') === 'yes') {
+        button.attr('data-isclosed', '');
+        return;
+    }
+
+    // Setup parameters
     var params = {
         'action': 'listdummyquestions',
         'rtqid': jazzquiz.get('rtqid'),
@@ -452,31 +468,31 @@ jazzquiz.show_improvised_question_setup = function () {
         'sesskey': jazzquiz.get('sesskey')
     };
 
+    // Send request
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
-        if (status === 500) {
-            jazzquiz.quiz_info('there was an error listing the improvised questions', true);
-        } else if (status === 200) {
+        if (status !== HTTP_STATUS.OK) {
+            return;
+        }
 
-            var questions = JSON.parse(response.questions);
+        var questions = JSON.parse(response.questions);
 
-            var menu = jQuery('.improvise-menu');
-            menu.html('').parent().addClass('active');
+        var menu = jQuery('.improvise-menu');
+        menu.html('').parent().addClass('active');
 
-            for (var i in questions) {
+        for (var i in questions) {
 
-                // TODO: This is a bit ugly. Redo the onclick event.
-                var html = '<button class="btn" ';
-                html += 'onclick="';
-                html += 'jazzquiz.chosen_improvisation_question = ' + questions[i].slot + ';';
-                html += 'jazzquiz.start_improvised_question();';
-                html += "jQuery('.improvise-menu').html('').parent().removeClass('active');";
-                html += '">' + questions[i].name + '</button>';
-                menu.append(html);
-
-            }
+            // TODO: This is a bit ugly. Redo the onclick event.
+            var html = '<button class="btn" ';
+            html += 'onclick="';
+            html += 'jazzquiz.chosen_improvisation_question = ' + questions[i].slot + ';';
+            html += 'jazzquiz.start_improvised_question();';
+            html += "jQuery('.improvise-menu').html('').parent().removeClass('active').attr('data-isclosed', 'yes');";
+            html += '">' + questions[i].name + '</button>';
+            menu.append(html);
 
         }
+
 
     });
 
