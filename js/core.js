@@ -197,10 +197,8 @@ jazzquiz.getQuizInfo = function () {
 };
 
 jazzquiz.render_all_mathjax = function () {
-    Y.all('.filter_mathjaxloader_equation').each(function (node) {
-        if (typeof window.MathJax !== "undefined") {
-            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, node.getDOMNode()]);
-        }
+    Y.fire(M.core.event.FILTER_CONTENT_UPDATED, {
+        nodes: new Y.NodeList(document.getElementsByClassName('jazzquiz-latex-wrapper'))
     });
 };
 
@@ -221,7 +219,7 @@ jazzquiz.render_maxima_equation = function (input, index, base_id) {
             return;
         }
 
-        target.innerHTML = '<span class="filter_mathjaxloader_equation">' + response.latex + '</span>';
+        target.innerHTML = '<span class="jazzquiz-latex-wrapper"><span class="filter_mathjaxloader_equation">' + response.latex + '</span></span>';
         jazzquiz.render_all_mathjax();
 
     };
