@@ -728,7 +728,6 @@ jazzquiz.update_tries = function (count, qnum) {
 
 };
 
-
 /**
  * PHP JS function for number_format analog
  *

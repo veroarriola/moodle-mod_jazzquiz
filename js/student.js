@@ -173,15 +173,14 @@ jazzquiz.handle_question = function (questionid, hide) {
     // Send request
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', formdata, function (status, response) {
 
+        // Hide loading box
+        var loadingbox = document.getElementById('loadingbox');
+        loadingbox.classList.add('hidden');
+
+        // Was there an error with the request?
         if (status !== HTTP_STATUS.OK) {
-
             jazzquiz.set('savingquestion', 'done');
-
-            var loadingbox = document.getElementById('loadingbox');
-            loadingbox.classList.add('hidden');
-
             jazzquiz.quiz_info('There was an error with your request', true);
-
             return;
         }
 
@@ -205,8 +204,6 @@ jazzquiz.handle_question = function (questionid, hide) {
             jazzquiz.quiz_info(feedbackbox);
         }
 
-        var loadingbox = document.getElementById('loadingbox');
-        loadingbox.classList.add('hidden');
         quizinfobox.classList.remove('hidden');
 
         jazzquiz.set('submittedanswer', 'true');

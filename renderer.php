@@ -363,21 +363,35 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
 
         $output = '';
         $qnum = $attempt->get_question_number();
+
         // Start the form.
         $output .= html_writer::start_tag('div', array('class' => 'jazzquizbox hidden', 'id' => 'q' . $qnum . '_container'));
 
-        $output .= html_writer::start_tag('form',
-            array('action' => '', 'method' => 'post',
-                'enctype' => 'multipart/form-data', 'accept-charset' => 'utf-8',
-                'id' => 'q' . $qnum, 'class' => 'jazzquiz_question',
-                'name' => 'q' . $qnum));
+        $onsubmit = '';
+        if (!$this->rtq->is_instructor()) {
+            $onsubmit .= 'jazzquiz.save_question(\'q' . $qnum . '\');';
+        }
+        $onsubmit .= 'return false;';
+
+        $output .= html_writer::start_tag('form', [
+            'action' => '',
+            'method' => 'post',
+            'enctype' => 'multipart/form-data',
+            'accept-charset' => 'utf-8',
+            'id' => 'q' . $qnum,
+            'class' => 'jazzquiz_question',
+            'onsubmit' => $onsubmit,
+            'name' => 'q' . $qnum
+        ]);
 
 
         $output .= $attempt->render_question($slot);
 
-        $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'slots',
-            'value' => $slot));
-
+        $output .= html_writer::empty_tag('input', [
+            'type' => 'hidden',
+            'name' => 'slots',
+            'value' => $slot
+        ]);
 
         $savebtn = html_writer::tag('button', 'Save', array(
                 'class' => 'btn',
@@ -848,14 +862,18 @@ EOD;
 
         $output .= html_writer::start_div('jazzquizbox', array('id' => 'q' . $qnum . '_container'));
 
-
         $action = clone($this->pageurl);
 
-        $output .= html_writer::start_tag('form',
-            array('action' => '', 'method' => 'post',
-                'enctype' => 'multipart/form-data', 'accept-charset' => 'utf-8',
-                'id' => 'q' . $qnum, 'class' => 'jazzquiz_question',
-                'name' => 'q' . $qnum));
+        $output .= html_writer::start_tag('form', [
+            'action' => '',
+            'method' => 'post',
+            'enctype' => 'multipart/form-data',
+            'accept-charset' => 'utf-8',
+            'id' => 'q' . $qnum,
+            'class' => 'jazzquiz_question',
+            'onsubmit' => 'return false;',
+            'name' => 'q' . $qnum
+        ]);
 
 
         $output .= $attempt->render_question($slot, true, 'edit');
