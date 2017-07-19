@@ -200,76 +200,106 @@ $string['hidenotresponded'] = 'Hide not responded';
 $string['shownotresponded'] = 'Show not responded';
 
 // Instructions.
-$string['instructorquizinst'] = '<p>Please wait on this page until students have connected.  Once <b>start quiz</b> is clicked, the quiz will start the first question</p>
-    <p>
-<p>Controls:</p>
-    <ul>
-        <li>
-            Re-poll question
-            <ul>
-                <li>
-                    Allows the instructor to re-poll the current or previous question (available during review of a question).
-                </li>
-            </ul>
-        </li>
-        <li>
-            Next question
-            <ul>
-                <li>
-                    Continue on to the next question (available during review of a question).
-                </li>
-            </ul>
-        </li>
-        <li>
-            End question
-            <ul>
-                <li>
-                    End the current question. Also allows the instructor to end a timed question early (available while a question is running). <i>If the question has no time limit, the instructor will be required to click <b>end question.</b></i>
-                </li>
-            </ul>
-        </li>
-        <li>
-            Go to question
-            <ul>
-                <li>
-                    Open a dialog box to direct all users to a specific question in the quiz (available during review of a question).
-                </li>
-            </ul>
-        </li>
-        <li>
-            Close session
-            <ul>
-                <li>
-                    Closes the current session, as well as all attempts for the students. This will automatically grade all attempts (available at any time).
-                </li>
-            </ul>
-        </li>
-        <li>
-            Reload results
-            <ul>
-                <li>
-                    Reload the student responses in the information box. Allows the instructor to see how many students or groups have responded and how many have yet to respond (available during review of a question).
-                </li>
-            </ul>
-        </li>
-        <li>
-            Hide/Show Not Responded
-            <ul>
-                <li>
-                    Hide or show the information box that displays how many students or groups have responded and which students or groups have yet to respond (available when question is polling).
-                </li>
-            </ul>
-        </li>
-        <li>
-            Show correct answer
-            <ul>
-                <li>
-                    Gives the instructor a view of the question with the correct response selected (available during review of a question). This will not show the correct response for manually graded question types, such as essays or drawing questions.
-                </li>
-            </ul>
-        </li>
-    </ul>
-</p>
+$string['instructorquizinst'] = '
+    <h3>Please make sure to read the instructions:</h3>
+    <table>
+        <tr>
+            <td>
+                <i class="fa fa-repeat"></i> Re-poll
+            </td>
+            <td>
+                Allows the instructor to re-poll the current or previous question.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-bar-chart"></i> Vote
+            </td>
+            <td>
+                 Let the students vote on their answers. The instructor can click on an answer to toggle whether it should be included in the vote or not.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-edit"></i> Improvise
+            </td>
+            <td>
+                Shows a list of questions made for improvising. Write the question on the blackboard and ask for input with these questions.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-bars"></i> Jump to
+            </td>
+            <td>
+                Open a dialog box to direct all users to a specific question in the quiz.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-forward"></i> Next
+            </td>
+            <td>
+                Continue on to the next question.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-close"></i> End
+            </td>
+            <td>
+                End the current question.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-refresh"></i> Refresh
+            </td>
+            <td>
+                Reload the student responses and update how many students have yet to answer.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-expand"></i> Fullscreen
+            </td>
+            <td>
+                Show the results in fullscreen. The answers will not appear during a question, so you can keep this up throughout the session.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-eye"></i> Show answer
+            </td>
+            <td>
+                Gives the instructor a view of the question with the correct response selected.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-minus-square"></i> Hide / <i class="fa fa-plus-square"></i> Show not responded
+            </td>
+            <td>
+                Hide or show how many students or groups have responded and which students or groups have yet to respond.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-minus-square"></i> Hide / <i class="fa fa-plus-square"></i> Show responses
+            </td>
+            <td>
+                Hide or show the students\' answers.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-window-close"></i> Quit
+            </td>
+            <td>
+                Exit the current quiz session.
+            </td>
+        </tr>
+    </table>
 ';
 
 $string['studentquizinst'] = '<p>Please wait for the instructor to start the quiz.</p>';

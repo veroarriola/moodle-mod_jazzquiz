@@ -419,3 +419,23 @@
 #closesession {
     float: right;
 }
+
+#instructionsbox table {
+
+}
+
+#instructionsbox table tr {
+
+}
+
+#instructionsbox table tr td {
+    padding: 16px 8px;
+}
+
+#instructionsbox table tr td:first-child {
+    width: 256px;
+}
+
+#instructionsbox table tr:nth-child(odd) td {
+    background: rgba(0, 0, 0, 0.05);
+}
