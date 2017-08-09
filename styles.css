@@ -396,22 +396,17 @@
     margin: 16px;
 }
 
-#startimprovisedquestion {
-    position: relative;
-}
-
-.btn .improvise-menu {
+.improvise-menu {
     position: absolute;
     display: none;
-    margin-top: 24px;
-    margin-left: -14px;
+    margin-left: 165px; /* This is a hardcoded value. Very bad, but quickest fix right now. */
 }
 
-.btn.active .improvise-menu {
+.improvise-menu.active {
     display: block;
 }
 
-.btn .improvise-menu .btn {
+.improvise-menu .btn {
     display: block;
     width: 100%;
 }

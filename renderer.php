@@ -428,9 +428,9 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         return $output;
     }
 
-    private function write_control_button($prefix, $icon, $text, $id) {
+    private function write_control_button($icon, $text, $id) {
 
-        return html_writer::tag('button', $prefix . '<i class="fa fa-' . $icon . '"></i> ' . $text, [
+        return html_writer::tag('button', '<i class="fa fa-' . $icon . '"></i> ' . $text, [
             'class' => 'btn',
             'id' => $id,
             'onclick' => 'jazzquiz.execute_control_action(\'' . $id . '\');'
@@ -441,10 +441,10 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
     private function write_control_buttons($buttons) {
         $html = '';
         foreach ($buttons as $button) {
-            if (count($button) < 4) {
+            if (count($button) < 3) {
                 continue;
             }
-            $html .= $this->write_control_button($button[0], $button[1], $button[2], $button[3]);
+            $html .= $this->write_control_button($button[0], $button[1], $button[2]);
         }
         return $html;
     }
@@ -459,24 +459,25 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         $html = '<div class="quiz-list-buttons quiz-control-buttons hidden">'
         . $this->write_control_buttons([
 
-            [ '', 'repeat', 'Re-poll', 'repollquestion' ],
-            [ '', 'bar-chart', 'Vote', 'runvoting' ],
-            [ '<div class="improvise-menu"></div>', 'edit', 'Improvise', 'startimprovisedquestion' ],
-            [ '', 'bars', 'Jump to', 'jumptoquestion' ],
-            [ '', 'forward', 'Next', 'nextquestion' ],
-            [ '', 'close', 'End', 'endquestion' ],
-            [ '', 'refresh', '', 'reloadresults' ],
-            [ '', 'expand', 'Fullscreen', 'showfullscreenresults' ],
-            [ '', 'eye', 'Show answer', 'showcorrectanswer' ],
-            [ '', 'minus-square', 'Hide responses', 'toggleresponses' ],
-            [ '', 'minus-square', 'Hide not responded', 'togglenotresponded' ],
-            [ '', 'window-close', 'Quit', 'closesession' ]
+            [ 'repeat', 'Re-poll', 'repollquestion' ],
+            [ 'bar-chart', 'Vote', 'runvoting' ],
+            [ 'edit', 'Improvise', 'startimprovisedquestion' ],
+            [ 'bars', 'Jump to', 'jumptoquestion' ],
+            [ 'forward', 'Next', 'nextquestion' ],
+            [ 'close', 'End', 'endquestion' ],
+            [ 'refresh', '', 'reloadresults' ],
+            [ 'expand', 'Fullscreen', 'showfullscreenresults' ],
+            [ 'eye', 'Show answer', 'showcorrectanswer' ],
+            [ 'minus-square', 'Hide responses', 'toggleresponses' ],
+            [ 'minus-square', 'Hide not responded', 'togglenotresponded' ],
+            [ 'window-close', 'Quit', 'closesession' ]
 
         ])
         . '</div>'
+        . '<div class="improvise-menu"></div>'
 
         . '<div class="quiz-list-buttons">'
-        .     $this->write_control_button('', 'start', 'Start quiz', 'startquiz')
+        .     $this->write_control_button('start', 'Start quiz', 'startquiz')
         . '</div>';
 
         return html_writer::div($html, 'btn-hide rtq_inquiz', [

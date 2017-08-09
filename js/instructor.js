@@ -406,7 +406,7 @@ jazzquiz.handle_question = function (questionid) {
 
 jazzquiz.show_improvised_question_setup = function () {
 
-    var button = jQuery('.improvise-menu').parent();
+    var button = jQuery('#startimprovisedquestion');
 
     if (button.hasClass('active')) {
         // It's already open. Let's not send another request.
@@ -440,7 +440,8 @@ jazzquiz.show_improvised_question_setup = function () {
         var questions = JSON.parse(response.questions);
 
         var menu = jQuery('.improvise-menu');
-        menu.html('').parent().addClass('active');
+        menu.html('').addClass('active');
+        jQuery('#startimprovisedquestion').addClass('active');
 
         for (var i in questions) {
 
@@ -449,7 +450,8 @@ jazzquiz.show_improvised_question_setup = function () {
             html += 'onclick="';
             html += 'jazzquiz.chosen_improvisation_question = ' + questions[i].slot + ';';
             html += 'jazzquiz.start_improvised_question();';
-            html += "jQuery('.improvise-menu').html('').parent().removeClass('active').attr('data-isclosed', 'yes');";
+            html += "jQuery('.improvise-menu').html('').removeClass('active');";
+            html += "jQuery('#startimprovisedquestion').removeClass('active').attr('data-isclosed', 'yes');";
             html += '">' + questions[i].name + '</button>';
             menu.append(html);
 
@@ -1248,6 +1250,7 @@ document.addEventListener('keyup', function (e) {
 document.addEventListener('click', function (e) {
     var menu = jQuery(e.target).closest('.improvise-menu');
     if (!menu.length) {
-        jQuery('.improvise-menu').html('').parent().removeClass('active');
+        jQuery('.improvise-menu').html('').removeClass('active');
+        jQuery('#startimprovisedquestion').removeClass('active');
     }
 });
