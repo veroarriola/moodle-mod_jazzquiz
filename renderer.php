@@ -468,7 +468,6 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             [ 'refresh', '', 'reloadresults' ],
             [ 'expand', 'Fullscreen', 'showfullscreenresults' ],
             [ 'eye', 'Show answer', 'showcorrectanswer' ],
-            [ 'minus-square', 'Hide responses', 'toggleresponses' ],
             [ 'minus-square', 'Hide not responded', 'togglenotresponded' ],
             [ 'window-close', 'Quit', 'closesession' ]
 

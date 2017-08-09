@@ -285,14 +285,6 @@ $string['instructorquizinst'] = '
         </tr>
         <tr>
             <td>
-                <i class="fa fa-minus-square"></i> Hide / <i class="fa fa-plus-square"></i> Show responses
-            </td>
-            <td>
-                Hide or show the students\' answers.
-            </td>
-        </tr>
-        <tr>
-            <td>
                 <i class="fa fa-window-close"></i> Quit
             </td>
             <td>

@@ -63,6 +63,8 @@ jazzquiz.change_quiz_state = function (state, data) {
 
         case 'running':
 
+            jazzquiz.hide_responses();
+
             jazzquiz.control_buttons([
                 'endquestion',
                 'toggleresponses',
@@ -73,8 +75,10 @@ jazzquiz.change_quiz_state = function (state, data) {
             if (jazzquiz.get('inquestion') === 'true') {
 
                 // Gather the current results
-                if (jazzquiz.get('delayrefreshresults') === 'undefined' || jazzquiz.get('delayrefreshresults') === 'false') {
-                    jazzquiz.gather_current_results();
+                if (jazzquiz.get('showstudentresponses') == 'true') {
+                    if (jazzquiz.get('delayrefreshresults') === 'undefined' || jazzquiz.get('delayrefreshresults') === 'false') {
+                        jazzquiz.gather_current_results();
+                    }
                 }
 
                 // Also get the students/groups not responded
@@ -107,6 +111,7 @@ jazzquiz.change_quiz_state = function (state, data) {
             break;
 
         case 'reviewing':
+            jazzquiz.show_responses();
             var enabled_buttons = [
                 'showcorrectanswer',
                 'runvoting',
@@ -965,30 +970,20 @@ jazzquiz.show_correct_answer = function () {
 };
 
 /**
- * Toggles the "show student responses" variable
+ * Hides the responses
  */
-jazzquiz.toggle_responses = function () {
-
-    var button = document.getElementById('toggleresponses');
-
-    if (jazzquiz.get('showstudentresponses') == false) {
-
-        // Set it back to true for the student responses to show
-        button.innerHTML = M.util.get_string('hidestudentresponses', 'jazzquiz');
-
-        jazzquiz.set('showstudentresponses', true);
-        jazzquiz.gather_current_results();
-
-    } else {
-
-        // Set it to false when this button is clicked
-        button.innerHTML = M.util.get_string('showstudentresponses', 'jazzquiz');
-
-        jazzquiz.set('showstudentresponses', false);
-        jazzquiz.clear_and_hide_qinfobox();
-    }
+jazzquiz.hide_responses = function() {
+    jazzquiz.set('showstudentresponses', false);
+    jazzquiz.clear_and_hide_qinfobox();
 };
 
+/**
+ * Shows the responses
+ */
+jazzquiz.show_responses = function() {
+    jazzquiz.set('showstudentresponses', true);
+    jazzquiz.gather_current_results();
+};
 
 /**
  * Toggles the "show not responded" variable
@@ -1218,9 +1213,6 @@ jazzquiz.execute_control_action = function (action) {
             break;
         case 'showcorrectanswer':
             jazzquiz.show_correct_answer();
-            break;
-        case 'toggleresponses':
-            jazzquiz.toggle_responses();
             break;
         case 'togglenotresponded':
             jazzquiz.toggle_notresponded();
