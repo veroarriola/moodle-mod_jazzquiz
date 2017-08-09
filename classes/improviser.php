@@ -229,7 +229,7 @@ class improviser
         $input->name = 'ans1';
         $input->type = 'algebraic';
         $input->tans = '1';
-        $input->boxsize = 15;
+        $input->boxsize = 40;
         $input->strictsyntax = 1;
         $input->insertstars = 0;
         $input->syntaxhint = '';
