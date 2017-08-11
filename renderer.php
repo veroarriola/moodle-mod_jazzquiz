@@ -465,7 +465,6 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             [ 'bars', 'Jump to', 'jumptoquestion' ],
             [ 'forward', 'Next', 'nextquestion' ],
             [ 'close', 'End', 'endquestion' ],
-            [ 'refresh', 'Refresh', 'reloadresults' ],
             [ 'expand', 'Fullscreen', 'showfullscreenresults' ],
             [ 'eye', 'Show answer', 'showcorrectanswer' ],
             [ 'window-close', 'Quit', 'closesession' ],

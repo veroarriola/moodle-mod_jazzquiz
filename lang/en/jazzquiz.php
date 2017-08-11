@@ -253,14 +253,6 @@ $string['instructorquizinst'] = '
         </tr>
         <tr>
             <td>
-                <i class="fa fa-refresh"></i> Refresh
-            </td>
-            <td>
-                Reload the student responses and update how many students have yet to answer.
-            </td>
-        </tr>
-        <tr>
-            <td>
                 <i class="fa fa-expand"></i> Fullscreen
             </td>
             <td>

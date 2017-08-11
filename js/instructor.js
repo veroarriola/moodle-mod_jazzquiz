@@ -1226,9 +1226,6 @@ jazzquiz.execute_control_action = function (action) {
         case 'endquestion':
             jazzquiz.end_question();
             break;
-        case 'reloadresults':
-            jazzquiz.reload_results();
-            break;
         case 'showfullscreenresults':
             jazzquiz.show_fullscreen_results_view();
             break;
