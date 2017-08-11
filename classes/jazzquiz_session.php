@@ -103,9 +103,9 @@ class jazzquiz_session
         $newSession->jazzquizid = $this->rtq->getRTQ()->id;
         $newSession->sessionopen = 1;
         $newSession->status = 'notrunning';
-        $newSession->anonymize_responses = $data->anonymizeresponses;
-        $newSession->fully_anonymize = $data->fullanonymize;
-        $newSession->showfeedback = $data->showfeedback;
+        $newSession->anonymize_responses = true; //$data->anonymizeresponses;
+        $newSession->fully_anonymize = false; //$data->fullanonymize;
+        $newSession->showfeedback = false; //$data->showfeedback;
         $newSession->created = time();
 
         try {

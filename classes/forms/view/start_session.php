@@ -56,7 +56,7 @@ class start_session extends \moodleform {
         $mform->setType('sessionname', PARAM_TEXT);
         $mform->addRule('sessionname', get_string('sessionname_required', 'jazzquiz'), 'required', null, 'client');
 
-        $mform->addElement('advcheckbox', 'anonymizeresponses', get_string('anonymousresponses', 'jazzquiz'));
+        /*$mform->addElement('advcheckbox', 'anonymizeresponses', get_string('anonymousresponses', 'jazzquiz'));
         $mform->addHelpButton('anonymizeresponses', 'anonymousresponses', 'jazzquiz');
         $mform->setDefault('anonymizeresponses', 1);
         $mform->disabledIf('anonymizeresponses', 'fullanonymize', 'checked');
@@ -66,7 +66,7 @@ class start_session extends \moodleform {
         $mform->setDefault('fullanonymize', 0);
 
         $mform->addElement('advcheckbox', 'showfeedback', 'Show feedback');
-        $mform->setDefault('showfeedback', 0);
+        $mform->setDefault('showfeedback', 0);*/
 
         $mform->addElement('submit', 'submitbutton', get_string('start_session', 'jazzquiz'));
     }
