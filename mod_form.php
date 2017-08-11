@@ -56,7 +56,7 @@ class mod_jazzquiz_mod_form extends moodleform_mod {
 
         //-------------------------------------------------------------------------------
 
-        $mform->addElement('header', 'jazzquizsettings', get_string('jazzquizsettings', 'jazzquiz'));
+        //$mform->addElement('header', 'jazzquizsettings', get_string('jazzquizsettings', 'jazzquiz'));
 
         $mform->addElement('duration', 'defaultquestiontime', get_string('defaultquestiontime', 'jazzquiz'));
         $mform->setDefault('defaultquestiontime', 180);
@@ -72,7 +72,7 @@ class mod_jazzquiz_mod_form extends moodleform_mod {
         $mform->addHelpButton('anonymizeresponses', 'anonymousresponses', 'jazzquiz');
         $mform->setDefault('anonymizeresponses', 0); */
 
-        $mform->addElement('header', 'gradesettings', get_string('gradesettings', 'jazzquiz'));
+        /*$mform->addElement('header', 'gradesettings', get_string('gradesettings', 'jazzquiz'));
 
         $mform->addElement('checkbox', 'graded', get_string('assessed', 'jazzquiz'));
         $mform->addHelpButton('graded', 'assessed', 'jazzquiz');
@@ -89,7 +89,7 @@ class mod_jazzquiz_mod_form extends moodleform_mod {
             get_string('grademethod', 'jazzquiz'),
             \mod_jazzquiz\utils\scaletypes::get_display_types());
         $mform->setType('grademethod', PARAM_INT);
-        $mform->addHelpButton('grademethod', 'grademethod', 'jazzquiz');
+        $mform->addHelpButton('grademethod', 'grademethod', 'jazzquiz');*/
 
 
         // check if there are any sessions on this realtime quiz

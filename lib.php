@@ -43,6 +43,11 @@ function jazzquiz_add_instance($jazzquiz) {
         $jazzquiz->scale = 0;
     }
 
+    // Set default values for removed form elements
+    $jazzquiz->graded = 0;
+    $jazzquiz->scale = 0;
+    $jazzquiz->grademethod = 1;
+
     // add all review options to the db object in the review options field.
     $jazzquiz->reviewoptions = jazzquiz_process_review_options($jazzquiz);
 
