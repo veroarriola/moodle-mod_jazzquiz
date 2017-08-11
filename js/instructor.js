@@ -122,7 +122,8 @@ jazzquiz.change_quiz_state = function (state, data) {
                 'closesession',
                 'showfullscreenresults',
                 'startimprovisedquestion',
-                'toggleresponses',
+                // Temporarily disable this while in review mode. See below before the break.
+                //'toggleresponses',
                 'togglenotresponded'
             ];
             if (jazzquiz.get('lastquestion') !== 'true') {
@@ -130,6 +131,13 @@ jazzquiz.change_quiz_state = function (state, data) {
             }
             jazzquiz.control_buttons(enabled_buttons);
             jazzquiz.set('inquestion', 'false');
+
+            // For now, just always show responses while reviewing
+            // In the future, there should be an additional toggle.
+            jazzquiz.set('showstudentresponses', true);
+            jazzquiz.gather_current_results();
+            jazzquiz.set('showstudentresponses', false);
+
             break;
 
         case 'voting':
