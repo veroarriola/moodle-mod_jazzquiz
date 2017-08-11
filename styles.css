@@ -411,7 +411,7 @@
     width: 100%;
 }
 
-#closesession {
+#closesession, #toggleresponses, #togglenotresponded {
     float: right;
 }
 

@@ -465,11 +465,12 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             [ 'bars', 'Jump to', 'jumptoquestion' ],
             [ 'forward', 'Next', 'nextquestion' ],
             [ 'close', 'End', 'endquestion' ],
-            [ 'refresh', '', 'reloadresults' ],
+            [ 'refresh', 'Refresh', 'reloadresults' ],
             [ 'expand', 'Fullscreen', 'showfullscreenresults' ],
             [ 'eye', 'Show answer', 'showcorrectanswer' ],
-            [ 'minus-square', 'Hide not responded', 'togglenotresponded' ],
-            [ 'window-close', 'Quit', 'closesession' ]
+            [ 'window-close', 'Quit', 'closesession' ],
+            [ 'check-square-o', 'Not responded', 'togglenotresponded' ],
+            [ 'square-o', 'Responses', 'toggleresponses' ]
 
         ])
         . '</div>'

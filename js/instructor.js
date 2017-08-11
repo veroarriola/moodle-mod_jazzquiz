@@ -40,6 +40,10 @@ jazzquiz.change_quiz_state = function (state, data) {
 
     jazzquiz.current_quiz_state = state;
 
+    if (jazzquiz.get('showstudentresponses') === 'undefined') {
+        jazzquiz.set('showstudentresponses', false);
+    }
+
     jazzquiz.show_controls();
 
     switch (state) {
@@ -63,8 +67,6 @@ jazzquiz.change_quiz_state = function (state, data) {
 
         case 'running':
 
-            jazzquiz.hide_responses();
-
             jazzquiz.control_buttons([
                 'endquestion',
                 'toggleresponses',
@@ -75,7 +77,7 @@ jazzquiz.change_quiz_state = function (state, data) {
             if (jazzquiz.get('inquestion') === 'true') {
 
                 // Gather the current results
-                if (jazzquiz.get('showstudentresponses') == 'true') {
+                if (jazzquiz.get('showstudentresponses') === true) {
                     if (jazzquiz.get('delayrefreshresults') === 'undefined' || jazzquiz.get('delayrefreshresults') === 'false') {
                         jazzquiz.gather_current_results();
                     }
@@ -111,7 +113,6 @@ jazzquiz.change_quiz_state = function (state, data) {
             break;
 
         case 'reviewing':
-            jazzquiz.show_responses();
             var enabled_buttons = [
                 'showcorrectanswer',
                 'runvoting',
@@ -919,9 +920,8 @@ jazzquiz.show_correct_answer = function () {
         // Make sure it's gone
         jazzquiz.quiz_info(null, '');
 
-        // Change button text
-        var button = document.getElementById('showcorrectanswer');
-        button.innerHTML = M.util.get_string('show_correct_answer', 'jazzquiz');
+        // Change button icon
+        jQuery('#showcorrectanswer').html('<i class="fa fa-eye"></i> Show answer');
 
         jazzquiz.set('showingcorrectanswer', 'false');
         this.reload_results();
@@ -958,9 +958,7 @@ jazzquiz.show_correct_answer = function () {
         jazzquiz.quiz_info(response.rightanswer, true);
         jazzquiz.render_all_mathjax();
 
-        // Change button text
-        var button = document.getElementById('showcorrectanswer');
-        button.innerHTML = M.util.get_string('hide_correct_answer', 'jazzquiz');
+        jQuery('#showcorrectanswer').html('<i class="fa fa-eye-slash"></i> Hide answer');
 
         jazzquiz.set('showingcorrectanswer', 'true');
         jazzquiz.loading(null, 'hide');
@@ -974,6 +972,7 @@ jazzquiz.show_correct_answer = function () {
  */
 jazzquiz.hide_responses = function() {
     jazzquiz.set('showstudentresponses', false);
+    jQuery('#toggleresponses').html('<i class="fa fa-square-o"></i> Responses');
     jazzquiz.clear_and_hide_qinfobox();
 };
 
@@ -982,7 +981,19 @@ jazzquiz.hide_responses = function() {
  */
 jazzquiz.show_responses = function() {
     jazzquiz.set('showstudentresponses', true);
+    jQuery('#toggleresponses').html('<i class="fa fa-check-square-o"></i> Responses');
     jazzquiz.gather_current_results();
+};
+
+/**
+ * Toggle whether to show or hide the responses
+ */
+jazzquiz.toggle_responses = function() {
+    if (jazzquiz.get('showstudentresponses') === true) {
+        jazzquiz.hide_responses();
+    } else {
+        jazzquiz.show_responses();
+    }
 };
 
 /**
@@ -995,7 +1006,8 @@ jazzquiz.toggle_notresponded = function () {
     if (jazzquiz.get('shownotresponded') == false) {
 
         // St it back to true for the student responses to show
-        button.innerHTML = M.util.get_string('hidenotresponded', 'jazzquiz');
+        //button.innerHTML = M.util.get_string('hidenotresponded', 'jazzquiz');
+        jQuery('#togglenotresponded').html('<i class="fa fa-check-square-o"></i> Not responded');
 
         jazzquiz.set('shownotresponded', true);
         jazzquiz.getnotresponded();
@@ -1003,7 +1015,8 @@ jazzquiz.toggle_notresponded = function () {
     } else {
 
         // Set it to false when this button is clicked
-        button.innerHTML = M.util.get_string('shownotresponded', 'jazzquiz');
+        //button.innerHTML = M.util.get_string('shownotresponded', 'jazzquiz');
+        jQuery('#togglenotresponded').html('<i class="fa fa-square-o"></i> Not responded');
 
         jazzquiz.set('shownotresponded', false);
         jazzquiz.clear_and_hide_notresponded();
@@ -1213,6 +1226,9 @@ jazzquiz.execute_control_action = function (action) {
             break;
         case 'showcorrectanswer':
             jazzquiz.show_correct_answer();
+            break;
+        case 'toggleresponses':
+            jazzquiz.toggle_responses();
             break;
         case 'togglenotresponded':
             jazzquiz.toggle_notresponded();
