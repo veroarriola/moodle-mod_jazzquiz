@@ -59,12 +59,12 @@ class mod_jazzquiz_mod_form extends moodleform_mod {
         $mform->addElement('header', 'jazzquizsettings', get_string('jazzquizsettings', 'jazzquiz'));
 
         $mform->addElement('duration', 'defaultquestiontime', get_string('defaultquestiontime', 'jazzquiz'));
-        $mform->setDefault('defaultquestiontime', 30);
+        $mform->setDefault('defaultquestiontime', 180);
         $mform->setType('defaultquestiontime', PARAM_INT);
         $mform->addHelpButton('defaultquestiontime', 'defaultquestiontime', 'jazzquiz');
 
         $mform->addElement('duration', 'waitforquestiontime', get_string('waitforquestiontime', 'jazzquiz'));
-        $mform->setDefault('waitforquestiontime', 5);
+        $mform->setDefault('waitforquestiontime', 0);
         $mform->setType('waitforquestiontime', PARAM_INT);
         $mform->addHelpButton('waitforquestiontime', 'waitforquestiontime', 'jazzquiz');
 
