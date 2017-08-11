@@ -44,6 +44,10 @@ jazzquiz.change_quiz_state = function (state, data) {
         jazzquiz.set('showstudentresponses', false);
     }
 
+    if (jazzquiz.get('shownotresponded') === 'undefined') {
+        jazzquiz.set('shownotresponded', false);
+    }
+
     jazzquiz.show_controls();
 
     switch (state) {

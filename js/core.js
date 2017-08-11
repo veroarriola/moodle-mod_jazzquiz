@@ -189,8 +189,15 @@ jazzquiz.getQuizInfo = function () {
         // Change the local state
         jazzquiz.change_quiz_state(response.status, response);
 
-        // Query again in 3 seconds
-        setTimeout(jazzquiz.getQuizInfo, 3000);
+        // Schedule next update
+        // TODO: Remove this if statement, and rather have a time defined in the specific javascript files.
+        // The instructor has a higher update frequency since there is usually only one,
+        // but students might be in the hundreds, so we want to limit them to every second instead.
+        if (jazzquiz.get('isinstructor') === 'true') {
+            setTimeout(jazzquiz.getQuizInfo, 500);
+        } else {
+            setTimeout(jazzquiz.getQuizInfo, 1000);
+        }
 
     });
 
