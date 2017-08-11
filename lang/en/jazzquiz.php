@@ -277,7 +277,7 @@ $string['instructorquizinst'] = '
         </tr>
         <tr>
             <td>
-                <i class="fa fa-minus-square"></i> Hide / <i class="fa fa-plus-square"></i> Show not responded
+                <i class="fa fa-square-o"></i> / <i class="fa fa-check-square-o"></i> Not responded
             </td>
             <td>
                 Hide or show how many students or groups have responded and which students or groups have yet to respond.
@@ -285,7 +285,7 @@ $string['instructorquizinst'] = '
         </tr>
         <tr>
             <td>
-                <i class="fa fa-minus-square"></i> Hide / <i class="fa fa-plus-square"></i> Show responses
+                <i class="fa fa-square-o"></i> / <i class="fa fa-check-square-o"></i> Responses
             </td>
             <td>
                 Hide or show the students\' answers.
