@@ -171,16 +171,18 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
      */
     public function view_inst_home($sessionform, $sessionstarted)
     {
-
-
         if ($sessionstarted) {
 
+            // Show relevant instructions
             echo html_writer::tag('p', get_string('instructorsessionsgoing', 'jazzquiz'));
-            $gotoexistingsession = clone($this->pageurl);
-            $gotoexistingsession->param('action', 'quizstart');
-            $gotoexistingsession->param('session', $sessionstarted->id);
-            $gotosession = $this->output->single_button($gotoexistingsession, get_string('gotosession', 'jazzquiz'));
+
+            // Output the link for continuing session
+            $id = $this->pageurl->get_param('id');
+            $quizid = $this->pageurl->get_param('quizid');
+            $path = $this->pageurl->get_path() . '?id=' . $id . '&quizid=' . $quizid . '&action=quizstart';
+            $gotosession = '<a href="' . $path . '" class="btn btn-secondary">' . get_string('gotosession', 'jazzquiz') . '</a>';
             echo html_writer::tag('p', $gotosession);
+
         } else {
 
             echo html_writer::tag('p', get_string('teacherstartinstruct', 'jazzquiz'));
