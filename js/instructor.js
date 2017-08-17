@@ -298,9 +298,6 @@ jazzquiz.quiz_info_responses = function (responses, qtype) {
             break;
     }
 
-    // Combine again
-
-
     // Update data
     jazzquiz.current_responses = [];
     jazzquiz.total_responses = responses.length;
