@@ -305,25 +305,27 @@
     padding: 0;
 }
 
-.jazzquiz-responses-overview tr td:last-child {
+.jazzquiz-responses-overview tr td {
+    border-top: 2px solid #ccc;
+}
+
+.jazzquiz-responses-overview tr td.bar {
     padding-left: 16px;
-    border-top: 2px solid #AAA;
 }
 
 .jazzquiz-responses-overview tr td:first-child {
-    border-top: 2px solid #AAA;
     cursor: pointer;
     width: 256px;
     text-align: center;
 }
 
-.jazzquiz-responses-overview tr td:last-child div {
+.jazzquiz-responses-overview tr td.bar div {
     background: lightseagreen;
     border-radius: 1.5rem;
     text-align: right;
 }
 
-.jazzquiz-responses-overview tr td:last-child div span {
+.jazzquiz-responses-overview tr td.bar div span {
     color: #111;
     font-size: 1.6rem;
     margin-right: 1.6rem;
@@ -339,6 +341,10 @@
 
 .jazzquiz-responses-overview tr td:first-child .filter_mathjaxloader_equation .MathJax:focus {
     outline: none;
+}
+
+.jazzquiz-responses-overview tr td.options {
+    width: 48px;
 }
 
 .jazzquiz-vote label {
@@ -433,4 +439,27 @@
 
 #instructionsbox table tr:nth-child(odd) td {
     background: rgba(0, 0, 0, 0.05);
+}
+
+.merge-into {
+    background: powderblue;
+    cursor: pointer;
+}
+
+.merge-from {
+    cursor: pointer;
+}
+
+.merge-from:hover .bar div {
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.5);
+    background: #53d6cf;
+}
+
+.merge-from.selected-for-merge .bar {
+    padding-left: 64px;
+}
+
+.merge-from.selected-for-merge .bar div {
+    background: #53d6cf;
+    box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.3);
 }

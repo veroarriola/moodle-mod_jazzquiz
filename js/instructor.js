@@ -38,6 +38,8 @@ jazzquiz.vars = jazzquiz.vars || {};
  */
 jazzquiz.change_quiz_state = function (state, data) {
 
+    jazzquiz.is_new_state = (jazzquiz.current_quiz_state !== state);
+
     jazzquiz.current_quiz_state = state;
 
     if (jazzquiz.get('showstudentresponses') === 'undefined') {
@@ -134,13 +136,17 @@ jazzquiz.change_quiz_state = function (state, data) {
                 enabled_buttons.push('nextquestion');
             }
             jazzquiz.control_buttons(enabled_buttons);
-            jazzquiz.set('inquestion', 'false');
 
             // For now, just always show responses while reviewing
             // In the future, there should be an additional toggle.
-            jazzquiz.set('showstudentresponses', true);
-            jazzquiz.gather_current_results();
-            jazzquiz.set('showstudentresponses', false);
+            if (jazzquiz.is_new_state) {
+                jazzquiz.set('showstudentresponses', true);
+                jazzquiz.gather_current_results();
+                jazzquiz.set('showstudentresponses', false);
+            }
+
+            // No longer in question
+            jazzquiz.set('inquestion', 'false');
 
             break;
 
@@ -164,6 +170,47 @@ jazzquiz.change_quiz_state = function (state, data) {
         default:
             jazzquiz.control_buttons([]);
             break;
+    }
+
+};
+
+jazzquiz.end_response_merge = function() {
+    jQuery('.merge-into').removeClass('merge-into');
+    jQuery('.merge-from').removeClass('merge-from');
+    jQuery('.selected-for-merge').removeClass('selected-for-merge');
+};
+
+jazzquiz.start_response_merge = function(from_row_bar_id) {
+
+    var bar_cell = document.getElementById(from_row_bar_id);
+    var row = bar_cell.parentNode;
+
+    if (row.classList.contains('merge-into')) {
+        jazzquiz.end_response_merge();
+        return;
+    }
+
+    if (row.classList.contains('merge-from')) {
+
+        var from_count = jazzquiz.current_responses[row.dataset.response_i].count;
+        var into_row = jQuery('.merge-into')[0];
+
+        jazzquiz.current_responses[into_row.dataset.response_i].count += from_count;
+        jazzquiz.current_responses.splice(row.dataset.response_i, 1);
+
+        jazzquiz.quiz_info_responses(jazzquiz.current_responses, jazzquiz.qtype);
+
+        return;
+    }
+
+    row.classList.add('merge-into');
+
+    var table = row.parentNode.parentNode;
+
+    for (var i = 0; i < table.rows.length; i++) {
+        if (table.rows[i].cells[1].id !== bar_cell.id) {
+            table.rows[i].classList.add('merge-from');
+        }
     }
 
 };
@@ -217,6 +264,7 @@ jazzquiz.create_response_bar_graph = function (responses, name, target_id) {
             };
 
             var bar_cell = row.insertCell(1);
+            bar_cell.classList.add('bar');
             bar_cell.id = name + '_bar_' + row_i;
             bar_cell.innerHTML = '<div style="width:' + percent + '%;">' + count_html + '</div>';
 
@@ -230,6 +278,10 @@ jazzquiz.create_response_bar_graph = function (responses, name, target_id) {
                 response_cell.innerHTML = responses[i].response;
 
             }
+
+            var opt_cell = row.insertCell(2);
+            opt_cell.classList.add('options');
+            opt_cell.innerHTML = '<button class="btn btn-primary" onclick="jazzquiz.start_response_merge(\'' + bar_cell.id + '\')"><i class="fa fa-compress"></i></button>';
 
         } else {
 
@@ -301,6 +353,7 @@ jazzquiz.quiz_info_responses = function (responses, qtype) {
     // Update data
     jazzquiz.current_responses = [];
     jazzquiz.total_responses = responses.length;
+    jazzquiz.qtype = qtype;
     for (var i = 0; i < responses.length; i++) {
 
         var exists = false;
@@ -433,6 +486,7 @@ jazzquiz.handle_question = function (questionid) {
             }
         });
 
+        // TODO: remove
         setTimeout(jazzquiz.gather_results, 3500);
         setTimeout(jazzquiz.getnotresponded, 3500);
 
