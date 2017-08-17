@@ -45,7 +45,7 @@ jazzquiz.change_quiz_state = function (state, data) {
     }
 
     if (jazzquiz.get('shownotresponded') === 'undefined') {
-        jazzquiz.set('shownotresponded', false);
+        jazzquiz.set('showstudentresponses', false);
     }
 
     jazzquiz.show_controls();
@@ -280,6 +280,26 @@ jazzquiz.quiz_info_responses = function (responses, qtype) {
     if (responses.length === 0) {
         return;
     }
+
+    // Question type specific
+    switch (qtype) {
+        case 'shortanswer':
+            for (var i = 0; i < responses.length; i++) {
+                responses[i].response = responses[i].response.trim();
+            }
+            break;
+        case 'stack':
+            // Remove all spaces from responses
+            for (var i = 0; i < responses.length; i++) {
+                responses[i].response = responses[i].response.replace(/\s/g, '');
+            }
+            break;
+        default:
+            break;
+    }
+
+    // Combine again
+
 
     // Update data
     jazzquiz.current_responses = [];
