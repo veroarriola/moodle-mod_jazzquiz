@@ -390,7 +390,7 @@ class quizdata
     private function get_vote_results()
     {
         // Get all the vote results
-        $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id);
+        $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id, $this->session->get_session()->currentqnum);
         $votes = $vote->get_results();
 
         // Send the response

@@ -537,7 +537,11 @@ jazzquiz.goto_question = function (questionid, questiontime, tries) {
                 jazzquiz.set('inquestion', 'false'); // no longer in question
                 clearInterval(jazzquiz.qcounter);
                 jazzquiz.qcounter = false;
-                jazzquiz.handle_question(questionid);
+
+                if (jazzquiz.get('isinstructor') == 'true') {
+                    jazzquiz.handle_question(questionid);
+                }
+
             } else {
 
                 // get timeLeft in seconds

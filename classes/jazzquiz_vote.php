@@ -22,10 +22,12 @@ class jazzquiz_vote
 {
 
     public $session_id;
+    public $slot;
 
-    public function __construct($session_id)
+    public function __construct($session_id, $slot)
     {
         $this->session_id = $session_id;
+        $this->slot = $slot;
     }
 
     public function get_results()
@@ -33,7 +35,8 @@ class jazzquiz_vote
         global $DB;
 
         $votes = $DB->get_records('jazzquiz_votes', [
-            'sessionid' => $this->session_id
+            'sessionid' => $this->session_id,
+            'slot' => $this->slot
         ]);
 
         return $votes;

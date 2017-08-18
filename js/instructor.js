@@ -242,6 +242,22 @@ jazzquiz.create_response_bar_graph = function (responses, name, target_id, slot)
         }
     }
 
+    // Add button for instructor to change what to review
+    if (jazzquiz.current_quiz_state === 'reviewing') {
+        var quizinfo = target.parentNode;
+        if (name === 'vote_response') {
+            if (jQuery('#review_show_normal_results').length === 0) {
+                jQuery(quizinfo).prepend('<button id="review_show_normal_results" onclick="jazzquiz.gather_current_results();" class="btn btn-primary">Show results</button><br>');
+                jQuery('#review_show_vote_results').remove();
+            }
+        } else if (name === 'current_response') {
+            if (jQuery('#review_show_vote_results').length === 0) {
+                jQuery(quizinfo).prepend('<button id="review_show_vote_results" onclick="jazzquiz.get_and_show_vote_results();" class="btn btn-primary">Show vote results</button><br>');
+                jQuery('#review_show_normal_results').remove();
+            }
+        }
+    }
+
     // Add rows
     for (var i = 0; i < responses.length; i++) {
 
@@ -464,7 +480,7 @@ jazzquiz.handle_question = function (questionid) {
     // submit the form
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', formdata, function (status, response) {
 
-        if (status == 500) {
+        if (status == HTTP_STATUS.ERROR) {
             window.alert('there was an error with your request ... ' + response.error);
             return;
         }
@@ -493,12 +509,14 @@ jazzquiz.handle_question = function (questionid) {
         // but handle_request is also called on ending of the question timer in core.js
         jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
-            if (status === 500) {
+            if (status === HTTP_STATUS.ERROR) {
+
                 var loadingbox = document.getElementById('loadingbox');
                 loadingbox.classList.add('hidden');
 
                 jazzquiz.quiz_info('There was an error with your request', true);
-            } else if (status === 200) {
+
+            } else if (status === HTTP_STATUS.OK) {
 
                 var currentquestion = jazzquiz.get('currentquestion');
                 var questiontimertext = document.getElementById('q' + currentquestion + '_questiontimetext');
@@ -667,7 +685,7 @@ jazzquiz.run_voting = function () {
         'sesskey': jazzquiz.get('sesskey'),
         'questions': questions_param,
 
-        // TODO: Should currentquestion be qnum? Also, 'currentquestion' isn't always available at page load
+        // TODO: currentquestion isn't always available at page load
         'qtype': jazzquiz.vars.questions[jazzquiz.get('currentquestion')].question.qtype
     };
 
@@ -694,7 +712,7 @@ jazzquiz.run_voting = function () {
 jazzquiz.gather_current_results = function () {
 
     // Check if we are showing student responses
-    if (jazzquiz.get('showstudentresponses') == false) {
+    if (jazzquiz.get('showstudentresponses') == false && jazzquiz.current_quiz_state !== 'reviewing') {
         return;
     }
 

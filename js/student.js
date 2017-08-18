@@ -60,7 +60,11 @@ jazzquiz.change_quiz_state = function(state, data) {
 
                 var currentquestion = jazzquiz.get('currentquestion');
 
-                jazzquiz.handle_question(currentquestion);
+                //jazzquiz.handle_question(currentquestion);
+
+                // Hide question box
+                jQuery('#q' + currentquestion + '_container').addClass('hidden');
+
                 if (jazzquiz.qcounter) {
                     clearInterval(jazzquiz.qcounter);
                     var questiontimertext = document.getElementById('q' + currentquestion + '_questiontimetext');
