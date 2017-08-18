@@ -214,7 +214,7 @@ jazzquiz.start_response_merge = function(from_row_bar_id) {
 
 };
 
-jazzquiz.create_response_bar_graph = function (responses, name, target_id) {
+jazzquiz.create_response_bar_graph = function (responses, name, target_id, slot) {
     var target = document.getElementById(target_id);
     if (target === null) {
         return;
@@ -287,7 +287,7 @@ jazzquiz.create_response_bar_graph = function (responses, name, target_id) {
             if (responses[i].qtype === 'stack') {
 
                 response_cell.innerHTML = '<span id="' + name + '_latex_' + row_i + '"></span>';
-                jazzquiz.render_maxima_equation(responses[i].response, row_i, name + '_latex_');
+                jazzquiz.render_maxima_equation(responses[i].response, row_i, name + '_latex_', slot);
 
             } else {
 
@@ -340,7 +340,7 @@ jazzquiz.sort_response_bar_graph = function (target_id) {
     }
 };
 
-jazzquiz.quiz_info_responses = function (responses, qtype) {
+jazzquiz.quiz_info_responses = function (responses, qtype, slot) {
 
     if (responses === undefined) {
         console.log('Responses is undefined.');
@@ -414,7 +414,7 @@ jazzquiz.quiz_info_responses = function (responses, qtype) {
     }
 
     // Update HTML
-    jazzquiz.create_response_bar_graph(jazzquiz.current_responses, 'current_response', 'wrapper_current_responses');
+    jazzquiz.create_response_bar_graph(jazzquiz.current_responses, 'current_response', 'wrapper_current_responses', slot);
     jazzquiz.sort_response_bar_graph('wrapper_current_responses');
 
 };
@@ -625,7 +625,8 @@ jazzquiz.get_and_show_vote_results = function () {
             responses.push({
                 response: answers[i].attempt,
                 count: answers[i].finalcount,
-                qtype: response.qtype
+                qtype: response.qtype,
+                slot: response.slot
             });
         }
 
@@ -640,7 +641,7 @@ jazzquiz.get_and_show_vote_results = function () {
             }
         }
 
-        jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id);
+        jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id, response.slot);
         jazzquiz.sort_response_bar_graph(target_id);
 
 
@@ -710,7 +711,7 @@ jazzquiz.gather_current_results = function () {
         }
 
         // Set responses
-        jazzquiz.quiz_info_responses(response.responses, response.qtype);
+        jazzquiz.quiz_info_responses(response.responses, response.qtype, response.slot);
 
         // See if any question type javascript was added and evaluate
         if (document.getElementById(response.qtype + '_js') !== null) {
@@ -750,7 +751,7 @@ jazzquiz.gather_results = function () {
 
             jazzquiz.clear_and_hide_qinfobox();
 
-            jazzquiz.quiz_info_responses(response.responses, response.qtype);
+            jazzquiz.quiz_info_responses(response.responses, response.qtype, response.slot);
 
             // After the responses have been inserted, we see if any question type javascript was added and evaluate
             if (document.getElementById(response.qtype + '_js') !== null) {

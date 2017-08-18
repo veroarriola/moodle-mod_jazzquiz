@@ -209,7 +209,7 @@ jazzquiz.render_all_mathjax = function () {
     });
 };
 
-jazzquiz.render_maxima_equation = function (input, index, base_id) {
+jazzquiz.render_maxima_equation = function (input, index, base_id, slot) {
 
     input = encodeURIComponent(input);
 
@@ -232,7 +232,6 @@ jazzquiz.render_maxima_equation = function (input, index, base_id) {
     };
 
     var id = jazzquiz.get('attemptid');
-    var slot = jazzquiz.get('currentquestion');
 
     jazzquiz.ajax.create_request('/mod/jazzquiz/stack.php?slot=' + slot + '&id=' + id + '&name=ans1&input=' + input, null, callback);
 

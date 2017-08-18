@@ -106,7 +106,7 @@ class jazzquiz_vote
         return 'success';
     }
 
-    public function prepare_options($rtq_id, $qtype, $options)
+    public function prepare_options($rtq_id, $qtype, $options, $slot)
     {
         global $DB;
 
@@ -125,6 +125,7 @@ class jazzquiz_vote
             $vote->finalcount = 0;
             $vote->userlist = '';
             $vote->qtype = $qtype;
+            $vote->slot = $slot;
             $DB->insert_record('jazzquiz_votes', $vote);
         }
 

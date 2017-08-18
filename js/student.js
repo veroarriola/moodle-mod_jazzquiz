@@ -26,6 +26,8 @@ jazzquiz.vars = jazzquiz.vars || {};
 
 jazzquiz.change_quiz_state = function(state, data) {
 
+    jazzquiz.is_new_state = (jazzquiz.current_quiz_state !== state);
+
     jazzquiz.current_quiz_state = state;
 
     switch (state) {
@@ -108,7 +110,7 @@ jazzquiz.change_quiz_state = function(state, data) {
 
                 for (var i = 0; i < options.length; i++) {
                     if (options[i].qtype === 'stack') {
-                        jazzquiz.render_maxima_equation(options[i].text, i, 'vote_answer_label');
+                        jazzquiz.render_maxima_equation(options[i].text, i, 'vote_answer_label', options[i].slot);
                     }
                 }
 

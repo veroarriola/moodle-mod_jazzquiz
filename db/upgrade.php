@@ -205,5 +205,20 @@ function xmldb_jazzquiz_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2017010433, 'jazzquiz');
     }
 
+    if ($oldversion < 2017010880) {
+
+        $table = new xmldb_table('jazzquiz_votes');
+        $field = new xmldb_field('slot', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Conditionally launch add field slot.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // jazzquiz savepoint reached.
+        upgrade_mod_savepoint(true, 2017010880, 'jazzquiz');
+
+    }
+
     return true;
 }

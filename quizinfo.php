@@ -81,7 +81,8 @@ switch ($session->status) {
             $options[] = [
                 'text' => $vote_option->attempt,
                 'id' => $vote_option->id,
-                'qtype' => $vote_option->qtype
+                'qtype' => $vote_option->qtype,
+                'slot' => $vote_option->slot
             ];
         }
 

@@ -130,6 +130,7 @@ class quizdata
         $qtype = $question_manager->get_questiontype_byqnum($qnum);
         $responses = $this->session->get_question_results_list($use_live_filter, $qtype);
         $this->jsonlib->set('qtype', $qtype);
+        $this->jsonlib->set('slot', $qnum);
         $this->jsonlib->set('responses', $responses);
         $this->jsonlib->set('status', 'success');
         $this->jsonlib->send_response();
@@ -349,7 +350,8 @@ class quizdata
 
             // Initialize the votes
             $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id);
-            $vote->prepare_options($this->RTQ->getRTQ()->id, $qtype, $questions);
+            $slot = $this->session->get_session()->currentqnum;
+            $vote->prepare_options($this->RTQ->getRTQ()->id, $qtype, $questions, $slot);
 
             // Change quiz status
             $this->session->set_status('voting');
