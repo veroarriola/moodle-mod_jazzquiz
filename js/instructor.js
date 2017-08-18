@@ -625,8 +625,8 @@ jazzquiz.get_and_show_vote_results = function () {
             responses.push({
                 response: answers[i].attempt,
                 count: answers[i].finalcount,
-                qtype: response.qtype,
-                slot: response.slot
+                qtype: answers[i].qtype,
+                slot: answers[i].slot
             });
         }
 
@@ -641,7 +641,12 @@ jazzquiz.get_and_show_vote_results = function () {
             }
         }
 
-        jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id, response.slot);
+        var slot = 0;
+        if (responses.length > 0) {
+            slot = responses[0].slot;
+        }
+
+        jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id, slot);
         jazzquiz.sort_response_bar_graph(target_id);
 
 
@@ -661,6 +666,8 @@ jazzquiz.run_voting = function () {
         'attemptid': jazzquiz.get('attemptid'),
         'sesskey': jazzquiz.get('sesskey'),
         'questions': questions_param,
+
+        // TODO: Should currentquestion be qnum? Also, 'currentquestion' isn't always available at page load
         'qtype': jazzquiz.vars.questions[jazzquiz.get('currentquestion')].question.qtype
     };
 
@@ -864,7 +871,7 @@ jazzquiz.end_question = function () {
     };
 
     var vote_callback = function (status, response) {
-        if (status === 500) {
+        if (status === HTTP_STATUS.ERROR) {
             console.log('Failed to end vote.');
         }
     };
@@ -1108,8 +1115,6 @@ jazzquiz.toggle_responses = function() {
  * Toggles the "show not responded" variable
  */
 jazzquiz.toggle_notresponded = function () {
-
-    var button = document.getElementById('togglenotresponded');
 
     if (jazzquiz.get('shownotresponded') == false) {
 
