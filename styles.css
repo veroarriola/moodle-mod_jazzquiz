@@ -360,11 +360,7 @@
     border: 1px solid rgba(0, 0, 0, 0.3);
 }
 
-.jazzquiz-vote label span {
-    padding-left: 16px;
-}
-
-.jazzquiz-vote label span p {
+.jazzquiz-vote label > span p {
     display: inline-block;
     margin: 0;
     padding: 0;
