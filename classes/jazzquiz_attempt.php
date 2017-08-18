@@ -736,21 +736,43 @@ class jazzquiz_attempt
 
         if ($qtype == 'multichoice') {
 
-            $options = $DB->get_records('question_answers', [
-                'question' => $questionattempt->get_question()->id
-            ], 'id asc');
+            // TODO: Refactoring
+            // This is kinda messy... but it just has to be done quickly now to get it ready for testing.
 
-            if ($options) {
+            $steps = $DB->get_records('question_attempt_steps', [
+                'questionattemptid' => $questionattempt->get_database_id()
+            ], 'id desc');
 
-                $option = false;
+            if ($steps) {
 
-                for ($i = 0; $i <= $response_value; $i++) {
-                    $option = array_shift($options);
-                }
+                foreach ($steps as $step) {
 
-                if ($option !== false) {
+                    $multichoice_data = $DB->get_records('question_attempt_step_data', [
+                        'attemptstepid' => $step->id,
+                        'name' => '_order'
+                    ], 'id desc', 'id, value, name', 0, 1);
 
-                    $response_value = $option->answer;
+                    if ($multichoice_data) {
+
+                        $multichoice_data = array_shift($multichoice_data);
+
+                        $order = explode(',', $multichoice_data->value);
+
+                        if (isset($order[$response_value])) {
+
+                            $option = $DB->get_record('question_answers', [
+                                'id' => $order[$response_value]
+                            ]);
+
+                            if ($option) {
+                                $response_value = $option->answer;
+                            }
+
+                        }
+
+                        break;
+
+                    }
 
                 }
 
