@@ -108,7 +108,7 @@ class questionmanager {
     {
         global $DB;
 
-        // first check to see if the question has already been added
+        // Check if question has already been added
         if ( $this->is_question_already_present($questionid) ) {
             $redurl = clone($this->pagevars['pageurl']);
             /** @var \moodle_url $redurl */
@@ -117,52 +117,23 @@ class questionmanager {
             redirect($redurl, get_string('cantaddquestiontwice', 'jazzquiz'));
         }
 
-        $actionurl = clone($this->baseurl);
-        $actionurl->param('action', 'addquestion');
-        $actionurl->param('questionid', $questionid);
+        $question = new \stdClass();
+        $question->jazzquizid = $this->rtq->getRTQ()->id;
+        $question->questionid = $questionid;
+        $question->notime = false;
+        $question->questiontime = 180;
+        $question->tries = 1;
+        $question->points = number_format('1.00', 2);
+        $question->showhistoryduringquiz = false;
 
-        $qrecord = $DB->get_record('question', array('id' => $questionid), '*', MUST_EXIST);
+        $RTQquestionid = $DB->insert_record('jazzquiz_questions', $question);
 
-        $mform = new add_question_form($actionurl,
-            array(
-                'rtq' => $this->rtq,
-                'questionname' => $qrecord->name,
-                'defaultmark' => $qrecord->defaultmark,
-                'showhistoryduringquiz' => 0,
-                'edit' => false));
+        $this->update_questionorder('addquestion', $RTQquestionid);
 
-        // form handling
-        if ( $mform->is_cancelled() ) {
-            // redirect back to list questions page
-            $this->baseurl->remove_params('action');
-            redirect($this->baseurl, null, 0);
+        // Ensure there is no action or questionid in the baseurl
+        $this->baseurl->remove_params('action', 'questionid');
 
-        } else if ( $data = $mform->get_data() ) {
-            // process data from the form
-
-            $question = new \stdClass();
-            $question->jazzquizid = $this->rtq->getRTQ()->id;
-            $question->questionid = $questionid;
-            $question->notime = $data->notime;
-            $question->questiontime = $data->indvquestiontime;
-            $question->tries = $data->numberoftries;
-            $question->points = number_format($data->points, 2);
-            $question->showhistoryduringquiz = $data->showhistoryduringquiz;
-
-            $RTQquestionid = $DB->insert_record('jazzquiz_questions', $question);
-
-            $this->update_questionorder('addquestion', $RTQquestionid);
-
-            // ensure there is no action or questionid in the baseurl
-            $this->baseurl->remove_params('action', 'questionid');
-            redirect($this->baseurl, null, 0);
-
-        } else {
-            // display the form
-            $this->renderer->print_header();
-            $this->renderer->addquestionform($mform);
-            $this->renderer->footer();
-        }
+        redirect($this->baseurl, null, 0);
     }
 
     /**
