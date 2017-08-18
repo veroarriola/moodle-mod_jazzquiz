@@ -177,7 +177,6 @@ jazzquiz.change_quiz_state = function (state, data) {
 jazzquiz.end_response_merge = function() {
     jQuery('.merge-into').removeClass('merge-into');
     jQuery('.merge-from').removeClass('merge-from');
-    jQuery('.selected-for-merge').removeClass('selected-for-merge');
 };
 
 jazzquiz.start_response_merge = function(from_row_bar_id) {
@@ -195,11 +194,9 @@ jazzquiz.start_response_merge = function(from_row_bar_id) {
         var into_row = jQuery('.merge-into')[0];
 
         jazzquiz.current_responses[into_row.dataset.response_i].count += parseInt(row.dataset.count);
-
         jazzquiz.current_responses.splice(row.dataset.response_i, 1);
 
         jazzquiz.quiz_info_responses(jazzquiz.current_responses, jazzquiz.qtype);
-
         jazzquiz.end_response_merge();
 
         return;
@@ -1363,9 +1360,17 @@ document.addEventListener('keyup', function (e) {
 
 // Listens for click events to hide the improvise menu when there is an outside click
 document.addEventListener('click', function (e) {
+
+    // Clicking on improvisation menu
     var menu = jQuery(e.target).closest('.improvise-menu');
     if (!menu.length) {
         jQuery('.improvise-menu').html('').removeClass('active');
         jQuery('#startimprovisedquestion').removeClass('active');
     }
+
+    // Clicking a row to merge
+    if (e.target.parentNode.classList.contains('bar')) {
+        jazzquiz.start_response_merge(e.target.parentNode.id);
+    }
+
 });
