@@ -192,13 +192,15 @@ jazzquiz.start_response_merge = function(from_row_bar_id) {
 
     if (row.classList.contains('merge-from')) {
 
-        var from_count = jazzquiz.current_responses[row.dataset.response_i].count;
         var into_row = jQuery('.merge-into')[0];
 
-        jazzquiz.current_responses[into_row.dataset.response_i].count += from_count;
+        jazzquiz.current_responses[into_row.dataset.response_i].count += parseInt(row.dataset.count);
+
         jazzquiz.current_responses.splice(row.dataset.response_i, 1);
 
         jazzquiz.quiz_info_responses(jazzquiz.current_responses, jazzquiz.qtype);
+
+        jazzquiz.end_response_merge();
 
         return;
     }
@@ -227,6 +229,23 @@ jazzquiz.create_response_bar_graph = function (responses, name, target_id) {
     if (total === 0) {
         total = 1;
     }
+
+    // Prune rows
+    for (var i = 0; i < target.rows.length; i++) {
+        var prune = true;
+        for (var j = 0; j < responses.length; j++) {
+            if (target.rows[i].dataset.response === responses[j].response) {
+                prune = false;
+                break;
+            }
+        }
+        if (prune) {
+            target.deleteRow(i);
+            i--;
+        }
+    }
+
+    // Add rows
     for (var i = 0; i < responses.length; i++) {
 
         var percent = (parseInt(responses[i].count) / total) * 100;
@@ -285,7 +304,10 @@ jazzquiz.create_response_bar_graph = function (responses, name, target_id) {
 
         } else {
 
+            target.rows[current_row_index].dataset.row_i = row_i;
+            target.rows[current_row_index].dataset.response_i = i;
             target.rows[current_row_index].dataset.percent = percent;
+            target.rows[current_row_index].dataset.count = responses[i].count;
 
             var count_element = document.getElementById(name + '_count_' + row_i);
             if (count_element !== null) {
@@ -358,10 +380,15 @@ jazzquiz.quiz_info_responses = function (responses, qtype) {
 
         var exists = false;
 
+        var count = 1;
+        if (responses[i].count !== undefined) {
+            count = parseInt(responses[i].count);
+        }
+
         // Check if response is a duplicate
         for (var j = 0; j < jazzquiz.current_responses.length; j++) {
             if (jazzquiz.current_responses[j].response === responses[i].response) {
-                jazzquiz.current_responses[j].count++;
+                jazzquiz.current_responses[j].count += count;
                 exists = true;
                 break;
             }
@@ -371,7 +398,7 @@ jazzquiz.quiz_info_responses = function (responses, qtype) {
         if (!exists) {
             jazzquiz.current_responses.push({
                 response: responses[i].response,
-                count: 1,
+                count: count,
                 qtype: qtype
             });
         }
