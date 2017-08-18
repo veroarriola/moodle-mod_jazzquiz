@@ -1369,7 +1369,9 @@ document.addEventListener('click', function (e) {
     }
 
     // Clicking a row to merge
-    if (e.target.parentNode.classList.contains('bar')) {
+    if (e.target.classList.contains('bar')) {
+        jazzquiz.start_response_merge(e.target.id);
+    } else if (e.target.parentNode.classList.contains('bar')) {
         jazzquiz.start_response_merge(e.target.parentNode.id);
     }
 
