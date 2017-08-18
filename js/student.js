@@ -113,8 +113,9 @@ jazzquiz.change_quiz_state = function(state, data) {
                 jazzquiz.quiz_info(html);
 
                 for (var i = 0; i < options.length; i++) {
+                    jazzquiz.add_mathjax_element('vote_answer_label' + i, options[i].text);
                     if (options[i].qtype === 'stack') {
-                        jazzquiz.render_maxima_equation(options[i].text, i, 'vote_answer_label', options[i].slot);
+                        jazzquiz.render_maxima_equation(options[i].text, 'vote_answer_label' + i, options[i].slot);
                     }
                 }
 

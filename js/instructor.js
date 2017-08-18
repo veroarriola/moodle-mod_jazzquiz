@@ -300,15 +300,13 @@ jazzquiz.create_response_bar_graph = function (responses, name, target_id, slot)
             bar_cell.id = name + '_bar_' + row_i;
             bar_cell.innerHTML = '<div style="width:' + percent + '%;">' + count_html + '</div>';
 
+            var latex_id = name + '_latex_' + row_i;
+
+            response_cell.innerHTML = '<span id="' + latex_id + '"></span>';
+            jazzquiz.add_mathjax_element(latex_id, responses[i].response);
+
             if (responses[i].qtype === 'stack') {
-
-                response_cell.innerHTML = '<span id="' + name + '_latex_' + row_i + '"></span>';
-                jazzquiz.render_maxima_equation(responses[i].response, row_i, name + '_latex_', slot);
-
-            } else {
-
-                response_cell.innerHTML = responses[i].response;
-
+                jazzquiz.render_maxima_equation(responses[i].response, latex_id, slot);
             }
 
             var opt_cell = row.insertCell(2);

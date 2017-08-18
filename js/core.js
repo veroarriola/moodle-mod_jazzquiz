@@ -209,31 +209,33 @@ jazzquiz.render_all_mathjax = function () {
     });
 };
 
-jazzquiz.render_maxima_equation = function (input, index, base_id, slot) {
+jazzquiz.add_mathjax_element = function(id, latex) {
+    jQuery('#' + id).html('<span class="jazzquiz-latex-wrapper"><span class="filter_mathjaxloader_equation">' + latex + '</span></span>');
+    jazzquiz.render_all_mathjax();
+};
+
+jazzquiz.render_maxima_equation = function (input, target_id, slot) {
+
+    var target = document.getElementById(target_id);
+    if (target === null) {
+        console.log('Target element #' + target_id + ' not found.');
+        return;
+    }
 
     input = encodeURIComponent(input);
 
-    var callback = function (status, response) {
-
-        var target = document.getElementById(base_id + index);
-        if (target === null) {
-            console.log('Target element #' + base_id + index + ' not found.');
-            return;
-        }
-        if (status !== HTTP_STATUS.OK) {
-            target.innerHTML = input;
-            console.log('Failed to get latex for ' + index);
-            return;
-        }
-
-        target.innerHTML = '<span class="jazzquiz-latex-wrapper"><span class="filter_mathjaxloader_equation">' + response.latex + '</span></span>';
-        jazzquiz.render_all_mathjax();
-
-    };
-
     var id = jazzquiz.get('attemptid');
 
-    jazzquiz.ajax.create_request('/mod/jazzquiz/stack.php?slot=' + slot + '&id=' + id + '&name=ans1&input=' + input, null, callback);
+    jazzquiz.ajax.create_request('/mod/jazzquiz/stack.php?slot=' + slot + '&id=' + id + '&name=ans1&input=' + input, null, function (status, response) {
+
+        if (status !== HTTP_STATUS.OK) {
+            console.log('Failed to get LaTeX for #' + target_id);
+            return;
+        }
+
+        jazzquiz.add_mathjax_element(target_id, response.latex);
+
+    });
 
 };
 
