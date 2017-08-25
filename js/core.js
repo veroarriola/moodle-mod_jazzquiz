@@ -196,7 +196,7 @@ jazzquiz.getQuizInfo = function () {
         if (jazzquiz.get('isinstructor') === 'true') {
             setTimeout(jazzquiz.getQuizInfo, 500);
         } else {
-            setTimeout(jazzquiz.getQuizInfo, 1000);
+            setTimeout(jazzquiz.getQuizInfo, 2000);
         }
 
     });
