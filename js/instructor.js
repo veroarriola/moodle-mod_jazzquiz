@@ -33,8 +33,8 @@
  */
 jazzquiz.change_quiz_state = function (state, data) {
 
-    this.is_new_state = (this.current_quiz_state !== state);
-    this.current_quiz_state = state;
+    this.is_new_state = (this.state !== state);
+    this.state = state;
 
     jQuery('#inquizcontrols_state').html(state);
     jQuery('#region-main').find('ul.nav.nav-tabs').css('display', 'none');
@@ -66,7 +66,7 @@ jazzquiz.change_quiz_state = function (state, data) {
                 'showfullscreenresults',
                 'closesession'
             ]);
-            jQuery('#startquiz').addClass('hidden');
+            jQuery('#startquiz').parent().addClass('hidden');
             break;
 
         case 'running':
@@ -138,14 +138,12 @@ jazzquiz.change_quiz_state = function (state, data) {
             // For now, just always show responses while reviewing
             // In the future, there should be an additional toggle.
             if (this.is_new_state) {
-                this.options.show_responses = true;
                 if (this.quiz.show_votes_upon_review) {
                     this.get_and_show_vote_results();
                     this.quiz.show_votes_upon_review = false;
                 } else {
                     this.gather_current_results();
                 }
-                this.options.show_responses = false;
             }
 
             // No longer in question
@@ -162,7 +160,7 @@ jazzquiz.change_quiz_state = function (state, data) {
                 'endquestion'
             ]);
             this.get_and_show_vote_results();
-            jQuery('#startquiz').addClass('hidden');
+            jQuery('#startquiz').parent().addClass('hidden');
             break;
 
         case 'sessionclosed':
@@ -219,16 +217,20 @@ jazzquiz.start_response_merge = function(from_row_bar_id) {
 
 jazzquiz.create_response_controls = function(name) {
 
+    var $response_info_container = jQuery('#jazzquiz_response_info_container');
+
     if (!this.quiz.question.has_votes) {
+        $response_info_container.addClass('hidden');
         return;
     }
 
     // Add button for instructor to change what to review
-    if (jazzquiz.current_quiz_state === 'reviewing') {
+    if (jazzquiz.state === 'reviewing') {
 
         var $show_normal_result  = jQuery('#review_show_normal_results');
         var $show_vote_result  = jQuery('#review_show_vote_results');
-        var $response_info_container = jQuery('#jazzquiz_response_info_container');
+
+        $response_info_container.removeClass('hidden');
 
         if (name === 'vote_response') {
 
@@ -253,7 +255,7 @@ jazzquiz.create_response_controls = function(name) {
         }
     }
 
-}
+};
 
 jazzquiz.create_response_bar_graph = function (responses, name, target_id, slot) {
 
@@ -474,7 +476,7 @@ jazzquiz.start_quiz = function () {
         jQuery('#inquizcontrols').removeClass('btn-hide');
     });
 
-    jQuery('#startquiz').addClass('btn-hide');
+    jQuery('#startquiz').parent().addClass('hidden');
     jazzquiz.hide_instructions();
 
 };
@@ -710,7 +712,7 @@ jazzquiz.run_voting = function () {
 jazzquiz.gather_current_results = function () {
 
     // Check if we are showing student responses
-    if (!this.options.show_responses && this.current_quiz_state !== 'reviewing') {
+    if (!this.options.show_responses && this.state !== 'reviewing') {
         return;
     }
 
@@ -762,23 +764,24 @@ jazzquiz.gather_results = function () {
 
         jazzquiz.loading('', 'hide');
 
+        if (status !== HTTP_STATUS.OK) {
+
+            // Something went wrong
+            jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error getting current results.');
+            return;
+        }
+
         jQuery('#q' + jazzquiz.quiz.current_question_slot + '_container').removeClass('hidden');
 
-        // Only put results into the screen if
-        if (jazzquiz.options.show_responses) {
+        jazzquiz.quiz.question.has_votes = response.has_votes;
 
-            jQuery('#jazzquiz_responded_container').addClass('hidden').html('');
-            jQuery('#jazzquiz_response_info_container').addClass('hidden').html('');
-            jQuery('#jazzquiz_responses_container').addClass('hidden').html('');
-            jQuery('#jazzquiz_info_container').addClass('hidden').html('');
+        jazzquiz.quiz_info_responses(response.responses, response.qtype, response.slot);
 
-            jazzquiz.quiz_info_responses(response.responses, response.qtype, response.slot);
-
-            // After the responses have been inserted, we see if any question type javascript was added and evaluate
-            if (document.getElementById(response.qtype + '_js') !== null) {
-                eval(document.getElementById(response.qtype + '_js').innerHTML);
-            }
+        // After the responses have been inserted, we see if any question type javascript was added and evaluate
+        if (document.getElementById(response.qtype + '_js') !== null) {
+            eval(document.getElementById(response.qtype + '_js').innerHTML);
         }
+
     });
 
 };
@@ -889,7 +892,7 @@ jazzquiz.end_question = function () {
     };
 
     // Make sure we use the correct callback for the state.
-    if (this.current_quiz_state === 'voting') {
+    if (this.state === 'voting') {
         jazzquiz.quiz.show_votes_upon_review = true;
         callback = vote_callback;
     }
@@ -920,6 +923,7 @@ jazzquiz.close_session = function () {
 
         jazzquiz.hide_all_questionboxes();
         jQuery('#jazzquiz_responded_container').addClass('hidden').html('');
+        jQuery('#jazzquiz_response_info_container').addClass('hidden').html('');
         jQuery('#jazzquiz_responses_container').addClass('hidden').html('');
         jQuery('#jazzquiz_info_container').addClass('hidden').html('');
 
@@ -938,6 +942,7 @@ jazzquiz.submit_goto_question = function (qnum, keep_flow) {
     this.hide_all_questionboxes();
 
     jQuery('#jazzquiz_responded_container').addClass('hidden').html('');
+    jQuery('#jazzquiz_response_info_container').addClass('hidden').html('');
     jQuery('#jazzquiz_responses_container').addClass('hidden').html('');
     jQuery('#jazzquiz_info_container').addClass('hidden').html('');
 
@@ -1131,7 +1136,7 @@ jazzquiz.control_buttons = function (buttons) {
 
     // This function requires jQuery.
     if (!window.jQuery) {
-        console.log('jQuery not loaded. ' + this.current_quiz_state + ': Failed to activate the following buttons:');
+        console.log('jQuery not loaded. ' + this.state + ': Failed to activate the following buttons:');
         console.log(buttons);
         return;
     }
@@ -1177,7 +1182,7 @@ jazzquiz.show_fullscreen_results_view = function () {
     container.innerHTML = this.get_question_body_formatted(this.quiz.current_question_slot);
 
     // Do we want to show the results?
-    if (this.current_quiz_state !== 'running') {
+    if (this.state !== 'running') {
 
         // Add bar graph
         var responses_container = document.getElementById('jazzquiz_responses_container');
@@ -1287,7 +1292,7 @@ document.addEventListener('click', function (e) {
     }
 
     // Clicking a row to merge
-    if (jazzquiz.current_quiz_state === 'reviewing') {
+    if (jazzquiz.state === 'reviewing') {
         if (e.target.classList.contains('bar')) {
             jazzquiz.start_response_merge(e.target.id);
         } else if (e.target.parentNode && e.target.parentNode.classList.contains('bar')) {

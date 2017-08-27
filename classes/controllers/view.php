@@ -68,9 +68,11 @@ class view {
         // Get necessary records from the DB
         if ($id) {
             $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
+            $this->update_improvised_questions_for_quiz($cm->instance);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
             $quiz = $DB->get_record('jazzquiz', array('id' => $cm->instance), '*', MUST_EXIST);
         } else {
+            $this->update_improvised_questions_for_quiz($quizid);
             $quiz = $DB->get_record('jazzquiz', array('id' => $quizid), '*', MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
@@ -106,6 +108,14 @@ class view {
         $PAGE->set_url($this->pageurl);
 
 
+    }
+
+    private function update_improvised_questions_for_quiz($jazzquiz_id)
+    {
+        // Remove and re-add all the improvised questions to make sure they're all added and last.
+        $improviser = new \mod_jazzquiz\improviser();
+        $improviser->remove_improvised_questions_from_quiz($jazzquiz_id);
+        $improviser->add_improvised_questions_to_quiz($jazzquiz_id);
     }
 
     /**
@@ -267,11 +277,10 @@ class view {
 
                         // First check to see if there are any open sessions
                         // This shouldn't occur, but never hurts to check
-                        $sessions = $DB->get_records('jazzquiz_sessions', array(
-                                'jazzquizid' => $this->RTQ->getRTQ()->id,
-                                'sessionopen'  => 1
-                            )
-                        );
+                        $sessions = $DB->get_records('jazzquiz_sessions', [
+                            'jazzquizid' => $this->RTQ->getRTQ()->id,
+                            'sessionopen' => 1
+                        ]);
 
                         if (!empty($sessions)) {
 
@@ -284,7 +293,10 @@ class view {
 
                         } else {
 
-                            if (!$this->session->create_session($data)) {
+                            // Create the session
+                            $session_created_successfully = $this->session->create_session($data);
+                            if (!$session_created_successfully) {
+
                                 // Error handling
                                 $renderer->setMessage(get_string('unabletocreate_session', 'jazzquiz'), 'error');
                                 $renderer->view_header();

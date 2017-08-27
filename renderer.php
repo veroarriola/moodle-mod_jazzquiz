@@ -354,7 +354,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
                 'id' => 'jazzquiz_responded_container'
             ]);
 
-            $output .= html_writer::div('', 'jazzquizbox padded-box', [
+            $output .= html_writer::div('', 'jazzquizbox hidden padded-box', [
                 'id' => 'jazzquiz_response_info_container'
             ]);
 
@@ -559,6 +559,12 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         // loop through each question and add it as an option
         $qnum = 1;
         foreach ($attempt->get_questions() as $question) {
+
+            // Hide improvised questions
+            if (substr($question->getQuestion()->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
+                continue;
+            }
+
             $output .= html_writer::tag('option', $qnum . ': ' . $question->getQuestion()->name, array('value' => $qnum));
             $qnum++;
         }
@@ -862,10 +868,10 @@ EOD;
             echo html_writer::tag('p', $editbutton);
 
             // "Add improvisation questions" button
-            $params['redirect'] = 'view';
-            $add_improv_questions_url = new moodle_url('/mod/jazzquiz/improvisation.php', $params);
-            $add_improv_questions_button = $this->output->single_button($add_improv_questions_url, 'Add improvisation questions', 'get');
-            echo html_writer::tag('p', $add_improv_questions_button);
+            //$params['redirect'] = 'view';
+            //$add_improv_questions_url = new moodle_url('/mod/jazzquiz/improvisation.php', $params);
+            //$add_improv_questions_button = $this->output->single_button($add_improv_questions_url, 'Add improvisation questions', 'get');
+            //echo html_writer::tag('p', $add_improv_questions_button);
 
         }
 

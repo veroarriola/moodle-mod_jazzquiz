@@ -7,20 +7,20 @@ defined('MOODLE_INTERNAL') || die();
 class improviser
 {
 
-    public function add_improvised_question_instance($jazzquizid, $questionid)
+    public function add_improvised_question_instance($jazzquiz_id, $question_id)
     {
         global $DB;
 
         // Get the JazzQuiz
-        $jazzquiz = $DB->get_record('jazzquiz', ['id' => $jazzquizid]);
+        $jazzquiz = $DB->get_record('jazzquiz', ['id' => $jazzquiz_id]);
         if (!$jazzquiz) {
             return;
         }
 
         // Create the new JazzQuiz question
         $question = new \stdClass();
-        $question->jazzquizid = $jazzquizid;
-        $question->questionid = $questionid;
+        $question->jazzquizid = $jazzquiz_id;
+        $question->questionid = $question_id;
         $question->notime = 0;
         $question->questiontime = $jazzquiz->defaultquestiontime;
         $question->tries = 1;
@@ -35,6 +35,57 @@ class improviser
             $jazzquiz->questionorder .= ',';
         }
         $jazzquiz->questionorder .= $jazzquiz_question_id;
+        $DB->update_record('jazzquiz', $jazzquiz);
+
+    }
+
+    public function remove_improvised_question_instance($jazzquiz_id, $question_id)
+    {
+        global $DB;
+
+        // Get the JazzQuiz
+        $jazzquiz = $DB->get_record('jazzquiz', [
+            'id' => $jazzquiz_id
+        ]);
+        if (!$jazzquiz) {
+            return;
+        }
+
+        // Get current quiz questions with this question
+        // We need the ID
+        $existing_improvised_questions = $DB->get_records('jazzquiz_questions', [
+            'jazzquizid' => $jazzquiz_id,
+            'questionid' => $question_id
+        ]);
+        if (!$existing_improvised_questions) {
+            return;
+        }
+
+        // Delete the improvised question
+        $DB->delete_records('jazzquiz_questions', [
+            'jazzquizid' => $jazzquiz_id,
+            'questionid' => $question_id
+        ]);
+
+        // Update question order
+        $question_order = explode(',', $jazzquiz->questionorder);
+
+        foreach ($question_order as $index => $order_question_id) {
+
+            foreach ($existing_improvised_questions as $existing_improvised_question) {
+
+                if ($order_question_id == $existing_improvised_question->id) {
+
+                    unset($question_order[$index]);
+
+                    break;
+                }
+
+            }
+
+        }
+        $jazzquiz->questionorder = implode(',', $question_order);
+
         $DB->update_record('jazzquiz', $jazzquiz);
 
     }
@@ -298,6 +349,80 @@ class improviser
         // STACK Algebraic
         $this->insert_stack_algebraic_question_definition('Algebraic');
 
+    }
+
+    public function remove_improvised_questions_from_quiz($jazzquiz_id)
+    {
+        global $DB;
+
+        // Find all the improvised questions
+        $improvised_questions = $DB->get_records_sql('SELECT * FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
+        if (!$improvised_questions) {
+            return;
+        }
+
+        // Get the questions for the quiz
+        $quiz_questions = $DB->get_records('jazzquiz_questions', [
+            'jazzquizid' => $jazzquiz_id
+        ]);
+        if (!$quiz_questions) {
+            return;
+        }
+
+        // Remove the improvised questions
+        foreach ($improvised_questions as $improvised_question) {
+            foreach ($quiz_questions as $quiz_question) {
+                if ($improvised_question->id == $quiz_question->questionid) {
+                    $this->remove_improvised_question_instance($jazzquiz_id, $improvised_question->id);
+                }
+            }
+        }
+
+    }
+
+    public function add_improvised_questions_to_quiz($jazzquiz_id)
+    {
+        global $DB;
+
+        // Find all the improvised questions
+        $improvised_questions = $DB->get_records_sql('SELECT * FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
+        if (!$improvised_questions) {
+            $this->insert_default_improvised_question_definitions();
+        }
+
+        $quiz_questions = $DB->get_records('jazzquiz_questions', [
+            'jazzquizid' => $jazzquiz_id
+        ]);
+
+        if (!$quiz_questions) {
+
+            // No questions for this quiz? Let's get right to adding the dummy ones then.
+            foreach ($improvised_questions as $improvised_question) {
+                $this->add_improvised_question_instance($jazzquiz_id, $improvised_question->id);
+            }
+
+        } else {
+
+            // We should only add the ones that don't already exist.
+            foreach ($improvised_questions as $improvised_question) {
+
+                $exists = false;
+
+                foreach ($quiz_questions as $quiz_question) {
+
+                    if ($improvised_question->id == $quiz_question->questionid) {
+                        $exists = true;
+                        break;
+                    }
+
+                }
+
+                if (!$exists) {
+                    $this->add_improvised_question_instance($jazzquiz_id, $improvised_question->id);
+                }
+            }
+
+        }
     }
 
 }

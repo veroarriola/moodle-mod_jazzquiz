@@ -80,7 +80,7 @@ class edit_renderer extends \plugin_renderer_base {
 
         // print jsinfo to javascript
         echo \html_writer::start_tag('script', array('type' => 'text/javascript'));
-        echo "rtqinitinfo = " . json_encode($jsinfo);
+        echo "rtqinitinfo = " . json_encode($jsinfo); // TODO: Look into this variable
         echo \html_writer::end_tag('script');
 
         $this->page->requires->strings_for_js(array(
@@ -101,16 +101,22 @@ class edit_renderer extends \plugin_renderer_base {
 
         $return = '<ol class="questionlist">';
 
-        $add_improv_questions_url = new \moodle_url('/mod/jazzquiz/improvisation.php', [
+        /*$add_improv_questions_url = new \moodle_url('/mod/jazzquiz/improvisation.php', [
             'cmid' => $this->jazzquiz->getCM()->id,
             'redirect' => 'edit'
         ]);
         $add_improv_questions_button = $this->output->single_button($add_improv_questions_url, 'Add improvisation questions', 'get');
-        $return .= \html_writer::tag('p', $add_improv_questions_button);
+        $return .= \html_writer::tag('p', $add_improv_questions_button);*/
 
         $questioncount = count($questions);
         $questionnum = 1;
         foreach ($questions as $question) {
+
+            // Hide improvised questions
+            if (substr($question->getQuestion()->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
+                continue;
+            }
+
             /** @var \mod_jazzquiz\jazzquiz_question $question */
             $return .= '<li data-questionid="' . $question->getId() . '">';
             $return .= $this->display_question_block($question, $questionnum, $questioncount);

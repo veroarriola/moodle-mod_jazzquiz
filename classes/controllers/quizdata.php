@@ -127,18 +127,17 @@ class quizdata
     private function show_question_results($use_live_filter)
     {
         $question_manager = $this->RTQ->get_questionmanager();
-        $qnum = $this->session->get_session()->currentqnum;
-        $qtype = $question_manager->get_questiontype_byqnum($qnum);
+        $slot = $this->session->get_session()->currentqnum;
+        $qtype = $question_manager->get_questiontype_byqnum($slot);
         $responses = $this->session->get_question_results_list($use_live_filter, $qtype);
 
         // Check if this has been voted on before
-        $slot = $this->session->get_session()->currentqnum;
         $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id, $slot);
         $has_votes = count($vote->get_results()) > 0;
         $this->jsonlib->set('has_votes', $has_votes);
 
         $this->jsonlib->set('qtype', $qtype);
-        $this->jsonlib->set('slot', $qnum);
+        $this->jsonlib->set('slot', $slot);
         $this->jsonlib->set('responses', $responses);
         $this->jsonlib->set('status', 'success');
         $this->jsonlib->send_response();
@@ -275,7 +274,7 @@ class quizdata
         // Let's get the question
         $question = $this->session->goto_question($qnum);
         if (!$question) {
-            $this->jsonlib->send_error('invalid question number');
+            $this->jsonlib->send_error('invalid question number ' . $qnum);
         }
 
         // Start the question and send the response

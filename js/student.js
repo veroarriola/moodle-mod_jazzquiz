@@ -22,8 +22,8 @@
 
 jazzquiz.change_quiz_state = function (state, data) {
 
-    this.is_new_state = (this.current_quiz_state !== state);
-    this.current_quiz_state = state;
+    this.is_new_state = (this.state !== state);
+    this.state = state;
 
     switch (state) {
 

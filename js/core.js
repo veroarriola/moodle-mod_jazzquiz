@@ -360,7 +360,7 @@ jazzquiz.resume_quiz = function () {
 
             if (this.is_instructor) {
                 jQuery('#inquizcontrols').removeClass('btn-hide');
-                jQuery('#startquiz').addClass('btn-hide');
+                jQuery('#startquiz').parent().addClass('hidden');
                 // Instructor resume waitfor question needs to be instantiated
                 // as their quizinfo doesn't handle the wait for question case
                 this.waitfor_question(this.quiz.resume.current_question_slot, this.quiz.resume.question_time, this.quiz.resume.delay);
@@ -372,7 +372,7 @@ jazzquiz.resume_quiz = function () {
 
             if (this.is_instructor) {
                 jQuery('#inquizcontrols').removeClass('btn-hide');
-                jQuery('#startquiz').addClass('btn-hide');
+                jQuery('#startquiz').parent().addClass('hidden');
                 if (this.quiz.resume.question_time === 0) {
                     // Enable the "End question" button
                     this.control_buttons([
@@ -398,7 +398,7 @@ jazzquiz.resume_quiz = function () {
 
                 // Load right controls if available
                 jQuery('#inquizcontrols').removeClass('btn-hide');
-                jQuery('#startquiz').addClass('btn-hide');
+                jQuery('#startquiz').parent().addClass('hidden');
 
                 this.quiz.question.is_running = false;
                 this.quiz.current_question_slot = this.quiz.resume.current_question_slot;

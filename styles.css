@@ -257,7 +257,6 @@
 }
 
 #notrespondedlist li {
-
     float: left;
     width: 10em;
 }
@@ -532,7 +531,11 @@
     display: none;
 }
 
-#jazzquiz_info_container {
+#jazzquiz_instructions_container {
+    padding: 0;
+}
+
+#jazzquiz_info_container, #jazzquiz_instructions_container {
     padding: 32px;
     font-size: 1.2rem;
     background: #eee;

@@ -29,54 +29,14 @@ if (!$course_module) {
     die('course module not found');
 }
 
-// Get the ActiveQuiz
+// Get the JazzQuiz
 $jazzquiz = $DB->get_record('jazzquiz', ['id' => $course_module->instance]);
 if (!$jazzquiz) {
     die('jazzquiz not found');
 }
 
 // Insert the default improvised questions
-// TODO: Make this optional
+// The reason we always add them here is to ensure that all new improvised questions are included.
 $improviser->insert_default_improvised_question_definitions();
 
-// Find all the dummy questions
-$dummy_questions = $DB->get_records_sql('SELECT * FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
-if (!$dummy_questions) {
-    // Probably no dummy questions.
-    return;
-}
-
-// Get all the existing quiz questions
-$quiz_questions = $DB->get_records('jazzquiz_questions', [
-    'jazzquizid' => $jazzquiz->id
-]);
-
-if (!$quiz_questions) {
-
-    // No questions for this quiz? Let's get right to adding the dummy ones then.
-    foreach ($dummy_questions as $dummy_question) {
-        $improviser->add_improvised_question_instance($jazzquiz->id, $dummy_question->id);
-    }
-
-} else {
-
-    // We should only add the ones that don't already exist.
-    foreach ($dummy_questions as $dummy_question) {
-
-        $exists = false;
-
-        foreach ($quiz_questions as $quiz_question) {
-
-            if ($dummy_question->id == $quiz_question->questionid) {
-                $exists = true;
-                break;
-            }
-
-        }
-
-        if (!$exists) {
-            $improviser->add_improvised_question_instance($jazzquiz->id, $dummy_question->id);
-        }
-    }
-
-}
+$improviser->add_improvised_questions_to_quiz($jazzquiz->id);
