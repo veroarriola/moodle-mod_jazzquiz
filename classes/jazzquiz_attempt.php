@@ -236,13 +236,13 @@ class jazzquiz_attempt
         $options = new \question_display_options();
         $options->flags = \question_display_options::HIDDEN;
         $options->context = $this->context;
+        $options->marks = \question_display_options::HIDDEN;
 
         // if we're reviewing set up display options for review
         if ($review) {
 
             // default display options for review
             $options->readonly = true;
-            $options->marks = \question_display_options::HIDDEN;
             $options->hide_all_feedback();
 
             // special case for "edit" reviewoptions value

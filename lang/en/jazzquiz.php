@@ -261,7 +261,7 @@ $string['instructorquizinst'] = '
         </tr>
         <tr>
             <td>
-                <i class="fa fa-eye"></i> Show answer
+                <i class="fa fa-square-o"></i> / <i class="fa fa-check-square-o"></i> Answer
             </td>
             <td>
                 Gives the instructor a view of the question with the correct response selected.
@@ -269,7 +269,7 @@ $string['instructorquizinst'] = '
         </tr>
         <tr>
             <td>
-                <i class="fa fa-square-o"></i> / <i class="fa fa-check-square-o"></i> Not responded
+                <i class="fa fa-square-o"></i> / <i class="fa fa-check-square-o"></i> Responded
             </td>
             <td>
                 Hide or show how many students or groups have responded and which students or groups have yet to respond.

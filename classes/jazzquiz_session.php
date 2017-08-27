@@ -406,7 +406,7 @@ class jazzquiz_session
     }
 
     /**
-     * Builds the content for a realtime quiz box for who hasn't responded.
+     * Builds the content for a quiz box for who hasn't responded.
      *
      * @return string
      */
@@ -414,24 +414,35 @@ class jazzquiz_session
     {
         global $DB;
 
-        // first get all of the open attempts
+        // Get all of the open attempts
         $attempts = $this->getall_open_attempts(false);
 
-        $notresponded = array();
+        $not_responded = [];
+
         foreach ($attempts as $attempt) {
             /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             if ($attempt->responded == 0) {
 
                 if (!is_null($attempt->forgroupid) && $attempt->forgroupid != 0) {
-                    // we have a groupid to use instead of the user's name
-                    $notresponded[] = $this->rtq->get_groupmanager()->get_group_name($attempt->forgroupid);
+
+                    // We have a groupid to use instead of the user's name
+                    $not_responded[] = $this->rtq->get_groupmanager()->get_group_name($attempt->forgroupid);
+
                 } else {
-                    // get the User's username
-                    if ($user = $DB->get_record('user', array('id' => $attempt->userid))) {
-                        $notresponded[] = fullname($user);
+
+                    // Get the username
+                    if ($user = $DB->get_record('user', [ 'id' => $attempt->userid ])) {
+
+                        // Add to the list
+                        $not_responded[] = fullname($user);
+
                     } else {
-                        $notresponded[] = 'undefined user'; // should never happen
+
+                        // This shouldn't happen
+                        $not_responded[] = 'undefined user';
+
                     }
+
                 }
             }
         }
@@ -441,9 +452,9 @@ class jazzquiz_session
             $anonymous = false;
         }
 
-        $notrespondedbox = $this->rtq->get_renderer()->respondedbox($notresponded, count($attempts), $anonymous);
+        $not_responded_box = $this->rtq->get_renderer()->respondedbox($not_responded, count($attempts), $anonymous);
 
-        return $notrespondedbox;
+        return $not_responded_box;
 
     }
 
@@ -779,7 +790,7 @@ class jazzquiz_session
      * @param bool $includepreviews Whether or not to include the preview attempts
      * @return array
      */
-    protected function getall_open_attempts($includepreviews)
+    public function getall_open_attempts($includepreviews)
     {
         global $DB;
 
@@ -804,13 +815,12 @@ class jazzquiz_session
         global $DB;
 
         if (empty($this->session)) {
-            // if there is no session, return empty
-            return array();
+            // If there is no session, return empty
+            return [];
         }
 
-        $sqlparams = array();
-        $where = array();
-
+        $sqlparams = [];
+        $where = [];
 
         // Add conditions
         $where[] = 'sessionid = ?';
@@ -847,7 +857,7 @@ class jazzquiz_session
 
                     if (!empty($usergroups)) {
 
-                        $selectgroups = array();
+                        $selectgroups = [];
                         foreach ($usergroups as $ugroup) {
                             $selectgroups[] = $ugroup->id;
                         }
@@ -874,10 +884,9 @@ class jazzquiz_session
 
         $dbattempts = $DB->get_records_sql($sql, $sqlparams);
 
-        $attempts = array();
+        $attempts = [];
         foreach ($dbattempts as $dbattempt) {
-            $attempts[$dbattempt->id] = new jazzquiz_attempt($this->rtq->get_questionmanager(), $dbattempt,
-                $this->rtq->getContext());
+            $attempts[$dbattempt->id] = new jazzquiz_attempt($this->rtq->get_questionmanager(), $dbattempt, $this->rtq->getContext());
         }
 
         return $attempts;

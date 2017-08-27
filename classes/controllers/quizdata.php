@@ -59,23 +59,23 @@ class quizdata
     {
         global $DB, $PAGE;
 
-        // no page url as this is just a callback.
+        // No page url as this is just a callback.
         $this->pageurl = null;
         $this->jsonlib = new \mod_jazzquiz\utils\jsonlib();
 
-
-        // first check if this is a jserror, if so, log it and end execution so we're not wasting time.
+        // Check if this is a jserror, if so, log it and end execution so we're not wasting time.
         $jserror = optional_param('jserror', '', PARAM_ALPHANUMEXT);
         if (!empty($jserror)) {
-            // log the js error on the apache error logs
+
+            // Log the js error on the apache error logs
             error_log($jserror);
 
-            // set a status and send it saying that we logged the error.
+            // Set a status and send it saying that we logged the error.
             $this->jsonlib->set('status', 'loggedjserror');
             $this->jsonlib->send_response();
         }
 
-        // use try/catch in order to catch errors and not display them on a javascript callback.
+        // Handle exception to avoid displaying errors on a javascript callback.
         try {
             $rtqid = required_param('rtqid', PARAM_INT);
             $sessionid = required_param('sessionid', PARAM_INT);
@@ -90,15 +90,16 @@ class quizdata
             $session = $DB->get_record('jazzquiz_sessions', array('id' => $sessionid), '*', MUST_EXIST);
 
             require_login($course->id, false, $cm, false, true);
+
         } catch (\moodle_exception $e) {
             if (debugging()) { // if debugging throw error as normal.
                 throw new $e;
             } else {
                 $this->jsonlib->send_error('invalid request');
             }
-            exit(); // stop execution.
+            exit(); // Stop execution.
         }
-        // check to make sure asked for session is open.
+        // Check to make sure asked for session is open.
         if ((int)$session->sessionopen !== 1) {
             $this->jsonlib->send_error('invalidsession');
         }
@@ -111,15 +112,15 @@ class quizdata
 
         $this->session = new \mod_jazzquiz\jazzquiz_session($this->RTQ, $this->pageurl, $this->pagevars, $session);
 
-        // get and validate the attempt.
+        // Get and validate the attempt.
         $attempt = $this->session->get_user_attempt($attemptid);
 
         if ($attempt->getStatus() != 'inprogress') {
             $this->jsonlib->send_error('invalidattempt');
         }
-        // if the attempt validates, make it the open attempt on the session.
-        $this->session->set_open_attempt($attempt);
 
+        // If the attempt validates, make it the open attempt on the session.
+        $this->session->set_open_attempt($attempt);
 
     }
 
@@ -129,6 +130,13 @@ class quizdata
         $qnum = $this->session->get_session()->currentqnum;
         $qtype = $question_manager->get_questiontype_byqnum($qnum);
         $responses = $this->session->get_question_results_list($use_live_filter, $qtype);
+
+        // Check if this has been voted on before
+        $slot = $this->session->get_session()->currentqnum;
+        $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id, $slot);
+        $has_votes = count($vote->get_results()) > 0;
+        $this->jsonlib->set('has_votes', $has_votes);
+
         $this->jsonlib->set('qtype', $qtype);
         $this->jsonlib->set('slot', $qnum);
         $this->jsonlib->set('responses', $responses);

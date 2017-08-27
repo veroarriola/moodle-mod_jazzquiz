@@ -121,7 +121,7 @@ class questionmanager {
         $question->jazzquizid = $this->rtq->getRTQ()->id;
         $question->questionid = $questionid;
         $question->notime = false;
-        $question->questiontime = 180;
+        $question->questiontime = $this->rtq->getRTQ()->defaultquestiontime;
         $question->tries = 1;
         $question->points = number_format('1.00', 2);
         $question->showhistoryduringquiz = false;

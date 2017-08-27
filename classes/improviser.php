@@ -22,7 +22,7 @@ class improviser
         $question->jazzquizid = $jazzquizid;
         $question->questionid = $questionid;
         $question->notime = 0;
-        $question->questiontime = 180;
+        $question->questiontime = $jazzquiz->defaultquestiontime;
         $question->tries = 1;
         $question->points = 1;
         $question->showhistoryduringquiz = 0;

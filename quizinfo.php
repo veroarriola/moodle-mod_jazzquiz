@@ -36,24 +36,34 @@ $sessionid = required_param('sessionid', PARAM_INT);
 $jsonlib = new \mod_jazzquiz\utils\jsonlib();
 
 // First determine if we get a session.
-$session = $DB->get_record('jazzquiz_sessions', array('id' => $sessionid));
+$session = $DB->get_record('jazzquiz_sessions', [ 'id' => $sessionid ]);
 if (!$session) {
     $jsonlib->send_error('invalid session');
 }
 
 // Next we need to get the JazzQuiz object and course module object to make sure a student can log in for the session asked for
-$jazzquiz = $DB->get_record('jazzquiz', array('id' => $session->jazzquizid));
+$jazzquiz = $DB->get_record('jazzquiz', [
+    'id' => $session->jazzquizid
+]);
+
 if (!$jazzquiz) {
     $jsonlib->send_error('invalid request');
 }
 
 // Catch errors/redirects and just display invalid request.
 try {
-    $course = $DB->get_record('course', array('id' => $jazzquiz->course), '*', MUST_EXIST);
+
+    $course = $DB->get_record('course', [
+        'id' => $jazzquiz->course
+    ], '*', MUST_EXIST);
+
     $cm = get_coursemodule_from_instance('jazzquiz', $jazzquiz->id, $course->id, false, MUST_EXIST);
+
     require_login($course->id, false, $cm, false, true);
+
 } catch (Exception $e) {
     $jsonlib->send_error('invalid request');
+    exit;
 }
 
 // Check if the session is open
@@ -65,17 +75,27 @@ if ($session->sessionopen == 0) {
 switch ($session->status) {
 
     // Just a generic response with the state
-    case 'reviewing':
     case 'notrunning':
-    case 'endquestion':
+        $RTQ = new \mod_jazzquiz\jazzquiz($cm, $course, $jazzquiz, null, []);
+        if ($RTQ->is_instructor()) {
+            $session_obj = new \mod_jazzquiz\jazzquiz_session($RTQ, null, [], $session);
+            $attempts = $session_obj->getall_open_attempts(false);
+            $jsonlib->set('students', count($attempts));
+        }
     case 'preparing':
+    case 'endquestion':
+    case 'reviewing':
         $jsonlib->set('status', $session->status);
         $jsonlib->send_response();
         break;
 
     // TODO: Not send options here. Quizdata should probably take care of that.
     case 'voting':
-        $vote_options = $DB->get_records('jazzquiz_votes', ['sessionid' => $sessionid]);
+
+        $vote_options = $DB->get_records('jazzquiz_votes', [
+            'sessionid' => $sessionid
+        ]);
+
         $options = [];
         foreach ($vote_options as $vote_option) {
             $options[] = [
