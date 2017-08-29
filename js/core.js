@@ -512,7 +512,7 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
 
             if (tries > 0 && total_tries > 1) {
 
-                this.quiz.question.tries = (total_tries - tries) + 1;
+                this.quiz.question.try_count = (total_tries - tries) + 1;
 
                 // Setting to true so we don't overwrite later as the try number being 1
                 set_try_count = true;
