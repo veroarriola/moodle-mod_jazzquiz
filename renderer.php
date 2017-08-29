@@ -707,7 +707,7 @@ EOD;
                         }
 
                         // Next check how many tries left
-                        $quiz->resume->tries = $attempt->check_tries_left($session->get_session()->currentqnum, $nextQuestion->getTries());
+                        $quiz->resume->tries_left = $attempt->check_tries_left($session->get_session()->currentqnum, $nextQuestion->getTries());
                     }
                     break;
 

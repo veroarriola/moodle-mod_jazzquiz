@@ -52,7 +52,7 @@ var jazzquiz = {
             current_question_slot: 0,
             question_time: 0,
             delay: 0,
-            tries: 0
+            tries_left: 1
         },
 
         question: {
@@ -383,7 +383,7 @@ jazzquiz.resume_quiz = function () {
                 }
             }
 
-            this.goto_question(this.quiz.resume.current_question_slot, this.quiz.resume.question_time, this.quiz.resume.tries);
+            this.goto_question(this.quiz.resume.current_question_slot, this.quiz.resume.question_time, this.quiz.resume.tries_left);
             this.quiz.question.is_running = true;
             this.loading(null, 'hide');
 
@@ -506,13 +506,13 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
     if (!this.is_instructor) {
 
         var question = this.quiz.questions[slot];
-        var total_tries = question.tries;
+        var total_tries = parseInt(question.tries); // This might be string
 
         if (tries !== undefined) {
 
             if (tries > 0 && total_tries > 1) {
 
-                this.quiz.question.try_count = (total_tries - tries) + 1;
+                this.quiz.question.tries = (total_tries - tries) + 1;
 
                 // Setting to true so we don't overwrite later as the try number being 1
                 set_try_count = true;
