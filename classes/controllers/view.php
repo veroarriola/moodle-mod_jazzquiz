@@ -57,7 +57,7 @@ class view {
     public function setup_page($baseurl) {
         global $PAGE, $CFG, $DB;
 
-        $this->pagevars = array();
+        $this->pagevars = [];
 
         $this->pageurl = new \moodle_url($baseurl);
         $this->pageurl->remove_all_params();
@@ -67,16 +67,26 @@ class view {
 
         // Get necessary records from the DB
         if ($id) {
+
             $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
-            $this->update_improvised_questions_for_quiz($cm->instance);
-            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('jazzquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+
+            $this->update_improvised_questions_for_quiz($cm->instance, $cm->id);
+
+            $course = $DB->get_record('course', [ 'id' => $cm->course ], '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', [ 'id' => $cm->instance ], '*', MUST_EXIST);
+
         } else {
-            $this->update_improvised_questions_for_quiz($quizid);
-            $quiz = $DB->get_record('jazzquiz', array('id' => $quizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
+
+            $quiz = $DB->get_record('jazzquiz', [ 'id' => $quizid ], '*', MUST_EXIST);
+            $course = $DB->get_record('course', [ 'id' => $quiz->course ], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
+
+            $this->update_improvised_questions_for_quiz($quizid, $cm->id);
+
+            // TODO: Avoid fetching again?
+            $quiz = $DB->get_record('jazzquiz', [ 'id' => $quizid ], '*', MUST_EXIST);
         }
+
 
         // Get the rest of the parameters and set them in the class
         $this->get_parameters();
@@ -110,8 +120,14 @@ class view {
 
     }
 
-    private function update_improvised_questions_for_quiz($jazzquiz_id)
+    private function update_improvised_questions_for_quiz($jazzquiz_id, $course_module_id)
     {
+
+        // Add improvised questions if client is an instructor
+        if (!has_capability('mod/jazzquiz:control', \context_module::instance($course_module_id))) {
+            return;
+        }
+
         // Remove and re-add all the improvised questions to make sure they're all added and last.
         $improviser = new \mod_jazzquiz\improviser();
         $improviser->remove_improvised_questions_from_quiz($jazzquiz_id);

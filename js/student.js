@@ -32,7 +32,7 @@ jazzquiz.change_quiz_state = function (state, data) {
 
         case 'preparing':
             this.hide_instructions();
-            jQuery('#jazzquiz_info_container').removeClass('hidden').html(M.util.get_string('waitforinstructor', 'jazzquiz'));
+            jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('waitforinstructor'));
             break;
 
         case 'running':
@@ -42,7 +42,7 @@ jazzquiz.change_quiz_state = function (state, data) {
             }
 
             // Make sure the loading box hides (this is a catch for when the quiz is resuming)
-            this.loading(null, 'hide');
+            this.hide_loading();
 
             // Set this to true so that we don't keep calling this over and over
             this.quiz.question.is_running = true;
@@ -53,48 +53,17 @@ jazzquiz.change_quiz_state = function (state, data) {
             this.waitfor_question(data.currentquestion, data.questiontime, data.delay);
             break;
 
-        case 'endquestion':
-
-            if (this.quiz.question.is_ended) {
-                break;
-            }
-
-            if (this.quiz.question.is_vote_running !== undefined && this.quiz.question.is_vote_running) {
-                break;
-            }
-
-            this.quiz.question.is_ended = true;
-
-            //if (this.quiz.question.is_vote_running === undefined || !this.quiz.question.is_vote_running) {
-
-            // This line will autosubmit answers if timer runs out.
-            // Should that happen or not? It will potentially add a lot of blank answers.
-            //this.handle_question(this.quiz.current_question_slot);
-
-            // Hide question box
-            jQuery('#q' + this.quiz.current_question_slot + '_container').addClass('hidden');
-
-            // Clear counter
-            if (this.qcounter) {
-                clearInterval(this.qcounter);
-                this.qcounter = false;
-                this.counter = false;
-                jQuery('#q' + this.quiz.current_question_slot + '_questiontimetext').html('');
-                jQuery('#q' + this.quiz.current_question_slot + '_questiontime').html('');
-            }
-
-            break;
-
         case 'reviewing':
             this.quiz.question.is_vote_running = false;
             this.quiz.question.is_running = false;
             this.hide_instructions();
-            jQuery('#jazzquiz_info_container').removeClass('hidden').html(M.util.get_string('waitforinstructor', 'jazzquiz'));
+            this.handle_question_ending();
+            jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('waitforinstructor'));
             break;
 
         case 'sessionclosed':
-            this.hide_all_questionboxes();
-            jQuery('#jazzquiz_info_container').removeClass('hidden').html(M.util.get_string('sessionclosed', 'jazzquiz'));
+            this.hide_all_questions();
+            jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('sessionclosed'));
             break;
 
         case 'voting':
@@ -132,14 +101,42 @@ jazzquiz.change_quiz_state = function (state, data) {
 
 };
 
+jazzquiz.handle_question_ending = function() {
+
+    if (this.quiz.question.is_ended) {
+        return;
+    }
+
+    if (this.quiz.question.is_vote_running !== undefined && this.quiz.question.is_vote_running) {
+        return;
+    }
+
+    this.quiz.question.is_ended = true;
+
+    // This line will autosubmit answers if timer runs out.
+    // Should that happen or not? It will potentially add a lot of blank answers.
+    //this.handle_question(this.quiz.current_question_slot, true);
+
+    this.hide_question();
+
+    // Clear counter
+    if (this.qcounter) {
+        clearInterval(this.qcounter);
+        this.qcounter = false;
+        this.counter = false;
+        jQuery('#q' + this.quiz.current_question_slot + '_questiontimetext').html('');
+        jQuery('#q' + this.quiz.current_question_slot + '_questiontime').html('');
+    }
+
+};
+
 /**
  * handles the question for the student
  *
  *
  * @param question_slot the question slot to handle
- * @param hide is used to determine if we should hide the question container.  is true by default
  */
-jazzquiz.handle_question = function (question_slot, hide) {
+jazzquiz.handle_question = function (question_slot) {
 
     if (this.quiz.question.is_saving) {
         // Don't save twice
@@ -148,13 +145,7 @@ jazzquiz.handle_question = function (question_slot, hide) {
 
     this.quiz.question.is_saving = true;
 
-    jQuery('#loadingtext').html(M.util.get_string('gatheringresults', 'jazzquiz'));
-
-    // If there are multiple tries for this question then don't hide the question container
-    hide = typeof hide !== 'undefined' ? hide : true;
-    if (hide) {
-        jQuery('#q' + question_slot + '_container').addClass('hidden');
-    }
+    jQuery('#loadingtext').html(this.text('gatheringresults'));
 
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
@@ -171,8 +162,7 @@ jazzquiz.handle_question = function (question_slot, hide) {
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
         // Hide loading box
-        var loadingbox = document.getElementById('loadingbox');
-        loadingbox.classList.add('hidden');
+        jQuery('#loadingbox').addClass('hidden');
 
         // Was there an error with the request?
         if (status !== HTTP_STATUS.OK) {
@@ -188,9 +178,8 @@ jazzquiz.handle_question = function (question_slot, hide) {
 
         // Show feedback to the students
         var feedback = response.feedback;
-
         var feedback_intro = document.createElement('div');
-        feedback_intro.innerHTML = M.util.get_string('waitforinstructor', 'jazzquiz');
+        feedback_intro.innerHTML = jazzquiz.text('waitforinstructor');
         jQuery('#jazzquiz_info_container').removeClass('hidden').html(feedback_intro);
 
         if (feedback.length > 0) {
@@ -201,6 +190,8 @@ jazzquiz.handle_question = function (question_slot, hide) {
 
         jazzquiz.quiz.question.is_submitted = true;
         jazzquiz.quiz.question.is_saving = false;
+
+        jazzquiz.handle_question_ending();
 
     });
 
@@ -226,8 +217,8 @@ jazzquiz.save_vote = function () {
             return;
         }
 
-        jazzquiz.hide_all_questionboxes();
-        var wait_for_instructor = M.util.get_string('waitforinstructor', 'jazzquiz');
+        jazzquiz.hide_all_questions();
+        var wait_for_instructor = jazzquiz.text('waitforinstructor');
 
         // Output info depending on the status
         switch (response.status) {

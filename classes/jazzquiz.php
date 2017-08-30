@@ -28,19 +28,20 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz {
+class jazzquiz
+{
 
     /**
      * @var array $review fields Static review fields to add as options
      */
     public static $reviewfields = array(
-        'attempt'          => array('theattempt', 'jazzquiz'),
-        'correctness'      => array('whethercorrect', 'question'),
-        'marks'            => array('marks', 'jazzquiz'),
+        'attempt' => array('theattempt', 'jazzquiz'),
+        'correctness' => array('whethercorrect', 'question'),
+        'marks' => array('marks', 'jazzquiz'),
         'specificfeedback' => array('specificfeedback', 'question'),
-        'generalfeedback'  => array('generalfeedback', 'question'),
-        'rightanswer'      => array('rightanswer', 'question'),
-        'manualcomment'    => array('manualcomment', 'jazzquiz')
+        'generalfeedback' => array('generalfeedback', 'question'),
+        'rightanswer' => array('rightanswer', 'question'),
+        'manualcomment' => array('manualcomment', 'jazzquiz')
     );
 
     /** @var \stdClass $cm */
@@ -78,18 +79,19 @@ class jazzquiz {
      * and returns a stdClass of review options for the specified whenname
      *
      * @param \stdClass $formjazzquiz
-     * @param string    $whenname
+     * @param string $whenname
      *
      * @return \stdClass
      */
-    public static function get_review_options_from_form($formjazzquiz, $whenname) {
+    public static function get_review_options_from_form($formjazzquiz, $whenname)
+    {
 
         $formoptionsgrp = $whenname . 'optionsgrp';
         $formreviewoptions = $formjazzquiz->$formoptionsgrp;
 
         $reviewoptions = new \stdClass();
         foreach (\mod_jazzquiz\jazzquiz::$reviewfields as $field => $notused) {
-            $reviewoptions->$field = $formreviewoptions[ $field ];
+            $reviewoptions->$field = $formreviewoptions[$field];
         }
 
         return $reviewoptions;
@@ -103,11 +105,12 @@ class jazzquiz {
      * @param object $course The course object the activity is contained in
      * @param object $quiz The specific real time quiz record for this activity
      * @param \moodle_url $pageurl The page url
-     * @param array  $pagevars The variables and options for the page
+     * @param array $pagevars The variables and options for the page
      * @param string $renderer_subtype Renderer sub-type to load if requested
      *
      */
-    public function __construct($cm, $course, $quiz, $pageurl, $pagevars = array(), $renderer_subtype = null) {
+    public function __construct($cm, $course, $quiz, $pageurl, $pagevars = array(), $renderer_subtype = null)
+    {
         global $CFG, $PAGE;
 
         $this->cm = $cm;
@@ -133,7 +136,8 @@ class jazzquiz {
      *
      * @return object
      */
-    public function getCM() {
+    public function getCM()
+    {
         return $this->cm;
     }
 
@@ -142,7 +146,8 @@ class jazzquiz {
      *
      * @return object
      */
-    public function getCourse() {
+    public function getCourse()
+    {
         return $this->course;
     }
 
@@ -151,7 +156,8 @@ class jazzquiz {
      *
      * @return object
      */
-    public function getRTQ() {
+    public function getRTQ()
+    {
         return $this->jazzquiz;
     }
 
@@ -160,7 +166,8 @@ class jazzquiz {
      *
      * @return bool
      */
-    public function saveRTQ() {
+    public function saveRTQ()
+    {
         global $DB;
 
         return $DB->update_record('jazzquiz', $this->jazzquiz);
@@ -171,7 +178,8 @@ class jazzquiz {
      *
      * @return \context_module
      */
-    public function getContext() {
+    public function getContext()
+    {
         return $this->context;
     }
 
@@ -180,7 +188,8 @@ class jazzquiz {
      *
      * @param \mod_jazzquiz\questionmanager $questionmanager
      */
-    public function set_questionmanager(\mod_jazzquiz\questionmanager $questionmanager) {
+    public function set_questionmanager(\mod_jazzquiz\questionmanager $questionmanager)
+    {
         $this->questionmanager = $questionmanager;
     }
 
@@ -189,7 +198,8 @@ class jazzquiz {
      *
      * @return \mod_jazzquiz\questionmanager
      */
-    public function get_questionmanager() {
+    public function get_questionmanager()
+    {
         return $this->questionmanager;
     }
 
@@ -198,7 +208,8 @@ class jazzquiz {
      *
      * @param \mod_jazzquiz_renderer $renderer
      */
-    public function set_renderer(\mod_jazzquiz_renderer $renderer) {
+    public function set_renderer(\mod_jazzquiz_renderer $renderer)
+    {
         $this->renderer = $renderer;
     }
 
@@ -207,7 +218,8 @@ class jazzquiz {
      *
      * @return \mod_jazzquiz_renderer
      */
-    public function get_renderer() {
+    public function get_renderer()
+    {
         return $this->renderer;
     }
 
@@ -216,7 +228,8 @@ class jazzquiz {
      *
      * @return \mod_jazzquiz\utils\grade
      */
-    public function get_grader() {
+    public function get_grader()
+    {
         return $this->grader;
     }
 
@@ -225,7 +238,8 @@ class jazzquiz {
      *
      * @return \mod_jazzquiz\utils\groupmanager
      */
-    public function get_groupmanager() {
+    public function get_groupmanager()
+    {
         return $this->groupmanager;
     }
 
@@ -234,7 +248,8 @@ class jazzquiz {
      *
      * @param string $capability
      */
-    public function require_capability($capability) {
+    public function require_capability($capability)
+    {
         require_capability($capability, $this->context);
 
         // no return as require_capability will throw exception on error, or just continue
@@ -244,11 +259,12 @@ class jazzquiz {
      * Wrapper for the has_capability function to provide the rtq context
      *
      * @param string $capability
-     * @param int    $userid
+     * @param int $userid
      *
      * @return bool Whether or not the current user has the capability
      */
-    public function has_capability($capability, $userid = 0) {
+    public function has_capability($capability, $userid = 0)
+    {
         if ($userid !== 0) {
             // pass in userid if there is one
             return has_capability($capability, $this->context, $userid);
@@ -263,15 +279,12 @@ class jazzquiz {
      *
      * @return bool
      */
-    public function is_instructor() {
-
+    public function is_instructor()
+    {
         if (is_null($this->isinstructor)) {
             $this->isinstructor = $this->has_capability('mod/jazzquiz:control');
-
-            return $this->isinstructor;
-        } else {
-            return $this->isinstructor;
         }
+        return $this->isinstructor;
     }
 
     /**
@@ -279,12 +292,9 @@ class jazzquiz {
      *
      * @return bool
      */
-    public function group_mode() {
-        if ($this->jazzquiz->workedingroups) {
-            return true;
-        } else {
-            return false;
-        }
+    public function group_mode()
+    {
+        return (bool) $this->jazzquiz->workedingroups;
     }
 
     /**
@@ -294,7 +304,8 @@ class jazzquiz {
      *
      * @return \stdClass A class of the options
      */
-    public function get_review_options($whenname) {
+    public function get_review_options($whenname)
+    {
 
         $reviewoptions = json_decode($this->jazzquiz->reviewoptions);
 
@@ -308,7 +319,8 @@ class jazzquiz {
      *
      * @return \mod_jazzquiz\jazzquiz_session
      */
-    public function get_session($sessionid) {
+    public function get_session($sessionid)
+    {
         global $DB;
 
         $session = $DB->get_record('jazzquiz_sessions', array('id' => $sessionid), '*', MUST_EXIST);
@@ -323,7 +335,8 @@ class jazzquiz {
      * @param array $conditions
      * @return array
      */
-    public function get_sessions($conditions = array()) {
+    public function get_sessions($conditions = array())
+    {
         global $DB;
 
         $qconditions = array_merge(array('jazzquizid' => $this->getRTQ()->id), $conditions);
@@ -344,15 +357,16 @@ class jazzquiz {
      *
      * @return array
      */
-    public function get_closed_sessions() {
-        return $this->get_sessions(array('sessionopen' => 0));
+    public function get_closed_sessions()
+    {
+        return $this->get_sessions([ 'sessionopen' => 0 ]);
     }
 
     /**
      * This is a method to invoke the question modifier classes
      *
      * * * while params not explicitly defined, the first two arguments are required
-     * @param string                                   $action The function that will be called on the question modifier classes,
+     * @param string $action The function that will be called on the question modifier classes,
      *                          function must be defined in basequestionmodifier
      * @param \mod_jazzquiz\jazzquiz_question|null The question that we're going to modifiy.
      *                                                     If null, we'll use all questions defined for this instance
@@ -361,7 +375,8 @@ class jazzquiz {
      *
      * @throws \moodle_exception Throws moodle exception on errors in invoking methods
      */
-    public function call_question_modifiers() {
+    public function call_question_modifiers()
+    {
 
         $params = func_get_args();
 
@@ -375,17 +390,22 @@ class jazzquiz {
         if (!empty($params[1])) {
 
             if ($params[1] instanceof \mod_jazzquiz\jazzquiz_question) {
+
                 /** @var \mod_jazzquiz\jazzquiz_question $question */
                 $question = $params[1];
-                // we have a question defined, so we'll use it's question type
-                $questiontypes = array($question->getQuestion()->qtype);
+
+                // We have a question defined, so we'll use it's question type
+                $questiontypes = [ $question->getQuestion()->qtype ];
+
             } else {
-                $questiontypes = array();
+
+                $questiontypes = [];
+
             }
 
         } else {
             // we're going through all question types defined by the instance
-            $questiontypes = array();
+            $questiontypes = [];
             $questions = $this->get_questionmanager()->get_questions();
             foreach ($questions as $question) {
                 /** @var \mod_jazzquiz\jazzquiz_question $question */

@@ -24,7 +24,7 @@ class jazzquiz_vote
     public $session_id;
     public $slot;
 
-    public function __construct($session_id, $slot)
+    public function __construct($session_id, $slot = 0)
     {
         $this->session_id = $session_id;
         $this->slot = $slot;

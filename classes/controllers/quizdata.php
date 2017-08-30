@@ -124,25 +124,6 @@ class quizdata
 
     }
 
-    private function show_question_results($use_live_filter)
-    {
-        $question_manager = $this->RTQ->get_questionmanager();
-        $slot = $this->session->get_session()->currentqnum;
-        $qtype = $question_manager->get_questiontype_byqnum($slot);
-        $responses = $this->session->get_question_results_list($use_live_filter, $qtype);
-
-        // Check if this has been voted on before
-        $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id, $slot);
-        $has_votes = count($vote->get_results()) > 0;
-        $this->jsonlib->set('has_votes', $has_votes);
-
-        $this->jsonlib->set('qtype', $qtype);
-        $this->jsonlib->set('slot', $slot);
-        $this->jsonlib->set('responses', $responses);
-        $this->jsonlib->set('status', 'success');
-        $this->jsonlib->send_response();
-    }
-
     /**
      * Start a question and send the response
      *
@@ -263,12 +244,15 @@ class quizdata
 
         // Are we going to keep or break the flow of the quiz?
         $keepflow = optional_param('keepflow', '', PARAM_TEXT);
+
         if (!empty($keepflow)) {
+
             // Only one keepflow at a time. Two improvised questions can be run after eachother.
             if ($this->session->get_session()->nextqnum == 0) {
                 $this->session->get_session()->nextqnum = $this->session->get_session()->currentqnum + 1;
                 $this->session->save_session();
             }
+
         }
 
         // Let's get the question
@@ -345,35 +329,34 @@ class quizdata
         // Decode the questions parameter into an array
         $questions = json_decode(urldecode($_POST['questions']), true);
 
-        // Get qtype
-        $qtype = '';
+        // Get question type
+        $question_type = '';
         if (isset($_POST['qtype'])) {
-            $qtype = $_POST['qtype'];
+            $question_type = $_POST['qtype'];
         }
 
         if (!$questions) {
             $this->jsonlib->send_error('no questions sent');
-        } else {
-
-            // Initialize the votes
-            $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id);
-            $slot = $this->session->get_session()->currentqnum;
-            $vote->prepare_options($this->RTQ->getRTQ()->id, $qtype, $questions, $slot);
-
-            // Change quiz status
-            $this->session->set_status('voting');
-
-            // Send response
-            $this->jsonlib->set('status', 'success');
-            $this->jsonlib->send_response();
         }
+
+        // Initialize the votes
+        $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id);
+        $slot = $this->session->get_session()->currentqnum;
+        $vote->prepare_options($this->RTQ->getRTQ()->id, $question_type, $questions, $slot);
+
+        // Change quiz status
+        $this->session->set_status('voting');
+
+        // Send response
+        $this->jsonlib->set('status', 'success');
+        $this->jsonlib->send_response();
 
     }
 
     private function save_vote()
     {
         if (!isset($_POST['answer'])) {
-            $this->jsonlib->send_error('invalidaction');
+            $this->jsonlib->send_error('no vote');
         }
 
         // TODO: Use param function instead of _POST - not doing it right now to avoid breaking something
@@ -406,28 +389,13 @@ class quizdata
         $this->jsonlib->send_response();
     }
 
-    private function get_results()
-    {
-        // The question is over. Go into review mode.
-        $this->session->set_status('reviewing');
-
-        // Show the results
-        $this->show_question_results(false);
-    }
-
-    private function get_current_results()
-    {
-        // Show the results for the ongoing question
-        $this->show_question_results(true);
-    }
-
     private function get_not_responded()
     {
         // Get list of users who have yet to respond to the question
-        $notrespondedHTML = $this->session->get_not_responded();
+        $not_responded_html = $this->session->get_not_responded();
 
         // Send response
-        $this->jsonlib->set('notresponded', $notrespondedHTML);
+        $this->jsonlib->set('notresponded', $not_responded_html);
         $this->jsonlib->set('status', 'success');
         $this->jsonlib->send_response();
     }
@@ -477,17 +445,8 @@ class quizdata
 
     private function end_question()
     {
-        // Check state
-        if ($this->session->get_session()->status === 'voting') {
-
-            // End the voting
-            $this->session->set_status('reviewing');
-
-        } else {
-
-            // End the question
-            $this->session->end_question();
-        }
+        // End the question or vote
+        $this->session->set_status('reviewing');
 
         // Send response
         $this->jsonlib->set('status', 'success');
@@ -516,6 +475,30 @@ class quizdata
         }
 
         // Send response
+        $this->jsonlib->set('status', 'success');
+        $this->jsonlib->send_response();
+    }
+
+    private function get_results()
+    {
+        // Is the question still ongoing? If so, the 'live' parameter should be passed.
+        $use_live_filter = isset($_POST['live']);
+
+        // Get the results
+        $question_manager = $this->RTQ->get_questionmanager();
+        $slot = $this->session->get_session()->currentqnum;
+        $question_type = $question_manager->get_questiontype_byqnum($slot);
+        $responses = $this->session->get_question_results_list($use_live_filter, $question_type);
+
+        // Check if this has been voted on before
+        $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id, $slot);
+        $has_votes = count($vote->get_results()) > 0;
+
+        // Send response
+        $this->jsonlib->set('has_votes', $has_votes);
+        $this->jsonlib->set('qtype', $question_type);
+        $this->jsonlib->set('slot', $slot);
+        $this->jsonlib->set('responses', $responses);
         $this->jsonlib->set('status', 'success');
         $this->jsonlib->send_response();
     }
@@ -550,10 +533,6 @@ class quizdata
 
             case 'getresults':
                 $this->get_results();
-                break;
-
-            case 'getcurrentresults':
-                $this->get_current_results();
                 break;
 
             case 'getnotresponded':
