@@ -63,7 +63,7 @@ class view {
         $this->pageurl->remove_all_params();
 
         $id = optional_param('id', false, PARAM_INT);
-        $quizid = optional_param('quizid', false, PARAM_INT);
+        $quiz_id = optional_param('quizid', false, PARAM_INT);
 
         // Get necessary records from the DB
         if ($id) {
@@ -75,18 +75,25 @@ class view {
             $course = $DB->get_record('course', [ 'id' => $cm->course ], '*', MUST_EXIST);
             $quiz = $DB->get_record('jazzquiz', [ 'id' => $cm->instance ], '*', MUST_EXIST);
 
-        } else {
+        } else if ($quiz_id) {
 
-            $quiz = $DB->get_record('jazzquiz', [ 'id' => $quizid ], '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', [ 'id' => $quiz_id ], '*', MUST_EXIST);
             $course = $DB->get_record('course', [ 'id' => $quiz->course ], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
 
-            $this->update_improvised_questions_for_quiz($quizid, $cm->id);
+            $this->update_improvised_questions_for_quiz($quiz_id, $cm->id);
 
             // TODO: Avoid fetching again?
-            $quiz = $DB->get_record('jazzquiz', [ 'id' => $quizid ], '*', MUST_EXIST);
-        }
+            $quiz = $DB->get_record('jazzquiz', [ 'id' => $quiz_id ], '*', MUST_EXIST);
 
+        } else {
+
+            // Probably a login redirect that doesn't include any ID.
+            // Let's go back to the main Moodle page, because we have no info here.
+            header('Location: /');
+            exit;
+
+        }
 
         // Get the rest of the parameters and set them in the class
         $this->get_parameters();
@@ -116,7 +123,6 @@ class view {
         $PAGE->set_title(strip_tags($course->shortname . ': ' . $module_name . ': ' . $quiz_name));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
-
 
     }
 
