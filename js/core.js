@@ -323,7 +323,7 @@ jazzquiz.render_maxima_equation = function (input, target_id, slot) {
 
     input = encodeURIComponent(input);
 
-    var id = jazzquiz.quiz.attempt_id;
+    var id = this.quiz.attempt_id;
 
     this.ajax.create_request('/mod/jazzquiz/stack.php?slot=' + slot + '&id=' + id + '&name=ans1&input=' + input, null, function (status, response) {
 

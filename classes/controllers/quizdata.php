@@ -45,7 +45,7 @@ class quizdata
     protected $pageurl;
 
     /** @var array $this ->pagevars An array of page options for the page load */
-    protected $pagevars = array();
+    protected $pagevars = [];
 
     /** @var \mod_jazzquiz\utils\jsonlib $jsonlib The jsonlib for returning json */
     protected $jsonlib;
@@ -101,7 +101,7 @@ class quizdata
         }
         // Check to make sure asked for session is open.
         if ((int)$session->sessionopen !== 1) {
-            $this->jsonlib->send_error('invalidsession');
+            $this->jsonlib->send_error('invalid session');
         }
 
         $this->pagevars['pageurl'] = $this->pageurl;
@@ -130,16 +130,15 @@ class quizdata
      */
     private function start_question($question)
     {
-
         // Get open attempt
-        $qattempt = $this->session->get_open_attempt();
+        $attempt = $this->session->get_open_attempt();
 
         // Set status
         $this->session->set_status('running');
         $this->jsonlib->set('status', 'startedquestion');
 
         // Set general question info
-        $this->jsonlib->set('lastquestion', ($qattempt->lastquestion ? 'true' : 'false'));
+        $this->jsonlib->set('lastquestion', ($attempt->lastquestion ? 'true' : 'false'));
         $this->jsonlib->set('questionid', $question->get_slot());
         $this->jsonlib->set('nextstarttime', $this->session->get_session()->nextstarttime);
 
@@ -149,11 +148,11 @@ class quizdata
 
             // This question has a time limit
             if ($question->getQuestionTime() == 0) {
-                $questiontime = $this->RTQ->getRTQ()->defaultquestiontime;
+                $question_time = $this->RTQ->getRTQ()->defaultquestiontime;
             } else {
-                $questiontime = $question->getQuestionTime();
+                $question_time = $question->getQuestionTime();
             }
-            $this->jsonlib->set('questiontime', $questiontime);
+            $this->jsonlib->set('questiontime', $question_time);
 
         } else {
 
@@ -249,8 +248,18 @@ class quizdata
 
             // Only one keep_flow at a time. Two improvised questions can be run after eachother.
             if ($this->session->get_session()->nextqnum == 0) {
-                $this->session->get_session()->nextqnum = $this->session->get_session()->currentqnum + 1;
-                $this->session->save_session();
+
+                // Get last and current slot
+                $last_slot = count($this->RTQ->getRTQ()->questionorder);
+                $current_slot = intval($this->session->get_session()->currentqnum);
+
+                // Does the next slot exist?
+                if ($last_slot >= $current_slot + 1) {
+
+                    // Okay, let's save it
+                    $this->session->get_session()->nextqnum = $current_slot + 1;
+                    $this->session->save_session();
+                }
             }
 
         }
@@ -279,33 +288,33 @@ class quizdata
     private function save_question()
     {
         // Check if we're working on the current question for the session
-        $currentquestion = $this->session->get_session()->currentquestion;
-        $jscurrentquestion = required_param('questionid', PARAM_INT);
-        if ($currentquestion != $jscurrentquestion) {
+        $current_question = $this->session->get_session()->currentquestion;
+        $js_current_question = required_param('questionid', PARAM_INT);
+        if ($current_question != $js_current_question) {
             $this->jsonlib->send_error('invalid question');
         }
 
         // Get the attempt for the question
-        $qattempt = $this->session->get_open_attempt();
+        $attempt = $this->session->get_open_attempt();
 
         // Does it belong to this user?
-        if ($qattempt->userid != $this->session->get_current_userid()) {
+        if ($attempt->userid != $this->session->get_current_userid()) {
             $this->jsonlib->send_error('invalid user');
         }
 
         // Let's try to save it
-        if ($qattempt->save_question()) {
+        if ($attempt->save_question()) {
 
             // Only give feedback if specified in session
             if ($this->session->get_session()->showfeedback) {
-                $this->jsonlib->set('feedback', $qattempt->get_question_feedback());
+                $this->jsonlib->set('feedback', $attempt->get_question_feedback());
             } else {
                 $this->jsonlib->set('feedback', '');
             }
 
             // We need to send the updated sequence check for javascript to update.
             // Get the sequence check on the question form. This allows the question to be resubmitted again.
-            list($seqname, $seqvalue) = $qattempt->get_sequence_check($this->session->get_session()->currentqnum);
+            list($seqname, $seqvalue) = $attempt->get_sequence_check($this->session->get_session()->currentqnum);
 
             // Send the response
             $this->jsonlib->set('status', 'success');
@@ -434,13 +443,13 @@ class quizdata
     private function goto_question()
     {
         // Get the question number to go to
-        $qnum = optional_param('qnum', '', PARAM_INT);
-        if (empty($qnum)) {
-            $this->jsonlib->send_error('invalid question number');
+        $slot = optional_param('qnum', '', PARAM_INT);
+        if (empty($slot)) {
+            $this->jsonlib->send_error('invalid slot');
         }
 
         // Go to the question
-        $this->start_goto_question($qnum);
+        $this->start_goto_question($slot);
     }
 
     private function end_question()
@@ -456,10 +465,10 @@ class quizdata
     private function get_right_response()
     {
         // Get the right answer
-        $rightresponsequestion = $this->session->get_question_right_response();
+        $right_answer = $this->session->get_question_right_response();
 
         // Send response
-        $this->jsonlib->set('rightanswer', $rightresponsequestion);
+        $this->jsonlib->set('rightanswer', $right_answer);
         $this->jsonlib->set('status', 'success');
         $this->jsonlib->send_response();
     }
@@ -564,7 +573,7 @@ class quizdata
                 break;
 
             default:
-                $this->jsonlib->send_error('invalidaction');
+                $this->jsonlib->send_error('invalid action');
                 break;
         }
     }
@@ -586,7 +595,7 @@ class quizdata
                 break;
 
             default:
-                $this->jsonlib->send_error('invalidaction');
+                $this->jsonlib->send_error('invalid action');
                 break;
         }
     }

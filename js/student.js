@@ -57,6 +57,7 @@ jazzquiz.change_quiz_state = function (state, data) {
             this.quiz.question.is_vote_running = false;
             this.quiz.question.is_running = false;
             this.hide_instructions();
+            this.hide_all_questions();
             this.handle_question_ending();
             jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('waitforinstructor'));
             break;
@@ -116,8 +117,6 @@ jazzquiz.handle_question_ending = function() {
     // This line will autosubmit answers if timer runs out.
     // Should that happen or not? It will potentially add a lot of blank answers.
     //this.handle_question(this.quiz.current_question_slot, true);
-
-    this.hide_question();
 
     // Clear counter
     if (this.qcounter) {

@@ -47,7 +47,6 @@ class jazzquiz_session
     /** @var array */
     protected $pagevars;
 
-
     /**
      * Construct a session class
      *
@@ -68,11 +67,10 @@ class jazzquiz_session
         if (!empty($session)) {
             $this->session = $session;
         } else {
-            // next attempt to get a "current" session for this quiz
-            // returns false if no record is found
+            // Next attempt to get a "current" session for this quiz
+            // Returns false if no record is found
             $this->session = $DB->get_record('jazzquiz_sessions', array('jazzquizid' => $this->rtq->getRTQ()->id, 'sessionopen' => 1));
         }
-
     }
 
 
@@ -129,9 +127,7 @@ class jazzquiz_session
      */
     public function set_status($status)
     {
-
         $this->session->status = $status;
-
         return $this->save_session();
     }
 
@@ -262,13 +258,12 @@ class jazzquiz_session
      */
     public function next_question()
     {
-
-        $qnum = $this->session->currentqnum + 1;
-        if (!$question = $this->goto_question($qnum)) {
-            throw new \Exception('invalid question number');
-        } else {
-            return $question;
+        $slot = $this->session->currentqnum + 1;
+        $question = $this->goto_question($slot);
+        if (!$question) {
+            throw new \Exception('invalid slot');
         }
+        return $question;
     }
 
     /**
@@ -291,32 +286,39 @@ class jazzquiz_session
      * Tells the session to go to the specified question number
      * That jazzquiz_question is then returned
      *
-     * @param int|bool $qnum The question number to go to
+     * @param int|bool $slot The question number to go to
      * @return \mod_jazzquiz\jazzquiz_question|bool
      */
-    public function goto_question($qnum = false)
+    public function goto_question($slot = false)
     {
-
-        if ($qnum === false) {
-            return false; // return false if there is no specified qnum
+        if ($slot === false) {
+            return false;
         }
 
-        $Question = $this->rtq->get_questionmanager()->get_question_with_slot($qnum, $this->openAttempt);
+        $question = $this->rtq->get_questionmanager()->get_question_with_slot($slot, $this->openAttempt);
 
-        $this->session->currentqnum = $qnum;
+        $this->session->currentqnum = $slot;
         $this->session->nextstarttime = time() + $this->rtq->getRTQ()->waitforquestiontime;
-        $this->session->currentquestion = $Question->get_slot();
-        if ($Question->getQuestionTime() == 0 && $Question->getNoTime() == 0) {
-            $questiontime = $this->rtq->getRTQ()->defaultquestiontime;
-        } else if ($Question->getNoTime() == 1) {
-            // here we're spoofing a question time of 0.  This is so the javascript recognizes that we don't want a timer
+        $this->session->currentquestion = $question->get_slot();
+
+        if ($question->getQuestionTime() == 0 && $question->getNoTime() == 0) {
+
+            $question_time = $this->rtq->getRTQ()->defaultquestiontime;
+
+        } else if ($question->getNoTime() == 1) {
+
+            // Here we're spoofing a question time of 0.
+            // This is so the javascript recognizes that we don't want a timer
             // as it reads a question time of 0 as no timer
-            $questiontime = 0;
+            $question_time = 0;
+
         } else {
-            $questiontime = $Question->getQuestionTime();
+
+            $question_time = $question->getQuestionTime();
+
         }
 
-        $this->session->currentquestiontime = $questiontime;
+        $this->session->currentquestiontime = $question_time;
 
         $this->save_session();
 
@@ -331,7 +333,7 @@ class jazzquiz_session
             $attempt->save();
         }
 
-        return $Question;
+        return $question;
     }
 
     /**
