@@ -528,7 +528,6 @@ class questionmanager {
 
                 // If we don't have the same number of questions return error
                 if (count($full_order) !== count($question_order)) {
-                    echo count($full_order) . ' !== ' . count($question_order);
                     return false;
                 }
 
