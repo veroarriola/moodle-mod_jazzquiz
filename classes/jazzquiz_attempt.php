@@ -62,7 +62,6 @@ class jazzquiz_attempt
     /** @var  array $slotsbyquestionid array of slots keyed by the questionid that they match to */
     protected $slotsbyquestionid;
 
-
     /**
      * Sort function function for usort.  Is callable outside this class
      *
@@ -91,21 +90,23 @@ class jazzquiz_attempt
         $this->questionmanager = $questionmanager;
         $this->context = $context;
 
-        // if empty create new attempt
         if (empty($dbattempt)) {
+
+            // Create new attempt
             $this->attempt = new \stdClass();
 
-            // create a new quba since we're creating a new attempt
-            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz',
-                $this->questionmanager->getRTQ()->getContext());
+            // Create a new quba since we're creating a new attempt
+            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->questionmanager->getRTQ()->getContext());
             $this->quba->set_preferred_behaviour('immediatefeedback');
 
             $attemptlayout = $this->questionmanager->add_questions_to_quba($this->quba);
-            // add the attempt layout to this instance
+
+            // Add the attempt layout to this instance
             $this->attempt->qubalayout = implode(',', $attemptlayout);
 
-        } else { // else load it up in this class instance
+        } else {
 
+            // Load it up in this class instance
             $this->attempt = $dbattempt;
             $this->quba = \question_engine::load_questions_usage_by_activity($this->attempt->questionengid);
 
@@ -131,7 +132,6 @@ class jazzquiz_attempt
      */
     public function getStatus()
     {
-
         switch ($this->attempt->status) {
             case self::NOTSTARTED:
                 return 'notstarted';
@@ -156,7 +156,6 @@ class jazzquiz_attempt
      */
     public function setStatus($status)
     {
-
         switch ($status) {
             case 'notstarted':
                 $this->attempt->status = self::NOTSTARTED;
@@ -175,7 +174,7 @@ class jazzquiz_attempt
                 break;
         }
 
-        // save the attempt
+        // Save the attempt
         return $this->save();
     }
 
@@ -440,14 +439,17 @@ class jazzquiz_attempt
     {
         global $DB;
 
-        // first save the question usage by activity object
+        // Save the question usage by activity object
         \question_engine::save_questions_usage_by_activity($this->quba);
 
-        // add the quba id as the questionengid
-        // this is here because for new usages there is no id until we save it
+        // Add the quba id as the questionengid
+        // This is here because for new usages there is no id until we save it
         $this->attempt->questionengid = $this->quba->get_id();
         $this->attempt->timemodified = time();
-        if (isset($this->attempt->id)) { // update the record
+
+        if (isset($this->attempt->id)) {
+
+            // Update existing record
             try {
                 $DB->update_record('jazzquiz_attempts', $this->attempt);
             } catch (\Exception $e) {
@@ -455,17 +457,20 @@ class jazzquiz_attempt
 
                 return false; // return false on failure
             }
+
         } else {
-            // insert new record
+
+            // Insert new record
             try {
                 $newid = $DB->insert_record('jazzquiz_attempts', $this->attempt);
                 $this->attempt->id = $newid;
             } catch (\Exception $e) {
-                return false; // return false on failure
+                return false;
             }
+
         }
 
-        return true; // return true if we get here
+        return true;
     }
 
     /**
@@ -496,13 +501,11 @@ class jazzquiz_attempt
 
         $transaction->allow_commit();
 
-        return true; // return true if we get to here
+        return true;
     }
 
     protected function process_anonymous_response($timenow)
     {
-
-
         foreach ($this->get_slots_in_request() as $slot) {
             if (!$this->quba->validate_sequence_number($slot)) {
                 continue;
@@ -513,8 +516,8 @@ class jazzquiz_attempt
             $qa->process_action($submitteddata, $timenow, $this->attempt->userid);
             $this->quba->get_observer()->notify_attempt_modified($qa);
         }
-        $this->quba->update_question_flags();
 
+        $this->quba->update_question_flags();
     }
 
     /**
@@ -680,7 +683,6 @@ class jazzquiz_attempt
      */
     public function get_response_data($slot, $use_live_filter, $qtype)
     {
-
         global $DB;
 
         $questionattempt = $this->quba->get_question_attempt($slot);
@@ -866,11 +868,11 @@ class jazzquiz_attempt
     {
 
         $table = new \html_table();
-        $table->head = array(
+        $table->head = [
             get_string('step', 'question'),
             get_string('time'),
             get_string('action', 'question'),
-        );
+        ];
 
         foreach ($qa->get_full_step_iterator() as $i => $step) {
             $stepno = $i + 1;
@@ -882,19 +884,25 @@ class jazzquiz_attempt
 
             $user = new \stdClass();
             $user->id = $step->get_user_id();
-            $row = array(
+            $row = [
                 $stepno,
                 userdate($step->get_timecreated(), get_string('strftimedatetimeshort')),
                 s($qa->summarise_action($step)),
-            );
+            ];
 
             $table->rowclasses[] = $rowclass;
             $table->data[] = $row;
         }
 
-        return \html_writer::tag('h4', get_string('responsehistory', 'question'),
-                array('class' => 'responsehistoryheader')) . \html_writer::tag('div',
-                \html_writer::table($table, true), array('class' => 'responsehistoryheader'));
+        $history_title = \html_writer::tag('h4', get_string('responsehistory', 'question'), [
+            'class' => 'responsehistoryheader'
+        ]);
+
+        $history_table = \html_writer::tag('div', \html_writer::table($table, true), [
+            'class' => 'responsehistoryheader'
+        ]);
+
+        return $history_title . $history_table;
 
     }
 
