@@ -742,7 +742,7 @@ EOD;
         echo html_writer::end_tag('script');
 
         // Add localization strings
-        $this->page->requires->strings_for_js(array(
+        $this->page->requires->strings_for_js([
             'waitforquestion',
             'gatheringresults',
             'feedbackintro',
@@ -760,9 +760,11 @@ EOD;
             'hidenotresponded',
             'shownotresponded',
             'waitforinstructor'
-        ), 'jazzquiz');
+        ], 'jazzquiz');
 
-        $this->page->requires->strings_for_js([ 'seconds' ], 'moodle');
+        $this->page->requires->strings_for_js([
+            'seconds'
+        ], 'moodle');
 
         // Allow question modifiers to add their own CSS/JS
         $this->rtq->call_question_modifiers('add_js', null);
@@ -781,7 +783,6 @@ EOD;
     {
         global $DB;
 
-
         $response = html_writer::start_div('response');
 
         // check if group mode, if so, give the group name the attempt is for
@@ -795,7 +796,7 @@ EOD;
             if ($this->rtq->group_mode()) {
                 $name = $this->rtq->get_groupmanager()->get_group_name($attempt->forgroupid);
             } else {
-                if ($user = $DB->get_record('user', array('id' => $attempt->userid))) {
+                if ($user = $DB->get_record('user', [ 'id' => $attempt->userid ])) {
                     $name = fullname($user);
                 } else {
                     $name = get_string('anonymoususer', 'mod_jazzquiz');
@@ -804,7 +805,10 @@ EOD;
             }
         }
 
-        $response .= html_writer::tag('h3', $name, array('class' => 'responsename'));
+        $response .= html_writer::tag('h3', $name, [
+            'class' => 'responsename'
+        ]);
+
         $response .= html_writer::div($attempt->responsesummary, 'responsesummary');
 
         $response .= html_writer::end_div();
@@ -866,12 +870,6 @@ EOD;
             $editurl = new moodle_url('/mod/jazzquiz/edit.php', $params);
             $editbutton = $this->output->single_button($editurl, get_string('edit', 'jazzquiz'), 'get');
             echo html_writer::tag('p', $editbutton);
-
-            // "Add improvisation questions" button
-            //$params['redirect'] = 'view';
-            //$add_improv_questions_url = new moodle_url('/mod/jazzquiz/improvisation.php', $params);
-            //$add_improv_questions_button = $this->output->single_button($add_improv_questions_url, 'Add improvisation questions', 'get');
-            //echo html_writer::tag('p', $add_improv_questions_button);
 
         }
 
@@ -1009,8 +1007,12 @@ EOD;
     {
         $qnum = $attempt->get_question_number();
 
-        $output = html_writer::start_div('jazzquizbox', array('id' => 'q' . $qnum . '_container'));
+        $output = html_writer::start_div('jazzquizbox', [
+            'id' => 'q' . $qnum . '_container'
+        ]);
+
         $output .= $attempt->render_question($slot, true, $this->rtq->get_review_options('after'));
+
         $output .= html_writer::end_div();
 
         return $output;

@@ -114,16 +114,31 @@ class edit {
     public function handle_action() {
         global $PAGE, $DB;
 
-        // check if a session is open.  If so display error.
-        if($sessions = $DB->get_records('jazzquiz_sessions', array('jazzquizid' => $this->jazzquiz->getRTQ()->id, 'sessionopen'=> '1'))){
+        // Is there a session open?
+        $sessions = $DB->get_records('jazzquiz_sessions', [
+            'jazzquizid' => $this->jazzquiz->getRTQ()->id,
+            'sessionopen'=> '1'
+        ]);
+
+        if ($sessions) {
+
+            // Can't edit during a session.
             $this->renderer->print_header();
             $this->renderer->opensession();
             $this->renderer->footer();
-            return; // return early to stop continuation.
+
+            // Alright, let's stop at that.
+            return;
         }
 
+        // We know no session is open, and we also know this is an instructor.
+        // Before we modify anything, we have to remove the improvised questions.
+        $improviser = new \mod_jazzquiz\improviser();
+        $improviser->remove_improvised_questions_from_quiz($this->jazzquiz->getRTQ()->id);
 
+        // Let's edit
         switch ($this->action) {
+
             case 'dragdrop': // this is a javascript callack case for the drag and drop of questions using ajax.
                 $jsonlib = new \mod_jazzquiz\utils\jsonlib();
 
@@ -133,16 +148,22 @@ class edit {
                     $jsonlib->send_error('invalid request');
                 }
 
-                $questionorder = explode(',', $questionorder);
+                $question_order = explode(',', $questionorder);
 
-                if ($this->jazzquiz->get_questionmanager()->set_full_order($questionorder) === true) {
-                    $jsonlib->set('success', 'true');
+                $success = $this->jazzquiz->get_questionmanager()->set_full_order($question_order);
+
+                if ($success) {
+
                     $jsonlib->send_response();
+
                 } else {
+
                     $jsonlib->send_error('unable to re-sort questions');
+
                 }
 
                 break;
+
             case 'moveup':
 
                 $questionid = required_param('questionid', PARAM_INT);
@@ -161,6 +182,7 @@ class edit {
                 $this->renderer->footer();
 
                 break;
+
             case 'movedown':
 
                 $questionid = required_param('questionid', PARAM_INT);
@@ -179,18 +201,21 @@ class edit {
                 $this->renderer->footer();
 
                 break;
+
             case 'addquestion':
 
                 $questionid = required_param('questionid', PARAM_INT);
                 $this->jazzquiz->get_questionmanager()->add_question($questionid);
 
                 break;
+
             case 'editquestion':
 
                 $questionid = required_param('rtqquestionid', PARAM_INT);
                 $this->jazzquiz->get_questionmanager()->edit_question($questionid);
 
                 break;
+
             case 'deletequestion':
 
                 $questionid = required_param('questionid', PARAM_INT);
@@ -208,11 +233,15 @@ class edit {
                 $this->renderer->footer();
 
                 break;
+
             case 'listquestions':
                 // default is to list the questions.
                 $this->renderer->print_header();
                 $this->list_questions();
                 $this->renderer->footer();
+                break;
+
+            default:
                 break;
         }
     }

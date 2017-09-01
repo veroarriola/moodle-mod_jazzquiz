@@ -239,15 +239,15 @@ class quizdata
         }
     }
 
-    private function start_goto_question($qnum)
+    private function start_goto_question($slot)
     {
 
         // Are we going to keep or break the flow of the quiz?
-        $keepflow = optional_param('keepflow', '', PARAM_TEXT);
+        $keep_flow = optional_param('keepflow', '', PARAM_TEXT);
 
-        if (!empty($keepflow)) {
+        if (!empty($keep_flow)) {
 
-            // Only one keepflow at a time. Two improvised questions can be run after eachother.
+            // Only one keep_flow at a time. Two improvised questions can be run after eachother.
             if ($this->session->get_session()->nextqnum == 0) {
                 $this->session->get_session()->nextqnum = $this->session->get_session()->currentqnum + 1;
                 $this->session->save_session();
@@ -256,9 +256,9 @@ class quizdata
         }
 
         // Let's get the question
-        $question = $this->session->goto_question($qnum);
+        $question = $this->session->goto_question($slot);
         if (!$question) {
-            $this->jsonlib->send_error('invalid question number ' . $qnum);
+            $this->jsonlib->send_error('invalid slot ' . $slot);
         }
 
         // Start the question and send the response

@@ -24,27 +24,29 @@
 
 window.addEventListener('load', function () {
 
-    jazzquiz.set('sesskey', window.rtqinitinfo.sesskey);
-    jazzquiz.set('siteroot', window.rtqinitinfo.siteroot);
-    jazzquiz.set('cmid', window.rtqinitinfo.cmid)
+    jazzquiz.quiz.ession_key = window.rtqinitinfo.sesskey;
+    jazzquiz.siteroot = window.rtqinitinfo.siteroot;
+    jazzquiz.cm_id = window.rtqinitinfo.cmid;
 
     var questionList = document.getElementsByClassName('questionlist')[0];
 
     var sorted = Sortable.create(questionList, {
+
         handle: '.dragquestion',
-        onSort: function (evt) {
+
+        onSort: function (event) {
 
             var questionList = document.getElementsByClassName('questionlist')[0];
             var questionOrder = [];
-            for (var x = 0; x < questionList.childNodes.length; x++) {
 
+            for (var x = 0; x < questionList.childNodes.length; x++) {
                 var questionID = questionList.childNodes[x].getAttribute('data-questionid');
                 questionOrder.push(questionID);
             }
 
             var params = {
-                'sesskey': jazzquiz.get('sesskey'),
-                'cmid': jazzquiz.get('cmid'),
+                'sesskey': jazzquiz.session_key,
+                'cmid': jazzquiz.cm_id,
                 'questionorder': questionOrder,
                 'action': 'dragdrop'
             };
@@ -52,9 +54,8 @@ window.addEventListener('load', function () {
             jazzquiz.ajax.create_request('/mod/jazzquiz/edit.php', params, function (status, response) {
 
                 var editStatus = document.getElementById('editstatus');
-                editStatus.innerHTMl = '';
 
-                if (status == 500) {
+                if (status === 500) {
 
                     editStatus.classList.remove('rtqhiddenstatus');
                     editStatus.classList.add('rtqerrorstatus');
@@ -62,7 +63,6 @@ window.addEventListener('load', function () {
 
                 } else if (typeof response !== 'object') {
 
-                    console.log(response);
                     editStatus.classList.remove('rtqhiddenstatus');
                     editStatus.classList.add('rtqerrorstatus');
                     editStatus.innerHTML = response;
@@ -70,6 +70,7 @@ window.addEventListener('load', function () {
                 } else {
 
                     editStatus.classList.remove('rtqhiddenstatus');
+                    editStatus.classList.remove('rtqerrorstatus');
                     editStatus.classList.add('rtqsuccessstatus');
                     editStatus.innerHTML = M.util.get_string('success', 'core');
 
@@ -77,9 +78,7 @@ window.addEventListener('load', function () {
 
                 setTimeout(function () {
                     var editStatus = document.getElementById('editstatus');
-                    editStatus.classList.remove('rtqsuccessstatus');
-                    editStatus.classList.remove('rtqerrorstatus');
-                    editStatus.classList.add('rtqhiddenstatus');
+                    editStatus.innerHTML = '&nbsp;';
                 }, 2000);
 
             });

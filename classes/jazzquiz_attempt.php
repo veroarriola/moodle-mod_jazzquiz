@@ -191,37 +191,32 @@ class jazzquiz_attempt
     /**
      * Uses the quba object to render the slotid's question
      *
-     * @param int $slotid
+     * @param int $slot
      * @param bool $review Whether or not we're reviewing the attempt
      * @param string|\stdClass $reviewoptions Can be string for overall actions like "edit" or an object of review options
      * @return string the HTML fragment for the question
      */
-    public function render_question($slotid, $review = false, $reviewoptions = '')
+    public function render_question($slot, $review = false, $review_options = '')
     {
-        $displayoptions = $this->get_display_options($review, $reviewoptions);
-
+        $displayoptions = $this->get_display_options($review, $review_options);
         $questionnum = $this->get_question_number();
         $this->add_question_number();
-
-        return $this->quba->render_question($slotid, $displayoptions, $questionnum);
+        return $this->quba->render_question($slot, $displayoptions, $questionnum);
     }
 
     /**
-     * @param int $slotnum The slot number to check
+     * @param int $slot The slot number to check
      * @param int $tottries The total tries
      *
      * @return int The number of tries left
      */
-    public function check_tries_left($slotnum, $tottries)
+    public function check_tries_left($slot, $total_tries)
     {
-
-
+        // TODO: What is the reason behind the "slot" argument?
         if (empty($this->attempt->responded_count)) {
             $this->attempt->responded_count = 0;
         }
-
-        $left = $tottries - $this->attempt->responded_count;
-
+        $left = $total_tries - $this->attempt->responded_count;
         return $left;
     }
 
@@ -237,15 +232,15 @@ class jazzquiz_attempt
         $options->context = $this->context;
         $options->marks = \question_display_options::HIDDEN;
 
-        // if we're reviewing set up display options for review
         if ($review) {
 
-            // default display options for review
+            // Default display options for review
             $options->readonly = true;
             $options->hide_all_feedback();
 
-            // special case for "edit" reviewoptions value
+            // Special case for "edit" reviewoptions value
             if ($reviewoptions === 'edit') {
+
                 $options->correctness = \question_display_options::VISIBLE;
                 $options->marks = \question_display_options::MARK_AND_MAX;
                 $options->feedback = \question_display_options::VISIBLE;
@@ -254,9 +249,10 @@ class jazzquiz_attempt
                 $options->generalfeedback = \question_display_options::VISIBLE;
                 $options->rightanswer = \question_display_options::VISIBLE;
                 $options->history = \question_display_options::VISIBLE;
+
             } else if ($reviewoptions instanceof \stdClass) {
 
-                foreach (\mod_jazzquiz\jazzquiz::$reviewfields as $field => $notused) {
+                foreach (\mod_jazzquiz\jazzquiz::$reviewfields as $field => $not_used) {
                     if ($reviewoptions->$field == 1) {
                         if ($field == 'specificfeedback') {
                             $field = 'feedback';
@@ -270,8 +266,9 @@ class jazzquiz_attempt
                     }
                 }
             }
-        } else { // otherwise default options for during quiz
+        } else {
 
+            // Default options for running quiz
             $options->rightanswer = \question_display_options::HIDDEN;
             $options->numpartscorrect = \question_display_options::HIDDEN;
             $options->manualcomment = \question_display_options::HIDDEN;
@@ -288,13 +285,12 @@ class jazzquiz_attempt
      */
     public function get_question_number()
     {
+        // TODO: Why is this returning a string? The annotation says it should return an integer...
         if (is_null($this->qnum)) {
             $this->qnum = 1;
-
             return (string)1;
-        } else {
-            return (string)$this->qnum;
         }
+        return (string)$this->qnum;
     }
 
     /**
@@ -324,59 +320,70 @@ class jazzquiz_attempt
      *
      * @return int
      */
-    public function get_question_slot(\mod_jazzquiz\jazzquiz_question $q)
+    public function get_question_slot(\mod_jazzquiz\jazzquiz_question $question)
     {
 
-        // build if not available
+        // Build if not available
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
-            // build n array of slots keyed by the questionid they match to
-            $slotsbyquestionid = array();
+
+            // Build an array of slots keyed by the question_id they match to
+            $slots_by_question_id = [];
 
             foreach ($this->getSlots() as $slot) {
-                $slotsbyquestionid[$this->quba->get_question($slot)->id] = $slot;
+                $slots_by_question_id[$this->quba->get_question($slot)->id] = $slot;
             }
-            $this->slotsbyquestionid = $slotsbyquestionid;
+
+            $this->slotsbyquestionid = $slots_by_question_id;
         }
 
-        return (!empty($this->slotsbyquestionid[$q->getQuestion()->id]) ? $this->slotsbyquestionid[$q->getQuestion()->id] : false);
+        $question_id = $question->getQuestion()->id;
+
+        if (!empty($this->slotsbyquestionid[$question_id])) {
+            return $this->slotsbyquestionid[$question_id];
+        }
+
+        return false;
     }
 
     /**
-     * Gets the jazzquiz question class object for the slotid
+     * Gets the jazzquiz question class object for the slot id
      *
-     * @param int $askedslot
+     * @param int $asked_slot
      *
-     * @return \mod_jazzquiz\jazzquiz_question
+     * @return \mod_jazzquiz\jazzquiz_question | false
      */
-    public function get_question_by_slot($askedslot)
+    public function get_question_by_slot($asked_slot)
     {
 
-        // build if not available
+        // Build if not available
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
-            // build n array of slots keyed by the questionid they match to
-            $slotsbyquestionid = array();
+
+            // Build an array of slots keyed by the question id they match to
+            $slots_by_question_id = [];
 
             foreach ($this->getSlots() as $slot) {
-                $slotsbyquestionid[$this->quba->get_question($slot)->id] = $slot;
+                $question_id = $this->quba->get_question($slot)->id;
+                $slots_by_question_id[$question_id] = $slot;
             }
-            $this->slotsbyquestionid = $slotsbyquestionid;
+
+            $this->slotsbyquestionid = $slots_by_question_id;
         }
 
-        $qid = array_search($askedslot, $this->slotsbyquestionid);
+        $question_id = array_search($asked_slot, $this->slotsbyquestionid);
 
-        if (empty($qid)) {
+        if (empty($question_id)) {
             return false;
         }
 
         foreach ($this->get_questions() as $question) {
 
             /** @var \mod_jazzquiz\jazzquiz_question $question */
-            if ($question->getQuestion()->id == $qid) {
+            if ($question->getQuestion()->id == $question_id) {
                 return $question;
             }
         }
 
-        return false; // if still no match return false
+        return false;
     }
 
     /**
@@ -386,7 +393,6 @@ class jazzquiz_attempt
      */
     public function get_questions()
     {
-
         return $this->questionmanager->get_questions();
     }
 
@@ -399,13 +405,11 @@ class jazzquiz_attempt
      */
     public function get_sequence_check($slot)
     {
-
-        $qa = $this->quba->get_question_attempt($slot);
-
-        return array(
-            $qa->get_control_field_name('sequencecheck'),
-            $qa->get_sequence_check_count()
-        );
+        $attempt = $this->quba->get_question_attempt($slot);
+        return [
+            $attempt->get_control_field_name('sequencecheck'),
+            $attempt->get_sequence_check_count()
+        ];
     }
 
     /**
@@ -417,10 +421,10 @@ class jazzquiz_attempt
     {
         $result = '';
 
-        // get the slots ids from the quba layout
+        // Get the slots ids from the quba layout
         $slots = explode(',', $this->attempt->qubalayout);
 
-        // next load the slot headhtml and initialize question engine js
+        // Next load the slot headhtml and initialize question engine js
         foreach ($slots as $slot) {
             $result .= $this->quba->render_question_head_html($slot);
         }

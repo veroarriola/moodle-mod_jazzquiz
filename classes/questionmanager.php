@@ -248,19 +248,16 @@ class questionmanager {
      *
      * Please note that full order must be an array with no specialized keys as only array values are taken
      *
-     * @param array $fullorder
+     * @param array $full_order
      * @return bool
      */
-    public function set_full_order($fullorder = array())
+    public function set_full_order($full_order = [])
     {
-
-        if ( !is_array($fullorder) ) {
+        if (!is_array($full_order)) {
             return false;
         }
-
-        $fullorder = array_values($fullorder);
-
-        return $this->update_questionorder('replaceorder', null, $fullorder);
+        $full_order = array_values($full_order);
+        return $this->update_questionorder('replaceorder', null, $full_order);
     }
 
     /**
@@ -421,151 +418,142 @@ class questionmanager {
      * Updates the question order for the question manager
      *
      * @param string $action
-     * @param int $questionid the realtime quiz question id, NOT the question engine question id
-     * @param array $fullorder An array of question objects to sort as is.
+     * @param int $question_id the realtime quiz question id, NOT the question engine question id
+     * @param array $full_order An array of question objects to sort as is.
      *                         This is mainly used for the dragdrop callback on the edit page.  If the full order is not specified
      *                         with all questions currently on the quiz, the case will return false
      *
      * @return bool true/false if it was successful
      */
-    protected function update_questionorder($action, $questionid, $fullorder = array())
+    protected function update_questionorder($action, $question_id, $full_order = [])
     {
-
         switch ($action) {
+
             case 'addquestion':
 
-                $questionorder = $this->get_question_order();
-                if ( empty($questionorder) ) {
-                    $questionorder = $questionid;
+                $question_order = $this->get_question_order();
+
+                if (empty($question_order)) {
+                    $question_order = $question_id;
                 } else {
-                    $questionorder .= ',' . $questionid;
+                    $question_order .= ',' . $question_id;
                 }
 
-                $this->set_question_order($questionorder);
-
-                // refresh question list
+                $this->set_question_order($question_order);
                 $this->refresh_questions();
-
                 return true;
-                break;
+
             case 'deletequestion':
 
-                $questionorder = $this->get_question_order();
-                $questionorder = explode(',', $questionorder);
+                $question_order = $this->get_question_order();
+                $question_order = explode(',', $question_order);
 
-                foreach ($questionorder as $index => $qorder) {
-
-                    if ( $qorder == $questionid ) {
-                        unset($questionorder[$index]);
+                foreach ($question_order as $index => $current_question_order) {
+                    if ($current_question_order == $question_id) {
+                        unset($question_order[$index]);
                         break;
                     }
                 }
-                $newquestionorder = implode(',', $questionorder);
+                $new_question_order = implode(',', $question_order);
 
-                // set the question order and refresh the questions
-                $this->set_question_order($newquestionorder);
+                // Set the question order and refresh the questions
+                $this->set_question_order($new_question_order);
                 $this->refresh_questions();
-
                 return true;
 
-                break;
             case 'movequestionup':
 
-                $questionorder = $this->get_question_order();
-                $questionorder = explode(',', $questionorder);
+                $question_order = $this->get_question_order();
+                $question_order = explode(',', $question_order);
 
-                foreach ($questionorder as $index => $qorder) {
+                foreach ($question_order as $index => $current_question_order) {
 
-                    if ( $qorder == $questionid ) {
+                    if ($current_question_order == $question_id) {
 
-                        if ( $index == 0 ) {
+                        if ($index == 0) {
                             return false; // can't move first question up
                         }
 
                         // if ids match replace the previous index with the current one
                         // and make the previous index qid the current index
-                        $prevqorder = $questionorder[$index - 1];
-                        $questionorder[$index - 1] = $questionid;
-                        $questionorder[$index] = $prevqorder;
+                        $previous_question_order = $question_order[$index - 1];
+                        $question_order[$index - 1] = $question_id;
+                        $question_order[$index] = $previous_question_order;
                         break;
                     }
                 }
 
-                $newquestionorder = implode(',', $questionorder);
+                $new_question_order = implode(',', $question_order);
 
-                // set the question order and refresh the questions
-                $this->set_question_order($newquestionorder);
+                // Set the question order and refresh the questions
+                $this->set_question_order($new_question_order);
                 $this->refresh_questions();
-
                 return true;
 
-                break;
             case 'movequestiondown':
 
-                $questionorder = $this->get_question_order();
-                $questionorder = explode(',', $questionorder);
+                $question_order = $this->get_question_order();
+                $question_order = explode(',', $question_order);
+                $question_order_count = count($question_order);
 
-                $questionordercount = count($questionorder);
+                foreach ($question_order as $index => $current_question_order) {
 
-                foreach ($questionorder as $index => $qorder) {
+                    if ($current_question_order == $question_id) {
 
-                    if ( $qorder == $questionid ) {
-
-                        if ( $index == $questionordercount - 1 ) {
-                            return false; // can't move last question down
+                        if ($index == $question_order_count - 1) {
+                            // Can't move last question down
+                            return false;
                         }
 
-                        // if ids match replace the next index with the current one
+                        // If ids match replace the next index with the current one
                         // and make the next index qid the current index
-                        $nextqorder = $questionorder[$index + 1];
-                        $questionorder[$index + 1] = $questionid;
-                        $questionorder[$index] = $nextqorder;
+                        $next_question_order = $question_order[$index + 1];
+                        $question_order[$index + 1] = $question_id;
+                        $question_order[$index] = $next_question_order;
                         break;
                     }
                 }
 
-                $newquestionorder = implode(',', $questionorder);
+                $new_question_order = implode(',', $question_order);
 
                 // set the question order and refresh the questions
-                $this->set_question_order($newquestionorder);
+                $this->set_question_order($new_question_order);
                 $this->refresh_questions();
-
                 return true;
 
-                break;
             case 'replaceorder':
 
-                $questionorder = $this->get_question_order();
-                $questionorder = explode(',', $questionorder);
+                $question_order = $this->get_question_order();
+                $question_order = explode(',', $question_order);
 
-                // if we don't have the same number of questions return error
-                if ( count($fullorder) !== count($questionorder) ) {
+                // If we don't have the same number of questions return error
+                if (count($full_order) !== count($question_order)) {
+                    echo count($full_order) . ' !== ' . count($question_order);
                     return false;
                 }
 
                 // next validate that the questions sent all match to a question in the current order
-                $allmatch = true;
-                foreach ($questionorder as $qorder) {
-                    if ( !in_array($qorder, $fullorder) ) {
-                        $allmatch = false;
+                $all_match = true;
+                foreach ($question_order as $current_question_order) {
+                    if (!in_array($current_question_order, $full_order)) {
+                        $all_match = false;
                     }
                 }
 
-                if ( $allmatch ) {
+                if ($all_match) {
 
-                    $newquestionorder = implode(',', $fullorder);
-                    $this->set_question_order($newquestionorder);
+                    $new_question_order = implode(',', $full_order);
+                    $this->set_question_order($new_question_order);
                     $this->refresh_questions();
-
                     return true;
-                } else {
-                    return false;
                 }
 
-                break;
-        }
+                return false;
 
-        return false; // if we get here, there's an error so return false
+            default:
+                // If we get here, there's an error so return false
+                return false;
+        }
     }
 
     /**
