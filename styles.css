@@ -558,21 +558,30 @@
 }
 
 #jazzquiz_response_info_container .btn.btn-primary,
-#inquizcontrols .quiz-list-buttons #startquiz.btn {
+#inquizcontrols .quiz-list-buttons #startquiz,
+#inquizcontrols .quiz-list-buttons #exitquiz {
     background: #eee;
     color: #444;
     border-radius: 0;
     border: 1px solid #aaa;
 }
 
-#inquizcontrols .quiz-list-buttons #startquiz.btn {
+#inquizcontrols .quiz-list-buttons #startquiz {
     font-size: 2rem;
     padding: 16px 32px;
     margin: 16px;
 }
 
-#inquizcontrols .quiz-list-buttons #startquiz.btn:hover,
+#inquizcontrols .quiz-list-buttons #startquiz:hover,
+#inquizcontrols .quiz-list-buttons #exitquiz:hover,
 #jazzquiz_response_info_container .btn.btn-primary:hover {
     background: #2299ff;
     color: #fff;
+}
+
+#inquizcontrols .quiz-list-buttons #exitquiz {
+    float: right;
+    margin: 16px;
+    font-size: 1.2rem;
+
 }

@@ -530,6 +530,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             . '<div class="quiz-list-buttons">'
             .       $this->write_control_button('start', 'Start quiz', 'startquiz')
             .       '<h4 class="inline">No students have joined.</h4>'
+            .       $this->write_control_button('close', 'Exit', 'exitquiz')
             . '</div>';
 
         return html_writer::div($html, 'btn-hide rtq_inquiz', [
@@ -900,7 +901,6 @@ EOD;
      */
     public function render_attempt($attempt, $session)
     {
-
         echo $this->output->header();
         $this->showMessage();
 

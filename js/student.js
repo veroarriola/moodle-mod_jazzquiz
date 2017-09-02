@@ -63,6 +63,7 @@ jazzquiz.change_quiz_state = function (state, data) {
             break;
 
         case 'sessionclosed':
+            this.hide_instructions();
             this.hide_all_questions();
             jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('sessionclosed'));
             break;

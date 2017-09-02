@@ -828,6 +828,12 @@ jazzquiz.close_session = function () {
 
     this.show_loading(this.text('closingsession'));
 
+    this.hide_instructions();
+    this.hide_all_questions();
+    this.hide_info();
+
+    jQuery('#controlbox').addClass('hidden');
+
     // Setup parameters
     var params = {
         'action': 'closesession',
@@ -837,19 +843,14 @@ jazzquiz.close_session = function () {
     // Send request
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 
+        jazzquiz.hide_loading();
+
         if (status !== HTTP_STATUS.OK) {
-            jQuery('#loadingbox').addClass('hidden');
             jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
             return;
         }
 
-        jazzquiz.hide_all_questions();
-        jazzquiz.hide_info();
-
-        jQuery('#controlbox').addClass('hidden');
-
         jQuery('#jazzquiz_info_container').removeClass('hidden').html(jazzquiz.text('sessionclosed'));
-        jazzquiz.hide_loading();
 
     });
 
@@ -1174,6 +1175,7 @@ jazzquiz.execute_control_action = function (action) {
         case 'togglenotresponded':
             this.toggle_notresponded();
             break;
+        case 'exitquiz':
         case 'closesession':
             this.close_session();
             break;
