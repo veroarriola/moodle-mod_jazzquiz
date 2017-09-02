@@ -353,7 +353,7 @@ class jazzquiz_session
      *
      *
      */
-    public function get_question_results_list($use_live_filter, $question_type)
+    public function get_question_results_list($question_type)
     {
 
         $attempts = $this->getall_open_attempts(false);
@@ -365,7 +365,7 @@ class jazzquiz_session
             if ($attempt->responded != 1) {
                 continue;
             }
-            $attempt_responses = $attempt->get_response_data($slot, $use_live_filter, $question_type);
+            $attempt_responses = $attempt->get_response_data($slot, $question_type);
             $responses = array_merge($responses, $attempt_responses);
         }
 

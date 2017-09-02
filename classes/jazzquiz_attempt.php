@@ -773,14 +773,14 @@ class jazzquiz_attempt
         // Find steps
         $steps = $this->get_steps($slot);
         if (!$steps) {
-            return [];
+            return '';
         }
         $step = reset($steps);
 
         // Find data
         $data = $this->get_step_data($step->id);
         if (!$data) {
-            return [];
+            return '';
         }
         $data = array_shift($data);
 
@@ -796,14 +796,14 @@ class jazzquiz_attempt
         // Find steps
         $steps = $this->get_steps($slot);
         if (!$steps) {
-            return [];
+            return '';
         }
         $step = reset($steps);
 
         // Find data
         $data = $this->get_step_data($step->id);
         if (!$data) {
-            return [];
+            return '';
         }
 
         // STACK saves two rows for some reason, and it seems impossible to tell apart the answers in a general way.
@@ -821,11 +821,31 @@ class jazzquiz_attempt
         return $data->value;
     }
 
+    private function get_response_data_general($slot)
+    {
+        // Find step
+        $steps = $this->get_steps($slot);
+        if (!$steps) {
+            return '';
+        }
+        $step = reset($steps);
+
+        // Find data
+        $data = $this->get_step_data($step->id);
+        if (!$data) {
+            return '';
+        }
+        $data = reset($data);
+
+        // Return response
+        return $data->value;
+    }
+
     /**
      * Returns response data as an array
      *
      */
-    public function get_response_data($slot, $use_live_filter, $question_type)
+    public function get_response_data($slot, $question_type)
     {
         $responses = [];
 
@@ -844,16 +864,7 @@ class jazzquiz_attempt
                 break;
 
             default:
-                $attempt = $this->quba->get_question_attempt($slot);
-                $steps = $this->get_steps($attempt);
-                if ($steps) {
-                    $step = reset($steps);
-                    $data = $this->get_step_data($step, 1);
-                    if ($data) {
-                        $data = array_shift($data);
-                        $responses[] = $data->value;
-                    }
-                }
+                $responses[] = $this->get_response_data_general($slot);
                 break;
         }
 

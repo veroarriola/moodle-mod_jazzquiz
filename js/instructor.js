@@ -700,11 +700,6 @@ jazzquiz.gather_results = function () {
         'attemptid': this.quiz.attempt_id
     };
 
-    // Requires extra filtering
-    if (this.state !== 'reviewing') {
-        params.live = true;
-    }
-
     // Send request
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
 

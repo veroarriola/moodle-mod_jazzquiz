@@ -490,14 +490,11 @@ class quizdata
 
     private function get_results()
     {
-        // Is the question still ongoing? If so, the 'live' parameter should be passed.
-        $use_live_filter = isset($_POST['live']);
-
         // Get the results
         $question_manager = $this->RTQ->get_questionmanager();
         $slot = $this->session->get_session()->currentqnum;
         $question_type = $question_manager->get_questiontype_byqnum($slot);
-        $responses = $this->session->get_question_results_list($use_live_filter, $question_type);
+        $responses = $this->session->get_question_results_list($question_type);
 
         // Check if this has been voted on before
         $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id, $slot);
