@@ -69,7 +69,10 @@ class jazzquiz_session
         } else {
             // Next attempt to get a "current" session for this quiz
             // Returns false if no record is found
-            $this->session = $DB->get_record('jazzquiz_sessions', array('jazzquizid' => $this->rtq->getRTQ()->id, 'sessionopen' => 1));
+            $this->session = $DB->get_record('jazzquiz_sessions', [
+                'jazzquizid' => $this->rtq->getRTQ()->id,
+                'sessionopen' => 1
+            ]);
         }
     }
 
@@ -350,18 +353,25 @@ class jazzquiz_session
      *
      *
      */
-    public function get_question_results_list($use_live_filter, $qtype)
+    public function get_question_results_list($use_live_filter, $question_type)
     {
 
         $attempts = $this->getall_open_attempts(false);
+        $slot = $this->session->currentquestion;
         $responses = [];
 
         foreach ($attempts as $attempt) {
+            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             if ($attempt->responded != 1) {
                 continue;
             }
-            // $anonymous = ($this->session->anonymize_responses != 0 || $this->session->fully_anonymize != 0);
-            $responses[] = $attempt->get_response_data($this->session->currentquestion, $use_live_filter, $qtype);
+            $attempt_responses = $attempt->get_response_data($slot, $use_live_filter, $question_type);
+            $responses = array_merge($responses, $attempt_responses);
+        }
+
+        // TODO: Remove this and update the JavaScript instead. The 'response' key is kinda useless.
+        foreach ($responses as &$response) {
+            $response = [ 'response' => $response ];
         }
 
         return $responses;
@@ -373,9 +383,7 @@ class jazzquiz_session
      */
     public function get_question_results()
     {
-
-
-        // next load all active attempts
+        // Load all active attempts
         $attempts = $this->getall_open_attempts(false);
 
         $totalresponsesummary = '';

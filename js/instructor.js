@@ -218,7 +218,7 @@ jazzquiz.create_response_controls = function(name) {
     }
 
     // Add button for instructor to change what to review
-    if (jazzquiz.state === 'reviewing') {
+    if (this.state === 'reviewing') {
 
         var $show_normal_result  = jQuery('#review_show_normal_results');
         var $show_vote_result  = jQuery('#review_show_vote_results');

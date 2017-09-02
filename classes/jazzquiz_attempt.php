@@ -680,124 +680,184 @@ class jazzquiz_attempt
         // $this->responsesummary = $question->summarise_response($response);
     }
 
-    /**
-     * Returns response data as an array
-     * TODO: One SQL query
-     *
-     */
-    public function get_response_data($slot, $use_live_filter, $qtype)
+    private function get_steps($slot)
+    {
+        global $DB;
+        $attempt = $this->quba->get_question_attempt($slot);
+        return $DB->get_records('question_attempt_steps', [
+            'questionattemptid' => $attempt->get_database_id()
+        ], 'sequencenumber desc');
+    }
+
+    private function get_step_data($step_id)
+    {
+        global $DB;
+        return $DB->get_records('question_attempt_step_data', [
+            'attemptstepid' => $step_id
+        ], 'id desc');
+    }
+
+    private function get_response_data_multichoice($slot)
     {
         global $DB;
 
-        $questionattempt = $this->quba->get_question_attempt($slot);
-
-        // Find last step
-        $steps = $DB->get_records('question_attempt_steps', [
-            'questionattemptid' => $questionattempt->get_database_id()
-        ], 'id desc', '*', 0, 1);
-
+        // Find steps
+        $steps = $this->get_steps($slot);
         if (!$steps) {
-            return ['response' => 'Error. No steps.'];
+            return [];
         }
 
-        // Get first element
-        $step = reset($steps);
+        // Go through all the steps to find the needed data
+        $order = [];
+        $chosen_answers = [];
+        foreach ($steps as $step) {
 
-        $step_data_max = 1;
-        if ($use_live_filter) {
-            $step_data_max = 2;
-        }
-
-        // Find step data
-        $data = $DB->get_records('question_attempt_step_data', [
-            'attemptstepid' => $step->id
-        ], 'id desc', 'id, value, name', 0, $step_data_max);
-
-        if (!$data) {
-            return ['response', 'Error. No step data.'];
-        }
-
-        // Get the step data
-        if (count($data) > 1) {
-
-            $data_1 = array_shift($data);
-            $data_2 = array_shift($data);
-
-            // This hack is specifically meant for STACK.
-            // STACK saves two rows for some reason, and it seems impossible to tell apart the answers in a general way.
-
-            $response_data = $data_1;
-
-            if (substr($data_1->name, -4, 4) == '_val') {
-                $response_data = $data_2;
+            // Find step data
+            $all_data = $this->get_step_data($step->id);
+            if (!$all_data) {
+                continue;
             }
 
-        } else {
+            $choices_found = count($chosen_answers) > 0;
 
-            $response_data = array_shift($data);
+            // Keep in mind we're looping backwards.
+            // Therefore, the last answer is prioritised.
+            foreach ($all_data as $data) {
 
-        }
+                if ($data->name === '_order') {
 
-        $response_value = $response_data->value;
+                    if (!$order) {
+                        $order = explode(',', $data->value);
+                    }
 
-        if ($qtype == 'multichoice') {
+                } else if ($data->name === 'answer') {
 
-            // TODO: Refactoring
-            // This is kinda messy... but it just has to be done quickly now to get it ready for testing.
+                    if (!$choices_found) {
+                        $chosen_answers[] = $data->value;
+                    }
 
-            $steps = $DB->get_records('question_attempt_steps', [
-                'questionattemptid' => $questionattempt->get_database_id()
-            ], 'id desc');
+                } else if (substr($data->name, 0, 6) === 'choice') {
 
-            if ($steps) {
-
-                foreach ($steps as $step) {
-
-                    $multichoice_data = $DB->get_records('question_attempt_step_data', [
-                        'attemptstepid' => $step->id,
-                        'name' => '_order'
-                    ], 'id desc', 'id, value, name', 0, 1);
-
-                    if ($multichoice_data) {
-
-                        $multichoice_data = array_shift($multichoice_data);
-
-                        $order = explode(',', $multichoice_data->value);
-
-                        if (isset($order[$response_value])) {
-
-                            $option = $DB->get_record('question_answers', [
-                                'id' => $order[$response_value]
-                            ]);
-
-                            if ($option) {
-                                $response_value = $option->answer;
-                            }
-
-                        }
-
-                        break;
-
+                    if (!$choices_found && $data->value == 1) {
+                        $chosen_answers[] = substr($data->name, 6);
                     }
 
                 }
 
             }
 
-        } else if ($qtype == 'truefalse') {
+        }
 
-            if ($response_value == 1) {
-                $response_value = 'True';
-            } else {
-                $response_value = 'False';
+        // Find the answer strings
+        $responses = [];
+
+        foreach ($chosen_answers as $chosen_answer) {
+
+            if (isset($order[$chosen_answer])) {
+                $option = $DB->get_record('question_answers', [
+                    'id' => $order[$chosen_answer]
+                ]);
+                if ($option) {
+                    $responses[] = $option->answer;
+                }
             }
 
         }
 
-        return [
-            'response' => $response_value,
-            'step_data_id' => $response_data->id // TODO: Eventually remove this from being sent, it's just for debugging purposes
-        ];
+        return $responses;
+
+    }
+
+    private function get_response_data_true_or_false($slot)
+    {
+        // Find steps
+        $steps = $this->get_steps($slot);
+        if (!$steps) {
+            return [];
+        }
+        $step = reset($steps);
+
+        // Find data
+        $data = $this->get_step_data($step->id);
+        if (!$data) {
+            return [];
+        }
+        $data = array_shift($data);
+
+        // Return response
+        if ($data->value == 1) {
+            return 'True';
+        }
+        return 'False';
+    }
+
+    private function get_response_data_stack($slot)
+    {
+        // Find steps
+        $steps = $this->get_steps($slot);
+        if (!$steps) {
+            return [];
+        }
+        $step = reset($steps);
+
+        // Find data
+        $data = $this->get_step_data($step->id);
+        if (!$data) {
+            return [];
+        }
+
+        // STACK saves two rows for some reason, and it seems impossible to tell apart the answers in a general way.
+        if (count($data) > 1) {
+            $data_1 = array_shift($data);
+            $data_2 = array_shift($data);
+            $data = $data_1;
+            if (substr($data_1->name, -4, 4) === '_val') {
+                $data = $data_2;
+            }
+        } else {
+            $data = array_shift($data);
+        }
+
+        return $data->value;
+    }
+
+    /**
+     * Returns response data as an array
+     *
+     */
+    public function get_response_data($slot, $use_live_filter, $question_type)
+    {
+        $responses = [];
+
+        switch ($question_type) {
+
+            case 'multichoice':
+                $responses = $this->get_response_data_multichoice($slot);
+                break;
+
+            case 'truefalse':
+                $responses[] = $this->get_response_data_true_or_false($slot);
+                break;
+
+            case 'stack':
+                $responses[] = $this->get_response_data_stack($slot);
+                break;
+
+            default:
+                $attempt = $this->quba->get_question_attempt($slot);
+                $steps = $this->get_steps($attempt);
+                if ($steps) {
+                    $step = reset($steps);
+                    $data = $this->get_step_data($step, 1);
+                    if ($data) {
+                        $data = array_shift($data);
+                        $responses[] = $data->value;
+                    }
+                }
+                break;
+        }
+
+        return $responses;
     }
 
     /**
