@@ -1,4 +1,5 @@
 <?php
+
 namespace mod_jazzquiz\output;
 
 // This file is part of Moodle - http://moodle.org/
@@ -28,17 +29,16 @@ use mod_jazzquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
-class edit_renderer extends \plugin_renderer_base {
-
+class edit_renderer extends \plugin_renderer_base
+{
     use renderer_base;
-
 
     /**
      * Prints edit page header
      *
      */
-    public function print_header() {
-
+    public function print_header()
+    {
         $this->base_header('edit');
         echo $this->output->box_start('generalbox boxaligncenter jazzquizbox');
     }
@@ -46,17 +46,24 @@ class edit_renderer extends \plugin_renderer_base {
     /**
      * Render the list questions view for the edit page
      *
-     * @param array  $questions Array of questions
+     * @param array $questions Array of questions
      * @param string $questionbankview HTML for the question bank view
      */
-    public function listquestions($questions, $questionbankview) {
+    public function listquestions($questions, $questionbankview)
+    {
         global $CFG;
 
-        echo \html_writer::start_div('row', array('id' => 'questionrow'));
+        echo \html_writer::start_div('row', [
+            'id' => 'questionrow'
+        ]);
 
         echo \html_writer::start_div('inline-block span6');
-        echo \html_writer::tag('h2', get_string('questionlist', 'jazzquiz'));
-        echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', array('id' => 'editstatus'));
+
+        echo \html_writer::tag('h2', get_string('questions', 'jazzquiz'));
+
+        echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', [
+            'id' => 'editstatus'
+        ]);
 
         echo $this->show_questionlist($questions);
 
@@ -83,13 +90,11 @@ class edit_renderer extends \plugin_renderer_base {
         echo "rtqinitinfo = " . json_encode($jsinfo); // TODO: Look into this variable
         echo \html_writer::end_tag('script');
 
-        $this->page->requires->strings_for_js(array(
+        $this->page->requires->strings_for_js([
             'success',
             'error'
-        ), 'core');
-
+        ], 'core');
     }
-
 
     /**
      * Builds the question list from the questions passed in
@@ -97,16 +102,9 @@ class edit_renderer extends \plugin_renderer_base {
      * @param array $questions an array of \mod_jazzquiz\jazzquiz_question
      * @return string
      */
-    protected function show_questionlist($questions) {
-
+    protected function show_questionlist($questions)
+    {
         $return = '<ol class="questionlist">';
-
-        /*$add_improv_questions_url = new \moodle_url('/mod/jazzquiz/improvisation.php', [
-            'cmid' => $this->jazzquiz->getCM()->id,
-            'redirect' => 'edit'
-        ]);
-        $add_improv_questions_button = $this->output->single_button($add_improv_questions_url, 'Add improvisation questions', 'get');
-        $return .= \html_writer::tag('p', $add_improv_questions_button);*/
 
         $questioncount = count($questions);
         $questionnum = 1;
@@ -132,13 +130,13 @@ class edit_renderer extends \plugin_renderer_base {
      * sets up what is displayed for each question on the edit quiz question listing
      *
      * @param \mod_jazzquiz\jazzquiz_question $question
-     * @param int                                 $qnum The question number we're currently on
-     * @param int                                 $qcount The total number of questions
+     * @param int $qnum The question number we're currently on
+     * @param int $qcount The total number of questions
      *
      * @return string
      */
-    protected function display_question_block($question, $qnum, $qcount) {
-
+    protected function display_question_block($question, $qnum, $qcount)
+    {
         $return = '';
 
         $dragicon = new \pix_icon('i/dragdrop', 'dragdrop');
@@ -147,37 +145,42 @@ class edit_renderer extends \plugin_renderer_base {
         $return .= \html_writer::div(print_question_icon($question->getQuestion()), 'icon');
 
         $namehtml = \html_writer::start_tag('p');
-
-        $namehtml .= $question->getQuestion()->name . '<br />';
-        $namehtml .= get_string('points', 'jazzquiz') . ': ' . $question->getPoints();
+        $namehtml .= $question->getQuestion()->name;
         $namehtml .= \html_writer::end_tag('p');
 
         $return .= \html_writer::div($namehtml, 'name');
 
         $controlHTML = '';
 
-        $spacericon = new \pix_icon('spacer', 'space', null, array('class' => 'smallicon space'));
-        $controlHTML .= \html_writer::start_tag('noscript');
-        if ($qnum > 1) { // if we're on a later question than the first one add the move up control
+        $spacericon = new \pix_icon('spacer', 'space', null, [
+            'class' => 'smallicon space'
+        ]);
+
+        // If we're on a later question than the first one add the move up control
+        if ($qnum > 1) {
 
             $moveupurl = clone($this->pageurl);
             $moveupurl->param('action', 'moveup');
             $moveupurl->param('questionid', $question->getId()); // add the rtqqid so that the question manager handles the translation
 
-            $alt = get_string('questionmoveup', 'mod_jazzquiz', $qnum);
+            $alt = get_string('question_move_up', 'mod_jazzquiz', $qnum);
 
             $upicon = new \pix_icon('t/up', $alt);
             $controlHTML .= \html_writer::link($moveupurl, $this->output->render($upicon));
+
         } else {
+
             $controlHTML .= $this->output->render($spacericon);
+
         }
+
         if ($qnum < $qcount) { // if we're not on the last question add the move down control
 
             $movedownurl = clone($this->pageurl);
             $movedownurl->param('action', 'movedown');
             $movedownurl->param('questionid', $question->getId());
 
-            $alt = get_string('questionmovedown', 'mod_jazzquiz', $qnum);
+            $alt = get_string('question_move_down', 'mod_jazzquiz', $qnum);
 
             $downicon = new \pix_icon('t/down', $alt);
             $controlHTML .= \html_writer::link($movedownurl, $this->output->render($downicon));
@@ -186,29 +189,23 @@ class edit_renderer extends \plugin_renderer_base {
             $controlHTML .= $this->output->render($spacericon);
         }
 
-        $controlHTML .= \html_writer::end_tag('noscript');
-
-        // always add edit and delete icons
+        // Always add edit and delete icons
         $editurl = clone($this->pageurl);
         $editurl->param('action', 'editquestion');
         $editurl->param('rtqquestionid', $question->getId());
-        $alt = get_string('questionedit', 'jazzquiz', $qnum);
+        $alt = get_string('edit_question', 'jazzquiz', $qnum);
         $deleteicon = new \pix_icon('t/edit', $alt);
         $controlHTML .= \html_writer::link($editurl, $this->output->render($deleteicon));
-
 
         $deleteurl = clone($this->pageurl);
         $deleteurl->param('action', 'deletequestion');
         $deleteurl->param('questionid', $question->getId());
-        $alt = get_string('questiondelete', 'mod_jazzquiz', $qnum);
+        $alt = get_string('delete_question', 'mod_jazzquiz', $qnum);
         $deleteicon = new \pix_icon('t/delete', $alt);
         $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
 
-
         $return .= \html_writer::div($controlHTML, 'controls');
-
         return $return;
-
     }
 
     /**
@@ -216,27 +213,23 @@ class edit_renderer extends \plugin_renderer_base {
      *
      * @param moodleform $mform
      */
-    public function addquestionform($mform) {
-
+    public function addquestionform($mform)
+    {
         echo $mform->display();
-
     }
 
-    public function opensession(){
-
-        echo \html_writer::tag('h3', get_string('editpage_opensession_error', 'jazzquiz'));
-
+    public function opensession()
+    {
+        echo \html_writer::tag('h3', get_string('edit_page_open_session_error', 'jazzquiz'));
     }
 
     /**
      * Ends the edit page with the footer of Moodle
-     *
      */
-    public function footer() {
-
+    public function footer()
+    {
         echo $this->output->box_end();
         $this->base_footer();
     }
-
 
 }

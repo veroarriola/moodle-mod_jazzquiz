@@ -28,58 +28,48 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright 2014 University of Wisconsin - madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class ownattempts extends \flexible_table {
-
-
+class ownattempts extends \flexible_table
+{
     /** @var \mod_jazzquiz\jazzquiz $rtq */
     protected $rtq;
 
     /**
      * Contstruct this table class
      *
-     * @param string                     $uniqueid The unique id for the table
+     * @param string $uniqueid The unique id for the table
      * @param \mod_jazzquiz\jazzquiz $rtq
-     * @param \moodle_url                $pageurl
+     * @param \moodle_url $pageurl
      */
-    public function __construct($uniqueid, $rtq, $pageurl) {
-
+    public function __construct($uniqueid, $rtq, $pageurl)
+    {
         $this->rtq = $rtq;
         $this->baseurl = $pageurl;
-
         parent::__construct($uniqueid);
     }
-
 
     /**
      * Setup the table, i.e. table headers
      *
      */
-    public function setup() {
+    public function setup()
+    {
         // Set var for is downloading
         $isdownloading = $this->is_downloading();
 
         $this->set_attribute('cellspacing', '0');
 
+        $columns = [
+            'session' => get_string('session_name', 'jazzquiz'),
+            'timestart' => get_string('started_on', 'jazzquiz'),
+            'timefinish' => get_string('time_completed', 'jazzquiz'),
+        ];
+
         if ($this->rtq->group_mode()) {
-            $columns = array(
-                'session'    => get_string('sessionname', 'jazzquiz'),
-                'group'      => get_string('group'),
-                'timestart'  => get_string('startedon', 'jazzquiz'),
-                'timefinish' => get_string('timecompleted', 'jazzquiz'),
-                'grade'      => get_string('grade'),
-            );
-        } else {
-            $columns = array(
-                'session'    => get_string('sessionname', 'jazzquiz'),
-                'timestart'  => get_string('startedon', 'jazzquiz'),
-                'timefinish' => get_string('timecompleted', 'jazzquiz'),
-                'grade'      => get_string('grade'),
-            );
+            $columns['group'] = get_string('group');
         }
 
-
         if (!$isdownloading) {
-            $columns['attemptview'] = get_string('attemptview', 'jazzquiz');
+            $columns['attemptview'] = get_string('view_attempt', 'jazzquiz');
         }
 
         $this->define_columns(array_keys($columns));
@@ -104,55 +94,56 @@ class ownattempts extends \flexible_table {
      * Sets the data to the table
      *
      */
-    public function set_data() {
-        global $CFG, $OUTPUT;
+    public function set_data()
+    {
+        global $OUTPUT;
 
-        $download = $this->is_downloading();
-        $tabledata = $this->get_data();
+        $table_data = $this->get_data();
 
-        foreach ($tabledata as $item) {
+        foreach ($table_data as $item) {
 
-            $row = array();
+            $row = [];
 
-            $row[] = $item->sessionname;
+            $row[] = $item->session_name;
+            $row[] = date('m-d-Y H:i:s', $item->timestart);
+            $row[] = date('m-d-Y H:i:s', $item->timefinish);
+
             if ($this->rtq->group_mode()) {
                 $row[] = $item->group;
             }
-            $row[] = date('m-d-Y H:i:s', $item->timestart);
-            $row[] = date('m-d-Y H:i:s', $item->timefinish);
-            $row[] = $item->grade . ' / ' . $item->totalgrade;
 
             // Add in controls column
 
-            // view attempt
-            $viewattempturl = new \moodle_url('/mod/jazzquiz/viewquizattempt.php');
-            $viewattempturl->param('quizid', $this->rtq->getRTQ()->id);
-            $viewattempturl->param('sessionid', $item->sessionid);
-            $viewattempturl->param('attemptid', $item->attemptid);
+            // View attempt
+            $view_attempt_url = new \moodle_url('/mod/jazzquiz/viewquizattempt.php');
+            $view_attempt_url->param('quizid', $this->rtq->getRTQ()->id);
+            $view_attempt_url->param('sessionid', $item->sessionid);
+            $view_attempt_url->param('attemptid', $item->attemptid);
 
-            $viewattemptpix = new \pix_icon('t/preview', 'preview');
-            $popup = new \popup_action('click', $viewattempturl, 'viewquizattempt');
+            $view_attempt_pix = new \pix_icon('t/preview', 'preview');
+            $popup = new \popup_action('click', $view_attempt_url, 'viewquizattempt');
 
-            $actionlink = new \action_link($viewattempturl, '', $popup, array('target' => '_blank'), $viewattemptpix);
+            $action_link = new \action_link($view_attempt_url, '', $popup, [
+                'target' => '_blank'
+            ], $view_attempt_pix);
 
-            $row[] = $OUTPUT->render($actionlink);
+            $row[] = $OUTPUT->render($action_link);
 
             $this->add_data($row);
         }
 
     }
 
-
     /**
      * Gets the data for the table
      *
      * @return array $data The array of data to show
      */
-    protected function get_data() {
-        global $DB, $USER;
+    protected function get_data()
+    {
+        global $USER;
 
-
-        $data = array();
+        $data = [];
 
         $sessions = $this->rtq->get_sessions();
 
@@ -164,16 +155,13 @@ class ownattempts extends \flexible_table {
                 $ditem = new \stdClass();
                 $ditem->attemptid = $sattempt->id;
                 $ditem->sessionid = $sattempt->sessionid;
-                $ditem->sessionname = $session->get_session()->name;
+                $ditem->session_name = $session->get_session()->name;
                 if ($this->rtq->group_mode()) {
                     $ditem->group = $this->rtq->get_groupmanager()->get_group_name($sattempt->forgroupid);
                 }
                 $ditem->timestart = $sattempt->timestart;
                 $ditem->timefinish = $sattempt->timefinish;
-                $ditem->grade = number_format($this->rtq->get_grader()->calculate_attempt_grade($sattempt), 2);
-                $ditem->totalgrade = $this->rtq->getRTQ()->scale;
-
-                $data[ $sattempt->id ] = $ditem;
+                $data[$sattempt->id] = $ditem;
             }
         }
 

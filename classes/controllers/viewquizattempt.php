@@ -26,7 +26,8 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class viewquizattempt {
+class viewquizattempt
+{
 
     /** @var \mod_jazzquiz\jazzquiz Realtime quiz class */
     protected $RTQ;
@@ -45,7 +46,8 @@ class viewquizattempt {
      *
      * @param string $baseurl the base url of the page
      */
-    public function setup_page($baseurl) {
+    public function setup_page($baseurl)
+    {
         global $PAGE, $CFG, $DB;
 
         $this->pagevars = array();
@@ -95,90 +97,64 @@ class viewquizattempt {
      * handle the attempt action
      *
      */
-    public function handle_request() {
-        global $OUTPUT, $USER;
+    public function handle_request()
+    {
+        global $USER;
 
-        switch ($this->pagevars['action']) {
+        // Show the attempt
 
-            case 'savecomment':
-                // save a comment for a particular attempt
+        $session = $this->RTQ->get_session($this->pagevars['sessionid']);
+        $attempt = $session->get_user_attempt($this->pagevars['attemptid']);
 
-                $session = $this->RTQ->get_session($this->pagevars['sessionid']);
-                $attempt = $session->get_user_attempt($this->pagevars['attemptid']);
+        $hascapability = true;
 
-                $success = $attempt->process_comment($this->pagevars['slot'], $this->RTQ);
+        if (!$this->RTQ->has_capability('mod/jazzquiz:seeresponses')) {
 
+            // If the current user doesn't have the ability to see responses (or all responses)
+            // check that the current one is theirs
 
-                if ($success) {
-                    // if successful recalculate the grade for the attempt's userid as the grader can update grades on the questions
-                    $this->RTQ->get_grader()->save_user_grades($attempt->userid);
+            if ($attempt->userid != $USER->id) { // first check if attempts userid and current userid match
 
-                    $this->RTQ->get_renderer()->setMessage('success', 'Successfully saved comment/grade');
-                    $this->RTQ->get_renderer()->render_attempt($attempt, $session);
+                // if not, next check group settings if we're in group mode
+                if ($this->RTQ->group_mode()) {
+
+                    // get user groups and check if the forgroupid is in one of them
+                    $usergroups = $this->RTQ->get_groupmanager()->get_user_groups();
+                    $usergroupids = array_keys($usergroups);
+                    if (!in_array($attempt->forgroupid, $usergroupids)) {
+                        $this->RTQ->get_renderer()->render_popup_error(get_string('invalid_attempt_access', 'jazzquiz'));
+                        $hascapability = false;
+                    }
                 } else {
-                    $this->RTQ->get_renderer()->setMessage('error', 'Couldn\'t save comment/grade');
-                    $this->RTQ->get_renderer()->render_attempt($attempt, $session);
+                    $this->RTQ->get_renderer()->render_popup_error(get_string('invalid_attempt_access', 'jazzquiz'));
+                    $hascapability = false;
                 }
-
-                break;
-            default:
-
-                // default is to show the attempt
-
-                $session = $this->RTQ->get_session($this->pagevars['sessionid']);
-                $attempt = $session->get_user_attempt($this->pagevars['attemptid']);
-
-                $hascapability = true;
-
-                if (!$this->RTQ->has_capability('mod/jazzquiz:seeresponses')) {
-
-                    // if the current user doesn't have the ability to see responses (or all responses)
-                    // check that the current one is theirs
-
-                    if ($attempt->userid != $USER->id) { // first check if attempts userid and current userid match
-
-                        // if not, next check group settings if we're in group mode
-                        if ($this->RTQ->group_mode()) {
-
-                            // get user groups and check if the forgroupid is in one of them
-                            $usergroups = $this->RTQ->get_groupmanager()->get_user_groups();
-                            $usergroupids = array_keys($usergroups);
-                            if (!in_array($attempt->forgroupid, $usergroupids)) {
-                                $this->RTQ->get_renderer()->render_popup_error(get_string('invalidattemptaccess', 'jazzquiz'));
-                                $hascapability = false;
-                            }
-                        } else {
-                            $this->RTQ->get_renderer()->render_popup_error(get_string('invalidattemptaccess', 'jazzquiz'));
-                            $hascapability = false;
-                        }
-                    }
-                }
-
-                if ($hascapability) {
-
-                    $params = array(
-                        'relateduserid' => $attempt->userid,
-                        'objectid'      => $attempt->id,
-                        'context'       => $this->RTQ->getContext(),
-                        'other'         => array(
-                            'jazzquizid' => $this->RTQ->getRTQ()->id,
-                            'sessionid'    => $attempt->sessionid
-                        )
-                    );
-
-                    if( $attempt->userid < 0) {
-                        $params['relateduserid'] = 0;
-                    }
-
-                    $event = \mod_jazzquiz\event\attempt_viewed::create($params);
-                    $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
-                    $event->trigger();
-
-                    $this->RTQ->get_renderer()->render_attempt($attempt, $session);
-                }
-
-                break;
+            }
         }
+
+        if ($hascapability) {
+
+            $params = [
+                'relateduserid' => $attempt->userid,
+                'objectid' => $attempt->id,
+                'context' => $this->RTQ->getContext(),
+                'other' => [
+                    'jazzquizid' => $this->RTQ->getRTQ()->id,
+                    'sessionid' => $attempt->sessionid
+                ]
+            ];
+
+            if ($attempt->userid < 0) {
+                $params['relateduserid'] = 0;
+            }
+
+            $event = \mod_jazzquiz\event\attempt_viewed::create($params);
+            $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
+            $event->trigger();
+
+            $this->RTQ->get_renderer()->render_attempt($attempt, $session);
+        }
+
 
     }
 
@@ -186,7 +162,8 @@ class viewquizattempt {
      * Gets other parameters and adding them to the pagevars array
      *
      */
-    public function get_parameters() {
+    public function get_parameters()
+    {
 
         $this->pagevars['action'] = optional_param('action', '', PARAM_ALPHAEXT);
         $this->pagevars['attemptid'] = required_param('attemptid', PARAM_INT);

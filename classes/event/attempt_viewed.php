@@ -82,7 +82,6 @@ class attempt_viewed extends \core\event\base {
                                                                             'sessionid' => $this->data['sessionid']));
     }
 
-
     /**
      * Custom validation.
      *

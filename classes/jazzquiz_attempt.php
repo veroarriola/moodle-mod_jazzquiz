@@ -49,7 +49,7 @@ class jazzquiz_attempt
     protected $qnum;
 
     /** @var bool $lastquestion Signifies if this is the last question
-     *                              Is used during quiz callbacks to help with instructor control
+     *  Is used during quiz callbacks to help with instructor control
      */
     public $lastquestion;
 
@@ -74,7 +74,6 @@ class jazzquiz_attempt
         if ($a->timefinish == $b->timefinish) {
             return 0;
         }
-
         return ($a->timefinish < $b->timefinish) ? -1 : 1;
     }
 
@@ -171,7 +170,6 @@ class jazzquiz_attempt
                 break;
             default:
                 return false;
-                break;
         }
 
         // Save the attempt
@@ -193,26 +191,24 @@ class jazzquiz_attempt
      *
      * @param int $slot
      * @param bool $review Whether or not we're reviewing the attempt
-     * @param string|\stdClass $reviewoptions Can be string for overall actions like "edit" or an object of review options
+     * @param string|\stdClass $review_options Can be string for overall actions like "edit" or an object of review options
      * @return string the HTML fragment for the question
      */
     public function render_question($slot, $review = false, $review_options = '')
     {
-        $displayoptions = $this->get_display_options($review, $review_options);
-        $questionnum = $this->get_question_number();
+        $display_options = $this->get_display_options($review, $review_options);
+        $question_number = $this->get_question_number();
         $this->add_question_number();
-        return $this->quba->render_question($slot, $displayoptions, $questionnum);
+        return $this->quba->render_question($slot, $display_options, $question_number);
     }
 
     /**
-     * @param int $slot The slot number to check
-     * @param int $tottries The total tries
+     * @param int $total_tries The total tries
      *
      * @return int The number of tries left
      */
-    public function check_tries_left($slot, $total_tries)
+    public function check_tries_left($total_tries)
     {
-        // TODO: What is the reason behind the "slot" argument?
         if (empty($this->attempt->responded_count)) {
             $this->attempt->responded_count = 0;
         }
@@ -555,55 +551,6 @@ class jazzquiz_attempt
     }
 
     /**
-     * Process a comment for a particular question on an attempt
-     *
-     * @param int $slot
-     * @param \mod_jazzquiz\jazzquiz $rtq
-     *
-     * @return bool
-     */
-    public function process_comment($slot = null, $rtq)
-    {
-        global $DB;
-
-        // if there is no slot return false
-        if (empty($slot)) {
-            return false;
-        }
-
-        // Process any data that was submitted.
-        if (data_submitted() && confirm_sesskey()) {
-            if (optional_param('submit', false, PARAM_BOOL) &&
-                \question_engine::is_manual_grade_in_range($this->attempt->questionengid, $slot)
-            ) {
-                $transaction = $DB->start_delegated_transaction();
-                $this->quba->process_all_actions(time());
-                $this->save();
-                $transaction->allow_commit();
-
-                // Trigger event for question manually graded
-                $params = array(
-                    'objectid' => $this->quba->get_question($slot)->id,
-                    'courseid' => $rtq->getCourse()->id,
-                    'context' => $rtq->getContext(),
-                    'other' => array(
-                        'rtqid' => $rtq->getRTQ()->id,
-                        'attemptid' => $this->attempt->id,
-                        'slot' => $slot,
-                        'sessionid' => $this->attempt->sessionid
-                    )
-                );
-                $event = \mod_jazzquiz\event\question_manually_graded::create($params);
-                $event->trigger();
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Gets the feedback for the specified question slot
      *
      * If no slot is defined, we attempt to get that from the slots param passed
@@ -845,9 +792,11 @@ class jazzquiz_attempt
      * Returns response data as an array
      *
      */
-    public function get_response_data($slot, $question_type)
+    public function get_response_data($slot)
     {
         $responses = [];
+
+        $question_type = $this->quba->get_question_attempt($slot)->get_question()->get_type_name();
 
         switch ($question_type) {
 
@@ -870,39 +819,6 @@ class jazzquiz_attempt
 
         return $responses;
     }
-
-    /**
-     * Gets the mark for a slot from the quba
-     *
-     * @param int $slot
-     * @return number|null
-     */
-    public function get_slot_mark($slot)
-    {
-        return $this->quba->get_question_mark($slot);
-    }
-
-    /**
-     * Get the total points for this slot
-     *
-     * @param int $slot
-     * @return number
-     */
-    public function get_slot_max_mark($slot)
-    {
-        return $this->quba->get_question_max_mark($slot);
-    }
-
-    /**
-     * Get the total points for this attempt
-     *
-     * @return number
-     */
-    public function get_total_mark()
-    {
-        return $this->quba->get_total_mark();
-    }
-
 
     /**
      * Closes the attempt
@@ -941,7 +857,6 @@ class jazzquiz_attempt
      */
     public function question_attempt_history($qa)
     {
-
         $table = new \html_table();
         $table->head = [
             get_string('step', 'question'),
@@ -981,7 +896,6 @@ class jazzquiz_attempt
 
     }
 
-
     /**
      * Magic get method for getting attempt properties
      *
@@ -992,16 +906,12 @@ class jazzquiz_attempt
      */
     public function __get($prop)
     {
-
         if (property_exists($this->attempt, $prop)) {
             return $this->attempt->$prop;
         }
-
-        // otherwise throw a new exception
+        // Otherwise throw a new exception
         throw new \Exception('undefined property(' . $prop . ') on jazzquiz attempt');
-
     }
-
 
     /**
      * magic setter method for this class
@@ -1017,9 +927,7 @@ class jazzquiz_attempt
             $this->attempt = new \stdClass();
         }
         $this->attempt->$prop = $value;
-
         return $this;
     }
-
 
 }

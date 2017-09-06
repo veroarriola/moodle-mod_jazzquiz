@@ -68,35 +68,8 @@ class jazzquiz
     /** @var \mod_jazzquiz_renderer $renderer */
     protected $renderer;
 
-    /** @var \mod_jazzquiz\utils\grade $grader The grade utility class to perform gradding options */
-    protected $grader;
-
     /** @var array $pagevars */
     protected $pagevars;
-
-    /**
-     * takes the realtime quiz object passed to add/update instance
-     * and returns a stdClass of review options for the specified whenname
-     *
-     * @param \stdClass $formjazzquiz
-     * @param string $whenname
-     *
-     * @return \stdClass
-     */
-    public static function get_review_options_from_form($formjazzquiz, $whenname)
-    {
-
-        $formoptionsgrp = $whenname . 'optionsgrp';
-        $formreviewoptions = $formjazzquiz->$formoptionsgrp;
-
-        $reviewoptions = new \stdClass();
-        foreach (\mod_jazzquiz\jazzquiz::$reviewfields as $field => $notused) {
-            $reviewoptions->$field = $formreviewoptions[$field];
-        }
-
-        return $reviewoptions;
-    }
-
 
     /**
      * Construct a rtq class
@@ -109,9 +82,9 @@ class jazzquiz
      * @param string $renderer_subtype Renderer sub-type to load if requested
      *
      */
-    public function __construct($cm, $course, $quiz, $pageurl, $pagevars = array(), $renderer_subtype = null)
+    public function __construct($cm, $course, $quiz, $pageurl, $pagevars = [], $renderer_subtype = null)
     {
-        global $CFG, $PAGE;
+        global $PAGE;
 
         $this->cm = $cm;
         $this->course = $course;
@@ -123,7 +96,6 @@ class jazzquiz
 
         $this->renderer = $PAGE->get_renderer('mod_jazzquiz', $renderer_subtype);
         $this->questionmanager = new \mod_jazzquiz\questionmanager($this, $this->renderer, $this->pagevars);
-        $this->grader = new \mod_jazzquiz\utils\grade($this);
         $this->groupmanager = new \mod_jazzquiz\utils\groupmanager($this);
 
         $this->renderer->init($this, $pageurl, $pagevars);
@@ -224,16 +196,6 @@ class jazzquiz
     }
 
     /**
-     * Gets the grader utility class to perform grading actions
-     *
-     * @return \mod_jazzquiz\utils\grade
-     */
-    public function get_grader()
-    {
-        return $this->grader;
-    }
-
-    /**
      * Gets the group manager utility class for group actions
      *
      * @return \mod_jazzquiz\utils\groupmanager
@@ -251,8 +213,7 @@ class jazzquiz
     public function require_capability($capability)
     {
         require_capability($capability, $this->context);
-
-        // no return as require_capability will throw exception on error, or just continue
+        // No return as require_capability will throw exception on error, or just continue
     }
 
     /**
@@ -266,12 +227,12 @@ class jazzquiz
     public function has_capability($capability, $userid = 0)
     {
         if ($userid !== 0) {
-            // pass in userid if there is one
+            // Pass in userid if there is one
             return has_capability($capability, $this->context, $userid);
-        } else {
-            // just do standard check with current user
-            return has_capability($capability, $this->context);
         }
+
+        // Just do standard check with current user
+        return has_capability($capability, $this->context);
     }
 
     /**
@@ -298,21 +259,6 @@ class jazzquiz
     }
 
     /**
-     * Gets the review options for the specified time
-     *
-     * @param string $whenname The review options time that we want to get the options for
-     *
-     * @return \stdClass A class of the options
-     */
-    public function get_review_options($whenname)
-    {
-
-        $reviewoptions = json_decode($this->jazzquiz->reviewoptions);
-
-        return $reviewoptions->$whenname;
-    }
-
-    /**
      * gets and returns a jazzquiz session specified by sessionid
      *
      * @param int $sessionid
@@ -322,11 +268,10 @@ class jazzquiz
     public function get_session($sessionid)
     {
         global $DB;
-
-        $session = $DB->get_record('jazzquiz_sessions', array('id' => $sessionid), '*', MUST_EXIST);
-
+        $session = $DB->get_record('jazzquiz_sessions', [
+            'id' => $sessionid
+        ], '*', MUST_EXIST);
         return new \mod_jazzquiz\jazzquiz_session($this, $this->pagevars['pageurl'], $this->pagevars, $session);
-
     }
 
     /**
@@ -360,93 +305,6 @@ class jazzquiz
     public function get_closed_sessions()
     {
         return $this->get_sessions([ 'sessionopen' => 0 ]);
-    }
-
-    /**
-     * This is a method to invoke the question modifier classes
-     *
-     * * * while params not explicitly defined, the first two arguments are required
-     * @param string $action The function that will be called on the question modifier classes,
-     *                          function must be defined in basequestionmodifier
-     * @param \mod_jazzquiz\jazzquiz_question|null The question that we're going to modifiy.
-     *                                                     If null, we'll use all questions defined for this instance
-     *
-     * Any parameters passed after the first 2 are passed to the action function
-     *
-     * @throws \moodle_exception Throws moodle exception on errors in invoking methods
-     */
-    public function call_question_modifiers()
-    {
-
-        $params = func_get_args();
-
-        if (empty($params[0])) {
-            throw new \moodle_exception('noaction', 'jazzquiz', null, null, 'Invalid call to call_question_modifiers.  No Action');
-        } else {
-            $action = $params[0];
-        }
-
-        // next get the question types we're going to be invoking question modifiers for
-        if (!empty($params[1])) {
-
-            if ($params[1] instanceof \mod_jazzquiz\jazzquiz_question) {
-
-                /** @var \mod_jazzquiz\jazzquiz_question $question */
-                $question = $params[1];
-
-                // We have a question defined, so we'll use it's question type
-                $questiontypes = [ $question->getQuestion()->qtype ];
-
-            } else {
-
-                $questiontypes = [];
-
-            }
-
-        } else {
-            // we're going through all question types defined by the instance
-            $questiontypes = [];
-            $questions = $this->get_questionmanager()->get_questions();
-            foreach ($questions as $question) {
-                /** @var \mod_jazzquiz\jazzquiz_question $question */
-                $questiontypes[] = $question->getQuestion()->qtype;
-            }
-        }
-
-        if (empty($questiontypes)) {
-            throw new \moodle_exception('noquestiontypes', 'jazzquiz', null, null, 'No question types defined for this call');
-        }
-
-        // next we'll try to invoke the methods
-        $return = null;
-        foreach ($questiontypes as $type) {
-
-            // first check to make sure the class exists
-            if (class_exists("\\mod_jazzquiz\\questionmodifiers\\" . $type)) {
-
-                // create reflection for it to validate action and params as well as implementing
-                $reflection = new \ReflectionClass('\mod_jazzquiz\questionmodifiers\\' . $type);
-                if (!$reflection->implementsInterface('\mod_jazzquiz\questionmodifiers\ibasequestionmodifier')) {
-                    throw new \moodle_exception('invlidimplementation', 'jazzquiz', null, null, 'You question modifier does not implement the base modifier interface... ' . $type);
-                } else {
-                    $rMethod = $reflection->getMethod($action);
-                    $fparams = array_slice($params, 2);
-
-                    // next validate that we've gotten the right number of parameters for calling the action
-                    if ($rMethod->getNumberOfRequiredParameters() != count($fparams)) {
-                        throw new \moodle_exception('invalidnumberofparams', 'jazzquiz', null, null, 'Invalid number of parameters passed to question modifiers call');
-                    } else {
-
-                        // now just call and return the method's return
-                        $class = '\mod_jazzquiz\questionmodifiers\\' . $type;
-                        $typemodifier = new $class();
-                        $return .= call_user_func_array(array($typemodifier, $action), $fparams);
-                    }
-                }
-            }
-        }
-
-        return $return;
     }
 
 }

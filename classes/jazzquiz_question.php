@@ -26,7 +26,8 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_question {
+class jazzquiz_question
+{
 
     /** @var int $id The RTQ question id */
     protected $id;
@@ -39,9 +40,6 @@ class jazzquiz_question {
 
     /** @var int $tries The number of tries */
     protected $tries;
-
-    /** @var float $points The number of points for the question */
-    protected $points;
 
     /** @var int $showhistoryduringquiz Whether or not to show the history of responses for a student during the quiz
      *                                  This will show the history table with each of the student's steps
@@ -56,34 +54,32 @@ class jazzquiz_question {
      */
     protected $slot;
 
-
     /**
      * Construct the question
      *
-     * @param int    $rtqqid
-     * @param  int   $notime
-     * @param int    $questiontime
-     * @param int    $tries
-     * @param float  $points
-     * @param int    $showhistoryduringquiz
+     * @param int $id (jazzquiz_question)
+     * @param  int $no_time
+     * @param int $question_time
+     * @param int $tries
+     * @param int $show_history_during_quiz
      * @param object $question
      */
-    public function __construct($rtqqid, $notime, $questiontime, $tries, $points, $showhistoryduringquiz, $question) {
-        $this->id = $rtqqid;
-        $this->notime = $notime;
-        $this->questiontime = $questiontime;
+    public function __construct($id, $no_time, $question_time, $tries, $show_history_during_quiz, $question)
+    {
+        $this->id = $id;
+        $this->notime = $no_time;
+        $this->questiontime = $question_time;
         $this->tries = $tries;
-        $this->points = $points;
-        $this->showhistoryduringquiz = $showhistoryduringquiz;
+        $this->showhistoryduringquiz = $show_history_during_quiz;
         $this->question = $question;
-
         $this->slot = null;
     }
 
     /**
      * not used function until we only support 5.4 and higher
      */
-    public function JsonSerialize() {
+    public function JsonSerialize()
+    {
         // to make sue of the is function on json_encode, this class also needs to implement JsonSerializable
 
         // TODO: This will be supported if Moodle moves to only supporting php 5.4 and higher
@@ -95,7 +91,8 @@ class jazzquiz_question {
      *
      * @return int
      */
-    public function getId() {
+    public function getId()
+    {
         return $this->id;
     }
 
@@ -104,7 +101,8 @@ class jazzquiz_question {
      *
      * @return int
      */
-    public function getNoTime() {
+    public function getNoTime()
+    {
         return $this->notime;
     }
 
@@ -113,7 +111,8 @@ class jazzquiz_question {
      *
      * @return int
      */
-    public function getQuestionTime() {
+    public function getQuestionTime()
+    {
         return $this->questiontime;
     }
 
@@ -122,17 +121,9 @@ class jazzquiz_question {
      *
      * @return int
      */
-    public function getTries() {
+    public function getTries()
+    {
         return $this->tries;
-    }
-
-    /**
-     * Returns the number of points for the question
-     *
-     * @return float
-     */
-    public function getPoints() {
-        return $this->points;
     }
 
     /**
@@ -140,7 +131,8 @@ class jazzquiz_question {
      *
      * @return int
      */
-    public function getShowHistory() {
+    public function getShowHistory()
+    {
         return $this->showhistoryduringquiz;
     }
 
@@ -149,7 +141,8 @@ class jazzquiz_question {
      *
      * @return \stdClass
      */
-    public function getQuestion() {
+    public function getQuestion()
+    {
         return $this->question;
     }
 
@@ -158,7 +151,8 @@ class jazzquiz_question {
      *
      * @param int $slot
      */
-    public function set_slot($slot) {
+    public function set_slot($slot)
+    {
         $this->slot = $slot;
     }
 
@@ -167,7 +161,8 @@ class jazzquiz_question {
      *
      * @return int
      */
-    public function get_slot() {
+    public function get_slot()
+    {
         return $this->slot;
     }
 

@@ -33,8 +33,6 @@ require_once($CFG->dirroot . '/question/editlib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
-
-$viewquizattempt = new \mod_jazzquiz\controllers\viewquizattempt();
-
-$viewquizattempt->setup_page('/mod/jazzquiz/viewquizattempt.php');
-$viewquizattempt->handle_request();
+$view_quiz_attempt = new \mod_jazzquiz\controllers\viewquizattempt();
+$view_quiz_attempt->setup_page('/mod/jazzquiz/viewquizattempt.php');
+$view_quiz_attempt->handle_request();

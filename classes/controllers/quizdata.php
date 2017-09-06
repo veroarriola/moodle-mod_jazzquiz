@@ -478,11 +478,6 @@ class quizdata
         // End the session
         $this->session->end_session();
 
-        // Save grades
-        if (!$this->RTQ->get_grader()->save_all_grades()) {
-            $this->jsonlib->send_error('can\'t save grades');
-        }
-
         // Send response
         $this->jsonlib->set('status', 'success');
         $this->jsonlib->send_response();
@@ -494,7 +489,7 @@ class quizdata
         $question_manager = $this->RTQ->get_questionmanager();
         $slot = $this->session->get_session()->currentqnum;
         $question_type = $question_manager->get_questiontype_byqnum($slot);
-        $responses = $this->session->get_question_results_list($question_type);
+        $responses = $this->session->get_question_results_list($slot, 'open');
 
         // Check if this has been voted on before
         $vote = new \mod_jazzquiz\jazzquiz_vote($this->session->get_session()->id, $slot);

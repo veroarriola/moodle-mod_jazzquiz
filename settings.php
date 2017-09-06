@@ -21,25 +21,30 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/question/engine/bank.php');
 
 if ($ADMIN->fulltree) {
-    $choices = array();
-    $defaults = array();
-    foreach (question_bank::get_creatable_qtypes() as $qtypename => $qtype) {
-        $fullpluginname = $qtype->plugin_name();
-        $qtypepluginname = explode('_', $fullpluginname)[1];
 
-        $choices[$qtypepluginname] = $qtype->menu_name();
-        $defaults[$qtypepluginname] = 1;
+    $choices = [];
+    $defaults = [];
+
+    foreach (question_bank::get_creatable_qtypes() as $name => $question_type) {
+        $full_plugin_name = $question_type->plugin_name();
+        $plugin_name = explode('_', $full_plugin_name)[1];
+        $choices[$plugin_name] = $question_type->menu_name();
+        $defaults[$plugin_name] = 1;
     }
-    $settings->add(new admin_setting_configmulticheckbox(
-        'jazzquiz/enabledqtypes',
-        get_string('enabledquestiontypes', 'jazzquiz'),
-        get_string('enabledquestiontypes_info', 'jazzquiz'),
-        $defaults,
-        $choices));
+
+    $settings->add(
+        new admin_setting_configmulticheckbox(
+            'jazzquiz/enabledqtypes',
+            get_string('enabled_question_types', 'jazzquiz'),
+            get_string('enabled_question_types_info', 'jazzquiz'),
+            $defaults,
+            $choices
+        )
+    );
+
 }

@@ -20,7 +20,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
-
 /**
  *
  *
@@ -29,40 +28,43 @@ require_once($CFG->libdir . '/formslib.php');
  * @copyright 2014 University of Wisconsin - Madison
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class groupselectmembers extends \moodleform {
-
-
+class groupselectmembers extends \moodleform
+{
     /**
      * Defines form definition
      *
      */
-    public function definition() {
-        global $USER;
-        $custdata = $this->_customdata;
+    public function definition()
+    {
+        $custom_data = $this->_customdata;
         $mform = $this->_form;
+
         /** @var \mod_jazzquiz\jazzquiz $rtq */
-        $rtq = $custdata['rtq'];
-        $selectedgroup = $custdata['selectedgroup'];
+        $rtq = $custom_data['rtq'];
 
-        $groupmembers = $rtq->get_groupmanager()->get_group_members($selectedgroup);
+        $selected_group = $custom_data['selectedgroup'];
 
-        $groupmemnum = 1;
-        foreach ($groupmembers as $groupmember) {
+        $group_members = $rtq->get_groupmanager()->get_group_members($selected_group);
 
-            $attributes = array('group' => 1);
+        $group_member_index = 1;
 
+        foreach ($group_members as $group_member) {
 
-            $mform->addElement('advcheckbox', 'gm' . $groupmemnum, null,
-                fullname($groupmember), $attributes,
-                array(0, $groupmember->id));
+            $attributes = [
+                'group' => 1
+            ];
 
+            $mform->addElement('advcheckbox', 'gm' . $group_member_index, null, fullname($group_member), $attributes, [
+                0,
+                $group_member->id
+            ]);
 
-            $groupmemnum++;
+            $group_member_index++;
 
         }
         $this->add_checkbox_controller(1);
 
-        $mform->addElement('submit', 'submitbutton', get_string('joinquiz', 'mod_jazzquiz'));
+        $mform->addElement('submit', 'submitbutton', get_string('join_quiz', 'mod_jazzquiz'));
 
     }
 }

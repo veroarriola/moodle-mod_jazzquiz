@@ -29,72 +29,62 @@ require_once($CFG->libdir . '/formslib.php');
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class add_question_form extends \moodleform {
-
+class add_question_form extends \moodleform
+{
     /**
      * Overriding parent function to account for namespace in the class name
      * so that client validation works
      *
      * @return mixed|string
      */
-    protected function get_form_identifier() {
-
+    protected function get_form_identifier()
+    {
         $class = get_class($this);
-
         return preg_replace('/[^a-z0-9_]/i', '_', $class);
     }
-
 
     /**
      * Adds form fields to the form
      *
      */
-    public function definition() {
-
+    public function definition()
+    {
         $mform = $this->_form;
         $rtq = $this->_customdata['rtq'];
         $defaultTime = $rtq->getRTQ()->defaultquestiontime;
 
         $mform->addElement('static', 'questionid', get_string('question', 'jazzquiz'), $this->_customdata['questionname']);
 
-        $mform->addElement('advcheckbox', 'notime', get_string('notime', 'jazzquiz'));
-        $mform->setType('notime', PARAM_INT);
-        $mform->addHelpButton('notime', 'notime', 'jazzquiz');
-        $mform->setDefault('notime', 0);
+        $mform->addElement('advcheckbox', 'no_time', get_string('no_time_limit', 'jazzquiz'));
+        $mform->setType('no_time', PARAM_INT);
+        $mform->addHelpButton('no_time', 'no_time', 'jazzquiz');
+        $mform->setDefault('no_time', 0);
 
-        $mform->addElement('duration', 'indvquestiontime', get_string('indvquestiontime', 'jazzquiz'));
-        $mform->disabledIf('indvquestiontime', 'notime', 'checked');
-        $mform->setType('indvquestiontime', PARAM_INT);
-        $mform->setDefault('indvquestiontime', $defaultTime);
-        $mform->addHelpButton('indvquestiontime', 'indvquestiontime', 'jazzquiz');
+        $mform->addElement('duration', 'question_time', get_string('question_time', 'jazzquiz'));
+        $mform->disabledIf('question_time', 'no_time', 'checked');
+        $mform->setType('question_time', PARAM_INT);
+        $mform->setDefault('question_time', $defaultTime);
+        $mform->addHelpButton('question_time', 'question_time', 'jazzquiz');
 
-        $mform->addElement('text', 'numberoftries', get_string('numberoftries', 'jazzquiz'));
-        $mform->addRule('numberoftries', get_string('invalid_numberoftries', 'jazzquiz'), 'required', null, 'client');
-        $mform->addRule('numberoftries', get_string('invalid_numberoftries', 'jazzquiz'), 'numeric', null, 'client');
-        $mform->setType('numberoftries', PARAM_INT);
-        $mform->setDefault('numberoftries', 1);
-        $mform->addHelpButton('numberoftries', 'numberoftries', 'jazzquiz');
+        $mform->addElement('text', 'number_of_tries', get_string('number_of_tries', 'jazzquiz'));
+        $mform->addRule('number_of_tries', get_string('invalid_number_of_tries', 'jazzquiz'), 'required', null, 'client');
+        $mform->addRule('number_of_tries', get_string('invalid_number_of_tries', 'jazzquiz'), 'numeric', null, 'client');
+        $mform->setType('number_of_tries', PARAM_INT);
+        $mform->setDefault('number_of_tries', 1);
+        $mform->addHelpButton('number_of_tries', 'number_of_tries', 'jazzquiz');
 
-        $mform->addElement('text', 'points', get_string('points', 'jazzquiz'));
-        $mform->addRule('points', get_string('invalid_points', 'jazzquiz'), 'required', null, 'client');
-        $mform->addRule('points', get_string('invalid_points', 'jazzquiz'), 'numeric', null, 'client');
-        $mform->setType('points', PARAM_FLOAT);
-        $mform->setDefault('points', number_format($this->_customdata['defaultmark'], 2));
-        $mform->addHelpButton('points', 'points', 'jazzquiz');
-
-        $mform->addElement('advcheckbox', 'showhistoryduringquiz', get_string('showhistoryduringquiz', 'jazzquiz'));
-        $mform->setType('showhistoryduringquiz', PARAM_INT);
-        $mform->addHelpButton('showhistoryduringquiz', 'showhistoryduringquiz', 'jazzquiz');
-        $mform->setDefault('showhistoryduringquiz', $this->_customdata['showhistoryduringquiz']);
+        $mform->addElement('advcheckbox', 'show_history_during_quiz', get_string('show_history_during_quiz', 'jazzquiz'));
+        $mform->setType('show_history_during_quiz', PARAM_INT);
+        $mform->addHelpButton('show_history_during_quiz', 'show_history_during_quiz', 'jazzquiz');
+        $mform->setDefault('show_history_during_quiz', $this->_customdata['show_history_during_quiz']);
 
         if (!empty($this->_customdata['edit'])) {
-            $savestring = get_string('savequestion', 'jazzquiz');
+            $savestring = get_string('save_question', 'jazzquiz');
         } else {
-            $savestring = get_string('addquestion', 'jazzquiz');
+            $savestring = get_string('add_question', 'jazzquiz');
         }
 
         $this->add_action_buttons(true, $savestring);
-
     }
 
     /**
@@ -105,26 +95,20 @@ class add_question_form extends \moodleform {
      *
      * @return array $errors
      */
-    public function validation($data, $files) {
+    public function validation($data, $files)
+    {
+        $errors = [];
 
-        $errors = array();
-
-        if (!filter_var($data['indvquestiontime'], FILTER_VALIDATE_INT) && $data['indvquestiontime'] !== 0) {
-            $errors['indvquestiontime'] = get_string('invalid_indvquestiontime', 'jazzquiz');
-        } else if ($data['indvquestiontime'] < 0) {
-            $errors['indvquestiontime'] = get_string('invalid_indvquestiontime', 'jazzquiz');
+        if (!filter_var($data['question_time'], FILTER_VALIDATE_INT) && $data['question_time'] !== 0) {
+            $errors['question_time'] = get_string('invalid_question_time', 'jazzquiz');
+        } else if ($data['question_time'] < 0) {
+            $errors['question_time'] = get_string('invalid_question_time', 'jazzquiz');
         }
 
-        if (!filter_var($data['numberoftries'], FILTER_VALIDATE_INT) && $data['numberoftries'] !== 0) {
-            $errors['numberoftries'] = get_string('invalid_numberoftries', 'jazzquiz');
-        } else if ($data['numberoftries'] < 1) {
-            $errors['numberoftries'] = get_string('invalid_numberoftries', 'jazzquiz');
-        }
-
-        if (!filter_var($data['points'], FILTER_VALIDATE_FLOAT) && filter_var($data['points'], FILTER_VALIDATE_FLOAT) != 0) {
-            $errors['points'] = get_string('invalid_points', 'jazzquiz');
-        } else if (filter_var($data['points'], FILTER_VALIDATE_FLOAT) < 0) {
-            $errors['points'] = get_string('invalid_points', 'jazzquiz');
+        if (!filter_var($data['number_of_tries'], FILTER_VALIDATE_INT) && $data['number_of_tries'] !== 0) {
+            $errors['number_of_tries'] = get_string('invalid_number_of_tries', 'jazzquiz');
+        } else if ($data['number_of_tries'] < 1) {
+            $errors['number_of_tries'] = get_string('invalid_number_of_tries', 'jazzquiz');
         }
 
         return $errors;

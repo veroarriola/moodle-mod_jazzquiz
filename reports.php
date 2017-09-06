@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The responses page
+ * The reports page
  *
  * This handles displaying results
  *
@@ -26,16 +26,13 @@
  */
 
 require_once("../../config.php");
-global $CFG;
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
-
 $reports = new \mod_jazzquiz\controllers\reports();
-
 $reports->setup_page('/mod/jazzquiz/reports.php');
 $reports->handle_request();
 

@@ -3,9 +3,8 @@
 namespace mod_jazzquiz\traits;
 
 
-trait renderer_base {
-
-
+trait renderer_base
+{
     /** @var array $pagevars Includes other page information needed for rendering functions */
     protected $pagevars;
 
@@ -25,7 +24,7 @@ trait renderer_base {
      */
     public function setMessage($type, $message)
     {
-        $this->pageMessage = array($type, $message);
+        $this->pageMessage = [$type, $message];
     }
 
     /**
@@ -50,18 +49,17 @@ trait renderer_base {
     }
 
     /**
-     * shows a message if there is one
+     * Shows a message if there is one
      *
      */
     public function showMessage()
     {
-
-        if ( empty($this->pageMessage) ) {
-            return; // return if there is no message
+        if (empty($this->pageMessage)) {
+            return;
         }
 
-        if ( !is_array($this->pageMessage) ) {
-            return; // return if it's not an array
+        if (!is_array($this->pageMessage)) {
+            return;
         }
 
         switch ($this->pageMessage[0]) {
@@ -75,7 +73,7 @@ trait renderer_base {
                 echo $this->output->notification($this->pageMessage[1], 'notifyinfo');
                 break;
             default:
-                // unrecognized notification type
+                // Unrecognized notification type
                 break;
         }
     }
@@ -87,7 +85,6 @@ trait renderer_base {
      */
     public function render_popup_error($message)
     {
-
         $this->setMessage('error', $message);
         echo $this->output->header();
         $this->showMessage();

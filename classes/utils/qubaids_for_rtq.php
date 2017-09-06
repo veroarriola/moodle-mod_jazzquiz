@@ -30,9 +30,14 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qubaids_for_rtq extends \qubaid_join {
+
     public function __construct($sessionid, $includepreviews = true, $onlyfinished = false) {
+
         $where = 'rtqa.sessionid = :sessionid';
-        $params = array('sessionid' => $sessionid);
+
+        $params = [
+            'sessionid' => $sessionid
+        ];
 
         if (!$includepreviews) {
             $where .= ' AND preview = 0';
@@ -44,5 +49,7 @@ class qubaids_for_rtq extends \qubaid_join {
         }
 
         parent::__construct('{jazzquiz_attempts} rtqa', 'rtqa.questionengid', $where, $params);
+
     }
+
 }

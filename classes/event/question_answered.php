@@ -22,6 +22,7 @@
  * @copyright  2015 University of Wisconsin - Madison
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_jazzquiz\event;
 
 defined('MOODLE_INTERNAL') || die();
@@ -44,12 +45,13 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2015 University of Wisconsin - Madison
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class question_answered extends \core\event\base {
-
+class question_answered extends \core\event\base
+{
     /**
      * Init method.
      */
-    protected function init() {
+    protected function init()
+    {
         $this->data['objecttable'] = 'question';
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
@@ -60,7 +62,8 @@ class question_answered extends \core\event\base {
      *
      * @return string
      */
-    public static function get_name() {
+    public static function get_name()
+    {
         return get_string('eventquestionanswered', 'mod_jazzquiz');
     }
 
@@ -69,9 +72,10 @@ class question_answered extends \core\event\base {
      *
      * @return string
      */
-    public function get_description() {
+    public function get_description()
+    {
         return "The user with id '$this->relateduserid' answered the question with id '$this->objectid' for the attempt " .
-        "with id '{$this->other['attemptid']}' for the quiz with course module id '$this->contextinstanceid'.";
+            "with id '{$this->other['attemptid']}' for the quiz with course module id '$this->contextinstanceid'.";
     }
 
     /**
@@ -79,11 +83,15 @@ class question_answered extends \core\event\base {
      *
      * @return \moodle_url
      */
-    public function get_url() {
-        return new \moodle_url('/mod/jazzquiz/quizdata.php', array('attempt'   => $this->other['attemptid'],
-                                                                     'sessionid' => $this->other['sessionid'], 'action' => 'saveanswer', 'questionid' => $this->objectid));
+    public function get_url()
+    {
+        return new \moodle_url('/mod/jazzquiz/quizdata.php', [
+            'attempt' => $this->other['attemptid'],
+            'sessionid' => $this->other['sessionid'],
+            'action' => 'saveanswer',
+            'questionid' => $this->objectid
+        ]);
     }
-
 
     /**
      * Custom validation.
@@ -91,12 +99,11 @@ class question_answered extends \core\event\base {
      * @throws \coding_exception
      * @return void
      */
-    protected function validate_data() {
+    protected function validate_data()
+    {
         parent::validate_data();
-
         if (!isset($this->other['attemptid'])) {
             throw new \coding_exception('The \'attemptid\' value must be set in other.');
         }
-
     }
 }

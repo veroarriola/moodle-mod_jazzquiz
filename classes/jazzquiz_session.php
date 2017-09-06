@@ -51,18 +51,18 @@ class jazzquiz_session
      * Construct a session class
      *
      * @param jazzquiz $rtq
-     * @param \moodle_url $pageurl
-     * @param array $pagevars
+     * @param \moodle_url $page_url
+     * @param array $page_vars
      * @param \stdClass $session (optional) This is optional, and if sent will tell the construct to not load
      *                                      the session based on open sessions for the rtq
      */
-    public function __construct($rtq, $pageurl, $pagevars = array(), $session = null)
+    public function __construct($rtq, $page_url, $page_vars = [], $session = null)
     {
         global $DB;
 
         $this->rtq = $rtq;
-        $this->pageurl = $pageurl;
-        $this->pagevars = $pagevars;
+        $this->pageurl = $page_url;
+        $this->pagevars = $page_vars;
 
         if (!empty($session)) {
             $this->session = $session;
@@ -76,7 +76,6 @@ class jazzquiz_session
         }
     }
 
-
     /**
      * Gets the session var from this class
      *
@@ -86,7 +85,6 @@ class jazzquiz_session
     {
         return $this->session;
     }
-
 
     /**
      * Creates a new session
@@ -100,13 +98,13 @@ class jazzquiz_session
         global $DB;
 
         $newSession = new \stdClass();
-        $newSession->name = $data->sessionname;
+        $newSession->name = $data->session_name;
         $newSession->jazzquizid = $this->rtq->getRTQ()->id;
         $newSession->sessionopen = 1;
         $newSession->status = 'notrunning';
-        $newSession->anonymize_responses = true; //$data->anonymizeresponses;
-        $newSession->fully_anonymize = false; //$data->fullanonymize;
-        $newSession->showfeedback = false; //$data->showfeedback;
+        $newSession->anonymize_responses = true;
+        $newSession->fully_anonymize = false;
+        $newSession->showfeedback = false;
         $newSession->created = time();
 
         try {
@@ -122,8 +120,6 @@ class jazzquiz_session
     }
 
     /**
-     *
-     *
      * @param string $status
      *
      * @return bool
@@ -133,7 +129,6 @@ class jazzquiz_session
         $this->session->status = $status;
         return $this->save_session();
     }
-
 
     /**
      * Saves the session object to the db
@@ -175,7 +170,7 @@ class jazzquiz_session
     {
         global $DB;
 
-        // delete all attempt qubaids, then all realtime quiz attempts, and then finally itself
+        // Delete all attempt qubaids, then all realtime quiz attempts, and then finally itself
         \question_engine::delete_questions_usage_by_activities(new \mod_jazzquiz\utils\qubaids_for_rtq($sessionid));
         $DB->delete_records('jazzquiz_attempts', array('sessionid' => $sessionid));
         $DB->delete_records('jazzquiz_groupattendance', array('sessionid' => $sessionid));
@@ -184,44 +179,14 @@ class jazzquiz_session
         return true;
     }
 
-
     /**
      * Starts the quiz for the session
      *
-     * All attempts are already running so basically we get and add the current question
-     * to the session and pick a start time so all clients start at the same time
-     *
-     * @return \mod_jazzquiz\jazzquiz_question
+     * All attempts are now running, so we give controls to the instructor.
      */
     public function start_quiz()
     {
-
-        $fQuestion = $this->rtq->get_questionmanager()->get_first_question($this->openAttempt);
-        if (empty($fQuestion)) {
-            return false; // return false for no first question
-        }
-
         $this->set_status('preparing');
-
-        /*$this->session->currentqnum = 1;
-        $this->session->nextstarttime = time() + $this->rtq->getRTQ()->waitforquestiontime;
-        $this->session->currentquestion = $fQuestion->get_slot();
-        if ($fQuestion->getQuestionTime() == 0 && $fQuestion->getNoTime() == 0) {
-            $questiontime = $this->rtq->getRTQ()->defaultquestiontime;
-        } else if ($fQuestion->getNoTime() == 1) {
-            // here we're spoofing a question time of 0.  This is so the javascript recognizes that we don't want a timer
-            // as it reads a question time of 0 as no timer
-            $questiontime = 0;
-        } else {
-            $questiontime = $fQuestion->getQuestionTime();
-        }
-
-        $this->session->currentquestiontime = $questiontime;*/
-
-        $this->save_session();
-
-        // return the question to respond to the caller
-        return $fQuestion;
     }
 
     /**
@@ -232,8 +197,7 @@ class jazzquiz_session
      */
     public function end_session()
     {
-
-        // clear and reset properties on the session
+        // Clear and reset properties on the session
         $this->session->status = 'notrunning';
         $this->session->sessionopen = 0;
         $this->session->currentquestion = null;
@@ -241,13 +205,14 @@ class jazzquiz_session
         $this->session->currentquestiontime = null;
         $this->session->nextstarttime = null;
 
-        // get all attempts and close them
+        // Get all attempts and close them
         $attempts = $this->getall_open_attempts(true);
         foreach ($attempts as $attempt) {
             /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             $attempt->close_attempt($this->rtq);
         }
-        // save the session as closed
+
+        // Save the session as closed
         $this->save_session();
 
         return true;
@@ -340,24 +305,13 @@ class jazzquiz_session
     }
 
     /**
-     * Updates the status of the session
-     *
-     */
-    public function end_question()
-    {
-        $this->set_status('endquestion');
-    }
-
-    /**
      * Gets the results of the current question as an array
      *
      *
      */
-    public function get_question_results_list($question_type)
+    public function get_question_results_list($slot, $open)
     {
-
-        $attempts = $this->getall_open_attempts(false);
-        $slot = $this->session->currentquestion;
+        $attempts = $this->getall_attempts(false, $open);
         $responses = [];
 
         foreach ($attempts as $attempt) {
@@ -365,54 +319,18 @@ class jazzquiz_session
             if ($attempt->responded != 1) {
                 continue;
             }
-            $attempt_responses = $attempt->get_response_data($slot, $question_type);
+            $attempt_responses = $attempt->get_response_data($slot);
             $responses = array_merge($responses, $attempt_responses);
         }
 
         // TODO: Remove this and update the JavaScript instead. The 'response' key is kinda useless.
         foreach ($responses as &$response) {
-            $response = [ 'response' => $response ];
+            $response = [
+                'response' => $response
+            ];
         }
 
         return $responses;
-    }
-
-    /**
-     * Gets the results of the current question
-     *
-     */
-    public function get_question_results()
-    {
-        // Load all active attempts
-        $attempts = $this->getall_open_attempts(false);
-
-        $totalresponsesummary = '';
-        $responded = 0;
-        foreach ($attempts as $attempt) {
-            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
-            if ($attempt->responded == 1) {
-                $responded++;
-                $attempt->summarize_response($this->session->currentquestion);
-                $anonymous = true;
-                if ($this->session->anonymize_responses == 0 && $this->session->fully_anonymize == 0) {
-                    $anonymous = false;
-                }
-                $totalresponsesummary .= $this->rtq->get_renderer()->render_response($attempt, $responded, $anonymous);
-
-            }
-        }
-
-        // next allow question modifiers to modify the output
-        $currQuestion = $this->rtq->get_questionmanager()->get_question_with_slot($this->session->currentqnum, $this->openAttempt);
-        $return = $this->rtq->call_question_modifiers('modify_questionresults_duringquiz', $currQuestion, $currQuestion, $attempts, $totalresponsesummary);
-
-        if (!empty($return)) {
-            // we have an updated output
-            $totalresponsesummary = $return;
-        }
-
-        return $totalresponsesummary;
-
     }
 
     /**
@@ -469,14 +387,11 @@ class jazzquiz_session
     }
 
     /**
-     *
-     *
      * @return string
      */
     public function get_question_right_response()
     {
-
-        // just use the instructor's question attempt to re-render the question with the right response
+        // Just use the instructor's question attempt to re-render the question with the right response
 
         $attempt = $this->openAttempt;
 
@@ -496,10 +411,9 @@ class jazzquiz_session
 
             return $attempt->render_question($this->session->currentquestion, true, $reviewoptions);
         } else {
-            return 'no correct response';
+            return 'No correct response';
         }
     }
-
 
     /**
      * Loads/initializes attempts
@@ -513,7 +427,7 @@ class jazzquiz_session
      */
     public function init_attempts($preview = 0, $group = null, $groupmembers = null)
     {
-        global $DB, $USER;
+        global $DB;
 
         if (empty($this->session)) {
             return false;  // return false if there's no session
@@ -535,7 +449,7 @@ class jazzquiz_session
             $attempt->responded_count = 0;
             $attempt->timefinish = null;
 
-            // add forgroupid to attempt if we're in group mode
+            // Add forgroupid to attempt if we're in group mode
             if ($this->rtq->group_mode()) {
                 $attempt->forgroupid = $group;
             } else {
@@ -543,14 +457,17 @@ class jazzquiz_session
             }
 
             $attempt->save();
+
             if (!$this->session->fully_anonymize) {
-                // create attempt_created event
-                $params = array(
+
+                // Create attempt_created event
+                $params = [
                     'objectid' => $attempt->id,
                     'relateduserid' => $attempt->userid,
                     'courseid' => $this->rtq->getCourse()->id,
                     'context' => $this->rtq->getContext()
-                );
+                ];
+
                 $event = \mod_jazzquiz\event\attempt_started::create($params);
                 $event->add_record_snapshot('jazzquiz', $this->rtq->getRTQ());
                 $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
@@ -558,8 +475,8 @@ class jazzquiz_session
             }
 
             if ($this->rtq->group_mode() && $this->rtq->getRTQ()->groupattendance == 1) {
-                // if we're doing group attendance add group members to group attendance table
 
+                // If we're doing group attendance add group members to group attendance table
                 $groupmembers = explode(',', $groupmembers);
                 foreach ($groupmembers as $userid) {
                     $gattendance = new \stdClass();
@@ -578,8 +495,9 @@ class jazzquiz_session
             $this->openAttempt = $attempt;
 
         } else {
-            // check the preview field on the attempt to see if it's in line with the value passed
-            // if not set it to be correct
+
+            // Check the preview field on the attempt to see if it's in line with the value passed
+            // If not set it to be correct
             if ($openAttempt->preview != $preview) {
                 $openAttempt->preview = $preview;
                 $openAttempt->save();
@@ -588,7 +506,7 @@ class jazzquiz_session
             $this->openAttempt = $openAttempt;
         }
 
-        return true; // return true if we get to here
+        return true;
     }
 
     /**
@@ -775,23 +693,21 @@ class jazzquiz_session
      */
     public function get_open_attempt_for_current_user()
     {
-
-        // use the getall attempts with the specified options
+        // Use the getall attempts with the specified options
         // skip checking for groups since we only want to initialize attempts for the actual current user
         $this->attempts = $this->getall_attempts(true, 'all', $this->get_current_userid(), true);
 
-        // go through each attempt and see if any are open.  if not, create a new one.
-        $openAttempt = false;
+        // Go through each attempt and see if any are open.  if not, create a new one.
+        $open_attempt = false;
         foreach ($this->attempts as $attempt) {
 
             /** @var jazzquiz_attempt $attempt doc comment for type hinting */
             if ($attempt->getStatus() == 'inprogress' || $attempt->getStatus() == 'notstarted') {
-                $openAttempt = $attempt;
+                $open_attempt = $attempt;
             }
         }
 
-        return $openAttempt;
-
+        return $open_attempt;
     }
 
     /**
@@ -803,9 +719,7 @@ class jazzquiz_session
     public function getall_open_attempts($includepreviews)
     {
         global $DB;
-
         $attempts = $this->getall_attempts($includepreviews, 'open');
-
         return $attempts;
     }
 
@@ -888,19 +802,18 @@ class jazzquiz_session
             }
         }
 
-        $wherestring = implode(' AND ', $where);
+        $where_string = implode(' AND ', $where);
 
-        $sql = "SELECT * FROM {jazzquiz_attempts} WHERE $wherestring";
+        $sql = "SELECT * FROM {jazzquiz_attempts} WHERE $where_string";
 
-        $dbattempts = $DB->get_records_sql($sql, $sqlparams);
+        $db_attempts = $DB->get_records_sql($sql, $sqlparams);
 
         $attempts = [];
-        foreach ($dbattempts as $dbattempt) {
-            $attempts[$dbattempt->id] = new jazzquiz_attempt($this->rtq->get_questionmanager(), $dbattempt, $this->rtq->getContext());
+        foreach ($db_attempts as $db_attempt) {
+            $attempts[$db_attempt->id] = new jazzquiz_attempt($this->rtq->get_questionmanager(), $db_attempt, $this->rtq->getContext());
         }
 
         return $attempts;
-
     }
 
 }

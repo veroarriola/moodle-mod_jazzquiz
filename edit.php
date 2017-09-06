@@ -23,19 +23,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 require_once('../../config.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 
-
-global $OUTPUT;
-
-
-$editlib = new \mod_jazzquiz\controllers\edit();
-
-// set up the edit page
-$editlib->setup_page('/mod/jazzquiz/edit.php');
-$editlib->handle_action();
-
+$edit = new \mod_jazzquiz\controllers\edit();
+$edit->setup_page('/mod/jazzquiz/edit.php');
+$edit->handle_action();
 

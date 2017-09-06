@@ -22,25 +22,34 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// General Strings.
+// General
 $string['modulename'] = 'JazzQuiz';
 $string['modulename_help'] = '
-<p>The JazzQuiz activity enables an instructor to create and administer quizzes in real-time.  All regular quiz question types can be used in the JazzQuiz.</p>
-<p>JazzQuiz allows individual or group participation. Group attendance is possible so points given during the JazzQuiz will only be applied to the participants that attended the session.  Questions can be set to allow multiple attempts. A time limit may be set to automatically end the question, or the instructor can manually end the question and move on to the next one.  The instructor also has the ability to jump to different questions while  running the session. Instructors can monitor group or individual participation, real-time responses of the participants and the question being polled. </p>
-<p>Each quiz attempt is marked automatically like a regular quiz (with the exception of essay and PoodLL questions) and the grade is recorded in the gradebook. Grading for group participation can be done automatically by transferring the grade from the single responder to the other group members. </p>
-<p>The instructor has options to show hints, give feedback and show correct answers to students upon quiz completion.</p>
-<p>JazzQuizzes may be used as a vehicle for delivering Team Based Learning inside Moodle.</p>
-';
+<p>
+    The JazzQuiz activity enables an instructor to create and administer quizzes in real-time. All regular quiz question types can be used in the JazzQuiz.
+</p>
+<p>
+    JazzQuiz allows individual or group participation. Group attendance is possible so points given during the quiz will only be applied to the participants that attended the session.
+    Questions can be set to allow multiple attempts. A time limit may be set to automatically end the question, or the instructor can manually end the question and move on to the next one.
+    The instructor also has the ability to jump to different questions while  running the session. Instructors can monitor group or individual participation, real-time responses of the participants and the question being polled.
+</p>
+<p>
+    Grading for group participation can be done automatically by transferring the grade from the single responder to the other group members.
+</p>
+<p>
+    The instructor has options to show hints, give feedback and show correct answers to students upon quiz completion.
+</p>
+<p>
+    JazzQuizzes may be used as a vehicle for delivering Team Based Learning inside Moodle.
+</p>';
+
 $string['modulenameplural'] = 'JazzQuizzes';
 $string['jazzquizsettings'] = 'General JazzQuiz settings';
 $string['pluginadministration'] = 'JazzQuiz administration';
 $string['pluginname'] = 'JazzQuiz';
-$string['view'] = 'View quiz';
-$string['edit'] = 'Edit quiz';
-$string['responses'] = 'View responses';
-$string['attempts'] = 'Attempts';
-$string['overallgrade'] = 'Overall grade: {$a->overallgrade} / {$a->scale}';
 
+$string['attempts'] = 'Attempts';
+$string['invalid_attempt_access'] = 'You do not have permission to access this attempt';
 $string['jazzquiz:addinstance'] = 'Add an instance of jazzquiz';
 $string['jazzquiz:attempt'] = 'Attempt an JazzQuiz';
 $string['jazzquiz:control'] = 'Control an JazzQuiz. (Usually for instructors only)';
@@ -48,159 +57,141 @@ $string['jazzquiz:editquestions'] = 'Edit questions for an JazzQuiz.';
 $string['jazzquiz:seeresponses'] = 'View other student responses to grade them';
 $string['jazzquiz:viewownattempts'] = 'Allows students to see their own attempts at a quiz';
 
-$string['invalidattemptaccess'] = 'You do not have permission to access this attempt';
+// Tabs
+$string['view'] = 'View';
+$string['edit'] = 'Edit';
+$string['review'] = 'Review';
 
-// event strings.
-$string['eventattemptstarted'] = 'Attempt started';
-$string['eventattemptviewed'] = 'Attempt viewed';
-$string['eventquestionmanuallygraded'] = 'Question manually graded';
-$string['eventquestionanswered'] = 'Question answered for attempt';
+// Info
+$string['wait_for_question'] = 'Waiting for the question to be sent in:';
+$string['wait_for_students'] = 'Waiting for students to connect';
+$string['loading'] = 'Initializing Quiz';
+$string['closing_session'] = 'Closing session...';
+$string['session_closed'] = 'Session is now closed';
+$string['no_tries'] = 'You have no tries left for this question';
+$string['wait_for_reviewing_to_end'] = 'The instructor is currently reviewing the previous question. Please wait for the next question to start';
+$string['wait_for_instructor'] = 'Please wait for the instructor to start the next question.';
+$string['gathering_results'] = 'Gathering results...';
+$string['question_will_end_in'] = 'Your question will end and auto-submit in: ';
+$string['you_have_n_tries_left'] = 'You have {$a->tries} tries left.';
 
-// Scale types.
-$string['firstsession'] = 'First session';
-$string['lastsession'] = 'Last session';
-$string['sessionaverage'] = 'Session average';
-$string['highestsessiongrade'] = 'Highest session grade';
+// Event
+$string['event_attempt_started'] = 'Attempt started';
+$string['event_attempt_viewed'] = 'Attempt viewed';
+$string['event_question_answered'] = 'Question answered for attempt';
 
-
-// Mod form strings.
-$string['jazzquizsettings'] = 'General JazzQuiz settings';
-$string['jazzquizintro'] = 'Introduction';
-$string['defaultquestiontime'] = 'Default question time';
-$string['defaultquestiontime_help'] = 'The default time to display each question.<br />
-This can be overriden by individual questions.';
-
-$string['waitforquestiontime'] = 'Wait for question time';
-$string['waitforquestiontime_help'] = 'The time to wait for a question to start/lead in time.';
-
-$string['gradesettings'] = 'Grade settings';
-$string['scale'] = 'Maximum Grade';
-$string['scale_help'] = 'This value (integer) will scale whatever points that are received on the quiz to this value.';
-$string['grademethod'] = 'Session grading method';
-$string['grademethod_help'] = 'This is the method that is used when grading.  This method is for figuring out the grading with multiple sessions in the same jazzquiz';
-$string['assessed'] = 'Assessed';
-$string['assessed_help'] = 'Check this box to make your quiz assessed';
-
-// Anonymous strings.
-$string['anonymousresponses'] = 'Anonymize student responses';
-$string['anonymousresponses_help'] = 'Anonymize student responses for the instructor\'s view so that if their screen is being shown, student\'s names or group names will not be shown';
-$string['fullanonymize'] = 'Fully anonymize student responses';
-$string['fullanonymize_help'] = 'Fully anonymize student responses.  Please note, that if you select this option, this session\'s responses will not be graded and applied to students.';
-$string['anonymoususer'] = 'Anonymous user';
-$string['isanonymous'] = 'All responses to this JazzQuiz are anonymous';
-
-$string['groupworksettings'] = 'Group settings';
-$string['nochangegroups_label'] = '&nbsp;';
-$string['nochangegroups'] = 'You cannot change groups after creating sessions or there are no groupings defined for this course.';
-$string['workedingroups'] = 'Will work in groups.';
-$string['workedingroups_help'] = 'Check this box to indicate that students will work in groups.  Be sure to select a grouping below';
+// Form
+$string['general_settings'] = 'General JazzQuiz settings';
+$string['introduction'] = 'Introduction';
+$string['default_question_time'] = 'Default question time';
+$string['default_question_time_help'] = 'The default time to display each question.<br>This can be overridden by individual questions.';
+$string['wait_for_question_time'] = 'Wait for question time';
+$string['wait_for_question_time_help'] = 'The time to wait for a question to start/lead in time.';
+$string['group_work_settings'] = 'Group settings';
+$string['no_change_groups_label'] = '&nbsp;';
+$string['no_change_groups'] = 'You cannot change groups after creating sessions or there are no groupings defined for this course.';
+$string['worked_in_groups'] = 'Will work in groups.';
+$string['worked_in_groups_help'] = 'Check this box to indicate that students will work in groups.  Be sure to select a grouping below';
 $string['grouping'] = 'Grouping';
 $string['grouping_help'] = 'Select the grouping that you\'d like to use for grouping students';
-$string['groupattendance'] = 'Allow group attendance';
-$string['groupattendance_help'] = 'If this box is enabled, the student taking the quiz can select which students in their group that are in attendance.';
-$string['reviewoptionsettings'] = 'Review options';
-$string['reviewafter'] = 'Review options after session is over';
-$string['marks'] = 'Grades';
-$string['marks_help'] = 'The numerical grade for each question, and the overall atempt score';
-$string['theattempt'] = 'The attempt';
-$string['theattempt_help'] = 'Whether the student can review the attempt at all.';
-$string['reviewafter'] = 'After the sessions are closed';
-$string['manualcomment'] = 'Manual Comment';
-$string['manualcomment_help'] = 'The comment that instructors can add when grading an attempt';
+$string['group_attendance'] = 'Allow group attendance';
+$string['group_attendance_help'] = 'If this box is enabled, the student taking the quiz can select which students in their group that are in attendance.';
+$string['review_option_settings'] = 'Review options';
+$string['review_after'] = 'Review options after session is over';
+$string['the_attempt'] = 'The attempt';
+$string['the_attempt_help'] = 'Whether the student can review the attempt at all.';
+$string['review_after'] = 'After the sessions are closed';
+$string['manual_comment'] = 'Manual Comment';
+$string['manual_comment_help'] = 'The comment that instructors can add when grading an attempt';
 
+// Edit
+$string['questions'] = 'Questions';
+$string['add'] = 'Add';
+$string['question'] = 'Question';
+$string['add_question'] = 'Add question';
+$string['delete_question'] = 'Delete question {$a}';
+$string['question_finished'] = 'Question finished, waiting for results';
+$string['question_move_down'] = 'Move question {$a} down';
+$string['question_move_up'] = 'Move question {$a} up';
+$string['question_time'] = 'Question time';
+$string['question_time_help'] = 'Question time in seconds.';
+$string['no_time_limit'] = 'No time limit';
+$string['no_time_help'] = 'Check this field to have no timer on this question. <p>The instructor will then be required to click the end question button for the question to end</p>';
+$string['invalid_question_time'] = 'Question time must be an integer of 0 or above';
+$string['number_of_tries'] = 'Number of tries';
+$string['invalid_number_of_tries'] = 'Number of tries must be an integer of 1 or above';
+$string['number_of_tries_help'] = 'Number of tries for a user to try at a question.  Students will still be bound by the question time limit';
+$string['show_history_during_quiz'] = 'Show response history';
+$string['show_history_during_quiz_help'] = 'Show the student/group response history for this question while reviewing responses to a question during a quiz.';
+$string['successfully_moved_question'] = 'Successfully moved question';
+$string['failed_to_move_question'] = 'Couldn\'t move question';
+$string['successfully_deleted_question'] = 'Successfully deleted question';
+$string['failed_to_delete_question'] = 'Couldn\'t delete question';
+$string['edit_question'] = 'Edit question';
+$string['save_question'] = 'Save question';
+$string['cant_add_question_twice'] = 'You can not add the same question more than once to a quiz';
+$string['edit_page_open_session_error'] = 'You cannot edit a quiz question or layout while a session is open.';
+$string['create_new_question'] = 'Create new question';
+$string['add_to_quiz'] = 'Add to quiz';
 
-// edit page.
-$string['questionlist'] = 'Question List';
-$string['addtoquiz'] = 'Add';
-$string['question'] = 'Question ';
-$string['addquestion'] = 'Add question';
-$string['questiondelete'] = 'Delete question {$a}';
-$string['questionfinished'] = 'Question finished, waiting for results';
-$string['questionmovedown'] = 'Move question {$a} down';
-$string['questionmoveup'] = 'Move question {$a} up';
-$string['indvquestiontime'] = 'Question Time';
-$string['indvquestiontime_help'] = 'Question time in seconds.';
-$string['notime'] = 'No timelimit';
-$string['notime_help'] = 'Check this field to have no timer on this question. <p>The instructor will then be required to click the end question button for the question to end</p>';
-$string['invalid_indvquestiontime'] = 'Question time must be an integer of 0 or above';
-$string['numberoftries'] = 'Number of tries';
-$string['invalid_numberoftries'] = 'Number of tries must be an integer of 1 or above';
-$string['numberoftries_help'] = 'Number of tries for a user to try at a question.  Students will still be bound by the question time limit';
-$string['points'] = 'Question Points';
-$string['points_help'] = 'The number of points you\'d like this question to be worth';
-$string['invalid_points'] = 'Points are required and must be a number greater than 0';
-$string['showhistoryduringquiz'] = 'Show response history';
-$string['showhistoryduringquiz_help'] = 'Show the student/group response history for this question while reviewing responses to a question during a quiz.';
-
-
-$string['qmovesuccess'] = 'Successfully moved question';
-$string['qmoveerror'] = 'Couldn\'t move question';
-
-$string['qdeletesucess'] = 'Successfully deleted question';
-$string['qdeleteerror'] = 'Couldn\'t delete question';
-$string['questionedit'] = 'Edit question';
-$string['savequestion'] = 'Save question';
-
-$string['cantaddquestiontwice'] = 'You can not add the same question more than once to a quiz';
-$string['editpage_opensession_error'] = 'You cannot edit a quiz question or layout while a session is open.';
-
-// view page.
-$string['quiznotrunning'] = 'Quiz not running at the moment - wait for your teacher to start it.  Use the reload button to reload this page to check again';
-$string['teacherjoinquizinstruct'] = 'Use this if you want to try out a quiz yourself<br />(you will also need to start the quiz in a separate window)';
-$string['teacherstartinstruct'] = 'Use this to start a quiz for the students to take<br />Use the textbox to define a name for this session (to help when looking through the results at a later date).';
+// Session
+$string['quiz_not_running'] = 'Quiz not running at the moment - wait for your teacher to start it. Use the reload button to reload this page to check again';
+$string['teacher_start_instructions'] = 'Start a quiz for the students to take.<br>Define a session name below to help when looking through the results at a later date.';
 $string['no_questions'] = 'There are no questions added to this quiz.';
-$string['sessionname'] = 'Session name';
-$string['sessionname_required'] = 'The session name is required';
+$string['session_name'] = 'Session name';
+$string['session_name_required'] = 'The session name is required';
 $string['start_session'] = 'Start Session';
-$string['unabletocreate_session'] = 'Unable to create sesson';
-$string['cantinitattempts'] = 'Can\'t initialize attempts for you';
-$string['sessionnametext'] = '<span style="font-weight: bold">Session: </span>';
-$string['joinquizinstructions'] = 'Click below to join the quiz';
-$string['instructorsessionsgoing'] = 'There is a session already in progress.  Please click the button below to go to the session';
-$string['gotosession'] = 'Go to session in progress';
-$string['nosession'] = 'There is no open session';
-$string['joinquiz'] = 'Join Quiz';
+$string['unable_to_create_session'] = 'Unable to create sesson';
+$string['cant_init_attempts'] = 'Can\'t initialize attempts for you';
+$string['session_name_text'] = '<span style="font-weight: bold">Session: </span>';
+$string['join_quiz_instructions'] = 'Click below to join the quiz';
+$string['instructor_sessions_going'] = 'There is a session already in progress.  Please click the button below to go to the session';
+$string['goto_session'] = 'Go to session in progress';
+$string['no_session'] = 'There is no open session';
+$string['join_quiz'] = 'Join Quiz';
 $string['select_group'] = 'Select your group';
-$string['attemptstartedalready'] = 'An attempt has already been started by one of your group members';
-$string['attemptstarted'] = 'An attempt has already been started by you, please click below to continue to your open attempt';
-$string['invalidgroupid'] = 'A valid group id is required for students';
+$string['attempt_started_already'] = 'An attempt has already been started by one of your group members';
+$string['attempt_started'] = 'An attempt has already been started by you, please click below to continue to your open attempt';
+$string['invalid_group_id'] = 'A valid group id is required for students';
+$string['first_session'] = 'First session';
+$string['last_session'] = 'Last session';
+$string['view_stats'] = 'View quiz stats';
+$string['jump_to_question_instructions'] = 'Select a question that you\'d like to go to:';
+$string['invalid_question_attempt'] = 'Invalid Question ($a->questionname) being added to quiz attempt. ';
 
-// during quiz.
+// Instructor Controls
 $string['startquiz'] = 'Start quiz';
-$string['waitforquestion'] = 'Waiting for the question to be sent in:';
-$string['waitstudent'] = 'Waiting for students to connect';
-$string['invalidquestionattempt'] = 'Invalid Question ($a->questionname) being added to quiz attempt. ';
-$string['viewstats'] = 'View quiz stats';
-$string['closesession'] = 'Close session';
-$string['nextquestion'] = 'Next question';
-$string['repollquestion'] = 'Re-poll question';
-$string['endquestion'] = 'End question';
-$string['loading'] = 'Initializing Quiz';
-$string['timertext'] = 'Your question will end and auto-submit in: ';
-$string['gatheringresults'] = 'Gathering results...';
-$string['feedbackintro'] = 'Feedback for your question.  Please wait for the instructor to start the next question';
-$string['waitforinstructor'] = 'Please wait for the instructor to start the next question.';
-$string['nofeedback'] = 'There is no feedback for this question';
-$string['closingsession'] = 'Closing session...';
-$string['sessionclosed'] = 'Session is now closed';
-$string['reload_results'] = 'Reload Results';
-$string['notresponded'] = 'Number not responded out of attempts';
-$string['trycount'] = 'You have {$a->tries} tries left.';
-$string['notries'] = 'You have no tries left for this question';
-$string['waitforrevewingend'] = 'The instructor is currently reviewing the previous question.  Please wait for the next question to start';
+$string['repoll'] = 'Re-poll';
+$string['vote'] = 'Vote';
+$string['improvise'] = 'Improvise';
+$string['jump_to'] = 'Jump to';
+$string['next'] = 'Next';
+$string['end'] = 'End';
+$string['fullscreen'] = 'Fullscreen';
+$string['quit'] = 'Quit';
+$string['responded'] = 'Responded';
+$string['responses'] = 'Responses';
+$string['answer'] = 'Answer';
 
-$string['show_correct_answer'] = 'Show correct answer';
-$string['hide_correct_answer'] = 'Hide correct answer';
+// Quiz Review
+$string['select_session'] = 'Select session to review:';
+$string['group_membership'] = 'Group membership';
+$string['view_attempt'] = 'View attempt';
 
-$string['jumptoquesetioninstructions'] = 'Select a question that you\'d like to go to:';
-$string['jumptoquestion'] = 'Go to question';
-$string['showstudentresponses'] = 'Show responses';
-$string['hidestudentresponses'] = 'Hide responses';
-$string['hidenotresponded'] = 'Hide not responded';
-$string['shownotresponded'] = 'Show not responded';
+// Attempts
+$string['time_completed'] = 'Time completed';
+$string['time_modified'] = 'Time modified';
+$string['started_on'] = 'Started on';
+$string['attempt_number'] = 'Attempt Number';
+$string['response_attempt_controls'] = 'Edit/View Attempt';
+
+// Admin Settings
+$string['enabled_question_types'] = 'Enable question types';
+$string['enabled_question_types_info'] = 'Question types that are enabled for use within instances of the JazzQuiz activity.';
 
 // Instructions.
-$string['instructorquizinst'] = '
+$string['instructions_for_student'] = '<p>Please wait for the instructor to start the quiz.</p>';
+$string['instructions_for_instructor'] = '
     <h3>Please make sure to read the instructions:</h3>
     <table>
         <tr>
@@ -291,36 +282,4 @@ $string['instructorquizinst'] = '
                 Exit the current quiz session.
             </td>
         </tr>
-    </table>
-';
-
-$string['studentquizinst'] = '<p>Please wait for the instructor to start the quiz.</p>';
-
-// Responses page.
-$string['selectsession'] = 'Select session to view:&nbsp;&nbsp;&nbsp;&nbsp;';
-$string['activitygrades'] = 'Activity grades: ';
-$string['groupmembership'] = 'Group membership';
-$string['regradeallgrades'] = 'Regrade all grades';
-$string['successregrade'] = 'Successfully regraded quiz';
-$string['errorregrade'] = 'Sorry, there was an error in trying to re-grade all of the quizzes';
-
-// session attempts table.
-$string['attemptno'] = 'Attempt Number';
-$string['startedon'] = 'Started on';
-$string['timecompleted'] = 'Time completed';
-$string['attempt_grade'] = 'Attempt grade';
-$string['response_attempt_controls'] = 'Edit/View Attempt';
-$string['timemodified'] = 'Time modified';
-
-// view own attempts table and related strings.
-$string['sessionname'] = 'Session name';
-$string['attemptview'] = 'View attempt';
-
-// Question modifier strings.
-
-// Multi-Choice.
-$string['countdatasetlabel'] = 'Number of Answers';
-$string['percentagedatasetlabel'] = 'Percentage of total answers';
-
-$string['enabledquestiontypes'] = 'Enable question types';
-$string['enabledquestiontypes_info'] = 'Question types that are enabled for use within instances of the JazzQuiz activity.';
+    </table>';

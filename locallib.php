@@ -23,50 +23,63 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 /**
  * Prints local lib tabs
  *
  * @param \mod_jazzquiz\jazzquiz $RTQ Realtime quiz class
- * @param                            $currenttab
+ * @param                        $current_tab
  *
  * @return string HTML string of the tabs
  */
-function jazzquiz_view_tabs($RTQ, $currenttab) {
-    $tabs = array();
-    $row = array();
-    $inactive = array();
-    $activated = array();
+function jazzquiz_view_tabs($RTQ, $current_tab)
+{
+    $tabs = [];
+    $row = [];
+    $inactive = [];
+    $activated = [];
+
+    $cm_id = $RTQ->getCM()->id;
 
     if ($RTQ->has_capability('mod/jazzquiz:attempt')) {
-        $row[] = new tabobject('view', new moodle_url('/mod/jazzquiz/view.php', array('id' => $RTQ->getCM()->id)), get_string('view', 'jazzquiz'));
-    }
-    if ($RTQ->has_capability('mod/jazzquiz:editquestions')) {
-        $row[] = new tabobject('edit', new moodle_url('/mod/jazzquiz/edit.php', array('cmid' => $RTQ->getCM()->id)), get_string('edit', 'jazzquiz'));
-    }
-    if ($RTQ->has_capability('mod/jazzquiz:seeresponses')) {
-        $row[] = new tabobject('reports', new moodle_url('/mod/jazzquiz/reports.php', array('id' => $RTQ->getCM()->id)), get_string('responses', 'jazzquiz'));
+        $view_url = new moodle_url('/mod/jazzquiz/view.php', [
+            'id' => $cm_id
+        ]);
+        $row[] = new tabobject('view', $view_url, get_string('view', 'jazzquiz'));
     }
 
-    if ($currenttab == 'view' && count($row) == 1) {
+    if ($RTQ->has_capability('mod/jazzquiz:editquestions')) {
+        $edit_url = new moodle_url('/mod/jazzquiz/edit.php', [
+            'cmid' => $cm_id
+        ]);
+        $row[] = new tabobject('edit', $edit_url, get_string('edit', 'jazzquiz'));
+    }
+
+    if ($RTQ->has_capability('mod/jazzquiz:seeresponses')) {
+        $reports_url = new moodle_url('/mod/jazzquiz/reports.php', [
+            'id' => $cm_id
+        ]);
+        $row[] = new tabobject('reports', $reports_url, get_string('review', 'jazzquiz'));
+    }
+
+    if ($current_tab == 'view' && count($row) == 1) {
         // No tabs for students
-        echo '<br />';
+        echo '<br>';
     } else {
         $tabs[] = $row;
     }
 
-    if ($currenttab == 'reports') {
+    if ($current_tab == 'reports') {
         $activated[] = 'reports';
     }
 
-    if ($currenttab == 'edit') {
+    if ($current_tab == 'edit') {
         $activated[] = 'edit';
     }
 
-    if ($currenttab == 'view') {
+    if ($current_tab == 'view') {
         $activated[] = 'view';
     }
 
-    return print_tabs($tabs, $currenttab, $inactive, $activated, true);
+    return print_tabs($tabs, $current_tab, $inactive, $activated, true);
 }
 

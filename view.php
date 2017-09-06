@@ -31,9 +31,7 @@ require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 
-$viewlib = new \mod_jazzquiz\controllers\view();
-
-$viewlib->setup_page('/mod/jazzquiz/view.php');
-
-$viewlib->handle_request();
+$view = new \mod_jazzquiz\controllers\view();
+$view->setup_page('/mod/jazzquiz/view.php');
+$view->handle_request();
 

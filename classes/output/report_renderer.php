@@ -1,4 +1,5 @@
 <?php
+
 namespace mod_jazzquiz\output;
 
 // This file is part of Moodle - http://moodle.org/
@@ -28,28 +29,21 @@ use mod_jazzquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
-class report_renderer extends \plugin_renderer_base {
-
-
+class report_renderer extends \plugin_renderer_base
+{
     use renderer_base;
 
-    public function report_header() {
-
+    public function report_header()
+    {
         $this->base_header('reports');
-
-        $options = [
-            'overview' => 'Overview Report'
-        ];
-
-        echo $this->output->single_select($this->pageurl, 'report_type', $options, $this->pagevars['report_type']);
-
     }
 
     /**
      * Basic footer for the responses page
      *
      */
-    public function report_footer() {
+    public function report_footer()
+    {
         $this->base_footer();
     }
 

@@ -28,47 +28,34 @@ require_once($CFG->libdir . '/formslib.php');
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class start_session extends \moodleform {
-
+class start_session extends \moodleform
+{
     /**
      * Overriding parent function to account for namespace in the class name
      * so that client validation works
      *
      * @return mixed|string
      */
-    protected function get_form_identifier() {
-
+    protected function get_form_identifier()
+    {
         $class = get_class($this);
-
         return preg_replace('/[^a-z0-9_]/i', '_', $class);
     }
-
 
     /**
      * Definition of the session start form
      *
      */
-    public function definition() {
-
+    public function definition()
+    {
         $mform = $this->_form;
 
-        $mform->addElement('text', 'sessionname', get_string('sessionname', 'jazzquiz'));
-        $mform->setType('sessionname', PARAM_TEXT);
-        $mform->addRule('sessionname', get_string('sessionname_required', 'jazzquiz'), 'required', null, 'client');
-
-        /*$mform->addElement('advcheckbox', 'anonymizeresponses', get_string('anonymousresponses', 'jazzquiz'));
-        $mform->addHelpButton('anonymizeresponses', 'anonymousresponses', 'jazzquiz');
-        $mform->setDefault('anonymizeresponses', 1);
-        $mform->disabledIf('anonymizeresponses', 'fullanonymize', 'checked');
-
-        $mform->addElement('advcheckbox', 'fullanonymize', get_string('fullanonymize', 'jazzquiz'));
-        $mform->addHelpButton('fullanonymize', 'fullanonymize', 'jazzquiz');
-        $mform->setDefault('fullanonymize', 0);
-
-        $mform->addElement('advcheckbox', 'showfeedback', 'Show feedback');
-        $mform->setDefault('showfeedback', 0);*/
+        $mform->addElement('text', 'session_name', get_string('session_name', 'jazzquiz'));
+        $mform->setType('session_name', PARAM_TEXT);
+        $mform->addRule('session_name', get_string('session_name_required', 'jazzquiz'), 'required', null, 'client');
 
         $mform->addElement('submit', 'submitbutton', get_string('start_session', 'jazzquiz'));
+
     }
 
     /**
@@ -79,17 +66,14 @@ class start_session extends \moodleform {
      *
      * @return array $errors array of errors
      */
-    public function validations($data, $files) {
-
-        $errors = array();
-
-        if (empty($data['sessionname'])) {
-            $errors['sessionname'] = get_string('sessionname_required', 'jazzquiz');
+    public function validations($data, $files)
+    {
+        $errors = [];
+        if (empty($data['session_name'])) {
+            $errors['session_name'] = get_string('session_name_required', 'jazzquiz');
         }
-
         return $errors;
     }
-
 
 }
 

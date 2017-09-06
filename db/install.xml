@@ -11,13 +11,9 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="graded" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="whether or not the quiz is graded"/>
-        <FIELD NAME="scale" TYPE="int" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="The maximum amount of points to scale the end grade to"/>
-        <FIELD NAME="grademethod" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="The grading method for grading.  This only applies to grading with multiple sessions, not multiple attempts"/>
         <FIELD NAME="workedingroups" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Bit to specify if the activity is set up to work in groups"/>
         <FIELD NAME="groupattendance" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not we want to have the user specify the group members present for the quiz"/>
         <FIELD NAME="grouping" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The grouping id that this activity is set up to use for groups"/>
-        <FIELD NAME="reviewoptions" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON encoded string of the review options from the mod form"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="defaultquestiontime" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="30" SEQUENCE="false" COMMENT="How long do they get for each question?"/>
@@ -36,7 +32,6 @@
         <FIELD NAME="notime" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Bit field to signify there is no time limit for this question"/>
         <FIELD NAME="questiontime" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Question time in seconds.  0 means default for the quiz"/>
         <FIELD NAME="tries" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="number of tries for the question"/>
-        <FIELD NAME="points" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="1.00" SEQUENCE="false" DECIMALS="2" COMMENT="Number of points for this question"/>
         <FIELD NAME="showhistoryduringquiz" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not to show the question step data with a response during the quiz"/>
       </FIELDS>
       <KEYS>
@@ -48,8 +43,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="jazzquizid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="the jazzquizid for the sessions"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="the session name"/>
-        <FIELD NAME="anonymize_responses" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Anonymize student names within a session"/>
-        <FIELD NAME="fully_anonymize" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Fully anonymize the session, meaning that userids will not be kept for attempts and therefore grading will not be possible for the session"/>
+        <FIELD NAME="anonymize_responses" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Anonymize student names"/>
         <FIELD NAME="sessionopen" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not the session is open"/>
         <FIELD NAME="showfeedback" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not students should receive feedback after answering"/>
         <FIELD NAME="status" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="the current status/state of the session"/>
@@ -57,7 +51,6 @@
         <FIELD NAME="currentqnum" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the current question number we're on"/>
         <FIELD NAME="currentquestiontime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the time the current question is allowed in seconds"/>
         <FIELD NAME="nextqnum" TYPE="int" LENGTH="11" DEFAULT="0" NOTNULL="true" SEQUENCE="false" COMMENT="If 0, currentqnum is used. Otherwise, this field is the next qnum."/>
-        <FIELD NAME="classresult" TYPE="number" LENGTH="6" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="the overall class result for the session.   TODO: not sure if this will be needed or not"/>
         <FIELD NAME="nextstarttime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the timestamp of the next start time"/>
         <FIELD NAME="created" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="the timestamp that this was created"/>
       </FIELDS>
@@ -94,18 +87,6 @@
         <FIELD NAME="timefinish" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the datetime/timestamp for when the attempt was finished"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="the datetime/timestamp for when this attempt record was modified"/>
         <FIELD NAME="qubalayout" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="the layout for this particular attempt"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-    </TABLE>
-    <TABLE NAME="jazzquiz_grades" COMMENT="jazzquiz grades table to hold grades for individual users">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="jazzquizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="the jazzquiz id"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The userid that this grade is for"/>
-        <FIELD NAME="grade" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0.00000" SEQUENCE="false" DECIMALS="5" COMMENT="The grade for this user, for this jazzquiz"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The time created/modified for this grade"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

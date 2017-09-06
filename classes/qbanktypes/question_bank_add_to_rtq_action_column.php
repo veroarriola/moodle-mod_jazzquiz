@@ -32,7 +32,7 @@ class question_bank_add_to_rtq_action_column extends \core_question\bank\action_
 
     public function init() {
         parent::init();
-        $this->stradd = get_string('addtoquiz', 'jazzquiz');
+        $this->stradd = get_string('add_to_quiz', 'jazzquiz');
     }
 
     public function get_name() {

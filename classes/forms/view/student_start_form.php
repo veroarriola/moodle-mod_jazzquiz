@@ -99,7 +99,7 @@ class student_start_form extends \moodleform {
         if ($rtq->group_mode() && $rtq->getRTQ()->groupattendance == 1) {
             $mform->addElement('submit', 'submitbutton', get_string('continue'));
         } else {
-            $mform->addElement('submit', 'submitbutton', get_string('joinquiz', 'mod_jazzquiz'));
+            $mform->addElement('submit', 'submitbutton', get_string('join_quiz', 'mod_jazzquiz'));
         }
 
     }

@@ -26,19 +26,10 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class reports {
-
-    /** @var \mod_jazzquiz\jazzquiz Active quiz class */
-    protected $jazzquiz;
-
+class reports extends base
+{
     /** @var \mod_jazzquiz\jazzquiz_session $session The session class for the jazzquiz view */
     protected $session;
-
-    /** @var \moodle_url $pageurl The page url to base other calls on */
-    protected $pageurl;
-
-    /** @var array $this ->pagevars An array of page options for the page load */
-    protected $pagevars;
 
     /** @var  \mod_jazzquiz\output\report_renderer $renderer */
     protected $renderer;
@@ -46,93 +37,48 @@ class reports {
     /**
      * set up the class for the view page
      *
-     * @param string $baseurl the base url of the page
+     * @param string $base_url the base url of the page
      */
-    public function setup_page($baseurl) {
-        global $PAGE, $CFG, $DB;
+    public function setup_page($base_url)
+    {
+        global $PAGE;
 
-        $this->pagevars = array();
+        $this->load($base_url);
 
-        $this->pageurl = new \moodle_url($baseurl);
-        $this->pageurl->remove_all_params();
+        $this->pageurl->param('id', $this->cm->id);
+        $this->pageurl->param('quizid', $this->quiz->id);
 
-        $id = optional_param('id', false, PARAM_INT);
-        $quizid = optional_param('quizid', false, PARAM_INT);
+        $this->pagevars['report_type'] = optional_param('reporttype', 'overview', PARAM_ALPHA);
+        $this->pagevars['action'] = optional_param('action', '', PARAM_ALPHANUM);
 
-        // get necessary records from the DB
-        if ($id) {
-            $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('jazzquiz', array('id' => $cm->instance), '*', MUST_EXIST);
-        } else {
-            $quiz = $DB->get_record('jazzquiz', array('id' => $quizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
-            $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
-        }
-        $this->get_parameters(); // get the rest of the parameters and set them in the class
-
-        require_login($course->id, false, $cm);
-
-        $this->pageurl->param('id', $cm->id);
-        $this->pageurl->param('quizid', $quiz->id);
         $this->pageurl->param('reporttype', $this->pagevars['report_type']);
         $this->pageurl->param('action', $this->pagevars['action']);
+
         $this->pagevars['pageurl'] = $this->pageurl;
 
-        $this->jazzquiz = new \mod_jazzquiz\jazzquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars, 'report');
+        $this->jazzquiz = new \mod_jazzquiz\jazzquiz($this->cm, $this->course, $this->quiz, $this->pageurl, $this->pagevars, 'report');
         $this->jazzquiz->require_capability('mod/jazzquiz:seeresponses');
 
         $this->renderer = $this->jazzquiz->get_renderer();
 
-
         $PAGE->set_pagelayout('incourse');
         $PAGE->set_context($this->jazzquiz->getContext());
-        $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "jazzquiz") . ': ' .
-            format_string($quiz->name, true)));
-        $PAGE->set_heading($course->fullname);
+        $PAGE->set_title(strip_tags($this->course->shortname . ': ' . get_string('modulename', 'jazzquiz') . ': ' . format_string($this->quiz->name, true)));
+        $PAGE->set_heading($this->course->fullname);
         $PAGE->set_url($this->pageurl);
     }
-
 
     /**
      * Handles the page request
      *
      */
-    public function handle_request() {
-        global $DB, $PAGE;
-
-            $report = $this->resolve_report_class();
-
-
-            $this->renderer->report_header($this->pageurl, $this->pagevars);
-            $report->handle_request($this->pageurl, $this->pagevars);
-            $this->renderer->report_footer();
-
+    public function handle_request()
+    {
+        $report = new \mod_jazzquiz\reports\report_overview($this->jazzquiz);
+        $this->renderer->report_header($this->pageurl, $this->pagevars);
+        $report->handle_request($this->pageurl, $this->pagevars);
+        $this->renderer->report_footer();
     }
 
-    /**
-     * Gets the extra parameters for the class
-     *
-     */
-    protected function get_parameters() {
-
-        $this->pagevars['report_type'] = optional_param('reporttype', 'overview', PARAM_ALPHA);
-        $this->pagevars['action'] = optional_param('action', '', PARAM_ALPHANUM);
-
-    }
-
-    /**
-     * Returns an instance of report based on the report type.  All report classes must implement the ireport interface
-     *
-     * @return \mod_jazzquiz\reports\ireport
-     */
-    protected function resolve_report_class() {
-
-        if(class_exists('\\mod_jazzquiz\\reports\\' . $this->pagevars['report_type'] . '\\report_' . $this->pagevars['report_type'])){
-            $class = '\\mod_jazzquiz\\reports\\' . $this->pagevars['report_type'] . '\\report_' . $this->pagevars['report_type'];
-            return new $class($this->jazzquiz);
-        }
-
-    }
 }
 

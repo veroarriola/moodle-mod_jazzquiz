@@ -190,7 +190,7 @@ jazzquiz.start_response_merge = function(from_row_bar_id) {
         this.current_responses[into_row.dataset.response_i].count += parseInt(row.dataset.count);
         this.current_responses.splice(row.dataset.response_i, 1);
 
-        this.quiz_info_responses(this.current_responses, this.qtype);
+        this.quiz_info_responses('jazzquiz_responses_container', 'current_responses_wrapper', this.current_responses, this.qtype, this.quiz.current_question_slot);
         this.end_response_merge();
 
         return;
@@ -250,7 +250,7 @@ jazzquiz.create_response_controls = function(name) {
 
 };
 
-jazzquiz.create_response_bar_graph = function (responses, name, target_id, slot) {
+jazzquiz.create_response_bar_graph = function (responses, name, name_unique, target_id, slot) {
 
     var target = document.getElementById(target_id);
     if (target === null) {
@@ -280,6 +280,8 @@ jazzquiz.create_response_bar_graph = function (responses, name, target_id, slot)
     }
 
     this.create_response_controls(name);
+
+    name += name_unique;
 
     // Add rows
     for (var i = 0; i < responses.length; i++) {
@@ -373,7 +375,7 @@ jazzquiz.sort_response_bar_graph = function (target_id) {
     }
 };
 
-jazzquiz.quiz_info_responses = function (responses, qtype, slot) {
+jazzquiz.quiz_info_responses = function (wrapper_id, table_id, responses, qtype, slot) {
 
     if (responses === undefined) {
         console.log('Responses is undefined.');
@@ -435,10 +437,10 @@ jazzquiz.quiz_info_responses = function (responses, qtype, slot) {
     }
 
     // Make sure quiz info has the wrapper for the responses
-    var wrapper_current_responses = document.getElementById('wrapper_current_responses');
+    var wrapper_current_responses = document.getElementById(table_id); // wrapper_current_responses
     if (wrapper_current_responses === null) {
-        jQuery('#jazzquiz_responses_container').removeClass('hidden').html('<table id="wrapper_current_responses" class="jazzquiz-responses-overview"></table>', true);
-        wrapper_current_responses = document.getElementById('wrapper_current_responses');
+        jQuery('#' + wrapper_id).removeClass('hidden').html('<table id="' + table_id + '" class="jazzquiz-responses-overview"></table>', true);
+        wrapper_current_responses = document.getElementById(table_id);
 
         // This should not happen, but check just in case quiz_info fails to set the html.
         if (wrapper_current_responses === null) {
@@ -447,8 +449,8 @@ jazzquiz.quiz_info_responses = function (responses, qtype, slot) {
     }
 
     // Update HTML
-    this.create_response_bar_graph(this.current_responses, 'current_response', 'wrapper_current_responses', slot);
-    this.sort_response_bar_graph('wrapper_current_responses');
+    this.create_response_bar_graph(this.current_responses, 'current_response', slot, table_id, slot);
+    this.sort_response_bar_graph(table_id);
 
 };
 
@@ -471,7 +473,7 @@ jazzquiz.start_quiz = function () {
 
 jazzquiz.handle_question = function (slot) {
 
-    this.show_loading(this.text('gatheringresults'));
+    this.show_loading(this.text('gathering_results'));
 
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
@@ -650,7 +652,7 @@ jazzquiz.get_and_show_vote_results = function () {
             slot = responses[0].slot;
         }
 
-        jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id, slot);
+        jazzquiz.create_response_bar_graph(responses, 'vote_response', slot, target_id, slot);
         jazzquiz.sort_response_bar_graph(target_id);
 
 
@@ -714,7 +716,7 @@ jazzquiz.gather_results = function () {
 
         jazzquiz.quiz.question.has_votes = response.has_votes;
 
-        jazzquiz.quiz_info_responses(response.responses, response.qtype, response.slot);
+        jazzquiz.quiz_info_responses('jazzquiz_responses_container', 'current_responses_wrapper', response.responses, response.qtype, response.slot);
 
     });
 
@@ -826,7 +828,7 @@ jazzquiz.end_question = function () {
 
 jazzquiz.close_session = function () {
 
-    this.show_loading(this.text('closingsession'));
+    this.show_loading(this.text('closing_session'));
 
     this.hide_instructions();
     this.hide_all_questions();
@@ -850,7 +852,7 @@ jazzquiz.close_session = function () {
             return;
         }
 
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html(jazzquiz.text('sessionclosed'));
+        jQuery('#jazzquiz_info_container').removeClass('hidden').html(jazzquiz.text('session_closed'));
 
     });
 

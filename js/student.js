@@ -32,7 +32,7 @@ jazzquiz.change_quiz_state = function (state, data) {
 
         case 'preparing':
             this.hide_instructions();
-            jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('waitforinstructor'));
+            jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('wait_for_instructor'));
             break;
 
         case 'running':
@@ -59,13 +59,13 @@ jazzquiz.change_quiz_state = function (state, data) {
             this.hide_instructions();
             this.hide_all_questions();
             this.handle_question_ending();
-            jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('waitforinstructor'));
+            jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('wait_for_instructor'));
             break;
 
         case 'sessionclosed':
             this.hide_instructions();
             this.hide_all_questions();
-            jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('sessionclosed'));
+            jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('session_closed'));
             break;
 
         case 'voting':
@@ -145,7 +145,7 @@ jazzquiz.handle_question = function (question_slot) {
 
     this.quiz.question.is_saving = true;
 
-    jQuery('#loadingtext').html(this.text('gatheringresults'));
+    jQuery('#loadingtext').html(this.text('gathering_results'));
 
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
@@ -179,7 +179,7 @@ jazzquiz.handle_question = function (question_slot) {
         // Show feedback to the students
         var feedback = response.feedback;
         var feedback_intro = document.createElement('div');
-        feedback_intro.innerHTML = jazzquiz.text('waitforinstructor');
+        feedback_intro.innerHTML = jazzquiz.text('wait_for_instructor');
         jQuery('#jazzquiz_info_container').removeClass('hidden').html(feedback_intro);
 
         if (feedback.length > 0) {
@@ -218,7 +218,7 @@ jazzquiz.save_vote = function () {
         }
 
         jazzquiz.hide_all_questions();
-        var wait_for_instructor = jazzquiz.text('waitforinstructor');
+        var wait_for_instructor = jazzquiz.text('wait_for_instructor');
 
         // Output info depending on the status
         switch (response.status) {

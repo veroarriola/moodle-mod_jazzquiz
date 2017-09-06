@@ -220,5 +220,39 @@ function xmldb_jazzquiz_upgrade($oldversion) {
 
     }
 
+    if ($oldversion < 2017082238) {
+
+        $jazzquiz_table = new xmldb_table('jazzquiz');
+        $jazzquiz_grades_table = new xmldb_table('jazzquiz_grades');
+        $jazzquiz_questions_table = new xmldb_table('jazzquiz_questions');
+        $jazzquiz_sessions_table = new xmldb_table('jazzquiz_sessions');
+
+        $dbman->drop_table($jazzquiz_grades_table);
+
+        $field = new xmldb_field('reviewoptions', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $dbman->drop_field($jazzquiz_table, $field);
+
+        $field = new xmldb_field('scale', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, null, null);
+        $dbman->drop_field($jazzquiz_table, $field);
+
+        $field = new xmldb_field('graded', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '1');
+        $dbman->drop_field($jazzquiz_table, $field);
+
+        $field = new xmldb_field('grademethod', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, null);
+        $dbman->drop_field($jazzquiz_table, $field);
+
+        $field = new xmldb_field('points', XMLDB_TYPE_INTEGER, '10, 2', null, XMLDB_NOTNULL, null, '1.00', 'tries');
+        $dbman->drop_field($jazzquiz_questions_table, $field);
+
+        $field = new xmldb_field('anonymize_responses', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, '0');
+        $dbman->drop_field($jazzquiz_sessions_table, $field);
+
+        $field = new xmldb_field('classresult', XMLDB_TYPE_NUMBER, '6, 2', null, null, null, null);
+        $dbman->drop_field($jazzquiz_sessions_table, $field);
+
+        // jazzquiz savepoint reached.
+        upgrade_mod_savepoint(true, 2017082238, 'jazzquiz');
+    }
+
     return true;
 }

@@ -54,14 +54,9 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
             'questionid', 'notime', 'questiontime', 'tries', 'points', 'showhistoryduringquiz'
         ));
 
-        $grades = new backup_nested_element('grades');
-        $grade = new backup_nested_element('grade', array('id'), array(
-            'userid', 'gradeval', 'timemodified'
-        ));
-
         $sessions = new backup_nested_element('sessions');
         $session = new backup_nested_element('session', array('id'), array(
-            'name', 'anonymize_responses', 'fully_anonymize', 'sessionopen', 'status', 'currentquestion',
+            'name', 'anonymize_responses', 'sessionopen', 'status', 'currentquestion',
             'currentqnum', 'currentquestiontime', 'classresult', 'nextstarttime', 'created'
         ));
 
@@ -84,9 +79,6 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
         $jazzquiz->add_child($questions);
         $questions->add_child($question);
 
-        $jazzquiz->add_child($grades);
-        $grades->add_child($grade);
-
         $jazzquiz->add_child($sessions);
         $sessions->add_child($session);
 
@@ -102,18 +94,13 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
 
         // If user info backup grades table.
         if ($userinfo) {
-            $grade->set_source_table('jazzquiz_grades', array('jazzquizid' => backup::VAR_PARENTID));
             $session->set_source_table('jazzquiz_sessions', array('jazzquizid' => backup::VAR_PARENTID));
             $attempt->set_source_table('jazzquiz_attempts', array('sessionid' => backup::VAR_PARENTID));
             $groupattendance->set_source_table('jazzquiz_groupattendance', array('attemptid' => backup::VAR_PARENTID));
         }
 
-        // Define source alias.
-        $grade->set_source_alias('grade', 'gradeval');
-
         // Define id annotations.
         $jazzquiz->annotate_ids('grouping', 'grouping');
-        $grade->annotate_ids('user', 'userid');
         $attempt->annotate_ids('user', 'userid');
         $attempt->annotate_ids('group', 'forgroupid');
         $question->annotate_ids('question', 'questionid');

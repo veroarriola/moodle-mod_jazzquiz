@@ -17,57 +17,6 @@
     margin: 5px;
 }
 
-/** Edit page CSS **/
-
-.jazzquizbox .questionlist li {
-    border: 1px solid;
-    border-radius: 5px;
-    min-height: 30px;
-    margin-top: 5px;
-    padding: 10px;
-    background: white;
-}
-
-.jazzquizbox .questionlist li:hover {
-
-    background: #dbdbdb;
-}
-
-.jazzquizbox .questionlist li div {
-    display: inline-block;
-}
-
-.jazzquizbox .questionlist .dragquestion {
-    width: 10%;
-    cursor: move;
-}
-
-.jazzquizbox .questionlist .icon {
-    vertical-align: middle;
-}
-
-.jazzquizbox .questionlist .name {
-    width: 50%;
-    vertical-align: middle;
-}
-
-.jazzquizbox .questionlist .name p {
-    margin: 0;
-}
-
-.jazzquizbox .questionlist .controls {
-    width: 30%;
-    vertical-align: middle;
-}
-
-.jazzquizbox .questionlist .controls img {
-    margin-right: 5px;
-}
-
-.jazzquizbox .questionlist .controls .space {
-    width: 12px;
-}
-
 .rtqstatusbox {
     border-radius: 20px;
     margin: 10px 5px 10px 35px;
@@ -438,6 +387,7 @@
 
 .improvise-menu.active {
     display: block;
+    z-index: 100;
 }
 
 .improvise-menu .btn {
@@ -583,5 +533,49 @@
     float: right;
     margin: 16px;
     font-size: 1.2rem;
+}
 
+.jazzquizbox .questionlist .dragquestion {
+    width: 10%;
+    cursor: move;
+}
+
+.jazzquizbox .questionlist .icon {
+    vertical-align: middle;
+    height: auto;
+}
+
+.jazzquizbox .questionlist .name {
+    width: 55%;
+    vertical-align: middle;
+}
+
+.jazzquizbox .questionlist .name p {
+    margin: 0;
+}
+
+.jazzquizbox .questionlist .controls {
+    width: 30%;
+    vertical-align: middle;
+    text-align: right;
+}
+
+.jazzquizbox .questionlist li {
+    min-height: 30px;
+    margin: 4px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background: #eee;
+}
+
+.jazzquizbox .questionlist li div {
+    display: inline-block;
+}
+
+.jazzquizbox .questionlist li:hover {
+    background: #ddd;
+}
+
+.jazzquizbox .questionlist li a:hover i.icon {
+    color: #2299ff;
 }

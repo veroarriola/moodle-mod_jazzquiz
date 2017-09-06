@@ -31,7 +31,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Structure step to restore one jazzquiz activity
  */
-class restore_jazzquiz_activity_structure_step extends restore_questions_activity_structure_step {
+class restore_jazzquiz_activity_structure_step extends restore_questions_activity_structure_step
+{
 
     /** @var \stdClass $currentrtqattempt Store the current attempt until the inform_new_usage_id is called */
     private $currentrtqattempt;
@@ -40,7 +41,8 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
     private $oldquestionorder;
 
 
-    protected function define_structure() {
+    protected function define_structure()
+    {
 
         $paths = array();
         $userinfo = $this->get_setting_value('userinfo');
@@ -49,7 +51,6 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         $paths[] = new restore_path_element('jazzquiz_question', '/activity/jazzquiz/questions/question');
 
         if ($userinfo) {
-            $paths[] = new restore_path_element('jazzquiz_grade', '/activity/jazzquiz/grades/grade');
             $paths[] = new restore_path_element('jazzquiz_session', '/activity/jazzquiz/sessions/session');
 
             $quizattempt = new restore_path_element('jazzquiz_attempt', '/activity/jazzquiz/sessions/session/attempts/attempt');
@@ -66,7 +67,8 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         return $this->prepare_activity_structure($paths);
     }
 
-    protected function process_jazzquiz($data) {
+    protected function process_jazzquiz($data)
+    {
         global $DB;
 
         $data = (object)$data;
@@ -83,7 +85,8 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         $this->apply_activity_instance($newitemid);
     }
 
-    protected function process_jazzquiz_question($data) {
+    protected function process_jazzquiz_question($data)
+    {
         global $DB;
 
         $data = (object)$data;
@@ -100,24 +103,11 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         $this->set_mapping('jazzquiz_question', $oldid, $newitemid);
     }
 
-    protected function process_jazzquiz_grade($data) {
+    protected function process_jazzquiz_session($data)
+    {
         global $DB;
 
-        $data = (object)$data;
-        $oldid = $data->id;
-        $data->jazzquizid = $this->get_new_parentid('jazzquiz');
-        $data->grade = $data->gradeval;
-        $data->userid = $this->get_mappingid('user', $data->userid);
-        $data->timemodified = $this->apply_date_offset($data->timemodified);
-
-        $newitemid = $DB->insert_record('jazzquiz_grades', $data);
-        $this->set_mapping('jazzquiz_grade', $oldid, $newitemid);
-    }
-
-    protected function process_jazzquiz_session($data) {
-        global $DB;
-
-        $data = (object)$data;
+        $data = (object) $data;
         $oldid = $data->id;
 
         $data->jazzquizid = $this->get_new_parentid('jazzquiz');
@@ -127,9 +117,8 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         $this->set_mapping('jazzquiz_session', $oldid, $newitemid);
     }
 
-    protected function process_jazzquiz_attempt($data) {
-        global $DB;
-
+    protected function process_jazzquiz_attempt($data)
+    {
         $data = (object)$data;
         $oldid = $data->id;
         $data->sessionid = $this->get_new_parentid('jazzquiz_session');
@@ -145,7 +134,8 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
     }
 
 
-    protected function inform_new_usage_id($newusageid) {
+    protected function inform_new_usage_id($newusageid)
+    {
         global $DB;
 
         $data = $this->currentrtqattempt;
@@ -158,7 +148,8 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         $this->set_mapping('jazzquiz_attempt', $oldid, $newitemid, false);
     }
 
-    protected function process_jazzquiz_groupattendance($data) {
+    protected function process_jazzquiz_groupattendance($data)
+    {
         global $DB;
 
         $data = (object)$data;
@@ -175,11 +166,9 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         $this->set_mapping('jazzquiz_groupattendance', $oldid, $newitemid);
     }
 
-    protected function after_execute() {
-        global $DB;
-
+    protected function after_execute()
+    {
         $this->recode_jazzquiz_questionorder();
-
         // Add intro files
         $this->add_related_files('mod_jazzquiz', 'intro', null);
     }
@@ -191,11 +180,12 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
      * Also deletes unused question records in case a random question record didn't match up with the question order
      *
      */
-    protected function recode_jazzquiz_questionorder() {
+    protected function recode_jazzquiz_questionorder()
+    {
         global $DB;
 
         $oldqorder = explode(',', $this->oldquestionorder);
-        $newqorder = array();
+        $newqorder = [];
 
         foreach ($oldqorder as $oldq) {
 
@@ -206,6 +196,8 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         }
 
         $newqorder = implode(',', $newqorder);
-        $DB->set_field('jazzquiz', 'questionorder', $newqorder, array('id' => $this->get_task()->get_activityid()));
+        $DB->set_field('jazzquiz', 'questionorder', $newqorder, [
+            'id' => $this->get_task()->get_activityid()
+        ]);
     }
 }

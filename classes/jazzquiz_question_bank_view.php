@@ -18,8 +18,6 @@ namespace mod_jazzquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
-use mod_jazzquiz\qbanktypes\question_bank_add_to_rtq_action_column;
-
 /**
  * Subclass of the question bank view class to change the way it works/looks
  *
@@ -28,23 +26,23 @@ use mod_jazzquiz\qbanktypes\question_bank_add_to_rtq_action_column;
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_question_bank_view extends \core_question\bank\view {
-
+class jazzquiz_question_bank_view extends \core_question\bank\view
+{
 
     /**
      * Define the columns we want to be displayed on the question bank
      *
      * @return array
      */
-    protected function wanted_columns() {
-
-        $defaultqbankcolums = array(
+    protected function wanted_columns()
+    {
+        $defaultqbankcolums = [
             'question_bank_add_to_rtq_action_column',
             'checkbox_column',
             'question_type_column',
             'question_name_column',
             'preview_action_column',
-        );
+        ];
 
         foreach ($defaultqbankcolums as $fullname) {
             if (!class_exists($fullname)) {
@@ -61,12 +59,11 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
                     throw new coding_exception("No such class exists: $fullname");
                 }
             }
-            $this->requiredcolumns[ $fullname ] = new $fullname($this);
+            $this->requiredcolumns[$fullname] = new $fullname($this);
         }
 
         return $this->requiredcolumns;
     }
-
 
     /**
      * Shows the question bank editing interface.
@@ -80,50 +77,55 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * category      Chooses the category
      * displayoptions Sets display options
      */
-    public function display($tabname, $page, $perpage, $cat,
-                            $recurse, $showhidden, $showquestiontext) {
-        global $PAGE, $OUTPUT;
+    public function display($tabname, $page, $perpage, $cat, $recurse, $showhidden, $showquestiontext)
+    {
+        global $OUTPUT;
 
         if ($this->process_actions_needing_ui()) {
             return;
         }
+
         $editcontexts = $this->contexts->having_one_edit_tab_cap($tabname);
+
         // Category selection form.
         echo $OUTPUT->heading(get_string('questionbank', 'question'), 2);
         array_unshift($this->searchconditions, new \core_question\bank\search\hidden_condition(!$showhidden));
-        array_unshift($this->searchconditions, new \core_question\bank\search\category_condition(
-            $cat, $recurse, $editcontexts, $this->baseurl, $this->course));
+        array_unshift($this->searchconditions, new \core_question\bank\search\category_condition($cat, $recurse, $editcontexts, $this->baseurl, $this->course));
         array_unshift($this->searchconditions, new jazzquiz_disabled_condition());
         $this->display_options_form($showquestiontext, '/mod/jazzquiz/edit.php');
 
         // Continues with list of questions.
-        $this->display_question_list($this->contexts->having_one_edit_tab_cap($tabname),
-            $this->baseurl, $cat, $this->cm,
-            null, $page, $perpage, $showhidden, $showquestiontext,
-            $this->contexts->having_cap('moodle/question:add'));
+        $this->display_question_list(
+            $this->contexts->having_one_edit_tab_cap($tabname),
+            $this->baseurl,
+            $cat,
+            $this->cm,
+            null,
+            $page,
+            $perpage,
+            $showhidden,
+            $showquestiontext,
+            $this->contexts->having_cap('moodle/question:add')
+        );
     }
 
-
     /**
-     * generate an add to realtime quiz url so that when clicked the question will be added to the quiz
+     * Generate an "add to quiz" url so that when clicked the question will be added to the quiz
      *
-     * @param int $questionid
+     * @param int $question_id
      *
      * @return \moodle_url Moodle url to add the question
      */
-    public function add_to_rtq_url($questionid) {
-
-        global $CFG;
+    public function add_to_rtq_url($question_id)
+    {
         $params = $this->baseurl->params();
-        $params['questionid'] = $questionid;
+        $params['questionid'] = $question_id;
         $params['action'] = 'addquestion';
         $params['sesskey'] = sesskey();
-
         return new \moodle_url('/mod/jazzquiz/edit.php', $params);
-
     }
 
-    /*
+    /**
      * This has been taken from the base class to allow us to call our own version of
      * create_new_question_button.
      *
@@ -131,12 +133,11 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * @param $canadd
      * @throws \coding_exception
      */
-    protected function create_new_question_form($category, $canadd) {
-        global $CFG;
+    protected function create_new_question_form($category, $canadd)
+    {
         echo '<div class="createnewquestion">';
         if ($canadd) {
-            $this->create_new_question_button($category->id, $this->editquestionurl->params(),
-                get_string('createnewquestion', 'question'));
+            $this->create_new_question_button($category->id, $this->editquestionurl->params(), get_string('create_new_question', 'jazzquiz'));
         } else {
             print_string('nopermissionadd', 'question');
         }
@@ -158,8 +159,9 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * @param string $tooltip a tooltip to add to the button (optional).
      * @param bool $disabled if true, the button will be disabled.
      */
-    private function create_new_question_button($categoryid, $params, $caption, $tooltip = '', $disabled = false) {
-        global $CFG, $PAGE, $OUTPUT;
+    private function create_new_question_button($categoryid, $params, $caption, $tooltip = '', $disabled = false)
+    {
+        global $OUTPUT;
         static $choiceformprinted = false;
 
         $config = get_config('jazzquiz');
@@ -167,11 +169,15 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
 
         $params['category'] = $categoryid;
         $url = new \moodle_url('/question/addquestion.php', $params);
-        echo $OUTPUT->single_button($url, $caption, 'get', array('disabled'=>$disabled, 'title'=>$tooltip));
+
+        echo $OUTPUT->single_button($url, $caption, 'get', [
+            'disabled' => $disabled,
+            'title' => $tooltip
+        ]);
 
         if (!$choiceformprinted) {
             echo '<div id="qtypechoicecontainer">';
-            echo print_choose_qtype_to_add_form(array(), $enabledtypes);
+            echo print_choose_qtype_to_add_form([], $enabledtypes);
             echo "</div>\n";
             $choiceformprinted = true;
         }

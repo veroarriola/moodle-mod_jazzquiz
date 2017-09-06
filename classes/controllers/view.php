@@ -26,10 +26,8 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class view {
-
-    /** @var \mod_jazzquiz\jazzquiz Realtime quiz class */
-    protected $RTQ;
+class view extends base
+{
 
     /** @var \mod_jazzquiz\jazzquiz_session $session The session class for the jazzquiz view */
     protected $session;
@@ -43,125 +41,73 @@ class view {
     /** @var \question_edit_contexts $contexts and array of contexts that has all parent contexts from the RTQ context */
     protected $contexts;
 
-    /** @var \moodle_url $pageurl The page url to base other calls on */
-    protected $pageurl;
-
-    /** @var array $this ->pagevars An array of page options for the page load */
-    protected $pagevars;
-
     /**
      * set up the class for the view page
      *
      * @param string $baseurl the base url of the page
      */
-    public function setup_page($baseurl) {
-        global $PAGE, $CFG, $DB;
+    public function setup_page($baseurl)
+    {
+        global $PAGE;
 
-        $this->pagevars = [];
+        $this->load($baseurl, true);
 
-        $this->pageurl = new \moodle_url($baseurl);
-        $this->pageurl->remove_all_params();
+        $this->pageurl->param('id', $this->cm->id);
+        $this->pageurl->param('quizid', $this->quiz->id);
 
-        $id = optional_param('id', false, PARAM_INT);
-        $quiz_id = optional_param('quizid', false, PARAM_INT);
+        $this->pagevars['action'] = optional_param('action', '', PARAM_ALPHANUM);
+        $this->pagevars['group'] = optional_param('group', '0', PARAM_INT);
+        $this->pagevars['groupmembers'] = optional_param('groupmembers', '', PARAM_RAW);
 
-        // Get necessary records from the DB
-        if ($id) {
-
-            $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
-
-            $this->update_improvised_questions_for_quiz($cm->instance, $cm->id);
-
-            $course = $DB->get_record('course', [ 'id' => $cm->course ], '*', MUST_EXIST);
-            $quiz = $DB->get_record('jazzquiz', [ 'id' => $cm->instance ], '*', MUST_EXIST);
-
-        } else if ($quiz_id) {
-
-            $quiz = $DB->get_record('jazzquiz', [ 'id' => $quiz_id ], '*', MUST_EXIST);
-            $course = $DB->get_record('course', [ 'id' => $quiz->course ], '*', MUST_EXIST);
-            $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
-
-            $this->update_improvised_questions_for_quiz($quiz_id, $cm->id);
-
-            // TODO: Avoid fetching again?
-            $quiz = $DB->get_record('jazzquiz', [ 'id' => $quiz_id ], '*', MUST_EXIST);
-
-        } else {
-
-            // Probably a login redirect that doesn't include any ID.
-            // Let's go back to the main Moodle page, because we have no info here.
-            header('Location: /');
-            exit;
-
-        }
-
-        // Get the rest of the parameters and set them in the class
-        $this->get_parameters();
-
-        require_login($course->id, false, $cm);
-
-        $this->pageurl->param('id', $cm->id);
-        $this->pageurl->param('quizid', $quiz->id);
         $this->pageurl->param('action', $this->pagevars['action']);
+
         $this->pagevars['pageurl'] = $this->pageurl;
 
-        $this->RTQ = new \mod_jazzquiz\jazzquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
-        $this->RTQ->require_capability('mod/jazzquiz:attempt');
+
+        $this->jazzquiz = new \mod_jazzquiz\jazzquiz($this->cm, $this->course, $this->quiz, $this->pageurl, $this->pagevars, null);
+        $this->jazzquiz->require_capability('mod/jazzquiz:attempt');
 
         // Set this up in the page vars so it can be passed to things like the renderer
-        $this->pagevars['isinstructor'] = $this->RTQ->is_instructor();
+        $this->pagevars['isinstructor'] = $this->jazzquiz->is_instructor();
 
         // Set up the question manager and the possible JazzQuiz session
-        $this->session = new \mod_jazzquiz\jazzquiz_session($this->RTQ, $this->pageurl, $this->pagevars);
+        $this->session = new \mod_jazzquiz\jazzquiz_session($this->jazzquiz, $this->pageurl, $this->pagevars);
 
-        $module_name = get_string("modulename", "jazzquiz");
-        $quiz_name = format_string($quiz->name, true);
+        $module_name = get_string('modulename', 'jazzquiz');
+        $quiz_name = format_string($this->quiz->name, true);
 
         $PAGE->set_pagelayout('incourse');
-        $PAGE->set_context($this->RTQ->getContext());
-        $PAGE->set_cm($this->RTQ->getCM());
-        $PAGE->set_title(strip_tags($course->shortname . ': ' . $module_name . ': ' . $quiz_name));
-        $PAGE->set_heading($course->fullname);
+        $PAGE->set_context($this->jazzquiz->getContext());
+        $PAGE->set_cm($this->jazzquiz->getCM());
+        $PAGE->set_title(strip_tags($this->course->shortname . ': ' . $module_name . ': ' . $quiz_name));
+        $PAGE->set_heading($this->course->fullname);
         $PAGE->set_url($this->pageurl);
 
-    }
-
-    private function update_improvised_questions_for_quiz($jazzquiz_id, $course_module_id)
-    {
-
-        // Add improvised questions if client is an instructor
-        if (!has_capability('mod/jazzquiz:control', \context_module::instance($course_module_id))) {
-            return;
-        }
-
-        // Remove and re-add all the improvised questions to make sure they're all added and last.
-        $improviser = new \mod_jazzquiz\improviser();
-        $improviser->remove_improvised_questions_from_quiz($jazzquiz_id);
-        $improviser->add_improvised_questions_to_quiz($jazzquiz_id);
     }
 
     /**
      * Handle's the page request
      *
      */
-    public function handle_request() {
-        global $DB, $USER, $PAGE;
+    public function handle_request()
+    {
+        global $DB, $PAGE;
 
         // first check if there are questions or not.  If there are no questions display that message instead,
         // regardless of action.
-        if (count($this->RTQ->get_questionmanager()->get_questions()) === 0) {
+        if (count($this->jazzquiz->get_questionmanager()->get_questions()) === 0) {
             $this->pagevars['action'] = 'noquestions';
             $this->pageurl->param('action', ''); // remove the action
         }
 
-        $renderer = $this->RTQ->get_renderer();
+        $renderer = $this->jazzquiz->get_renderer();
 
         switch ($this->pagevars['action']) {
 
             case 'noquestions':
 
                 $renderer->view_header();
-                $renderer->no_questions($this->RTQ->is_instructor());
+                $renderer->no_questions($this->jazzquiz->is_instructor());
                 $renderer->view_footer();
                 break;
 
@@ -175,7 +121,7 @@ class view {
                     // Redirect them to the default page with a quick message first
                     $redirurl = clone($this->pageurl);
                     $redirurl->remove_params('action');
-                    redirect($redirurl, get_string('nosession', 'jazzquiz'), 5);
+                    redirect($redirurl, get_string('no_session', 'jazzquiz'), 5);
 
                 } else {
 
@@ -183,9 +129,9 @@ class view {
                     // group members trying to take thequiz at the same time.
                     $cantakequiz = false;
 
-                    if ($this->RTQ->group_mode()) {
+                    if ($this->jazzquiz->group_mode()) {
 
-                        if(!$this->RTQ->is_instructor() && $this->pagevars['group'] == 0){
+                        if (!$this->jazzquiz->is_instructor() && $this->pagevars['group'] == 0) {
                             print_error('invalidgroupid', 'mod_jazzquiz');
                         }
 
@@ -203,7 +149,7 @@ class view {
                     if ($cantakequiz) {
 
                         // Initialize the question attempts
-                        if (!$this->session->init_attempts($this->RTQ->is_instructor(), $this->pagevars['group'], $this->pagevars['groupmembers'])) {
+                        if (!$this->session->init_attempts($this->jazzquiz->is_instructor(), $this->pagevars['group'], $this->pagevars['groupmembers'])) {
                             print_error('cantinitattempts', 'jazzquiz');
                         }
 
@@ -240,7 +186,7 @@ class view {
 
                     $this->pageurl->param('group', $this->pagevars['group']);
                     $groupselectform = new \mod_jazzquiz\forms\view\groupselectmembers($this->pageurl, [
-                        'rtq'           => $this->RTQ,
+                        'rtq' => $this->jazzquiz,
                         'selectedgroup' => $this->pagevars['group']
                     ]);
 
@@ -250,9 +196,9 @@ class view {
                         $gmemnum = 1;
                         $groupmembers = [];
                         $data = get_object_vars($data);
-                        while (isset($data[ 'gm' . $gmemnum ])) {
-                            if ($data[ 'gm' . $gmemnum ] != 0) {
-                                $groupmembers[] = $data[ 'gm' . $gmemnum ];
+                        while (isset($data['gm' . $gmemnum])) {
+                            if ($data['gm' . $gmemnum] != 0) {
+                                $groupmembers[] = $data['gm' . $gmemnum];
                             }
                             $gmemnum++;
                         }
@@ -282,15 +228,15 @@ class view {
                 // Trigger event for course module viewed
                 $event = \mod_jazzquiz\event\course_module_viewed::create([
                     'objectid' => $PAGE->cm->instance,
-                    'context'  => $PAGE->context,
+                    'context' => $PAGE->context,
                 ]);
 
-                $event->add_record_snapshot('course', $this->RTQ->getCourse());
-                $event->add_record_snapshot($PAGE->cm->modname, $this->RTQ->getRTQ());
+                $event->add_record_snapshot('course', $this->jazzquiz->getCourse());
+                $event->add_record_snapshot($PAGE->cm->modname, $this->jazzquiz->getRTQ());
                 $event->trigger();
 
                 // Determine home display based on role
-                if ($this->RTQ->is_instructor()) {
+                if ($this->jazzquiz->is_instructor()) {
 
                     $startsessionform = new \mod_jazzquiz\forms\view\start_session($this->pageurl);
 
@@ -300,14 +246,14 @@ class view {
                         // First check to see if there are any open sessions
                         // This shouldn't occur, but never hurts to check
                         $sessions = $DB->get_records('jazzquiz_sessions', [
-                            'jazzquizid' => $this->RTQ->getRTQ()->id,
+                            'jazzquizid' => $this->jazzquiz->getRTQ()->id,
                             'sessionopen' => 1
                         ]);
 
                         if (!empty($sessions)) {
 
                             // Error out with that there are existing sessions
-                            $renderer->setMessage(get_string('alreadyexisting_sessions', 'jazzquiz'), 'error');
+                            $renderer->setMessage(get_string('already_existing_sessions', 'jazzquiz'), 'error');
                             $renderer->view_header();
                             $renderer->view_inst_home($startsessionform, $this->session->get_session());
                             $renderer->view_footer();
@@ -320,7 +266,7 @@ class view {
                             if (!$session_created_successfully) {
 
                                 // Error handling
-                                $renderer->setMessage(get_string('unabletocreate_session', 'jazzquiz'), 'error');
+                                $renderer->setMessage(get_string('unable_to_create_session', 'jazzquiz'), 'error');
                                 $renderer->view_header();
                                 $renderer->view_inst_home($startsessionform, $this->session->get_session());
                                 $renderer->view_footer();
@@ -346,7 +292,7 @@ class view {
                     // Check to see if the group already started a quiz
                     $validgroups = [];
 
-                    if ($this->RTQ->group_mode()) {
+                    if ($this->jazzquiz->group_mode()) {
 
                         // If there is already an attempt for this session for this group for this user:
                         //  Don't allow them to start another
@@ -367,7 +313,7 @@ class view {
                     }
 
                     $studentstartformparams = [
-                        'rtq' => $this->RTQ,
+                        'rtq' => $this->jazzquiz,
                         'validgroups' => $validgroups
                     ];
 
@@ -379,14 +325,14 @@ class view {
                         $quizstarturl->param('action', 'quizstart');
 
                         // if data redirect to the quiz start url with the group selected if we're in group mode
-                        if ($this->RTQ->group_mode()) {
+                        if ($this->jazzquiz->group_mode()) {
                             $groupid = $data->group;
                             $quizstarturl->param('group', $groupid);
 
                             // check if the group attendance feature is enabled
                             // if so redirect to the group member select form
                             // don't send to group attendance form if an attempt is already started
-                            if ($this->RTQ->getRTQ()->groupattendance == 1 && !$this->session->get_open_attempt_for_current_user()) {
+                            if ($this->jazzquiz->getRTQ()->groupattendance == 1 && !$this->session->get_open_attempt_for_current_user()) {
                                 $quizstarturl->param('action', 'selectgroupmembers');
                             }
 
@@ -409,19 +355,6 @@ class view {
 
                 break;
         }
-    }
-
-
-    /**
-     * Gets the extra parameters for the class
-     *
-     */
-    protected function get_parameters() {
-
-        $this->pagevars['action'] = optional_param('action', '', PARAM_ALPHANUM);
-        $this->pagevars['group'] = optional_param('group', '0', PARAM_INT);
-        $this->pagevars['groupmembers'] = optional_param('groupmembers', '', PARAM_RAW);
-
     }
 
 }

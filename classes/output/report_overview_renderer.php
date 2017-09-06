@@ -1,4 +1,5 @@
 <?php
+
 namespace mod_jazzquiz\output;
 
 // This file is part of Moodle - http://moodle.org/
@@ -28,86 +29,58 @@ use mod_jazzquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
-class report_overview_renderer extends \plugin_renderer_base {
-
-
+class report_overview_renderer extends \plugin_renderer_base
+{
     use renderer_base;
 
     /**
      * renders and echos the home page fore the responses section
      *
-     * @param array      $sessions
-     * @param string|int $selectedid
+     * @param array $sessions
+     * @param string|int $selected_id
      */
-    public function select_session($sessions, $selectedid = '') {
-
-
+    public function select_session($sessions, $selected_id = '')
+    {
         $output = '';
 
-        $selectsession = \html_writer::start_div('');
-        $selectsession .= \html_writer::tag('h3', get_string('selectsession', 'jazzquiz'), array('class' => 'inline-block'));
+        $select_session = \html_writer::start_div('');
 
-        $sessionselecturl = clone($this->pageurl);
-        $sessionselecturl->param('action', 'viewsession');
+        $select_session .= \html_writer::tag('h3', get_string('select_session', 'jazzquiz'), [
+            'class' => 'inline-block'
+        ]) . '<br>';
 
-        $sessionoptions = array();
+        $session_select_url = clone($this->pageurl);
+        $session_select_url->param('action', 'viewsession');
+
+        $session_options = [];
         foreach ($sessions as $session) {
             /** @var \mod_jazzquiz\jazzquiz_session $session */
-            $sessionoptions[ $session->get_session()->id ] = $session->get_session()->name;
+            $session_options[$session->get_session()->id] = $session->get_session()->name;
         }
 
-        $sessionselect = new \single_select($sessionselecturl, 'sessionid', $sessionoptions, $selectedid);
+        $session_select = new \single_select($session_select_url, 'sessionid', $session_options, $selected_id);
 
-        $selectsession .= \html_writer::div($this->output->render($sessionselect), 'inline-block');
-        $selectsession .= \html_writer::end_div();
+        $select_session .= \html_writer::div($this->output->render($session_select), 'inline-block');
+        $select_session .= \html_writer::end_div();
 
-        $output .= $selectsession;
-
-        $regradeurl = clone($this->pageurl);
-        $regradeurl->param('action', 'regradeall');
-        $regradeall = new \single_button($regradeurl, get_string('regradeallgrades', 'jazzquiz'), 'GET');
-        $output .= \html_writer::div($this->output->render($regradeall), '');
+        $output .= $select_session;
 
         $output = \html_writer::div($output, 'jazzquizbox');
 
         echo $output;
-
-    }
-
-    /**
-     * Report home function.  is empty untill we need something on the home page
-     *
-     */
-    public function home() {
-
-
-        $gradestable = new \mod_jazzquiz\tableviews\overallgradesview('gradestable', $this->jazzquiz, $this->pageurl);
-
-        echo \html_writer::start_div('jazzquizbox');
-
-        echo \html_writer::tag('h3', get_string('activitygrades', 'jazzquiz'));
-
-        $gradestable->setup();
-        $gradestable->show_download_buttons_at(array(TABLE_P_BOTTOM));
-        $gradestable->set_data();
-        $gradestable->finish_output();
-
-        echo \html_writer::end_div();
     }
 
     /**
      * Renders the session attempts table
      *
-     * @param \mod_jazzquiz\tableviews\sessionattempts $sessionattempts
+     * @param \mod_jazzquiz\tableviews\sessionattempts $session_attempts
      */
-    public function view_session_attempts(\mod_jazzquiz\tableviews\sessionattempts $sessionattempts) {
-
-
-        $sessionattempts->setup();
-        $sessionattempts->show_download_buttons_at(array(TABLE_P_BOTTOM));
-        $sessionattempts->set_data();
-        $sessionattempts->finish_output();
-
+    public function view_session_attempts(\mod_jazzquiz\tableviews\sessionattempts $session_attempts)
+    {
+        $session_attempts->setup();
+        $session_attempts->show_download_buttons_at([ ABLE_P_BOTTOM ]);
+        $session_attempts->set_data();
+        $session_attempts->finish_output();
     }
 
 }

@@ -35,8 +35,8 @@ use \mod_jazzquiz\forms\edit\add_question_form;
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class questionmanager {
-
+class questionmanager
+{
     /** @var jazzquiz */
     protected $rtq;
 
@@ -55,7 +55,6 @@ class questionmanager {
     /** @var \moodle_url */
     protected $baseurl;
 
-
     /**
      * Construct an instance of question manager
      *
@@ -63,23 +62,27 @@ class questionmanager {
      * @param \mod_jazzquiz_renderer $renderer The realtime quiz renderer to render visual elements
      * @param array $pagevars page variables array
      */
-    public function __construct($rtq, $renderer, $pagevars = array())
+    public function __construct($rtq, $renderer, $pagevars = [])
     {
-        global $DB;
-
         $this->rtq = $rtq;
         $this->renderer = $renderer;
         $this->pagevars = $pagevars;
-        $this->orderedquestions = array();
+        $this->orderedquestions = [];
 
-        if ( !empty($this->pagevars) ) {
+        if (!empty($this->pagevars)) {
+
             $this->baseurl = $this->pagevars['pageurl'];
+
         } else {
-            $params = array('id' => $this->rtq->getCM()->id);
+
+            $params = [
+                'id' => $this->rtq->getCM()->id
+            ];
+
             $this->baseurl = new \moodle_url('/mod/jazzquiz/edit.php', $params);
         }
 
-        // load questions
+        // Load questions
         $this->refresh_questions();
     }
 
@@ -93,7 +96,6 @@ class questionmanager {
         return $this->rtq;
     }
 
-
     /**
      * Handles adding a question action from the question bank.
      *
@@ -104,12 +106,12 @@ class questionmanager {
      *
      * @return mixed
      */
-    public function add_question($questionid)
+    public function add_question($question_id)
     {
         global $DB;
 
         // Check if question has already been added
-        if ( $this->is_question_already_present($questionid) ) {
+        if ($this->is_question_already_present($question_id)) {
             $redurl = clone($this->pagevars['pageurl']);
             /** @var \moodle_url $redurl */
             $redurl->remove_params('action'); // go back to base edit page
@@ -119,11 +121,10 @@ class questionmanager {
 
         $question = new \stdClass();
         $question->jazzquizid = $this->rtq->getRTQ()->id;
-        $question->questionid = $questionid;
+        $question->questionid = $question_id;
         $question->notime = false;
         $question->questiontime = $this->rtq->getRTQ()->defaultquestiontime;
         $question->tries = 1;
-        $question->points = number_format('1.00', 2);
         $question->showhistoryduringquiz = false;
 
         $RTQquestionid = $DB->insert_record('jazzquiz_questions', $question);
@@ -151,52 +152,53 @@ class questionmanager {
         $actionurl->param('action', 'editquestion');
         $actionurl->param('rtqquestionid', $questionid);
 
-        $rtqquestion = $DB->get_record('jazzquiz_questions', array('id' => $questionid), '*', MUST_EXIST);
-        $qrecord = $DB->get_record('question', array('id' => $rtqquestion->questionid), '*', MUST_EXIST);
+        $rtqquestion = $DB->get_record('jazzquiz_questions', [
+            'id' => $questionid
+        ], '*', MUST_EXIST);
 
-        $mform = new add_question_form($actionurl,
-            array(
-                'rtq' => $this->rtq,
-                'questionname' => $qrecord->name,
-                'defaultmark' => $qrecord->defaultmark,
-                'showhistoryduringquiz' => $rtqquestion->showhistoryduringquiz,
-                'edit' => true));
+        $qrecord = $DB->get_record('question', [
+            'id' => $rtqquestion->questionid
+        ], '*', MUST_EXIST);
 
-        // form handling
-        if ( $mform->is_cancelled() ) {
-            // redirect back to list questions page
+        $mform = new add_question_form($actionurl, [
+            'rtq' => $this->rtq,
+            'questionname' => $qrecord->name,
+            'show_history_during_quiz' => $rtqquestion->showhistoryduringquiz,
+            'edit' => true
+        ]);
+
+        // Form handling
+        if ($mform->is_cancelled()) {
+
+            // Redirect back to list questions page
             $this->baseurl->remove_params('action');
             redirect($this->baseurl, null, 0);
 
-        } else if ( $data = $mform->get_data() ) {
-            // process data from the form
-
-            if ( number_format($data->points, 2) != $rtqquestion->points ) {
-                // if we have a different points, update any existing sessions/attempts max points and regrade.
-
-                $this->update_points(number_format($data->points, 2), $rtqquestion, $qrecord);
-
-            }
-
+        } else if ($data = $mform->get_data()) {
 
             $question = new \stdClass();
             $question->id = $rtqquestion->id;
             $question->jazzquizid = $this->rtq->getRTQ()->id;
             $question->questionid = $rtqquestion->questionid;
-            $question->notime = $data->notime;
-            $question->questiontime = $data->indvquestiontime;
-            $question->tries = $data->numberoftries;
-            $question->points = number_format($data->points, 2);
+            $question->notime = $data->no_time;
+            $question->questiontime = $data->question_time;
+            $question->tries = $data->number_of_tries;
 
             $DB->update_record('jazzquiz_questions', $question);
 
-            // ensure there is no action or questionid in the baseurl
+            // Ensure there is no action or question_id in the base url
             $this->baseurl->remove_params('action', 'questionid');
             redirect($this->baseurl, null, 0);
 
         } else {
-            // display the form
-            $mform->set_data(array('indvquestiontime' => $rtqquestion->questiontime, 'notime' => $rtqquestion->notime, 'numberoftries' => $rtqquestion->tries, 'points' => $rtqquestion->points));
+
+            // Display the form
+            $mform->set_data([
+                'question_time' => $rtqquestion->questiontime,
+                'no_time' => $rtqquestion->notime,
+                'number_of_tries' => $rtqquestion->tries
+            ]);
+
             $this->renderer->print_header();
             $this->renderer->addquestionform($mform);
             $this->renderer->footer();
@@ -206,22 +208,26 @@ class questionmanager {
     /**
      * Delete a question on the quiz
      *
-     * @param int $questionid The RTQ questionid to delete
+     * @param int $question_id The RTQ questionid to delete
      *
      * @return bool
      */
-    public function delete_question($questionid)
+    public function delete_question($question_id)
     {
         global $DB;
 
         try {
-            $DB->delete_records('jazzquiz_questions', array('id' => $questionid));
-            $this->update_questionorder('deletequestion', $questionid);
-        } catch(\Exception $e) {
-            return false; // return false on error
+
+            $DB->delete_records('jazzquiz_questions', [
+                'id' => $question_id
+            ]);
+
+            $this->update_questionorder('deletequestion', $question_id);
+
+        } catch (\Exception $e) {
+            return false;
         }
 
-        // if we get here return true
         return true;
     }
 
@@ -235,11 +241,9 @@ class questionmanager {
      */
     public function move_question($direction, $questionid)
     {
-
-        if ( $direction !== 'up' && $direction != 'down' ) {
-            return false; // return false if the direction is not up or down
+        if ($direction !== 'up' && $direction !== 'down') {
+            return false;
         }
-
         return $this->update_questionorder('movequestion' . $direction, $questionid);
     }
 
@@ -273,19 +277,17 @@ class questionmanager {
     /**
      * Gets the question type for the specified question number
      *
-     * @param int $qnum The question number to get the questiontype
+     * @param int $slot The question number to get the questiontype
      *
      *
      * @return string
      */
-    public function get_questiontype_byqnum($qnum)
+    public function get_questiontype_byqnum($slot)
     {
-
-        // get the actual key for the qbank question
-        $qbankkeys = array_keys($this->qbankOrderedQuestions);
-        $desiredkey = $qbankkeys[$qnum - 1];
-        $rtqQuestion = $this->qbankOrderedQuestions[$desiredkey];
-
+        // Get the actual key for the bank question
+        $bank_keys = array_keys($this->qbankOrderedQuestions);
+        $desired_key = $bank_keys[$slot - 1];
+        $rtqQuestion = $this->qbankOrderedQuestions[$desired_key];
         return $rtqQuestion->getQuestion()->qtype;
     }
 
@@ -304,46 +306,41 @@ class questionmanager {
     /**
      * Gets a jazzquiz_question object with the slot set
      *
-     * @param int $slotnum The index of the slot we want, i.e. the question number
+     * @param int $slot The index of the slot we want, i.e. the question number
      * @param \mod_jazzquiz\jazzquiz_attempt $attempt The current attempt
      *
      * @return \mod_jazzquiz\jazzquiz_question
      */
-    public function get_question_with_slot($slotnum, $attempt)
+    public function get_question_with_slot($slot, $attempt)
     {
-
         $slots = $attempt->getSlots();
         $quba = $attempt->get_quba();
 
-        // first check if this is the last question
-        if ( empty($slots[$slotnum]) ) {
-            $attempt->islastquestion(true);
-        } else {
-            $attempt->islastquestion(false);
-        }
+        // Check if this is the last question
+        $is_last_question = empty($slots[$slot]);
+        $attempt->islastquestion($is_last_question);
 
-        // since arrays are indexed starting at 0 and we reference questions starting with 1, we subtract 1
-        $slotnum = $slotnum - 1;
+        // Since arrays are indexed starting at 0 and we reference questions starting with 1, we subtract 1
+        $slot = $slot - 1;
 
+        // Get the first question
+        $quba_question = $quba->get_question($slots[$slot]);
 
-        // get the first question
-        $qubaQuestion = $quba->get_question($slots[$slotnum]);
-
-        foreach ($this->qbankOrderedQuestions as $qbankQuestion) {
+        foreach ($this->qbankOrderedQuestions as $bank_question) {
             /** @var \mod_jazzquiz\jazzquiz_question $qbankQuestion */
 
-            if ( $qbankQuestion->getQuestion()->id == $qubaQuestion->id ) {
-                // set the slot on the qbank question as this is the actual id we're using for question number
-                $qbankQuestion->set_slot($slots[$slotnum]);
+            if ($bank_question->getQuestion()->id == $quba_question->id) {
 
-                return $qbankQuestion;
+                // Set the slot on the bank question as this is the actual id we're using for question number
+                $bank_question->set_slot($slots[$slot]);
+
+                return $bank_question;
             }
         }
 
-        // if we get here return null due to no question
+        // No question
         return null;
     }
-
 
     /**
      * add the questions to the question usage
@@ -355,33 +352,30 @@ class questionmanager {
      */
     public function add_questions_to_quba(\question_usage_by_activity $quba)
     {
-
-        // we need the questionids of our questions
+        // We need the questionids of our questions
         $questionids = array();
         foreach ($this->qbankOrderedQuestions as $qbankquestion) {
             /** @var jazzquiz_question $qbankquestion */
 
-            if ( !in_array($qbankquestion->getQuestion()->id, $questionids) ) {
+            if (!in_array($qbankquestion->getQuestion()->id, $questionids)) {
                 $questionids[] = $qbankquestion->getQuestion()->id;
             }
         }
         $questions = question_load_questions($questionids);
 
-        // loop through the ordered question bank questions and add them to the quba
-        // object
-        $attemptlayout = array();
+        // Loop through the ordered question bank questions and add them to the quba object
+        $attemptlayout = [];
         foreach ($this->qbankOrderedQuestions as $qbankquestion) {
-
-            $questionid = $qbankquestion->getQuestion()->id;
-            $q = \question_bank::make_question($questions[$questionid]);
-            $attemptlayout[$qbankquestion->getId()] = $quba->add_question($q, $qbankquestion->getPoints());
+            $question_id = $qbankquestion->getQuestion()->id;
+            $q = \question_bank::make_question($questions[$question_id]);
+            $attemptlayout[$qbankquestion->getId()] = $quba->add_question($q);
         }
 
-        // start the questions in the quba
+        // Start the questions in the quba
         $quba->start_all_questions();
 
         /**
-         * return the attempt layout which is a set of ids that are the slot ids from the question engine usage by activity instance
+         * Return the attempt layout which is a set of ids that are the slot ids from the question engine usage by activity instance
          * these are what are used during an actual attempt rather than the questionid themselves, since the question engine will handle
          * the translation
          */
@@ -407,11 +401,8 @@ class questionmanager {
      */
     protected function set_question_order($questionorder)
     {
-
         $this->rtq->getRTQ()->questionorder = $questionorder;
-
         return $this->rtq->saveRTQ();
-
     }
 
     /**
@@ -471,10 +462,12 @@ class questionmanager {
                     if ($current_question_order == $question_id) {
 
                         if ($index == 0) {
-                            return false; // can't move first question up
+
+                            // Can't move first question up
+                            return false;
                         }
 
-                        // if ids match replace the previous index with the current one
+                        // If IDs match replace the previous index with the current one
                         // and make the previous index qid the current index
                         $previous_question_order = $question_order[$index - 1];
                         $question_order[$index - 1] = $question_id;
@@ -516,7 +509,7 @@ class questionmanager {
 
                 $new_question_order = implode(',', $question_order);
 
-                // set the question order and refresh the questions
+                // Set the question order and refresh the questions
                 $this->set_question_order($new_question_order);
                 $this->refresh_questions();
                 return true;
@@ -556,22 +549,20 @@ class questionmanager {
     }
 
     /**
-     * check whether the question id has already been added
+     * Check whether the question id has already been added
      *
-     * @param int $questionid
+     * @param int $question_id
      *
      * @return bool
      */
-    protected function is_question_already_present($questionid)
+    protected function is_question_already_present($question_id)
     {
-
-        // loop through the db rtq questions and see if we find a match
+        // Loop through the db rtq questions and see if we find a match
         foreach ($this->rtqQuestions as $dbRTQquestion) {
-            if ( $dbRTQquestion->questionid == $questionid ) {
+            if ($dbRTQquestion->questionid == $question_id) {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -595,7 +586,9 @@ class questionmanager {
     private function init_rtq_questions()
     {
         global $DB;
-        $this->rtqQuestions = $DB->get_records('jazzquiz_questions', array('jazzquizid' => $this->rtq->getRTQ()->id));
+        $this->rtqQuestions = $DB->get_records('jazzquiz_questions', [
+            'jazzquizid' => $this->rtq->getRTQ()->id
+        ]);
     }
 
     /**
@@ -607,109 +600,60 @@ class questionmanager {
     {
         global $DB;
 
-        // start by ordering the RTQ question ids into an array
-        $questionorder = $this->rtq->getRTQ()->questionorder;
+        // Start by ordering the RTQ question ids into an array
+        $question_order = $this->rtq->getRTQ()->questionorder;
 
-        // generate empty array for ordered questions for no question order
-        if ( empty($questionorder) ) {
+        // Generate empty array for ordered questions for no question order
+        if (empty($question_order)) {
 
-            $this->qbankOrderedQuestions = array();
-
+            $this->qbankOrderedQuestions = [];
             return;
 
-        } else { // otherwise explode it and continue on
-            $questionorder = explode(',', $questionorder);
+        } else {
+
+            // Otherwise explode it and continue on
+            $question_order = explode(',', $question_order);
         }
 
-        // using the question order saved in rtq object, get the qbank question ids from the rtq questions
-        $orderedquestionids = array();
-        foreach ($questionorder as $qorder) {
-            // store the rtq question id as the key so that it can be used later when adding question time to
-            // question bank question object
-            $orderedquestionids[$qorder] = $this->rtqQuestions[$qorder]->questionid;
+        // Using the question order saved in rtq object, get the qbank question ids from the rtq questions
+        $ordered_question_ids = [];
+        foreach ($question_order as $qorder) {
+
+            // Store the rtq question id as the key so that it can be used later
+            // when adding question time to question bank question object
+            $ordered_question_ids[$qorder] = $this->rtqQuestions[$qorder]->questionid;
         }
 
-        // get qbank questions based on the question ids from the RTQ questions table
-        list($sql, $params) = $DB->get_in_or_equal($orderedquestionids);
+        // Get bank questions based on the question ids from the RTQ questions table
+        list($sql, $params) = $DB->get_in_or_equal($ordered_question_ids);
         $query = 'SELECT * FROM {question} WHERE id ' . $sql;
         $questions = $DB->get_records_sql($query, $params);
 
         // Now order the qbank questions based on the order that we got above
-        $qbankOrderedQuestions = array();
-        foreach ($orderedquestionids as $rtqqid => $questionid) { // use the ordered question ids we got earlier
-            if ( !empty($questions[$questionid]) ) {
+        $qbankOrderedQuestions = [];
+        foreach ($ordered_question_ids as $rtqqid => $questionid) {
 
-                // create realtime quiz question and add it to the array
-                $quizquestion = new \mod_jazzquiz\jazzquiz_question($rtqqid,
+            // Use the ordered question IDs we got earlier
+            if (!empty($questions[$questionid])) {
+
+                // Create quiz question and add it to the array
+                $quiz_question = new \mod_jazzquiz\jazzquiz_question(
+                    $rtqqid,
                     $this->rtqQuestions[$rtqqid]->notime,
                     $this->rtqQuestions[$rtqqid]->questiontime,
                     $this->rtqQuestions[$rtqqid]->tries,
-                    $this->rtqQuestions[$rtqqid]->points,
                     $this->rtqQuestions[$rtqqid]->showhistoryduringquiz,
-                    $questions[$questionid]);
+                    $questions[$questionid]
+                );
 
-                $qbankOrderedQuestions[$rtqqid] = $quizquestion; // add question to the ordered questions
+                // Add question to the ordered questions
+                $qbankOrderedQuestions[$rtqqid] = $quiz_question;
             }
         }
 
         $this->qbankOrderedQuestions = $qbankOrderedQuestions;
     }
 
-    /**
-     * @param float $newpoints
-     * @param \stdClass $questionrecord
-     * @param \stdClass $qrecord
-     *
-     * @throws \moodle_exception  Throws moodle exception when a slot isn't found, or if unable to grade
-     * @return bool;
-     */
-    public function update_points($newpoints, $questionrecord, $qrecord)
-    {
-        global $DB;
-
-        $q = new \mod_jazzquiz\jazzquiz_question(
-            $questionrecord->id,
-            $questionrecord->notime,
-            $questionrecord->questiontime,
-            $questionrecord->tries,
-            $newpoints,
-            $questionrecord->showhistoryduringquiz,
-            $qrecord
-        );
-
-        $sessions = $this->rtq->get_sessions();
-
-        foreach ($sessions as $session) {
-
-            /** @var \mod_jazzquiz\jazzquiz_session $session */
-
-            if ( $session->get_session()->sessionopen === 1 ) {
-                continue;  // don't regrade attempts for an open session.
-            }
-
-            $session_attempts = $session->getall_attempts(true);
-
-            foreach ($session_attempts as $attempt) {
-                /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
-                if ( $slot = $attempt->get_question_slot($q) ) {
-                    $quba = $attempt->get_quba();
-                    $quba->set_max_mark($slot, $newpoints);
-                    $quba->regrade_question($slot, false, $newpoints);
-
-                    $attempt->save();
-                } else {
-                    throw new \moodle_exception('invalidslot', 'mod_jazzquiz', '', null, $attempt->get_attempt());
-                }
-            }
-
-        }
-        // re-save all grades after regrading the question attempts for the slot.
-        if ( $this->rtq->get_grader()->save_all_grades() ) {
-            return true;
-        }else {
-            throw new \moodle_exception('cannotgrade', 'mod_jazzquiz');
-        }
-    }
 }
 
 
