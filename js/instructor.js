@@ -898,7 +898,7 @@ jazzquiz.submit_goto_question = function (qnum, keep_flow) {
 
 };
 
-jazzquiz.jumpto_question = function () {
+jazzquiz.jump_question = function () {
 
     if (window.location.hash === '#jumptoquestion-dialog') {
 
@@ -1157,7 +1157,7 @@ jazzquiz.execute_control_action = function (action) {
             this.show_improvised_question_setup();
             break;
         case 'jumptoquestion':
-            this.jumpto_question();
+            this.jump_question();
             break;
         case 'nextquestion':
             this.next_question();

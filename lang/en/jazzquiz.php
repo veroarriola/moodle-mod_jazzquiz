@@ -156,7 +156,7 @@ $string['invalid_group_id'] = 'A valid group id is required for students';
 $string['first_session'] = 'First session';
 $string['last_session'] = 'Last session';
 $string['view_stats'] = 'View quiz stats';
-$string['jump_to_question_instructions'] = 'Select a question that you\'d like to go to:';
+$string['jump_question_instructions'] = 'Select a question that you\'d like to go to:';
 $string['invalid_question_attempt'] = 'Invalid Question ($a->questionname) being added to quiz attempt. ';
 
 // Instructor Controls
@@ -164,7 +164,7 @@ $string['startquiz'] = 'Start quiz';
 $string['repoll'] = 'Re-poll';
 $string['vote'] = 'Vote';
 $string['improvise'] = 'Improvise';
-$string['jump_to'] = 'Jump to';
+$string['jump'] = 'Jump';
 $string['next'] = 'Next';
 $string['end'] = 'End';
 $string['fullscreen'] = 'Fullscreen';

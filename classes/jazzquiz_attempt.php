@@ -630,10 +630,32 @@ class jazzquiz_attempt
     private function get_steps($slot)
     {
         global $DB;
+
+        // Fetch all steps from the database
         $attempt = $this->quba->get_question_attempt($slot);
-        return $DB->get_records('question_attempt_steps', [
+        $steps = $DB->get_records('question_attempt_steps', [
             'questionattemptid' => $attempt->get_database_id()
         ], 'sequencenumber desc');
+
+        // Let's filter the steps
+        $result = [];
+        foreach ($steps as $step) {
+            switch ($step->state) {
+                case 'gaveup':
+                    // The attempt is irrelevant, since it was never completed.
+                    return [];
+                case 'gradedright':
+                    // We don't want the correct answer, which is saved in this step.
+                    break;
+                default:
+                    // This is most likely an input step.
+                    $result[] = $step;
+                    break;
+            }
+        }
+
+        // Return the filtered steps
+        return $result;
     }
 
     private function get_step_data($step_id)

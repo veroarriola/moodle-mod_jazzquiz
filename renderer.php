@@ -472,7 +472,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
                 ['repeat', 'repoll', 'repollquestion'],
                 ['bar-chart', 'vote', 'runvoting'],
                 ['edit', 'improvise', 'startimprovisedquestion'],
-                ['bars', 'jump_to', 'jumptoquestion'],
+                ['bars', 'jump', 'jumptoquestion'],
                 ['forward', 'next', 'nextquestion'],
                 ['close', 'end', 'endquestion'],
                 ['expand', 'fullscreen', 'showfullscreenresults'],
@@ -505,18 +505,28 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
      */
     public function render_jumpto_modal($attempt)
     {
-        $output = html_writer::start_div('modalDialog', array('id' => 'jumptoquestion-dialog'));
+        $output = html_writer::start_div('modalDialog', [
+            'id' => 'jumptoquestion-dialog'
+        ]);
 
         $output .= html_writer::start_div();
 
-        $output .= html_writer::tag('a', 'X', array('class' => 'jumptoquestionclose', 'href' => '#'));
-        $output .= html_writer::tag('h2', get_string('jumptoquestion', 'jazzquiz'));
-        $output .= html_writer::tag('p', get_string('jumptoquesetioninstructions', 'jazzquiz'));
+        $output .= html_writer::tag('a', 'X',[
+            'class' => 'jumptoquestionclose',
+            'href' => '#'
+        ]);
 
-        // build our own select for the user to select the question they want to go to
-        $output .= html_writer::start_tag('select', array('name' => 'jtq-selectquestion', 'id' => 'jtq-selectquestion'));
-        // loop through each question and add it as an option
-        $qnum = 1;
+        $output .= html_writer::tag('h2', get_string('jump', 'jazzquiz'));
+        $output .= html_writer::tag('p', get_string('jump_question_instructions', 'jazzquiz'));
+
+        // Build our own select for the user to select the question they want to go to
+        $output .= html_writer::start_tag('select', [
+            'name' => 'jtq-selectquestion',
+            'id' => 'jtq-selectquestion'
+        ]);
+
+        // Loop through each question and add it as an option
+        $slot = 1;
         foreach ($attempt->get_questions() as $question) {
 
             // Hide improvised questions
@@ -524,12 +534,18 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
                 continue;
             }
 
-            $output .= html_writer::tag('option', $qnum . ': ' . $question->getQuestion()->name, array('value' => $qnum));
-            $qnum++;
+            $output .= html_writer::tag('option', $slot . ': ' . $question->getQuestion()->name, [
+                'value' => $slot
+            ]);
+
+            $slot++;
         }
         $output .= html_writer::end_tag('select');
 
-        $output .= html_writer::tag('button', get_string('jumptoquestion', 'jazzquiz'), array('onclick' => 'jazzquiz.jumpto_question()'));
+        $output .= html_writer::tag('button', get_string('jump', 'jazzquiz'), [
+            'onclick' => 'jazzquiz.jump_question()'
+        ]);
+
         $output .= html_writer::end_div();
 
         $output .= html_writer::end_div();
