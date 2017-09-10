@@ -34,7 +34,7 @@ class report_overview
      */
     public function handle_request($page_url, $page_vars)
     {
-        global $PAGE;
+        global $PAGE, $DB;
 
         $this->renderer->init($this->jazzquiz, $page_url, $page_vars);
 
@@ -75,13 +75,26 @@ class report_overview
 
                 echo '<script>';
                 echo 'var jazzquiz_responses = [];';
+                //echo 'var jazzquiz_responded_users = [];';
                 echo '</script>';
+
+                $total_responded = [];
 
                 foreach ($slots as $slot) {
 
                     $question_attempt = $quba->get_question_attempt($slot);
                     $question = $question_attempt->get_question();
                     $responses = $session->get_question_results_list($slot, 'all');
+
+                    $responded = $session->get_responded_list($slot, 'all');
+                    if ($responded) {
+                        $total_responded = array_merge($total_responded, $responded);
+                        /*echo '<script>';
+                        foreach ($responded as $responded_user_id) {
+                            echo 'jazzquiz_responded_users.push(\'' . $responded_user_id . '\');';
+                        }
+                        echo '</script>';*/
+                    }
 
                     $wrapper_id = 'jazzquiz_wrapper_responses_' . intval($slot);
                     $table_id = 'responses_wrapper_table_' . intval($slot);
@@ -107,6 +120,34 @@ class report_overview
                         . '}, 1000);'
                         . '</script>';
                 }
+
+                echo '<div id="report_overview_responded" class="jazzquizbox">';
+                echo '<h2>' . get_string('responded', 'jazzquiz') . '</h2>';
+                if ($total_responded) {
+                    $responded_with_count = [];
+                    foreach ($total_responded as $responded_user_id) {
+                        if (!isset($responded_with_count[$responded_user_id])) {
+                            $responded_with_count[$responded_user_id] = 1;
+                        } else {
+                            $responded_with_count[$responded_user_id]++;
+                        }
+                    }
+                    if ($responded_with_count) {
+                        echo '<table>';
+                        echo '<tr><th>Student</th><th>Responses</th></tr>';
+                        foreach ($responded_with_count as $responded_user_id => $responded_count) {
+                            $user = $DB->get_record('user', [
+                                'id' => $responded_user_id
+                            ]);
+                            echo '<tr>';
+                            echo '<td>' . fullname($user) . '</td>';
+                            echo '<td>' . $responded_count .' responses</td>';
+                            echo '</tr>';
+                        }
+                        echo '</table>';
+                    }
+                }
+                echo '</div>';
 
                 break;
 

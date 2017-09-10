@@ -306,8 +306,6 @@ class jazzquiz_session
 
     /**
      * Gets the results of the current question as an array
-     *
-     *
      */
     public function get_question_results_list($slot, $open)
     {
@@ -331,6 +329,29 @@ class jazzquiz_session
         }
 
         return $responses;
+    }
+
+
+    /**
+     * Gets the users who have responded to the current question as an array
+     */
+    public function get_responded_list($slot, $open)
+    {
+        $attempts = $this->getall_attempts(false, $open);
+        $responded = [];
+
+        foreach ($attempts as $attempt) {
+            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
+            if ($attempt->responded != 1) {
+                continue;
+            }
+            $has_responded = $attempt->has_responded($slot);
+            if ($has_responded) {
+                $responded[] = $attempt->get_attempt()->userid;
+            }
+        }
+
+        return $responded;
     }
 
     /**
@@ -649,19 +670,21 @@ class jazzquiz_session
     /**
      * Get the users who have attempted this session
      *
-     * @return array returns an array of userids that have attempted this session
+     * @return array returns an array of user IDs that have attempted this session
      */
     public function get_session_users()
     {
         global $DB;
 
         if (empty($this->session)) {
-            return array();  // if there is no session return empty array
+            return [];
         }
 
         $sql = 'SELECT DISTINCT userid FROM {jazzquiz_attempts} WHERE sessionid = :sessionid';
 
-        return $DB->get_records_sql($sql, array('sessionid' => $this->session->id));
+        return $DB->get_records_sql($sql, [
+            'sessionid' => $this->session->id
+        ]);
     }
 
     /**
@@ -676,11 +699,12 @@ class jazzquiz_session
         global $DB;
 
         if (empty($this->session)) {
-            // if there is no session set, return empty
             return null;
         }
 
-        $dbattempt = $DB->get_record('jazzquiz_attempts', array('id' => $attemptid));
+        $dbattempt = $DB->get_record('jazzquiz_attempts', [
+            'id' => $attemptid
+        ]);
 
         return new \mod_jazzquiz\jazzquiz_attempt($this->rtq->get_questionmanager(), $dbattempt, $this->rtq->getContext());
     }
@@ -718,9 +742,7 @@ class jazzquiz_session
      */
     public function getall_open_attempts($includepreviews)
     {
-        global $DB;
-        $attempts = $this->getall_attempts($includepreviews, 'open');
-        return $attempts;
+        return $this->getall_attempts($includepreviews, 'open');
     }
 
     /**

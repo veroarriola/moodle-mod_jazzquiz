@@ -579,3 +579,17 @@
 .jazzquizbox .questionlist li a:hover i.icon {
     color: #2299ff;
 }
+
+#report_overview_responded table {
+
+}
+
+#report_overview_responded table tr {
+    border-bottom: 1px solid #aaa;
+}
+
+#report_overview_responded table tr td,
+#report_overview_responded table tr th {
+    padding: 8px 16px;
+    font-size: 1.2rem;
+}

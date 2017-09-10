@@ -843,6 +843,27 @@ class jazzquiz_attempt
     }
 
     /**
+     * Returns whether current user has responded
+     */
+    public function has_responded($slot)
+    {
+        $steps = $this->get_steps($slot);
+        if (!$steps) {
+            return false;
+        }
+        foreach ($steps as $step) {
+            if ($step->state === 'gradedright') {
+                return true;
+            }
+            if ($step->state === 'gaveup') {
+                return false;
+            }
+        }
+        // There is no "gaveup" step, which means it might be under a different state.
+        return true;
+    }
+
+    /**
      * Closes the attempt
      *
      * @param \mod_jazzquiz\jazzquiz $rtq
