@@ -44,6 +44,8 @@ var jazzquiz = {
         session_key: '',
         slots: [],
         show_votes_upon_review: false,
+        responded_count: 0,
+        total_students: 0,
 
         questions: [],
 
@@ -73,13 +75,9 @@ var jazzquiz = {
     },
 
     options: {
-        show_not_responded: false,
         show_responses: false,
         is_showing_correct_answer: false
     },
-
-    // Instructor temporary variables
-    fullscreen_interval_handle: undefined,
 
     // Student temporary variables
     vote_answer: undefined
@@ -282,10 +280,11 @@ jazzquiz.hide_instructions = function () {
 jazzquiz.hide_info = function() {
     // TODO: Use a class on all the boxes to avoid this if
     if (this.is_instructor) {
-        jQuery('#jazzquiz_responded_container').addClass('hidden').html('');
+        jQuery('#jazzquiz_responded_container').addClass('hidden').find('h4').html('');
         jQuery('#jazzquiz_response_info_container').addClass('hidden').html('');
         jQuery('#jazzquiz_responses_container').addClass('hidden').html('');
     }
+    jQuery('#jazzquiz_question_timer').addClass('hidden').html('');
     jQuery('#jazzquiz_info_container').addClass('hidden').html('');
 };
 
@@ -503,21 +502,19 @@ jazzquiz.resume_quiz = function () {
  */
 jazzquiz.waitfor_question = function (slot, question_time, delay) {
 
+    this.hide_instructions();
+
     this.quiz.question.countdown_time_left = delay;
 
-    var quiz_info_text = document.createElement('div');
-    quiz_info_text.innerHTML = this.text('wait_for_question');
-    quiz_info_text.setAttribute('id', 'quizinfotext');
-    quiz_info_text.setAttribute('style', 'display: inline-block');
+    var $info = jQuery('#jazzquiz_info_container');
 
-    var quiz_info_time = document.createElement('div');
     if (delay > 0) {
-        quiz_info_time.innerHTML = '&nbsp;' + delay.toString() + " " + this.text('seconds', 'moodle');
+        $info.html(this.text('question_will_start') + ' ' + this.text('in') + ' ' + delay + ' ' + this.text('seconds', 'moodle'));
     } else {
-        quiz_info_time.innerHTML = '&nbsp; now';
+        $info.html(this.text('question_will_start') + ' ' + this.text('now'));
     }
-    quiz_info_time.setAttribute('id', 'quizinfotime');
-    quiz_info_time.setAttribute('style', 'display: inline-block;');
+
+    $info.removeClass('hidden');
 
     // Start the countdown
     this.counter = setInterval(function () {
@@ -532,19 +529,12 @@ jazzquiz.waitfor_question = function (slot, question_time, delay) {
 
         } else {
 
-            quiz_info_time.innerHTML = "&nbsp;" + time_left.toString() + " " + jazzquiz.text('seconds', 'moodle');
+            $info.html(jazzquiz.text('question_will_start') + ' ' + jazzquiz.text('in') + ' ' + time_left + ' ' + jazzquiz.text('seconds', 'moodle'));
 
         }
 
     }, 1000);
 
-    jQuery('#jazzquiz_info_container')
-        .html('')
-        .removeClass('hidden')
-        .append(quiz_info_text)
-        .append(quiz_info_time);
-
-    jazzquiz.hide_instructions();
 };
 
 jazzquiz.goto_question = function (slot, question_time, tries) {
@@ -595,6 +585,7 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
                 // Return early so that we don't start any questions when there are no tries left.
                 return;
             }
+
         } else {
 
             // There's no resuming tries to set to, so just set to the total tries, if it's greater than 1.
@@ -610,13 +601,12 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
     // for no timer.
     // Also make sure the question_time_text is there if we have a timer for this question
 
-    var $question_time = jQuery('#q' + slot + '_questiontime');
-    var $question_time_text = jQuery('#q' + slot + '_questiontimetext');
+    var $question_timer = jQuery('#jazzquiz_question_timer');
+    $question_timer.removeClass('hidden');
 
     if (question_time === 0) {
 
-        $question_time.html('&nbsp;');
-        $question_time_text.html('&nbsp;');
+        $question_timer.html('');
 
         // Make sure this is false for the if statements in other functions that clear the timer if it's there
         this.qcounter = false;
@@ -624,8 +614,7 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
     } else {
 
         // Otherwise set up the timer
-        $question_time.html('&nbsp;' + question_time + ' ' + this.text('seconds', 'moodle'));
-        $question_time_text.html(this.text('question_will_end_in'));
+        $question_timer.html(this.text('question_will_end_in') + ' ' + question_time + ' ' + this.text('seconds', 'moodle'));
 
         this.quiz.question.end_time = new Date().getTime() + question_time * 1000;
 
@@ -648,7 +637,7 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
                 // Show time left in seconds
                 var time_left = (jazzquiz.quiz.question.end_time - current_time) / 1000;
                 time_left = parseInt(time_left);
-                $question_time.html('&nbsp;' + time_left.toString() + ' ' + jazzquiz.text('seconds', 'moodle'));
+                $question_timer.html(jazzquiz.text('question_will_end_in') + ' ' + time_left + ' ' + jazzquiz.text('seconds', 'moodle'));
 
             }
 
@@ -660,6 +649,7 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
     }
 
     this.quiz.current_question_slot = slot;
+
 };
 
 /**
@@ -695,8 +685,8 @@ jazzquiz.save_question = function () {
     if (this.qcounter) {
         clearInterval(this.qcounter);
     }
-    jQuery('#q' + slot + '_questiontimetext').html('');
-    jQuery('#q' + slot + '_questiontime').html('');
+
+    jQuery('#jazzquiz_question_timer').html('').addClass('hidden');
 
     this.handle_question(slot);
 

@@ -328,7 +328,11 @@ class jazzquiz_session
             ];
         }
 
-        return $responses;
+        return [
+            'responses' => $responses,
+            'student_count' => count($attempts)
+        ];
+
     }
 
 
@@ -352,6 +356,11 @@ class jazzquiz_session
         }
 
         return $responded;
+    }
+
+    public function get_student_count()
+    {
+        return count($this->getall_open_attempts(false));
     }
 
     /**

@@ -394,17 +394,7 @@ class quizdata
 
         // Send the response
         $this->jsonlib->set('answers', json_encode($votes));
-        $this->jsonlib->set('status', 'success');
-        $this->jsonlib->send_response();
-    }
-
-    private function get_not_responded()
-    {
-        // Get list of users who have yet to respond to the question
-        $not_responded_html = $this->session->get_not_responded();
-
-        // Send response
-        $this->jsonlib->set('notresponded', $not_responded_html);
+        $this->jsonlib->set('total_students', $this->session->get_student_count());
         $this->jsonlib->set('status', 'success');
         $this->jsonlib->send_response();
     }
@@ -499,7 +489,8 @@ class quizdata
         $this->jsonlib->set('has_votes', $has_votes);
         $this->jsonlib->set('qtype', $question_type);
         $this->jsonlib->set('slot', $slot);
-        $this->jsonlib->set('responses', $responses);
+        $this->jsonlib->set('responses', $responses['responses']);
+        $this->jsonlib->set('total_students', $responses['student_count']);
         $this->jsonlib->set('status', 'success');
         $this->jsonlib->send_response();
     }
@@ -534,10 +525,6 @@ class quizdata
 
             case 'getresults':
                 $this->get_results();
-                break;
-
-            case 'getnotresponded':
-                $this->get_not_responded();
                 break;
 
             case 'nextquestion':

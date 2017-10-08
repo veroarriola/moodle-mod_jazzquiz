@@ -48,9 +48,9 @@ class viewquizattempt
      */
     public function setup_page($baseurl)
     {
-        global $PAGE, $CFG, $DB;
+        global $PAGE, $DB;
 
-        $this->pagevars = array();
+        $this->pagevars = [];
 
         $this->pageurl = new \moodle_url($baseurl);
         $this->pageurl->remove_all_params();
@@ -61,11 +61,11 @@ class viewquizattempt
         // get necessary records from the DB
         if ($id) {
             $cm = get_coursemodule_from_id('jazzquiz', $id, 0, false, MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('jazzquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', ['id' => $cm->instance], '*', MUST_EXIST);
         } else {
-            $quiz = $DB->get_record('jazzquiz', array('id' => $quizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
+            $quiz = $DB->get_record('jazzquiz', ['id' => $quizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $quiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('jazzquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
 

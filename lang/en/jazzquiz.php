@@ -63,16 +63,18 @@ $string['edit'] = 'Edit';
 $string['review'] = 'Review';
 
 // Info
-$string['wait_for_question'] = 'Waiting for the question to be sent in:';
+$string['question_will_start'] = 'The question will start';
+$string['in'] = 'in';
+$string['now'] = 'now';
 $string['wait_for_students'] = 'Waiting for students to connect';
-$string['loading'] = 'Initializing Quiz';
+$string['loading'] = 'Initializing quiz';
 $string['closing_session'] = 'Closing session...';
 $string['session_closed'] = 'Session is now closed';
 $string['no_tries'] = 'You have no tries left for this question';
 $string['wait_for_reviewing_to_end'] = 'The instructor is currently reviewing the previous question. Please wait for the next question to start';
 $string['wait_for_instructor'] = 'Please wait for the instructor to start the next question.';
 $string['gathering_results'] = 'Gathering results...';
-$string['question_will_end_in'] = 'Your question will end and auto-submit in: ';
+$string['question_will_end_in'] = 'The question will end in';
 $string['you_have_n_tries_left'] = 'You have {$a->tries} tries left.';
 
 // Event
@@ -86,12 +88,12 @@ $string['introduction'] = 'Introduction';
 $string['default_question_time'] = 'Default question time';
 $string['default_question_time_help'] = 'The default time to display each question.<br>This can be overridden by individual questions.';
 $string['wait_for_question_time'] = 'Wait for question time';
-$string['wait_for_question_time_help'] = 'The time to wait for a question to start/lead in time.';
+$string['wait_for_question_time_help'] = 'The time to wait for a question to start.';
 $string['group_work_settings'] = 'Group settings';
 $string['no_change_groups_label'] = '&nbsp;';
 $string['no_change_groups'] = 'You cannot change groups after creating sessions or there are no groupings defined for this course.';
 $string['worked_in_groups'] = 'Will work in groups.';
-$string['worked_in_groups_help'] = 'Check this box to indicate that students will work in groups.  Be sure to select a grouping below';
+$string['worked_in_groups_help'] = 'Check this box to indicate that students will work in groups. Be sure to select a grouping below';
 $string['grouping'] = 'Grouping';
 $string['grouping_help'] = 'Select the grouping that you\'d like to use for grouping students';
 $string['group_attendance'] = 'Allow group attendance';
@@ -120,7 +122,7 @@ $string['no_time_help'] = 'Check this field to have no timer on this question. <
 $string['invalid_question_time'] = 'Question time must be an integer of 0 or above';
 $string['number_of_tries'] = 'Number of tries';
 $string['invalid_number_of_tries'] = 'Number of tries must be an integer of 1 or above';
-$string['number_of_tries_help'] = 'Number of tries for a user to try at a question.  Students will still be bound by the question time limit';
+$string['number_of_tries_help'] = 'Number of tries for a user to try at a question. Students will still be bound by the question time limit';
 $string['show_history_during_quiz'] = 'Show response history';
 $string['show_history_during_quiz_help'] = 'Show the student/group response history for this question while reviewing responses to a question during a quiz.';
 $string['successfully_moved_question'] = 'Successfully moved question';
@@ -143,9 +145,9 @@ $string['session_name_required'] = 'The session name is required';
 $string['start_session'] = 'Start Session';
 $string['unable_to_create_session'] = 'Unable to create sesson';
 $string['cant_init_attempts'] = 'Can\'t initialize attempts for you';
-$string['session_name_text'] = '<span style="font-weight: bold">Session: </span>';
+$string['session_name_text'] = '<span style="font-weight:bold;">Session: </span>';
 $string['join_quiz_instructions'] = 'Click below to join the quiz';
-$string['instructor_sessions_going'] = 'There is a session already in progress.  Please click the button below to go to the session';
+$string['instructor_sessions_going'] = 'There is a session already in progress. Please click the button below to go to the session';
 $string['goto_session'] = 'Go to session in progress';
 $string['no_session'] = 'There is no open session';
 $string['join_quiz'] = 'Join Quiz';
@@ -169,7 +171,6 @@ $string['next'] = 'Next';
 $string['end'] = 'End';
 $string['fullscreen'] = 'Fullscreen';
 $string['quit'] = 'Quit';
-$string['responded'] = 'Responded';
 $string['responses'] = 'Responses';
 $string['answer'] = 'Answer';
 
@@ -177,6 +178,7 @@ $string['answer'] = 'Answer';
 $string['select_session'] = 'Select session to review:';
 $string['group_membership'] = 'Group membership';
 $string['view_attempt'] = 'View attempt';
+$string['attendance_list'] = 'Attendance list';
 
 // Attempts
 $string['time_completed'] = 'Time completed';
@@ -256,14 +258,6 @@ $string['instructions_for_instructor'] = '
             </td>
             <td>
                 Gives the instructor a view of the question with the correct response selected.
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <i class="fa fa-square-o"></i> / <i class="fa fa-check-square-o"></i> Responded
-            </td>
-            <td>
-                Hide or show how many students or groups have responded and which students or groups have yet to respond.
             </td>
         </tr>
         <tr>

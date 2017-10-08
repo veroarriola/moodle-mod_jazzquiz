@@ -85,6 +85,7 @@ class report_overview
                     $question_attempt = $quba->get_question_attempt($slot);
                     $question = $question_attempt->get_question();
                     $responses = $session->get_question_results_list($slot, 'all');
+                    $responses = $responses['responses'];
 
                     $responded = $session->get_responded_list($slot, 'all');
                     if ($responded) {
@@ -122,7 +123,7 @@ class report_overview
                 }
 
                 echo '<div id="report_overview_responded" class="jazzquizbox">';
-                echo '<h2>' . get_string('responded', 'jazzquiz') . '</h2>';
+                echo '<h2>' . get_string('attendance_list', 'jazzquiz') . '</h2>';
                 if ($total_responded) {
                     $responded_with_count = [];
                     foreach ($total_responded as $responded_user_id) {
@@ -133,18 +134,25 @@ class report_overview
                         }
                     }
                     if ($responded_with_count) {
+                        $attendance_list_csv = '';
                         echo '<table>';
                         echo '<tr><th>Student</th><th>Responses</th></tr>';
                         foreach ($responded_with_count as $responded_user_id => $responded_count) {
                             $user = $DB->get_record('user', [
                                 'id' => $responded_user_id
                             ]);
+                            $user_full_name = fullname($user);
                             echo '<tr>';
-                            echo '<td>' . fullname($user) . '</td>';
+                            echo '<td>' . $user_full_name . '</td>';
                             echo '<td>' . $responded_count .' responses</td>';
                             echo '</tr>';
+                            $attendance_list_csv .= $user_full_name . ',' . $responded_count . '<br>';
                         }
                         echo '</table>';
+                        echo '<br><br><details>';
+                        echo '<summary style="cursor:pointer;">Show as CSV</summary>';
+                        echo '<p style="font-family:monospace;background:white;padding:8px;border:1px solid #666;">' . $attendance_list_csv . '</p>';
+                        echo '</details>';
                     }
                 }
                 echo '</div>';

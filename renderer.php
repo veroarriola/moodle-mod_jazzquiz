@@ -310,23 +310,39 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
                 'id' => 'jazzquiz_correct_answer_container'
             ]);
 
-            $output .= html_writer::div('', 'jazzquizbox hidden', [
-                'id' => 'jazzquiz_responded_container'
+            $output .= html_writer::start_div('jazzquizbox', [
+                'id' => 'jazzquiz_side_container'
             ]);
 
             $output .= html_writer::div('', 'jazzquizbox hidden padded-box', [
                 'id' => 'jazzquiz_response_info_container'
             ]);
 
-            $output .= html_writer::div('', 'jazzquizbox hidden', [
-                'id' => 'jazzquiz_responses_container'
+        }
+
+        $output .= html_writer::div('', 'jazzquizbox hidden', [
+            'id' => 'jazzquiz_question_timer',
+        ]);
+
+        if ($this->rtq->is_instructor()) {
+
+            $output .= html_writer::start_div('jazzquizbox', [
+                'id' => 'jazzquiz_responded_container'
+            ]);
+            $output .= html_writer::start_div();
+            $output .= html_writer::start_div('respondedbox', [
+                'id' => 'respondedbox'
             ]);
 
-        } else {
+            $output .= html_writer::tag('h4', '', [
+                'class' => 'inline'
+            ]);
 
-            if ($session->get_session()->fully_anonymize) {
-                $output .= html_writer::div(get_string('isanonymous', 'mod_jazzquiz'), 'jazzquizbox isanonymous');
-            }
+            $output .= html_writer::end_div();
+            $output .= html_writer::end_div();
+            $output .= html_writer::end_div();
+
+            $output .= html_writer::end_div();
 
         }
 
@@ -338,6 +354,14 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         foreach ($attempt->getSlots() as $slot) {
             // Render the question form.
             $output .= $this->render_question_form($slot, $attempt);
+        }
+
+        if ($this->rtq->is_instructor()) {
+
+            $output .= html_writer::div('', 'jazzquizbox hidden', [
+                'id' => 'jazzquiz_responses_container'
+            ]);
+
         }
 
         $output .= html_writer::end_div();
@@ -360,8 +384,12 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         $qnum = $attempt->get_question_number();
 
         // Start the form.
+        $is_instructor_class = '';
+        if ($this->rtq->is_instructor()) {
+            $is_instructor_class = ' instructor';
+        }
         $output .= html_writer::start_tag('div', [
-            'class' => 'jazzquizbox hidden',
+            'class' => 'jazzquizbox hidden' . $is_instructor_class,
             'id' => 'q' . $qnum . '_container'
         ]);
 
@@ -394,14 +422,6 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             'class' => 'btn btn-primary',
             'id' => 'q' . $qnum . '_save',
             'onclick' => 'jazzquiz.save_question(\'q' . $qnum . '\'); return false;'
-        ]);
-
-        $timertext = html_writer::div('', 'timertext', [
-            'id' => 'q' . $qnum . '_questiontimetext'
-        ]);
-
-        $timercount = html_writer::div('', 'timercount', [
-            'id' => 'q' . $qnum . '_questiontime'
         ]);
 
         $rtqQuestion = $attempt->get_question_by_slot($slot);
@@ -477,7 +497,6 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
                 ['close', 'end', 'endquestion'],
                 ['expand', 'fullscreen', 'showfullscreenresults'],
                 ['window-close', 'quit', 'closesession'],
-                ['square-o', 'responded', 'togglenotresponded'],
                 ['square-o', 'responses', 'toggleresponses'],
                 ['square-o', 'answer', 'showcorrectanswer']
 
@@ -511,7 +530,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
 
         $output .= html_writer::start_div();
 
-        $output .= html_writer::tag('a', 'X',[
+        $output .= html_writer::tag('a', 'X', [
             'class' => 'jumptoquestionclose',
             'href' => '#'
         ]);
@@ -601,6 +620,7 @@ EOD;
         $quiz->attempt_id = $attempt->id;
         $quiz->session_key = sesskey();
         $quiz->slots = $attempt->getSlots();
+        $quiz->total_students = $session->get_student_count();
 
         $quiz->questions = [];
 
@@ -724,7 +744,9 @@ EOD;
 
         // Add localization strings
         $this->page->requires->strings_for_js([
-            'wait_for_question',
+            'question_will_start',
+            'in',
+            'now',
             'gathering_results',
             'closing_session',
             'session_closed',
@@ -808,7 +830,10 @@ EOD;
             'id' => 'respondedbox'
         ]);
 
-        $output .= html_writer::tag('h4', "$responded_count / $total students have responded.", ['class' => 'inline']);
+        $output .= html_writer::tag('h4', "$responded_count / $total students have responded.", [
+            'class' => 'inline'
+        ]);
+
         $output .= html_writer::end_div();
 
         $output .= html_writer::end_div();
