@@ -43,7 +43,14 @@ jazzquiz.change_quiz_state = function (state, data) {
 
     this.show_controls();
 
-    jQuery('#jazzquiz_side_container').css('height', jQuery('#q' + this.quiz.current_question_slot + '_container').css('height'));
+    // Align the side container properly.
+    var $question_slot = jQuery('#q' + this.quiz.current_question_slot + '_container');
+    var $side_container = jQuery('#jazzquiz_side_container');
+    $side_container.css('height', $question_slot.css('height'));
+    var side_and_question_y_difference = Math.abs(parseInt($question_slot.offset().top) - parseInt($side_container.offset().top));
+    if (side_and_question_y_difference > 0) {
+        jQuery('#jazzquiz_control_separator').css('height', side_and_question_y_difference + 'px');
+    }
 
     switch (state) {
 

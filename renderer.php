@@ -509,7 +509,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             . $this->write_control_button('start', 'startquiz', 'startquiz')
             . '<h4 class="inline">No students have joined.</h4>'
             . $this->write_control_button('close', 'quit', 'exitquiz')
-            . '</div>';
+            . '</div><div id="jazzquiz_control_separator"></div>';
 
         return html_writer::div($html, 'btn-hide rtq_inquiz', [
             'id' => 'inquizcontrols'

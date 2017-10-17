@@ -371,6 +371,9 @@
     outline: none;
     border-radius: 0;
     background: #f9f9f9;
+}
+
+.fullscreen-quizview #inquizcontrols .btn {
     font-size: 1.4vw;
     padding: 0.6vw 1.2vw;
 }
@@ -382,11 +385,11 @@
 
 @media all and (min-width: 1152px) {
 
-    #inquizcontrols .btn {
+    .fullscreen-quizview #inquizcontrols .btn {
         font-size: 1.1rem;
     }
 
-    #inquizcontrols_state {
+    .fullscreen-quizview #inquizcontrols_state {
         font-size: 1rem;
     }
 
