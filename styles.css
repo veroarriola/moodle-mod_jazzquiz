@@ -96,6 +96,8 @@
     margin: 0;
     border: none;
     border-bottom: 1px solid #eee;
+    position: absolute;
+    right: 20px;
 }
 
 #jazzquiz_side_container .jazzquizbox {
@@ -351,7 +353,7 @@
     margin: 0;
     padding: 0;
     display: inline-block;
-    font-size: 1.2rem;
+    font-size: 1vw;
     color: #888;
     vertical-align: middle;
     cursor: default;
@@ -369,11 +371,25 @@
     outline: none;
     border-radius: 0;
     background: #f9f9f9;
+    font-size: 1.4vw;
+    padding: 0.6vw 1.2vw;
 }
 
 #inquizcontrols .btn:hover, #inquizcontrols .btn.active {
     background: #2299ff;
     color: white;
+}
+
+@media all and (min-width: 1152px) {
+
+    #inquizcontrols .btn {
+        font-size: 1.1rem;
+    }
+
+    #inquizcontrols_state {
+        font-size: 1rem;
+    }
+
 }
 
 .improvise-menu {
