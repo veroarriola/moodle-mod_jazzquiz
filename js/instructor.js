@@ -43,14 +43,7 @@ jazzquiz.change_quiz_state = function (state, data) {
 
     this.show_controls();
 
-    // Align the side container properly.
-    var $question_slot = jQuery('#q' + this.quiz.current_question_slot + '_container');
-    var $side_container = jQuery('#jazzquiz_side_container');
-    $side_container.css('height', $question_slot.css('height'));
-    var side_and_question_y_difference = Math.abs(parseInt($question_slot.offset().top) - parseInt($side_container.offset().top));
-    if (side_and_question_y_difference > 0) {
-        jQuery('#jazzquiz_control_separator').css('height', side_and_question_y_difference + 'px');
-    }
+    this.align_side_container();
 
     switch (state) {
 
@@ -168,6 +161,27 @@ jazzquiz.change_quiz_state = function (state, data) {
             this.control_buttons([]);
             break;
     }
+
+};
+
+jazzquiz.align_side_container = function() {
+
+    // Find the elements.
+    var $question_slot = jQuery('#q' + this.quiz.current_question_slot + '_container');
+    var $side_container = jQuery('#jazzquiz_side_container');
+    var $control_separator = jQuery('#jazzquiz_control_separator');
+
+    // Update the height for the side container.
+    $side_container.css('height', $question_slot.css('height'));
+
+    // How far apart are side container and question box?
+    var delta = Math.abs(parseInt($question_slot.offset().top - $side_container.offset().top));
+
+    // How much height should the control separator compensate?
+    var compensation = delta + parseInt($control_separator.css('height'));
+
+    // Set the new compensation height.
+    $control_separator.css('height', compensation + 'px');
 
 };
 
