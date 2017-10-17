@@ -250,6 +250,10 @@
     background: #fafafa;
 }
 
+.fullscreen-quizview #jazzquiz_control_separator {
+    display: none;
+}
+
 .jazzquiz-responses-overview {
     width: 100%;
 }
