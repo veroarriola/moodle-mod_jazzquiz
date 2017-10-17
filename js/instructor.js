@@ -380,6 +380,7 @@ jazzquiz.quiz_info_responses = function (wrapper_id, table_id, responses, qtype,
 
     // Check if any responses to show
     if (responses.length === 0) {
+        jQuery('#jazzquiz_responded_container').removeClass('hidden').find('h4').html('0 / ' + this.quiz.total_students + ' responded');
         return;
     }
 
@@ -438,6 +439,13 @@ jazzquiz.quiz_info_responses = function (wrapper_id, table_id, responses, qtype,
 
     // Update responded box
     jQuery('#jazzquiz_responded_container').removeClass('hidden').find('h4').html(this.quiz.responded_count + ' / ' + this.quiz.total_students + ' responded');
+
+    // Should we show the responses?
+    if (!this.options.show_responses && this.state !== 'reviewing') {
+        jQuery('#jazzquiz_response_info_container').addClass('hidden').html('');
+        jQuery('#jazzquiz_responses_container').addClass('hidden').html('');
+        return;
+    }
 
     // Make sure quiz info has the wrapper for the responses
     var wrapper_current_responses = document.getElementById(table_id); // wrapper_current_responses
@@ -700,13 +708,6 @@ jazzquiz.run_voting = function () {
 };
 
 jazzquiz.gather_results = function () {
-
-    // Should we show the results?
-    if (!this.options.show_responses && this.state !== 'reviewing') {
-        jQuery('#jazzquiz_response_info_container').addClass('hidden').html('');
-        jQuery('#jazzquiz_responses_container').addClass('hidden').html('');
-        return;
-    }
 
     // Setup parameters
     var params = {
