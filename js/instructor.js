@@ -437,8 +437,7 @@ jazzquiz.quiz_info_responses = function (wrapper_id, table_id, responses, qtype,
     }
 
     // Update responded box
-    var students_text = (this.quiz.responded_count === 1 ? ' student has' : ' students have');
-    jQuery('#jazzquiz_responded_container').removeClass('hidden').find('h4').html(this.quiz.responded_count + ' / ' + this.quiz.total_students + students_text + ' responded.');
+    jQuery('#jazzquiz_responded_container').removeClass('hidden').find('h4').html(this.quiz.responded_count + ' / ' + this.quiz.total_students + ' responded');
 
     // Make sure quiz info has the wrapper for the responses
     var wrapper_current_responses = document.getElementById(table_id); // wrapper_current_responses
@@ -652,8 +651,7 @@ jazzquiz.get_and_show_vote_results = function () {
             jazzquiz.quiz.responded_count += parseInt(answers[i].finalcount);
         }
 
-        var students_text = (jazzquiz.quiz.responded_count === 1 ? ' student has' : ' students have');
-        jQuery('#jazzquiz_responded_container').removeClass('hidden').find('h4').html(jazzquiz.quiz.responded_count + ' / ' + jazzquiz.quiz.total_students + students_text + ' voted.');
+        jQuery('#jazzquiz_responded_container').removeClass('hidden').find('h4').html(jazzquiz.quiz.responded_count + ' / ' + jazzquiz.quiz.total_students + ' voted');
 
         var target = document.getElementById(target_id);
         if (target === null) {

@@ -89,7 +89,7 @@
 }
 
 #jazzquiz_side_container {
-    width: 480px;
+    width: 192px;
     display: inline-block;
     float: right;
     padding: 0;
@@ -592,6 +592,6 @@
 }
 
 .jazzquizbox.instructor {
-    width: calc(100% - 480px);
+    width: calc(100% - 192px);
     display: inline-block;
 }

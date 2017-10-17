@@ -614,7 +614,11 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
     } else {
 
         // Otherwise set up the timer
-        $question_timer.html(this.text('question_will_end_in') + ' ' + question_time + ' ' + this.text('seconds', 'moodle'));
+        if (jazzquiz.is_instructor) {
+            $question_timer.html(question_time + 's left');
+        } else {
+            $question_timer.html(this.text('question_will_end_in') + ' ' + question_time + ' ' + this.text('seconds', 'moodle'));
+        }
 
         this.quiz.question.end_time = new Date().getTime() + question_time * 1000;
 
@@ -637,7 +641,11 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
                 // Show time left in seconds
                 var time_left = (jazzquiz.quiz.question.end_time - current_time) / 1000;
                 time_left = parseInt(time_left);
-                $question_timer.html(jazzquiz.text('question_will_end_in') + ' ' + time_left + ' ' + jazzquiz.text('seconds', 'moodle'));
+                if (jazzquiz.is_instructor) {
+                    $question_timer.html(time_left + 's left');
+                } else {
+                    $question_timer.html(jazzquiz.text('question_will_end_in') + ' ' + time_left + ' ' + jazzquiz.text('seconds', 'moodle'));
+                }
 
             }
 
