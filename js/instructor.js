@@ -168,6 +168,10 @@ jazzquiz.align_side_container = function() {
 
     // Find the elements.
     var $question_slot = jQuery('#q' + this.quiz.current_question_slot + '_container');
+    if ($question_slot.length === 0) {
+        return;
+    }
+
     var $side_container = jQuery('#jazzquiz_side_container');
     var $control_separator = jQuery('#jazzquiz_control_separator');
 
