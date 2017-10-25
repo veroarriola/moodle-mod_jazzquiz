@@ -115,6 +115,11 @@ class report_overview
                         . "jazzquiz_responses[$slot] = " . json_encode($responses) . ';'
                         . 'setTimeout(function() {'
                         . 'jazzquiz.quiz.attempt_id = ' . $row->id . ';'
+
+                        // TODO: This is kind of a hack... Should refactor the JavaScript.
+                        . 'jazzquiz.options.show_responses = true;'
+                        . 'jazzquiz.state = "reviewing";'
+
                         . 'jazzquiz.quiz_info_responses("'
                         . $wrapper_id . '", "' . $table_id . '", jazzquiz_responses[' . $slot . '], "' . $question_type . '", ' . $slot
                         . ');'

@@ -466,8 +466,11 @@ jazzquiz.quiz_info_responses = function (wrapper_id, table_id, responses, qtype,
 
     }
 
-    // Update responded box
-    jQuery('#jazzquiz_responded_container').removeClass('hidden').find('h4').html(this.quiz.responded_count + ' / ' + this.quiz.total_students + ' responded');
+    // Update responded container
+    var $responded_container = jQuery('#jazzquiz_responded_container');
+    if ($responded_container.length !== 0) {
+        $responded_container.removeClass('hidden').find('h4').html(this.quiz.responded_count + ' / ' + this.quiz.total_students + ' responded');
+    }
 
     // Should we show the responses?
     if (!this.options.show_responses && this.state !== 'reviewing') {
