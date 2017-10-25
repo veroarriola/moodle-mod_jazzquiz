@@ -43,8 +43,6 @@ jazzquiz.change_quiz_state = function (state, data) {
 
     this.show_controls();
 
-    this.align_side_container();
-
     switch (state) {
 
         case 'notrunning':
@@ -163,6 +161,11 @@ jazzquiz.change_quiz_state = function (state, data) {
     }
 
 };
+/*
+
+// This function is meant to align the side container with the question box.
+// There is a problem where this causes the control separator to have a huge padding when changing questions.
+// For now, probably best to not use this.
 
 jazzquiz.align_side_container = function() {
 
@@ -188,6 +191,7 @@ jazzquiz.align_side_container = function() {
     $control_separator.css('height', compensation + 'px');
 
 };
+*/
 
 jazzquiz.end_response_merge = function() {
     jQuery('.merge-into').removeClass('merge-into');
