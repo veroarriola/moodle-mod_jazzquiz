@@ -126,9 +126,11 @@ class report_overview
                         . '</script>';
                 }
 
+                $all_user_ids = $session->get_session_users();
+
                 // This starts with all the ids, but is filtered below.
                 // Should probably be refactored in the future.
-                $not_responded_user_ids = $session->get_session_users();
+                $not_responded_user_ids = $all_user_ids;
 
                 echo '<div id="report_overview_responded" class="jazzquizbox">';
                 echo '<h2>' . get_string('attendance_list', 'jazzquiz') . '</h2>';
@@ -174,8 +176,12 @@ class report_overview
                             echo '</tr>';
                             $attendance_list_csv .= $user_full_name . ',0<br>';
                         }
+
                         echo '</table>';
-                        echo '<br><br><details>';
+                        echo '<br>';
+                        echo '<p><b>' . count($all_user_ids) . '</b> students joined the quiz.</p>';
+                        echo '<p><b>' . count($responded_with_count) . '</b> students answered at least one question.</p>';
+                        echo '<br><details>';
                         echo '<summary style="cursor:pointer;">Show as CSV</summary>';
                         echo '<p style="font-family:monospace;background:white;padding:8px;border:1px solid #666;">' . $attendance_list_csv . '</p>';
                         echo '</details>';
