@@ -81,7 +81,6 @@ class report_overview
                 $total_responded = [];
 
                 foreach ($slots as $slot) {
-
                     $question_attempt = $quba->get_question_attempt($slot);
                     $question = $question_attempt->get_question();
                     $responses = $session->get_question_results_list($slot, 'all');
@@ -127,11 +126,21 @@ class report_overview
                         . '</script>';
                 }
 
+                // This starts with all the ids, but is filtered below.
+                // Should probably be refactored in the future.
+                $not_responded_user_ids = $session->get_session_users();
+
                 echo '<div id="report_overview_responded" class="jazzquizbox">';
                 echo '<h2>' . get_string('attendance_list', 'jazzquiz') . '</h2>';
                 if ($total_responded) {
                     $responded_with_count = [];
                     foreach ($total_responded as $responded_user_id) {
+                        foreach ($not_responded_user_ids as $not_responded_index => $not_responded_user_id) {
+                            if ($not_responded_user_id->userid === $responded_user_id) {
+                                unset($not_responded_user_ids[$not_responded_index]);
+                                break;
+                            }
+                        }
                         if (!isset($responded_with_count[$responded_user_id])) {
                             $responded_with_count[$responded_user_id] = 1;
                         } else {
@@ -142,6 +151,7 @@ class report_overview
                         $attendance_list_csv = '';
                         echo '<table>';
                         echo '<tr><th>Student</th><th>Responses</th></tr>';
+                        // TODO: Refactor
                         foreach ($responded_with_count as $responded_user_id => $responded_count) {
                             $user = $DB->get_record('user', [
                                 'id' => $responded_user_id
@@ -149,9 +159,20 @@ class report_overview
                             $user_full_name = fullname($user);
                             echo '<tr>';
                             echo '<td>' . $user_full_name . '</td>';
-                            echo '<td>' . $responded_count .' responses</td>';
+                            echo '<td>' . $responded_count . ' responses</td>';
                             echo '</tr>';
                             $attendance_list_csv .= $user_full_name . ',' . $responded_count . '<br>';
+                        }
+                        foreach ($not_responded_user_ids as $not_responded_user_id) {
+                            $user = $DB->get_record('user', [
+                                'id' => $not_responded_user_id->userid
+                            ]);
+                            $user_full_name = fullname($user);
+                            echo '<tr>';
+                            echo '<td>' . $user_full_name . '</td>';
+                            echo '<td>0 responses</td>';
+                            echo '</tr>';
+                            $attendance_list_csv .= $user_full_name . ',0<br>';
                         }
                         echo '</table>';
                         echo '<br><br><details>';
@@ -161,7 +182,6 @@ class report_overview
                     }
                 }
                 echo '</div>';
-
                 break;
 
             default:
@@ -169,7 +189,6 @@ class report_overview
                 $this->renderer->select_session($sessions);
                 break;
         }
-
     }
 
 }

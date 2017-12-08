@@ -763,7 +763,6 @@ EOD;
         $this->page->requires->strings_for_js([
             'seconds'
         ], 'moodle');
-
     }
 
     /**
@@ -823,48 +822,37 @@ EOD;
     public function respondedbox($not_responded, $total, $anonymous)
     {
         $responded_count = $total - count($not_responded);
-
         $output = html_writer::start_div();
-
         $output .= html_writer::start_div('respondedbox', [
             'id' => 'respondedbox'
         ]);
-
         $output .= html_writer::tag('h4', "$responded_count / $total students have responded.", [
             'class' => 'inline'
         ]);
-
         $output .= html_writer::end_div();
-
         $output .= html_writer::end_div();
-
         return $output;
     }
 
     /**
      * No questions view
      *
-     * @param bool $isinstructor
+     * @param bool $is_instructor
      */
-    public function no_questions($isinstructor)
+    public function no_questions($is_instructor)
     {
         echo $this->output->box_start('generalbox boxaligncenter jazzquizbox');
-
         echo html_writer::tag('p', get_string('no_questions', 'jazzquiz'));
 
-        if ($isinstructor) {
-
+        if ($is_instructor) {
             // "Edit quiz" button
             $params = [
                 'cmid' => $this->rtq->getCM()->id
             ];
-
             $editurl = new moodle_url('/mod/jazzquiz/edit.php', $params);
             $editbutton = $this->output->single_button($editurl, get_string('edit', 'jazzquiz'), 'get');
             echo html_writer::tag('p', $editbutton);
-
         }
-
         echo $this->output->box_end();
     }
 
@@ -893,9 +881,7 @@ EOD;
     {
         echo $this->output->header();
         $this->showMessage();
-
         foreach ($attempt->getSlots() as $slot) {
-
             if ($this->rtq->is_instructor()) {
                 echo $this->render_edit_review_question($slot, $attempt);
             } else {
@@ -990,15 +976,11 @@ EOD;
     public function render_review_question($slot, $attempt)
     {
         $qnum = $attempt->get_question_number();
-
         $output = html_writer::start_div('jazzquizbox', [
             'id' => 'q' . $qnum . '_container'
         ]);
-
         $output .= $attempt->render_question($slot, true, $this->rtq->get_review_options('after'));
-
         $output .= html_writer::end_div();
-
         return $output;
     }
 

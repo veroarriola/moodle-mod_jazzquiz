@@ -411,9 +411,7 @@ class jazzquiz_session
         }
 
         $not_responded_box = $this->rtq->get_renderer()->respondedbox($not_responded, count($attempts), $anonymous);
-
         return $not_responded_box;
-
     }
 
     /**
@@ -422,9 +420,7 @@ class jazzquiz_session
     public function get_question_right_response()
     {
         // Just use the instructor's question attempt to re-render the question with the right response
-
         $attempt = $this->openAttempt;
-
         $aquba = $attempt->get_quba();
 
         $correctresponse = $aquba->get_correct_response($this->session->currentquestion);
@@ -464,7 +460,6 @@ class jazzquiz_session
         }
 
         $openAttempt = $this->get_open_attempt_for_current_user();
-
         if ($openAttempt === false) { // create a new attempt
 
             $attempt = new jazzquiz_attempt($this->rtq->get_questionmanager());
@@ -489,7 +484,6 @@ class jazzquiz_session
             $attempt->save();
 
             if (!$this->session->fully_anonymize) {
-
                 // Create attempt_created event
                 $params = [
                     'objectid' => $attempt->id,
@@ -497,7 +491,6 @@ class jazzquiz_session
                     'courseid' => $this->rtq->getCourse()->id,
                     'context' => $this->rtq->getContext()
                 ];
-
                 $event = \mod_jazzquiz\event\attempt_started::create($params);
                 $event->add_record_snapshot('jazzquiz', $this->rtq->getRTQ());
                 $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
@@ -505,7 +498,6 @@ class jazzquiz_session
             }
 
             if ($this->rtq->group_mode() && $this->rtq->getRTQ()->groupattendance == 1) {
-
                 // If we're doing group attendance add group members to group attendance table
                 $groupmembers = explode(',', $groupmembers);
                 foreach ($groupmembers as $userid) {
@@ -515,7 +507,6 @@ class jazzquiz_session
                     $gattendance->attemptid = $attempt->id;
                     $gattendance->groupid = $group;
                     $gattendance->userid = $userid;
-
                     if (!$DB->insert_record('jazzquiz_groupattendance', $gattendance)) {
                         throw new \Exception('cant and groups for group attendance');
                     }
@@ -525,14 +516,12 @@ class jazzquiz_session
             $this->openAttempt = $attempt;
 
         } else {
-
             // Check the preview field on the attempt to see if it's in line with the value passed
             // If not set it to be correct
             if ($openAttempt->preview != $preview) {
                 $openAttempt->preview = $preview;
                 $openAttempt->save();
             }
-
             $this->openAttempt = $openAttempt;
         }
 
@@ -562,9 +551,6 @@ class jazzquiz_session
         return $USER->mod_jazzquiz_anon_userid;
     }
 
-
-    /** Attempts functions */
-
     /**
      * get the open attempt for the user
      *
@@ -585,7 +571,6 @@ class jazzquiz_session
     public function set_open_attempt($attempt)
     {
         $this->openAttempt = $attempt;
-
     }
 
     /**
@@ -605,27 +590,23 @@ class jazzquiz_session
 
         $groups = $this->rtq->get_groupmanager()->get_user_groups_name_array();
         $groups = array_keys($groups);
+        $valid_groups = [];
 
-        $validgroups = array();
-
-        // we need to loop through the groups in case a user is in multiple,
+        // We need to loop through the groups in case a user is in multiple,
         // and then check if there is a possibility for them to create an attempt for that user
         foreach ($groups as $group) {
-
-            list($sql, $params) = $DB->get_in_or_equal(array($group));
-            $query = 'SELECT * FROM {jazzquiz_attempts} WHERE forgroupid ' . $sql .
-                ' AND status = ? AND sessionid = ? AND userid != ?';
+            list($sql, $params) = $DB->get_in_or_equal([ $group ]);
+            $query = "SELECT * FROM {jazzquiz_attempts} WHERE forgroupid $sql AND status = ? AND sessionid = ? AND userid != ?";
             $params[] = \mod_jazzquiz\jazzquiz_attempt::INPROGRESS;
             $params[] = $this->session->id;
             $params[] = $USER->id;
             $recs = $DB->get_records_sql($query, $params);
             if (count($recs) == 0) {
-                $validgroups[] = $group;
+                $valid_groups[] = $group;
             }
         }
 
-        return $validgroups;
-
+        return $valid_groups;
     }
 
     /**
@@ -642,25 +623,23 @@ class jazzquiz_session
     {
         global $DB;
 
-        // return false if there is no session
+        // Return false if there is no session
         if (empty($this->session)) {
             return false;
         }
 
-        // get open attempts for the groupid passed, and determine if the current user can make/resume an attempt for it
+        // Get open attempts for the groupid passed, and determine if the current user can make/resume an attempt for it
         $query = 'SELECT * FROM {jazzquiz_attempts} WHERE forgroupid = ? AND status = ? AND sessionid = ?';
-        $params = array();
+        $params = [];
         $params[] = $groupid;
         $params[] = \mod_jazzquiz\jazzquiz_attempt::INPROGRESS;
         $params[] = $this->session->id;
         $attempts = $DB->get_records_sql($query, $params);
 
         if (!empty($attempts)) {
-
             if (count($attempts) > 1) {
                 throw new \Exception('Invalid number of attempts created for this group');
             }
-
             // if there is an open attempt for the group, see if it's for the current user, if it is, they can take the quiz
             // if they are not the same user then they cannot take the quiz
             $attempt = current($attempts);
@@ -669,12 +648,10 @@ class jazzquiz_session
             } else {
                 return true;
             }
-
         } else { // if no attempts, then they can create an attempt for the group
             return true;
         }
     }
-
 
     /**
      * Get the users who have attempted this session
@@ -688,9 +665,7 @@ class jazzquiz_session
         if (empty($this->session)) {
             return [];
         }
-
         $sql = 'SELECT DISTINCT userid FROM {jazzquiz_attempts} WHERE sessionid = :sessionid';
-
         return $DB->get_records_sql($sql, [
             'sessionid' => $this->session->id
         ]);
@@ -706,15 +681,12 @@ class jazzquiz_session
     public function get_user_attempt($attemptid)
     {
         global $DB;
-
         if (empty($this->session)) {
             return null;
         }
-
         $dbattempt = $DB->get_record('jazzquiz_attempts', [
             'id' => $attemptid
         ]);
-
         return new \mod_jazzquiz\jazzquiz_attempt($this->rtq->get_questionmanager(), $dbattempt, $this->rtq->getContext());
     }
 
@@ -755,7 +727,6 @@ class jazzquiz_session
     }
 
     /**
-     *
      *
      * @param bool $includepreviews Whether or not to include the preview attempts
      * @param string $open Whether or not to get open attempts.  'all' means both, otherwise 'open' means open attempts,
@@ -800,7 +771,6 @@ class jazzquiz_session
         }
 
         if (!is_null($userid)) {
-
             if ($skipgroups) {
                 // if we don't want to find user attempts based on groups just get attempts for specified user
                 // usages include "get user attempts", and the grading "get user attempts"
@@ -811,16 +781,13 @@ class jazzquiz_session
                     $usergroups = $this->rtq->get_groupmanager()->get_user_groups($userid);
 
                     if (!empty($usergroups)) {
-
                         $selectgroups = [];
                         foreach ($usergroups as $ugroup) {
                             $selectgroups[] = $ugroup->id;
                         }
                         list($insql, $gparams) = $DB->get_in_or_equal($selectgroups);
-
                         $where[] = 'forgroupid ' . $insql;
                         $sqlparams = array_merge($sqlparams, $gparams);
-
                     } else { // continue selecting for user query if no groups
                         $where[] = 'userid = ?';
                         $sqlparams[] = $userid;
@@ -834,9 +801,7 @@ class jazzquiz_session
         }
 
         $where_string = implode(' AND ', $where);
-
         $sql = "SELECT * FROM {jazzquiz_attempts} WHERE $where_string";
-
         $db_attempts = $DB->get_records_sql($sql, $sqlparams);
 
         $attempts = [];

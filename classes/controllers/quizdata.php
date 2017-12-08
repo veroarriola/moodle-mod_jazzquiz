@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
  */
 class quizdata
 {
-
     /** @var \mod_jazzquiz\jazzquiz Realtime quiz class */
     protected $RTQ;
 
@@ -57,7 +56,7 @@ class quizdata
      */
     public function setup_page()
     {
-        global $DB, $PAGE;
+        global $DB;
 
         // No page url as this is just a callback.
         $this->pageurl = null;
@@ -107,9 +106,7 @@ class quizdata
         $this->pagevars['pageurl'] = $this->pageurl;
         $this->pagevars['action'] = $this->action;
 
-
         $this->RTQ = new \mod_jazzquiz\jazzquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
-
         $this->session = new \mod_jazzquiz\jazzquiz_session($this->RTQ, $this->pageurl, $this->pagevars, $session);
 
         // Get and validate the attempt.
@@ -121,7 +118,6 @@ class quizdata
 
         // If the attempt validates, make it the open attempt on the session.
         $this->session->set_open_attempt($attempt);
-
     }
 
     /**
@@ -145,7 +141,6 @@ class quizdata
         // Set time limit
         $this->jsonlib->set('notime', $question->getNoTime());
         if ($question->getNoTime() == 0) {
-
             // This question has a time limit
             if ($question->getQuestionTime() == 0) {
                 $question_time = $this->RTQ->getRTQ()->defaultquestiontime;
@@ -153,9 +148,7 @@ class quizdata
                 $question_time = $question->getQuestionTime();
             }
             $this->jsonlib->set('questiontime', $question_time);
-
         } else {
-
             // No time limit
             $this->jsonlib->set('questiontime', 0);
         }
@@ -174,7 +167,6 @@ class quizdata
      */
     private function show_all_improvisation_questions()
     {
-
         global $DB;
 
         $quiz_questions = $DB->get_records('jazzquiz_questions', [
@@ -184,9 +176,7 @@ class quizdata
         if (!$quiz_questions) {
             $this->jsonlib->send_error('no questions');
         } else {
-
             $questions = [];
-
             foreach ($quiz_questions as $quiz_question) {
 
                 // Let's get the question data
@@ -227,25 +217,21 @@ class quizdata
                     'name' => str_replace('{IMPROV}', '', $question->name),
                     'slot' => $slot
                 ];
-
             }
 
             // Send the response
             $this->jsonlib->set('status', 'success');
             $this->jsonlib->set('questions', json_encode($questions));
             $this->jsonlib->send_response();
-
         }
     }
 
     private function start_goto_question($slot)
     {
-
         // Are we going to keep or break the flow of the quiz?
         $keep_flow = optional_param('keepflow', '', PARAM_TEXT);
 
         if (!empty($keep_flow)) {
-
             // Only one keep_flow at a time. Two improvised questions can be run after eachother.
             if ($this->session->get_session()->nextqnum == 0) {
 
@@ -261,7 +247,6 @@ class quizdata
                     $this->session->save_session();
                 }
             }
-
         }
 
         // Let's get the question
@@ -273,7 +258,6 @@ class quizdata
         // Start the question and send the response
         $this->start_question($question);
     }
-
 
     private function start_quiz()
     {
@@ -359,7 +343,6 @@ class quizdata
         // Send response
         $this->jsonlib->set('status', 'success');
         $this->jsonlib->send_response();
-
     }
 
     private function save_vote()
@@ -383,7 +366,6 @@ class quizdata
         // Send response
         $this->jsonlib->set('status', $status);
         $this->jsonlib->send_response();
-
     }
 
     private function get_vote_results()
@@ -593,4 +575,3 @@ class quizdata
     }
 
 }
-
