@@ -36,6 +36,7 @@ class report_overview
         $session_data = $session->get_session();
         $name = $session_data->id . '_' . $session_data->name . '_' . $question->name;
         header('Content-Disposition: attachment; filename=session_' . $name . '.csv');
+        echo $question->questiontext . "\r\n";
         foreach ($responses as $response) {
             echo $response['response'] . "\r\n";
         }
