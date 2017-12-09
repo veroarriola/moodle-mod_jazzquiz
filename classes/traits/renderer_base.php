@@ -98,7 +98,7 @@ trait renderer_base
      * @param \moodle_url $pageurl Always require the page url
      * @param array $pagevars (optional)
      */
-    public function init($jazzquiz, $pageurl, $pagevars = array())
+    public function init($jazzquiz, $pageurl, $pagevars = [])
     {
         $this->pagevars = $pagevars;
         $this->pageurl = $pageurl;

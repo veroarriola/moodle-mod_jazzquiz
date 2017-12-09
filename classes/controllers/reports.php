@@ -75,9 +75,14 @@ class reports extends base
     public function handle_request()
     {
         $report = new \mod_jazzquiz\reports\report_overview($this->jazzquiz);
-        $this->renderer->report_header($this->pageurl, $this->pagevars);
+        $is_download = isset($_GET['download']);
+        if (!$is_download) {
+            $this->renderer->report_header($this->pageurl, $this->pagevars);
+        }
         $report->handle_request($this->pageurl, $this->pagevars);
-        $this->renderer->report_footer();
+        if (!$is_download) {
+            $this->renderer->report_footer();
+        }
     }
 
 }

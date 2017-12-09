@@ -332,9 +332,7 @@ class jazzquiz_session
             'responses' => $responses,
             'student_count' => count($attempts)
         ];
-
     }
-
 
     /**
      * Gets the users who have responded to the current question as an array
