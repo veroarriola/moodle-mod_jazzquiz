@@ -54,10 +54,8 @@ class report_overview
         $total_responded = [];
         $row = $quiz_attempt->get_attempt();
         $slots = explode(',', $row->qubalayout);
-        $quba = $quiz_attempt->get_quba();
 
         foreach ($slots as $slot) {
-            $question_attempt = $quba->get_question_attempt($slot);
             $responded = $session->get_responded_list($slot, 'all');
             if ($responded) {
                 $total_responded = array_merge($total_responded, $responded);
@@ -124,7 +122,7 @@ class report_overview
         }
     }
 
-    private function view_session($page_url, $page_vars)
+    private function view_session($page_url)
     {
         global $DB, $PAGE;
 
@@ -170,6 +168,13 @@ class report_overview
         $id = required_param('id', PARAM_INT);
         $quizid = required_param('quizid', PARAM_INT);
         $sessionid = required_param('sessionid', PARAM_INT);
+
+        echo '<div id="report_overview_controls" class="jazzquizbox">';
+        echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responded').fadeIn();jQuery('#report_overview_responses').fadeOut();\">Attendance</button>";
+        echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responses').fadeIn();jQuery('#report_overview_responded').fadeOut();\">Responses</button>";
+        echo '</div>';
+
+        echo '<div id="report_overview_responses" class="hidden">';
 
         foreach ($slots as $slot) {
             $question_attempt = $quba->get_question_attempt($slot);
@@ -231,6 +236,8 @@ class report_overview
                 . '</script>';
 
         }
+
+        echo '</div>';
 
         $all_user_ids = $session->get_session_users();
 
@@ -313,7 +320,7 @@ class report_overview
         switch ($page_vars['action']) {
 
             case 'viewsession':
-                $this->view_session($page_url, $page_vars);
+                $this->view_session($page_url);
                 break;
 
             case 'csv':
