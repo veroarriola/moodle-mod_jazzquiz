@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
  */
 class jazzquiz_session
 {
-
     /** @var jazzquiz $rtq jazzquiz object */
     protected $rtq;
 
@@ -138,7 +137,6 @@ class jazzquiz_session
     public function save_session()
     {
         global $DB;
-
         if (isset($this->session->id)) { // update the record
             try {
                 $DB->update_record('jazzquiz_sessions', $this->session);
@@ -154,7 +152,6 @@ class jazzquiz_session
                 return false; // return false on failure
             }
         }
-
         return true; // return true if we get here
     }
 
@@ -270,32 +267,23 @@ class jazzquiz_session
         $this->session->currentquestion = $question->get_slot();
 
         if ($question->getQuestionTime() == 0 && $question->getNoTime() == 0) {
-
             $question_time = $this->rtq->getRTQ()->defaultquestiontime;
-
         } else if ($question->getNoTime() == 1) {
-
             // Here we're spoofing a question time of 0.
             // This is so the javascript recognizes that we don't want a timer
             // as it reads a question time of 0 as no timer
             $question_time = 0;
-
         } else {
-
             $question_time = $question->getQuestionTime();
-
         }
 
         $this->session->currentquestiontime = $question_time;
-
         $this->save_session();
 
-        // next set all responded to 0 for this question
+        // Set all responded to 0 for this question
         $attempts = $this->getall_open_attempts(true);
-
         foreach ($attempts as $attempt) {
             /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
-
             $attempt->responded = 0;
             $attempt->responded_count = 0;
             $attempt->save();
@@ -370,35 +358,24 @@ class jazzquiz_session
     {
         global $DB;
 
-        // Get all of the open attempts
         $attempts = $this->getall_open_attempts(false);
-
         $not_responded = [];
 
         foreach ($attempts as $attempt) {
             /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             if ($attempt->responded == 0) {
-
                 if (!is_null($attempt->forgroupid) && $attempt->forgroupid != 0) {
-
                     // We have a groupid to use instead of the user's name
                     $not_responded[] = $this->rtq->get_groupmanager()->get_group_name($attempt->forgroupid);
-
                 } else {
-
                     // Get the username
                     if ($user = $DB->get_record('user', [ 'id' => $attempt->userid ])) {
-
                         // Add to the list
                         $not_responded[] = fullname($user);
-
                     } else {
-
                         // This shouldn't happen
                         $not_responded[] = 'undefined user';
-
                     }
-
                 }
             }
         }

@@ -14,13 +14,13 @@ defined('MOODLE_INTERNAL') || die();
  */
 class base
 {
-    /** @var \mod_jazzquiz\jazzquiz Active quiz class */
+    /** @var \mod_jazzquiz\jazzquiz */
     protected $jazzquiz;
 
     /** @var \moodle_url $pageurl The page url to base other calls on */
     protected $pageurl;
 
-    /** @var array $this ->pagevars An array of page options for the page load */
+    /** @var array $pagevars An array of page options for the page load */
     protected $pagevars;
 
     /** @var */

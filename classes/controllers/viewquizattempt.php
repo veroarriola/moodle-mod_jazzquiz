@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
  */
 class viewquizattempt
 {
-
     /** @var \mod_jazzquiz\jazzquiz Realtime quiz class */
     protected $RTQ;
 
@@ -51,7 +50,6 @@ class viewquizattempt
         global $PAGE, $DB;
 
         $this->pagevars = [];
-
         $this->pageurl = new \moodle_url($baseurl);
         $this->pageurl->remove_all_params();
 
@@ -71,9 +69,7 @@ class viewquizattempt
 
         $this->get_parameters(); // get the rest of the parameters and set them in the class
 
-
         require_login($course->id, false, $cm);
-
 
         $this->pageurl->param('id', $cm->id);
         $this->pageurl->param('quizid', $quiz->id);
@@ -102,23 +98,20 @@ class viewquizattempt
         global $USER;
 
         // Show the attempt
-
         $session = $this->RTQ->get_session($this->pagevars['sessionid']);
         $attempt = $session->get_user_attempt($this->pagevars['attemptid']);
-
         $hascapability = true;
 
         if (!$this->RTQ->has_capability('mod/jazzquiz:seeresponses')) {
 
             // If the current user doesn't have the ability to see responses (or all responses)
             // check that the current one is theirs
-
             if ($attempt->userid != $USER->id) { // first check if attempts userid and current userid match
 
-                // if not, next check group settings if we're in group mode
+                // If not, next check group settings if we're in group mode
                 if ($this->RTQ->group_mode()) {
 
-                    // get user groups and check if the forgroupid is in one of them
+                    // Get user groups and check if the forgroupid is in one of them
                     $usergroups = $this->RTQ->get_groupmanager()->get_user_groups();
                     $usergroupids = array_keys($usergroups);
                     if (!in_array($attempt->forgroupid, $usergroupids)) {
@@ -133,7 +126,6 @@ class viewquizattempt
         }
 
         if ($hascapability) {
-
             $params = [
                 'relateduserid' => $attempt->userid,
                 'objectid' => $attempt->id,
@@ -151,11 +143,8 @@ class viewquizattempt
             $event = \mod_jazzquiz\event\attempt_viewed::create($params);
             $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
             $event->trigger();
-
             $this->RTQ->get_renderer()->render_attempt($attempt, $session);
         }
-
-
     }
 
     /**
@@ -164,14 +153,11 @@ class viewquizattempt
      */
     public function get_parameters()
     {
-
         $this->pagevars['action'] = optional_param('action', '', PARAM_ALPHAEXT);
         $this->pagevars['attemptid'] = required_param('attemptid', PARAM_INT);
         $this->pagevars['sessionid'] = required_param('sessionid', PARAM_INT);
         $this->pagevars['slot'] = optional_param('slot', '', PARAM_INT);
-
     }
-
 
 }
 

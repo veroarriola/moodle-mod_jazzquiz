@@ -33,12 +33,10 @@ class jazzquiz_vote
     public function get_results()
     {
         global $DB;
-
         $votes = $DB->get_records('jazzquiz_votes', [
             'sessionid' => $this->session_id,
             'slot' => $this->slot
         ]);
-
         return $votes;
     }
 
@@ -131,7 +129,6 @@ class jazzquiz_vote
             $vote->slot = $slot;
             $DB->insert_record('jazzquiz_votes', $vote);
         }
-
     }
 
 }

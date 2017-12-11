@@ -2,7 +2,6 @@
 
 namespace mod_jazzquiz\traits;
 
-
 trait renderer_base
 {
     /** @var array $pagevars Includes other page information needed for rendering functions */
@@ -24,7 +23,7 @@ trait renderer_base
      */
     public function setMessage($type, $message)
     {
-        $this->pageMessage = [$type, $message];
+        $this->pageMessage = [ $type, $message ];
     }
 
     /**
@@ -57,11 +56,9 @@ trait renderer_base
         if (empty($this->pageMessage)) {
             return;
         }
-
         if (!is_array($this->pageMessage)) {
             return;
         }
-
         switch ($this->pageMessage[0]) {
             case 'error':
                 echo $this->output->notification($this->pageMessage[1], 'notifiyproblem');

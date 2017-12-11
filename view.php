@@ -15,9 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This is the view page for realtime quizzes
- *
- * It handles displaying a quiz onto the page as well as setup for sessions and attmepts
+ * The view page where you can start or participate in a session.
  *
  * @package   mod_jazzquiz
  * @author    John Hoopes <moodle@madisoncreativeweb.com>

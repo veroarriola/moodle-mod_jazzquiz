@@ -376,10 +376,9 @@ class questionmanager
 
         /**
          * Return the attempt layout which is a set of ids that are the slot ids from the question engine usage by activity instance
-         * these are what are used during an actual attempt rather than the questionid themselves, since the question engine will handle
+         * these are what are used during an actual attempt rather than the question_id themselves, since the question engine will handle
          * the translation
          */
-
         return $attemptlayout;
     }
 
@@ -419,26 +418,20 @@ class questionmanager
     protected function update_questionorder($action, $question_id, $full_order = [])
     {
         switch ($action) {
-
             case 'addquestion':
-
                 $question_order = $this->get_question_order();
-
                 if (empty($question_order)) {
                     $question_order = $question_id;
                 } else {
                     $question_order .= ',' . $question_id;
                 }
-
                 $this->set_question_order($question_order);
                 $this->refresh_questions();
                 return true;
 
             case 'deletequestion':
-
                 $question_order = $this->get_question_order();
                 $question_order = explode(',', $question_order);
-
                 foreach ($question_order as $index => $current_question_order) {
                     if ($current_question_order == $question_id) {
                         unset($question_order[$index]);
@@ -446,27 +439,19 @@ class questionmanager
                     }
                 }
                 $new_question_order = implode(',', $question_order);
-
-                // Set the question order and refresh the questions
                 $this->set_question_order($new_question_order);
                 $this->refresh_questions();
                 return true;
 
             case 'movequestionup':
-
                 $question_order = $this->get_question_order();
                 $question_order = explode(',', $question_order);
-
                 foreach ($question_order as $index => $current_question_order) {
-
                     if ($current_question_order == $question_id) {
-
                         if ($index == 0) {
-
                             // Can't move first question up
                             return false;
                         }
-
                         // If IDs match replace the previous index with the current one
                         // and make the previous index qid the current index
                         $previous_question_order = $question_order[$index - 1];
@@ -475,29 +460,21 @@ class questionmanager
                         break;
                     }
                 }
-
                 $new_question_order = implode(',', $question_order);
-
-                // Set the question order and refresh the questions
                 $this->set_question_order($new_question_order);
                 $this->refresh_questions();
                 return true;
 
             case 'movequestiondown':
-
                 $question_order = $this->get_question_order();
                 $question_order = explode(',', $question_order);
                 $question_order_count = count($question_order);
-
                 foreach ($question_order as $index => $current_question_order) {
-
                     if ($current_question_order == $question_id) {
-
                         if ($index == $question_order_count - 1) {
                             // Can't move last question down
                             return false;
                         }
-
                         // If ids match replace the next index with the current one
                         // and make the next index qid the current index
                         $next_question_order = $question_order[$index + 1];
@@ -506,10 +483,7 @@ class questionmanager
                         break;
                     }
                 }
-
                 $new_question_order = implode(',', $question_order);
-
-                // Set the question order and refresh the questions
                 $this->set_question_order($new_question_order);
                 $this->refresh_questions();
                 return true;
@@ -518,32 +492,26 @@ class questionmanager
 
                 $question_order = $this->get_question_order();
                 $question_order = explode(',', $question_order);
-
                 // If we don't have the same number of questions return error
                 if (count($full_order) !== count($question_order)) {
                     return false;
                 }
-
-                // next validate that the questions sent all match to a question in the current order
+                // Next validate that the questions sent all match to a question in the current order
                 $all_match = true;
                 foreach ($question_order as $current_question_order) {
                     if (!in_array($current_question_order, $full_order)) {
                         $all_match = false;
                     }
                 }
-
                 if ($all_match) {
-
                     $new_question_order = implode(',', $full_order);
                     $this->set_question_order($new_question_order);
                     $this->refresh_questions();
                     return true;
                 }
-
                 return false;
 
             default:
-                // If we get here, there's an error so return false
                 return false;
         }
     }
@@ -605,12 +573,9 @@ class questionmanager
 
         // Generate empty array for ordered questions for no question order
         if (empty($question_order)) {
-
             $this->qbankOrderedQuestions = [];
             return;
-
         } else {
-
             // Otherwise explode it and continue on
             $question_order = explode(',', $question_order);
         }
@@ -618,7 +583,6 @@ class questionmanager
         // Using the question order saved in rtq object, get the qbank question ids from the rtq questions
         $ordered_question_ids = [];
         foreach ($question_order as $qorder) {
-
             // Store the rtq question id as the key so that it can be used later
             // when adding question time to question bank question object
             $ordered_question_ids[$qorder] = $this->rtqQuestions[$qorder]->questionid;
@@ -632,10 +596,8 @@ class questionmanager
         // Now order the qbank questions based on the order that we got above
         $qbankOrderedQuestions = [];
         foreach ($ordered_question_ids as $rtqqid => $questionid) {
-
             // Use the ordered question IDs we got earlier
             if (!empty($questions[$questionid])) {
-
                 // Create quiz question and add it to the array
                 $quiz_question = new \mod_jazzquiz\jazzquiz_question(
                     $rtqqid,
@@ -645,12 +607,10 @@ class questionmanager
                     $this->rtqQuestions[$rtqqid]->showhistoryduringquiz,
                     $questions[$questionid]
                 );
-
                 // Add question to the ordered questions
                 $qbankOrderedQuestions[$rtqqid] = $quiz_question;
             }
         }
-
         $this->qbankOrderedQuestions = $qbankOrderedQuestions;
     }
 

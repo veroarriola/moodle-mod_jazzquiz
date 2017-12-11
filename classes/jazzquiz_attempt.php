@@ -29,7 +29,6 @@ defined('MOODLE_INTERNAL') || die();
  */
 class jazzquiz_attempt
 {
-
     /** Constants for the status of the attempt */
     const NOTSTARTED = 0;
     const INPROGRESS = 10;
@@ -104,13 +103,10 @@ class jazzquiz_attempt
             $this->attempt->qubalayout = implode(',', $attemptlayout);
 
         } else {
-
             // Load it up in this class instance
             $this->attempt = $dbattempt;
             $this->quba = \question_engine::load_questions_usage_by_activity($this->attempt->questionengid);
-
         }
-
     }
 
     /**
@@ -318,7 +314,6 @@ class jazzquiz_attempt
      */
     public function get_question_slot(\mod_jazzquiz\jazzquiz_question $question)
     {
-
         // Build if not available
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
 
@@ -350,7 +345,6 @@ class jazzquiz_attempt
      */
     public function get_question_by_slot($asked_slot)
     {
-
         // Build if not available
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
 
@@ -428,7 +422,6 @@ class jazzquiz_attempt
 
         return $result;
     }
-
 
     /**
      * saves the current attempt class
@@ -936,7 +929,6 @@ class jazzquiz_attempt
         ]);
 
         return $history_title . $history_table;
-
     }
 
     /**

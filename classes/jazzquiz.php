@@ -30,7 +30,6 @@ defined('MOODLE_INTERNAL') || die();
  */
 class jazzquiz
 {
-
     /**
      * @var array $review fields Static review fields to add as options
      */
@@ -295,7 +294,6 @@ class jazzquiz
 
         return $rtqsessions;
     }
-
 
     /**
      * Gets all sessions for the realtime quiz that are closed
