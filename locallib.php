@@ -24,62 +24,44 @@
  */
 
 /**
+ * @param \mod_jazzquiz\jazzquiz $jazzquiz
+ */
+function jazzquiz_view_tab($jazzquiz, $id, &$row, $capability, $name)
+{
+    if (!$jazzquiz->has_capability($capability)) {
+        return;
+    }
+    $url = new moodle_url("/mod/jazzquiz/$name.php", [ 'id' => $id ]);
+    $row[] = new tabobject($name, $url, get_string($name, 'jazzquiz'));
+}
+
+/**
  * Prints local lib tabs
  *
- * @param \mod_jazzquiz\jazzquiz $RTQ Realtime quiz class
- * @param                        $current_tab
+ * @param \mod_jazzquiz\jazzquiz $jazzquiz
+ * @param string                 $current_tab
  *
  * @return string HTML string of the tabs
  */
-function jazzquiz_view_tabs($RTQ, $current_tab)
+function jazzquiz_view_tabs($jazzquiz, $current_tab)
 {
     $tabs = [];
     $row = [];
     $inactive = [];
     $activated = [];
+    $id = $jazzquiz->course_module->id;
 
-    $cm_id = $RTQ->getCM()->id;
+    jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:attempt', 'view');
+    jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:editquestions', 'edit');
+    jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:seeresponses', 'reports');
 
-    if ($RTQ->has_capability('mod/jazzquiz:attempt')) {
-        $view_url = new moodle_url('/mod/jazzquiz/view.php', [
-            'id' => $cm_id
-        ]);
-        $row[] = new tabobject('view', $view_url, get_string('view', 'jazzquiz'));
-    }
-
-    if ($RTQ->has_capability('mod/jazzquiz:editquestions')) {
-        $edit_url = new moodle_url('/mod/jazzquiz/edit.php', [
-            'cmid' => $cm_id
-        ]);
-        $row[] = new tabobject('edit', $edit_url, get_string('edit', 'jazzquiz'));
-    }
-
-    if ($RTQ->has_capability('mod/jazzquiz:seeresponses')) {
-        $reports_url = new moodle_url('/mod/jazzquiz/reports.php', [
-            'id' => $cm_id
-        ]);
-        $row[] = new tabobject('reports', $reports_url, get_string('review', 'jazzquiz'));
-    }
-
-    if ($current_tab == 'view' && count($row) == 1) {
+    if ($current_tab === 'view' && count($row) === 1) {
         // No tabs for students
-        echo '<br>';
-    } else {
-        $tabs[] = $row;
+        return '<br>';
     }
-
-    if ($current_tab == 'reports') {
-        $activated[] = 'reports';
+    $tabs[] = $row;
+    if ($current_tab === 'reports' || $current_tab === 'edit' || $current_tab === 'view') {
+        $activated[] = $current_tab;
     }
-
-    if ($current_tab == 'edit') {
-        $activated[] = 'edit';
-    }
-
-    if ($current_tab == 'view') {
-        $activated[] = 'view';
-    }
-
     return print_tabs($tabs, $current_tab, $inactive, $activated, true);
 }
-

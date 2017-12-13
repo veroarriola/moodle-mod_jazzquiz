@@ -44,11 +44,7 @@ class base
         $this->pageurl = new \moodle_url($base_url);
         $this->pageurl->remove_all_params();
 
-        $id = optional_param('cmid', false, PARAM_INT);
-        if (!$id) {
-            $id = optional_param('id', false, PARAM_INT);
-        }
-
+        $id = optional_param('id', false, PARAM_INT);
         $quiz_id = optional_param('quizid', false, PARAM_INT);
 
         if ($id) {
@@ -66,7 +62,7 @@ class base
                 'id' => $this->cm->instance
             ], '*', MUST_EXIST);
 
-        } else if ($quiz_id) {
+        }/* else if ($quiz_id) {
 
             $this->quiz = $DB->get_record('jazzquiz', [
                 'id' => $quiz_id
@@ -86,13 +82,13 @@ class base
 
             $this->cm = get_coursemodule_from_instance('jazzquiz', $this->quiz->id, $this->course->id, false, MUST_EXIST);
 
-        } else {
+        }*/ else {
             // Probably a login redirect that doesn't include any ID.
             // Let's go back to the main Moodle page, because we have no info here.
             header('Location: /');
             exit;
         }
-        $this->context = \context_module::instance($this->cm->id);
+        //$this->context = \context_module::instance($this->cm->id);
         require_login($this->course->id, false, $this->cm);
     }
 

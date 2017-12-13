@@ -23,12 +23,11 @@ use \mod_jazzquiz\forms\edit\add_question_form;
 /**
  * Question manager class
  *
- * Provides utility functions to manage questions for a realtime quiz
+ * Provides utility functions to manage questions for a JazzQuiz
  *
- * Basically this class provides an interface to internally map the questions added to a realtime quiz to
- * questions in the question bank.  calling get_questions() will return an ordered array of question objects
- * from the questions table and not the jazzquiz_questions table.  That table is only used internally by this
- * class.
+ * Basically this class provides an interface to internally map the questions added to a JazzQuiz to
+ * questions in the question bank. Calling get_questions() will return an ordered array of question objects
+ * from the questions table and not the jazzquiz_questions table. That table is only used internally by this class.
  *
  * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
@@ -40,9 +39,6 @@ class questionmanager
     /** @var jazzquiz */
     protected $rtq;
 
-    /** @var array */
-    protected $pagevars;
-
     /** @var \mod_jazzquiz_renderer */
     protected $renderer;
 
@@ -53,36 +49,22 @@ class questionmanager
     protected $qbankOrderedQuestions;
 
     /** @var \moodle_url */
-    protected $baseurl;
+    protected $base_url;
 
     /**
      * Construct an instance of question manager
      *
-     * @param jazzquiz $rtq
+     * @param jazzquiz $jazzquiz
      * @param \mod_jazzquiz_renderer $renderer The realtime quiz renderer to render visual elements
-     * @param array $pagevars page variables array
      */
-    public function __construct($rtq, $renderer, $pagevars = [])
+    public function __construct($jazzquiz, $renderer)
     {
-        $this->rtq = $rtq;
+        $this->rtq = $jazzquiz;
         $this->renderer = $renderer;
-        $this->pagevars = $pagevars;
         $this->orderedquestions = [];
-
-        if (!empty($this->pagevars)) {
-
-            $this->baseurl = $this->pagevars['pageurl'];
-
-        } else {
-
-            $params = [
-                'id' => $this->rtq->getCM()->id
-            ];
-
-            $this->baseurl = new \moodle_url('/mod/jazzquiz/edit.php', $params);
-        }
-
-        // Load questions
+        $this->base_url = new \moodle_url('/mod/jazzquiz/edit.php', [
+            'id' => $jazzquiz->course_module->id
+        ]);
         $this->refresh_questions();
     }
 
@@ -112,11 +94,10 @@ class questionmanager
 
         // Check if question has already been added
         if ($this->is_question_already_present($question_id)) {
-            $redurl = clone($this->pagevars['pageurl']);
-            /** @var \moodle_url $redurl */
-            $redurl->remove_params('action'); // go back to base edit page
-
-            redirect($redurl, get_string('cantaddquestiontwice', 'jazzquiz'));
+            $redirect_url = clone($this->base_url);
+            /** @var \moodle_url $redirect_url */
+            $redirect_url->remove_params('action'); // Go back to base edit page
+            redirect($redirect_url, get_string('cantaddquestiontwice', 'jazzquiz'));
         }
 
         $question = new \stdClass();
@@ -131,10 +112,10 @@ class questionmanager
 
         $this->update_questionorder('addquestion', $RTQquestionid);
 
-        // Ensure there is no action or questionid in the baseurl
-        $this->baseurl->remove_params('action', 'questionid');
+        // Ensure there is no action or questionid in the base url
+        $this->base_url->remove_params('action', 'questionid');
 
-        redirect($this->baseurl, null, 0);
+        redirect($this->base_url, null, 0);
     }
 
     /**
@@ -148,7 +129,7 @@ class questionmanager
     {
         global $DB;
 
-        $actionurl = clone($this->baseurl);
+        $actionurl = clone($this->base_url);
         $actionurl->param('action', 'editquestion');
         $actionurl->param('rtqquestionid', $questionid);
 
@@ -171,8 +152,8 @@ class questionmanager
         if ($mform->is_cancelled()) {
 
             // Redirect back to list questions page
-            $this->baseurl->remove_params('action');
-            redirect($this->baseurl, null, 0);
+            $this->base_url->remove_params('action');
+            redirect($this->base_url, null, 0);
 
         } else if ($data = $mform->get_data()) {
 
@@ -187,8 +168,8 @@ class questionmanager
             $DB->update_record('jazzquiz_questions', $question);
 
             // Ensure there is no action or question_id in the base url
-            $this->baseurl->remove_params('action', 'questionid');
-            redirect($this->baseurl, null, 0);
+            $this->base_url->remove_params('action', 'questionid');
+            redirect($this->base_url, null, 0);
 
         } else {
 
@@ -215,19 +196,14 @@ class questionmanager
     public function delete_question($question_id)
     {
         global $DB;
-
         try {
-
             $DB->delete_records('jazzquiz_questions', [
                 'id' => $question_id
             ]);
-
             $this->update_questionorder('deletequestion', $question_id);
-
         } catch (\Exception $e) {
             return false;
         }
-
         return true;
     }
 
@@ -330,10 +306,8 @@ class questionmanager
             /** @var \mod_jazzquiz\jazzquiz_question $qbankQuestion */
 
             if ($bank_question->getQuestion()->id == $quba_question->id) {
-
                 // Set the slot on the bank question as this is the actual id we're using for question number
                 $bank_question->set_slot($slots[$slot]);
-
                 return $bank_question;
             }
         }

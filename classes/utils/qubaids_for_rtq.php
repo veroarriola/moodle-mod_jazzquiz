@@ -29,27 +29,23 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qubaids_for_rtq extends \qubaid_join {
+class qubaids_for_rtq extends \qubaid_join
+{
 
-    public function __construct($sessionid, $includepreviews = true, $onlyfinished = false) {
-
+    public function __construct($sessionid, $include_previews = true, $only_finished = false)
+    {
         $where = 'rtqa.sessionid = :sessionid';
-
         $params = [
             'sessionid' => $sessionid
         ];
-
-        if (!$includepreviews) {
+        if (!$include_previews) {
             $where .= ' AND preview = 0';
         }
-
-        if ($onlyfinished) {
+        if ($only_finished) {
             $where .= ' AND state == :statefinished';
             $params['statefinished'] = \mod_jazzquiz\jazzquiz_attempt::FINISHED;
         }
-
         parent::__construct('{jazzquiz_attempts} rtqa', 'rtqa.questionengid', $where, $params);
-
     }
 
 }

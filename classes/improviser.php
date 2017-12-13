@@ -12,7 +12,7 @@ class improviser
         global $DB;
 
         // Get the JazzQuiz
-        $jazzquiz = $DB->get_record('jazzquiz', ['id' => $jazzquiz_id]);
+        $jazzquiz = $DB->get_record('jazzquiz', [ 'id' => $jazzquiz_id ]);
         if (!$jazzquiz) {
             return;
         }
@@ -35,7 +35,6 @@ class improviser
         }
         $jazzquiz->questionorder .= $jazzquiz_question_id;
         $DB->update_record('jazzquiz', $jazzquiz);
-
     }
 
     public function remove_improvised_question_instance($jazzquiz_id, $question_id)
@@ -68,25 +67,16 @@ class improviser
 
         // Update question order
         $question_order = explode(',', $jazzquiz->questionorder);
-
         foreach ($question_order as $index => $order_question_id) {
-
             foreach ($existing_improvised_questions as $existing_improvised_question) {
-
                 if ($order_question_id == $existing_improvised_question->id) {
-
                     unset($question_order[$index]);
-
                     break;
                 }
-
             }
-
         }
         $jazzquiz->questionorder = implode(',', $question_order);
-
         $DB->update_record('jazzquiz', $jazzquiz);
-
     }
 
     private function make_generic_question_definition($qtype, $name)
@@ -182,7 +172,6 @@ class improviser
             $answer = $this->make_generic_question_answer($question->id, 1, $letter);
             $DB->insert_record('question_answers', $answer);
         }
-
     }
 
     private function insert_shortanswer_question_definition($name)
@@ -205,7 +194,6 @@ class improviser
         // Add answer
         $answer = $this->make_generic_question_answer($question->id, 0, '*');
         $DB->insert_record('question_answers', $answer);
-
     }
 
     private function insert_truefalse_question_definition($name)
@@ -233,7 +221,6 @@ class improviser
         $truefalse->trueanswer = $trueanswer->id;
         $truefalse->falseanswer = $falseanswer->id;
         $DB->insert_record('question_truefalse', $truefalse);
-
     }
 
     private function insert_stack_algebraic_question_definition($name)
@@ -329,7 +316,6 @@ class improviser
         $prt_node->falsefeedback = '';
         $prt_node->falsefeedbackformat = 1;
         $prt_node->id = $DB->insert_record('qtype_stack_prt_nodes', $prt_node);
-
     }
 
     public function insert_default_improvised_question_definitions()
@@ -347,7 +333,6 @@ class improviser
 
         // STACK Algebraic
         $this->insert_stack_algebraic_question_definition('Algebraic');
-
     }
 
     public function remove_improvised_questions_from_quiz($jazzquiz_id)
@@ -376,7 +361,6 @@ class improviser
                 }
             }
         }
-
     }
 
     public function add_improvised_questions_to_quiz($jazzquiz_id)
@@ -394,33 +378,24 @@ class improviser
         ]);
 
         if (!$quiz_questions) {
-
             // No questions for this quiz? Let's get right to adding the dummy ones then.
             foreach ($improvised_questions as $improvised_question) {
                 $this->add_improvised_question_instance($jazzquiz_id, $improvised_question->id);
             }
-
         } else {
-
             // We should only add the ones that don't already exist.
             foreach ($improvised_questions as $improvised_question) {
-
                 $exists = false;
-
                 foreach ($quiz_questions as $quiz_question) {
-
                     if ($improvised_question->id == $quiz_question->questionid) {
                         $exists = true;
                         break;
                     }
-
                 }
-
                 if (!$exists) {
                     $this->add_improvised_question_instance($jazzquiz_id, $improvised_question->id);
                 }
             }
-
         }
     }
 

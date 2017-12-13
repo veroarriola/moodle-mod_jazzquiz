@@ -36,20 +36,15 @@ jazzquiz.change_quiz_state = function (state, data) {
             break;
 
         case 'running':
-
             if (this.quiz.question.is_running) {
                 break;
             }
-
             // Make sure the loading box hides (this is a catch for when the quiz is resuming)
             this.hide_loading();
-
             // Set this to true so that we don't keep calling this over and over
             this.quiz.question.is_running = true;
-
             // Set this to false if we're going to a new question
             this.quiz.question.is_ended = false;
-
             this.waitfor_question(data.currentquestion, data.questiontime, data.delay);
             break;
 
@@ -70,9 +65,7 @@ jazzquiz.change_quiz_state = function (state, data) {
 
         case 'voting':
             if (this.quiz.question.is_vote_running === undefined || !this.quiz.question.is_vote_running) {
-
                 var options = JSON.parse(data.options);
-
                 var html = '<div class="jazzquiz-vote">';
                 for (var i = 0; i < options.length; i++) {
                     html += '<label>';
@@ -82,42 +75,34 @@ jazzquiz.change_quiz_state = function (state, data) {
                 }
                 html += '</div>';
                 html += '<button class="btn" onclick="jazzquiz.save_vote(); return false;">Save</button>';
-
                 jQuery('#jazzquiz_info_container').removeClass('hidden').html(html);
-
                 for (var i = 0; i < options.length; i++) {
                     this.add_mathjax_element('vote_answer_label' + i, options[i].text);
                     if (options[i].qtype === 'stack') {
                         this.render_maxima_equation(options[i].text, 'vote_answer_label' + i, options[i].slot);
                     }
                 }
-
                 this.quiz.question.is_vote_running = true;
             }
             break;
 
         default:
             break;
-
     }
-
 };
 
 jazzquiz.handle_question_ending = function() {
-
     if (this.quiz.question.is_ended) {
         return;
     }
-
     if (this.quiz.question.is_vote_running !== undefined && this.quiz.question.is_vote_running) {
         return;
     }
-
     this.quiz.question.is_ended = true;
 
     // This line will autosubmit answers if timer runs out.
     // Should that happen or not? It will potentially add a lot of blank answers.
-    //this.handle_question(this.quiz.current_question_slot, true);
+    // this.handle_question(this.quiz.current_question_slot, true);
 
     // Clear counter
     if (this.qcounter) {
@@ -127,41 +112,31 @@ jazzquiz.handle_question_ending = function() {
         jQuery('#q' + this.quiz.current_question_slot + '_questiontimetext').html('');
         jQuery('#q' + this.quiz.current_question_slot + '_questiontime').html('');
     }
-
 };
 
 /**
  * handles the question for the student
  *
- *
  * @param question_slot the question slot to handle
  */
 jazzquiz.handle_question = function (question_slot) {
-
     if (this.quiz.question.is_saving) {
         // Don't save twice
         return;
     }
-
     this.quiz.question.is_saving = true;
 
     jQuery('#loadingtext').html(this.text('gathering_results'));
-
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
     }
 
     var question_form = document.forms.namedItem('q' + question_slot);
-
     var params = new FormData(question_form);
     params.append('action', 'savequestion');
-    params.append('attemptid', this.quiz.attempt_id);
     params.append('questionid', question_slot);
 
-    // Send request
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
-
-        // Hide loading box
         jQuery('#loadingbox').addClass('hidden');
 
         // Was there an error with the request?
@@ -190,28 +165,17 @@ jazzquiz.handle_question = function (question_slot) {
 
         jazzquiz.quiz.question.is_submitted = true;
         jazzquiz.quiz.question.is_saving = false;
-
         jazzquiz.handle_question_ending();
-
     });
-
 };
 
-
 jazzquiz.save_vote = function () {
-
-    // Setup parameters
     var params = {
         'action': 'savevote',
-        'attemptid': this.quiz.attempt_id,
         'answer': this.vote_answer
     };
-
-    // Send request
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
-
         var $info_container = jQuery('#jazzquiz_info_container');
-
         if (status !== HTTP_STATUS.OK) {
             $info_container.removeClass('hidden').html('There was an error saving the vote.');
             return;
@@ -232,7 +196,6 @@ jazzquiz.save_vote = function () {
                 $info_container.removeClass('hidden').html('An error has occurred. ' + wait_for_instructor);
                 break;
         }
-
     });
 };
 

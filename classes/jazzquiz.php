@@ -19,10 +19,6 @@ namespace mod_jazzquiz;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Realtime quiz object.  This object contains a lot of dependencies
- * that work together that help to keep all of the dependencies in one
- * class instead of spreading them around to multiple classes
- *
  * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
  * @copyright   2014 University of Wisconsin - Madison
@@ -33,98 +29,89 @@ class jazzquiz
     /**
      * @var array $review fields Static review fields to add as options
      */
-    public static $reviewfields = array(
-        'attempt' => array('theattempt', 'jazzquiz'),
-        'correctness' => array('whethercorrect', 'question'),
-        'marks' => array('marks', 'jazzquiz'),
-        'specificfeedback' => array('specificfeedback', 'question'),
-        'generalfeedback' => array('generalfeedback', 'question'),
-        'rightanswer' => array('rightanswer', 'question'),
-        'manualcomment' => array('manualcomment', 'jazzquiz')
-    );
+    public static $review_fields = [
+        'attempt'          => [ 'theattempt', 'jazzquiz' ],
+        'correctness'      => [ 'whethercorrect', 'question' ],
+        'marks'            => [ 'marks', 'jazzquiz' ],
+        'specificfeedback' => [ 'specificfeedback', 'question' ],
+        'generalfeedback'  => [ 'generalfeedback', 'question' ],
+        'rightanswer'      => [ 'rightanswer', 'question' ],
+        'manualcomment'    => [ 'manualcomment', 'jazzquiz' ]
+    ];
 
-    /** @var \stdClass $cm */
-    protected $cm;
+    /** @var \stdClass $course_module */
+    public $course_module;
 
     /** @var \stdClass $course */
-    protected $course;
+    public $course;
+
+    /** @var \context_module $context */
+    public $context;
+
+    /** @var \mod_jazzquiz\questionmanager $questionmanager */
+    public $question_manager;
+
+    /** @var \mod_jazzquiz_renderer $renderer */
+    public $renderer;
 
     /** @var \stdClass $jazzquiz */
     protected $jazzquiz;
 
-    /** @var \context_module $context */
-    protected $context;
-
-    /** @var bool $isinstructor */
-    protected $isinstructor;
-
-    /** @var \mod_jazzquiz\questionmanager $questionmanager */
-    protected $questionmanager;
-
-    /** @var \mod_jazzquiz\utils\groupmanager $groupmanager */
-    protected $groupmanager;
-
-    /** @var \mod_jazzquiz_renderer $renderer */
-    protected $renderer;
-
-    /** @var array $pagevars */
-    protected $pagevars;
+    /** @var bool $is_instructor */
+    protected $is_instructor;
 
     /**
      * Construct a rtq class
      *
-     * @param object $cm The course module instance
-     * @param object $course The course object the activity is contained in
-     * @param object $quiz The specific real time quiz record for this activity
-     * @param \moodle_url $pageurl The page url
-     * @param array $pagevars The variables and options for the page
+     * @param object $course_module_id The course module ID
      * @param string $renderer_subtype Renderer sub-type to load if requested
      *
      */
-    public function __construct($cm, $course, $quiz, $pageurl, $pagevars = [], $renderer_subtype = null)
+    public function __construct($course_module_id, $renderer_subtype = null)
     {
-        global $PAGE;
+        global $PAGE, $DB;
 
-        $this->cm = $cm;
-        $this->course = $course;
-        $this->jazzquiz = $quiz;
-        $this->pagevars = $pagevars;
+        $this->course_module = get_coursemodule_from_id('jazzquiz', $course_module_id, 0, false, MUST_EXIST);
 
-        $this->context = \context_module::instance($cm->id);
+        require_login($this->course_module->course, false, $this->course_module);
+
+        $this->context = \context_module::instance($course_module_id);
+
+        // TODO: This can probably be removed when the tables are normalized.
+        $this->jazzquiz = new \stdClass();
+        $this->jazzquiz->id = $this->course_module->instance;
+        //
+        $this->update_improvised_questions();
+
+        $this->course = $DB->get_record('course', [
+            'id' => $this->course_module->course
+        ], '*', MUST_EXIST);
+
+        $this->jazzquiz = $DB->get_record('jazzquiz', [
+            'id' => $this->course_module->instance
+        ], '*', MUST_EXIST);
+
         $PAGE->set_context($this->context);
 
         $this->renderer = $PAGE->get_renderer('mod_jazzquiz', $renderer_subtype);
-        $this->questionmanager = new \mod_jazzquiz\questionmanager($this, $this->renderer, $this->pagevars);
-        $this->groupmanager = new \mod_jazzquiz\utils\groupmanager($this);
+        $this->renderer->set_jazzquiz($this);
 
-        $this->renderer->init($this, $pageurl, $pagevars);
+        $this->question_manager = new \mod_jazzquiz\questionmanager($this, $this->renderer);
     }
 
-    /** Get functions */
-
-    /**
-     * Get the course module isntance
-     *
-     * @return object
-     */
-    public function getCM()
+    private function update_improvised_questions()
     {
-        return $this->cm;
+        // Add improvised questions if client is an instructor
+        if (!has_capability('mod/jazzquiz:control', $this->context)) {
+            return;
+        }
+        // Remove and re-add all the improvised questions to make sure they're all added and last.
+        $improviser = new \mod_jazzquiz\improviser();
+        $improviser->remove_improvised_questions_from_quiz($this->jazzquiz->id);
+        $improviser->add_improvised_questions_to_quiz($this->jazzquiz->id);
     }
 
     /**
-     * Get the course instance
-     *
-     * @return object
-     */
-    public function getCourse()
-    {
-        return $this->course;
-    }
-
-    /**
-     * Returns the reqltimequiz database record instance
-     *
      * @return object
      */
     public function getRTQ()
@@ -133,75 +120,14 @@ class jazzquiz
     }
 
     /**
-     * Saves the rtq instance to the database
+     * Saves the JazzQuiz instance to the database
      *
      * @return bool
      */
     public function saveRTQ()
     {
         global $DB;
-
         return $DB->update_record('jazzquiz', $this->jazzquiz);
-    }
-
-    /**
-     * Gets the context for this instance
-     *
-     * @return \context_module
-     */
-    public function getContext()
-    {
-        return $this->context;
-    }
-
-    /**
-     * Sets the question manager on this class
-     *
-     * @param \mod_jazzquiz\questionmanager $questionmanager
-     */
-    public function set_questionmanager(\mod_jazzquiz\questionmanager $questionmanager)
-    {
-        $this->questionmanager = $questionmanager;
-    }
-
-    /**
-     * Returns the class instance of the question manager
-     *
-     * @return \mod_jazzquiz\questionmanager
-     */
-    public function get_questionmanager()
-    {
-        return $this->questionmanager;
-    }
-
-    /**
-     * Sets the renderer on this class
-     *
-     * @param \mod_jazzquiz_renderer $renderer
-     */
-    public function set_renderer(\mod_jazzquiz_renderer $renderer)
-    {
-        $this->renderer = $renderer;
-    }
-
-    /**
-     * Returns the class instance of the renderer
-     *
-     * @return \mod_jazzquiz_renderer
-     */
-    public function get_renderer()
-    {
-        return $this->renderer;
-    }
-
-    /**
-     * Gets the group manager utility class for group actions
-     *
-     * @return \mod_jazzquiz\utils\groupmanager
-     */
-    public function get_groupmanager()
-    {
-        return $this->groupmanager;
     }
 
     /**
@@ -219,15 +145,15 @@ class jazzquiz
      * Wrapper for the has_capability function to provide the rtq context
      *
      * @param string $capability
-     * @param int $userid
+     * @param int $user_id
      *
      * @return bool Whether or not the current user has the capability
      */
-    public function has_capability($capability, $userid = 0)
+    public function has_capability($capability, $user_id = 0)
     {
-        if ($userid !== 0) {
+        if ($user_id !== 0) {
             // Pass in userid if there is one
-            return has_capability($capability, $this->context, $userid);
+            return has_capability($capability, $this->context, $user_id);
         }
 
         // Just do standard check with current user
@@ -242,35 +168,25 @@ class jazzquiz
     public function is_instructor()
     {
         if (is_null($this->isinstructor)) {
-            $this->isinstructor = $this->has_capability('mod/jazzquiz:control');
+            $this->is_instructor = $this->has_capability('mod/jazzquiz:control');
         }
-        return $this->isinstructor;
+        return $this->is_instructor;
     }
 
     /**
-     * Whether or not we're in group mode
+     * Gets and returns a session specified by id
      *
-     * @return bool
-     */
-    public function group_mode()
-    {
-        return (bool) $this->jazzquiz->workedingroups;
-    }
-
-    /**
-     * gets and returns a jazzquiz session specified by sessionid
-     *
-     * @param int $sessionid
+     * @param int $session_id
      *
      * @return \mod_jazzquiz\jazzquiz_session
      */
-    public function get_session($sessionid)
+    public function get_session($session_id)
     {
         global $DB;
         $session = $DB->get_record('jazzquiz_sessions', [
-            'id' => $sessionid
+            'id' => $session_id
         ], '*', MUST_EXIST);
-        return new \mod_jazzquiz\jazzquiz_session($this, $this->pagevars['pageurl'], $this->pagevars, $session);
+        return new \mod_jazzquiz\jazzquiz_session($this, $session);
     }
 
     /**
@@ -279,20 +195,16 @@ class jazzquiz
      * @param array $conditions
      * @return array
      */
-    public function get_sessions($conditions = array())
+    public function get_sessions($conditions = [])
     {
         global $DB;
-
-        $qconditions = array_merge(array('jazzquizid' => $this->getRTQ()->id), $conditions);
-
-        $sessions = $DB->get_records('jazzquiz_sessions', $qconditions);
-
-        $rtqsessions = array();
-        foreach ($sessions as $session) {
-            $rtqsessions[] = new \mod_jazzquiz\jazzquiz_session($this, $this->pagevars['pageurl'], $this->pagevars, $session);
+        $conditions = array_merge([ 'jazzquizid' => $this->getRTQ()->id ], $conditions);
+        $session_records = $DB->get_records('jazzquiz_sessions', $conditions);
+        $sessions = [];
+        foreach ($session_records as $session_record) {
+            $sessions[] = new \mod_jazzquiz\jazzquiz_session($this, $session_record);
         }
-
-        return $rtqsessions;
+        return $sessions;
     }
 
     /**
@@ -306,4 +218,3 @@ class jazzquiz
     }
 
 }
-

@@ -59,10 +59,10 @@ class reports extends base
         $this->jazzquiz = new \mod_jazzquiz\jazzquiz($this->cm, $this->course, $this->quiz, $this->pageurl, $this->pagevars, 'report');
         $this->jazzquiz->require_capability('mod/jazzquiz:seeresponses');
 
-        $this->renderer = $this->jazzquiz->get_renderer();
+        $this->renderer = $this->jazzquiz->renderer;
 
         $PAGE->set_pagelayout('incourse');
-        $PAGE->set_context($this->jazzquiz->getContext());
+        $PAGE->set_context($this->jazzquiz->context);
         $PAGE->set_title(strip_tags($this->course->shortname . ': ' . get_string('modulename', 'jazzquiz') . ': ' . format_string($this->quiz->name, true)));
         $PAGE->set_heading($this->course->fullname);
         $PAGE->set_url($this->pageurl);

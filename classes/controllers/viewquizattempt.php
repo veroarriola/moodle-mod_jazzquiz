@@ -81,7 +81,7 @@ class viewquizattempt
         $this->RTQ->require_capability('mod/jazzquiz:viewownattempts');
 
         $PAGE->set_pagelayout('popup');
-        $PAGE->set_context($this->RTQ->getContext());
+        $PAGE->set_context($this->RTQ->context);
         $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "jazzquiz") . ': ' .
             format_string($quiz->name, true)));
         $PAGE->set_heading($course->fullname);
@@ -115,11 +115,11 @@ class viewquizattempt
                     $usergroups = $this->RTQ->get_groupmanager()->get_user_groups();
                     $usergroupids = array_keys($usergroups);
                     if (!in_array($attempt->forgroupid, $usergroupids)) {
-                        $this->RTQ->get_renderer()->render_popup_error(get_string('invalid_attempt_access', 'jazzquiz'));
+                        $this->RTQ->renderer->render_popup_error(get_string('invalid_attempt_access', 'jazzquiz'));
                         $hascapability = false;
                     }
                 } else {
-                    $this->RTQ->get_renderer()->render_popup_error(get_string('invalid_attempt_access', 'jazzquiz'));
+                    $this->RTQ->renderer->render_popup_error(get_string('invalid_attempt_access', 'jazzquiz'));
                     $hascapability = false;
                 }
             }
@@ -129,7 +129,7 @@ class viewquizattempt
             $params = [
                 'relateduserid' => $attempt->userid,
                 'objectid' => $attempt->id,
-                'context' => $this->RTQ->getContext(),
+                'context' => $this->RTQ->context,
                 'other' => [
                     'jazzquizid' => $this->RTQ->getRTQ()->id,
                     'sessionid' => $attempt->sessionid
@@ -143,7 +143,7 @@ class viewquizattempt
             $event = \mod_jazzquiz\event\attempt_viewed::create($params);
             $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
             $event->trigger();
-            $this->RTQ->get_renderer()->render_attempt($attempt, $session);
+            $this->RTQ->renderer->render_attempt($attempt, $session);
         }
     }
 

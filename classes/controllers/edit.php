@@ -33,14 +33,13 @@ require_once($CFG->dirroot . '/question/editlib.php');
  */
 class edit extends base
 {
-
     /** @var string $action The specified action to take. */
     protected $action;
 
     /** @var object $context The specific context for this activity. */
     protected $context;
 
-    /** @var \question_edit_contexts $contexts and array of contexts that has all parent contexts from the RTQ context. */
+    /** @var \question_edit_contexts $contexts Contains parent contexts of JazzQuiz. */
     protected $contexts;
 
     /** @var  \mod_jazzquiz\output\edit_renderer $renderer . */
@@ -56,13 +55,15 @@ class edit extends base
         global $PAGE;
 
         $this->load($base_url);
-
         $this->action = optional_param('action', 'listquestions', PARAM_ALPHA);
+
+        // Inconsistency in question_edit_setup.
+        $_GET['cmid'] = $_GET['id'];
 
         list(
             $this->pageurl,
             $this->contexts,
-            $cm_id,
+            $course_module_id,
             $this->cm,
             $this->quiz,
             $this->pagevars) = question_edit_setup('editq', '/mod/jazzquiz/edit.php', true);
@@ -76,8 +77,8 @@ class edit extends base
         $PAGE->set_title(strip_tags($this->course->shortname . ': ' . $module_name . ': ' . $quiz_name));
         $PAGE->set_heading($this->course->fullname);
 
-        $this->jazzquiz = new \mod_jazzquiz\jazzquiz($this->cm, $this->course, $this->quiz, $this->pageurl, $this->pagevars, 'edit');
-        $this->renderer = $this->jazzquiz->get_renderer();
+        $this->jazzquiz = new \mod_jazzquiz\jazzquiz($this->cm, $this->course, $this->quiz, $this->pageurl, 'edit');
+        $this->renderer = $this->jazzquiz->renderer;
     }
 
     /**
@@ -95,13 +96,10 @@ class edit extends base
         ]);
 
         if ($sessions) {
-
             // Can't edit during a session.
             $this->renderer->print_header();
             $this->renderer->opensession();
             $this->renderer->footer();
-
-            // Alright, let's stop at that.
             return;
         }
 
@@ -114,17 +112,13 @@ class edit extends base
         switch ($this->action) {
 
             case 'dragdrop':
-
                 $jsonlib = new \mod_jazzquiz\utils\jsonlib();
                 $question_order = optional_param('questionorder', '', PARAM_RAW);
-
                 if ($question_order === '') {
                     $jsonlib->send_error('invalid request');
                 }
-
                 $question_order = explode(',', $question_order);
-                $success = $this->jazzquiz->get_questionmanager()->set_full_order($question_order);
-
+                $success = $this->jazzquiz->question_manager->set_full_order($question_order);
                 if ($success) {
                     $jsonlib->send_response();
                 } else {
@@ -134,65 +128,50 @@ class edit extends base
 
             case 'moveup':
             case 'movedown':
-
                 $question_id = required_param('questionid', PARAM_INT);
-
                 $direction = substr($this->action, 4);
-
-                if ($this->jazzquiz->get_questionmanager()->move_question($direction, $question_id)) {
+                if ($this->jazzquiz->question_manager->move_question($direction, $question_id)) {
                     $type = 'success';
                     $message = get_string('successfully_moved_question', 'jazzquiz');
                 } else {
                     $type = 'error';
                     $message = get_string('failed_to_move_question', 'jazzquiz');
                 }
-
                 $this->renderer->setMessage($type, $message);
                 $this->renderer->print_header();
                 $this->list_questions();
                 $this->renderer->footer();
-
                 break;
 
             case 'addquestion':
-
                 $question_id = required_param('questionid', PARAM_INT);
-                $this->jazzquiz->get_questionmanager()->add_question($question_id);
-
+                $this->jazzquiz->question_manager->add_question($question_id);
                 break;
 
             case 'editquestion':
-
                 $question_id = required_param('rtqquestionid', PARAM_INT);
-                $this->jazzquiz->get_questionmanager()->edit_question($question_id);
-
+                $this->jazzquiz->question_manager->edit_question($question_id);
                 break;
 
             case 'deletequestion':
-
                 $question_id = required_param('questionid', PARAM_INT);
-
-                if ($this->jazzquiz->get_questionmanager()->delete_question($question_id)) {
+                if ($this->jazzquiz->question_manager->delete_question($question_id)) {
                     $type = 'success';
                     $message = get_string('successfully_deleted_question', 'jazzquiz');
                 } else {
                     $type = 'error';
                     $message = get_string('failed_to_delete_question', 'jazzquiz');
                 }
-
                 $this->renderer->setMessage($type, $message);
                 $this->renderer->print_header();
                 $this->list_questions();
                 $this->renderer->footer();
-
                 break;
 
             case 'listquestions':
-
                 $this->renderer->print_header();
                 $this->list_questions();
                 $this->renderer->footer();
-
                 break;
 
             default:
@@ -217,7 +196,7 @@ class edit extends base
     protected function list_questions()
     {
         $question_bank_view = $this->get_questionbank_view();
-        $questions = $this->jazzquiz->get_questionmanager()->get_questions();
+        $questions = $this->jazzquiz->question_manager->get_questions();
         $this->renderer->listquestions($questions, $question_bank_view);
     }
 
@@ -233,10 +212,8 @@ class edit extends base
 
         // Capture question bank display in buffer to have the renderer render output.
         ob_start();
-
-        $question_bank = new \mod_jazzquiz\jazzquiz_question_bank_view($this->contexts, $this->pageurl, $this->jazzquiz->getCourse(), $this->jazzquiz->getCM());
+        $question_bank = new \mod_jazzquiz\jazzquiz_question_bank_view($this->contexts, $this->pageurl, $this->jazzquiz->course, $this->jazzquiz->course_module);
         $question_bank->display('editq', $question_page, $questions_per_page, $this->pagevars['cat'], true, true, true);
-
         return ob_get_clean();
     }
 

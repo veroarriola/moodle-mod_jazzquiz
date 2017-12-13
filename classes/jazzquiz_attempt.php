@@ -79,13 +79,13 @@ class jazzquiz_attempt
     /**
      * Construct the class.  if a dbattempt object is passed in set it, otherwise initialize empty class
      *
-     * @param questionmanager $questionmanager
+     * @param questionmanager $question_manager
      * @param \stdClass
      * @param \context_module $context
      */
-    public function __construct($questionmanager, $dbattempt = null, $context = null)
+    public function __construct($question_manager, $dbattempt = null, $context = null)
     {
-        $this->questionmanager = $questionmanager;
+        $this->questionmanager = $question_manager;
         $this->context = $context;
 
         if (empty($dbattempt)) {
@@ -94,13 +94,13 @@ class jazzquiz_attempt
             $this->attempt = new \stdClass();
 
             // Create a new quba since we're creating a new attempt
-            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->questionmanager->getRTQ()->getContext());
+            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->questionmanager->getRTQ()->context);
             $this->quba->set_preferred_behaviour('immediatefeedback');
 
-            $attemptlayout = $this->questionmanager->add_questions_to_quba($this->quba);
+            $attempt_layout = $this->questionmanager->add_questions_to_quba($this->quba);
 
             // Add the attempt layout to this instance
-            $this->attempt->qubalayout = implode(',', $attemptlayout);
+            $this->attempt->qubalayout = implode(',', $attempt_layout);
 
         } else {
             // Load it up in this class instance
@@ -244,7 +244,7 @@ class jazzquiz_attempt
 
             } else if ($reviewoptions instanceof \stdClass) {
 
-                foreach (\mod_jazzquiz\jazzquiz::$reviewfields as $field => $not_used) {
+                foreach (\mod_jazzquiz\jazzquiz::$review_fields as $field => $not_used) {
                     if ($reviewoptions->$field == 1) {
                         if ($field == 'specificfeedback') {
                             $field = 'feedback';
@@ -316,23 +316,17 @@ class jazzquiz_attempt
     {
         // Build if not available
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
-
             // Build an array of slots keyed by the question_id they match to
             $slots_by_question_id = [];
-
             foreach ($this->getSlots() as $slot) {
                 $slots_by_question_id[$this->quba->get_question($slot)->id] = $slot;
             }
-
             $this->slotsbyquestionid = $slots_by_question_id;
         }
-
         $question_id = $question->getQuestion()->id;
-
         if (!empty($this->slotsbyquestionid[$question_id])) {
             return $this->slotsbyquestionid[$question_id];
         }
-
         return false;
     }
 
@@ -441,18 +435,14 @@ class jazzquiz_attempt
         $this->attempt->timemodified = time();
 
         if (isset($this->attempt->id)) {
-
             // Update existing record
             try {
                 $DB->update_record('jazzquiz_attempts', $this->attempt);
             } catch (\Exception $e) {
                 error_log($e->getMessage());
-
                 return false; // return false on failure
             }
-
         } else {
-
             // Insert new record
             try {
                 $newid = $DB->insert_record('jazzquiz_attempts', $this->attempt);
@@ -460,7 +450,6 @@ class jazzquiz_attempt
             } catch (\Exception $e) {
                 return false;
             }
-
         }
 
         return true;
@@ -685,36 +674,25 @@ class jazzquiz_attempt
             // Keep in mind we're looping backwards.
             // Therefore, the last answer is prioritised.
             foreach ($all_data as $data) {
-
                 if ($data->name === '_order') {
-
                     if (!$order) {
                         $order = explode(',', $data->value);
                     }
-
                 } else if ($data->name === 'answer') {
-
                     if (!$choices_found) {
                         $chosen_answers[] = $data->value;
                     }
-
                 } else if (substr($data->name, 0, 6) === 'choice') {
-
                     if (!$choices_found && $data->value == 1) {
                         $chosen_answers[] = substr($data->name, 6);
                     }
-
                 }
-
             }
-
         }
 
         // Find the answer strings
         $responses = [];
-
         foreach ($chosen_answers as $chosen_answer) {
-
             if (isset($order[$chosen_answer])) {
                 $option = $DB->get_record('question_answers', [
                     'id' => $order[$chosen_answer]
@@ -723,11 +701,9 @@ class jazzquiz_attempt
                     $responses[] = $option->answer;
                 }
             }
-
         }
 
         return $responses;
-
     }
 
     private function get_response_data_true_or_false($slot)
@@ -810,7 +786,6 @@ class jazzquiz_attempt
     public function get_response_data($slot)
     {
         $responses = [];
-
         $question_type = $this->quba->get_question_attempt($slot)->get_question()->get_type_name();
 
         switch ($question_type) {
@@ -872,7 +847,7 @@ class jazzquiz_attempt
 
         $params = array(
             'objectid' => $this->attempt->id,
-            'context' => $rtq->getContext(),
+            'context' => $rtq->context,
             'relateduserid' => $this->attempt->userid
         );
         $event = \mod_jazzquiz\event\attempt_ended::create($params);

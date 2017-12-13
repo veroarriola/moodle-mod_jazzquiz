@@ -112,7 +112,7 @@ class sessionattempts extends \flexible_table implements \renderable
 
                 if ($item->userid > 0) {
                     $userlink = '<a href="' . $CFG->wwwroot . '/user/view.php?id=' . $item->userid .
-                        '&amp;course=' . $this->rtq->getCourse()->id . '">';
+                        '&amp;course=' . $this->rtq->course->id . '">';
                     $userlinkend = '</a>';
                 } else {
                     $userlink = '';

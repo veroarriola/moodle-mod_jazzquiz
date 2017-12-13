@@ -37,77 +37,72 @@
  * @package jazzquiz
  **/
 
-require_once("../../config.php");
-require_once("lib.php");
+require_once('../../config.php');
+require_once('lib.php');
 
-$id = required_param('id', PARAM_INT);   // course
-
-if (!$course = $DB->get_record('course', array('id' => $id))) {
-    error("Course ID is incorrect");
+$id = required_param('id', PARAM_INT); // Course ID
+$course = $DB->get_record('course', [ 'id' => $id ]);
+if (!$course) {
+    error('Course ID is incorrect');
 }
 
-$PAGE->set_url(new moodle_url('/mod/jazzquiz/index.php', array('id' => $course->id)));
+$PAGE->set_url(new moodle_url('/mod/jazzquiz/index.php', [ 'id' => $course->id ]));
 require_course_login($course);
 $PAGE->set_pagelayout('incourse');
 
-
 /// Get all required strings
-
-$strjazzquizzes = get_string("modulenameplural", "jazzquiz");
-$strjazzquiz = get_string("modulename", "jazzquiz");
+$strjazzquizzes = get_string('modulenameplural', 'jazzquiz');
+$strjazzquiz = get_string('modulename', 'jazzquiz');
 
 $PAGE->navbar->add($strjazzquizzes);
 $PAGE->set_title(strip_tags($course->shortname . ': ' . $strjazzquizzes));
-//$PAGE->set_heading($course->fullname);
+$PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
 /// Get all the appropriate data
-
-if (!$jazzquizs = get_all_instances_in_course("jazzquiz", $course)) {
-    notice("There are no jazzquizes", "../../course/view.php?id=$course->id");
+$jazzquizzes = get_all_instances_in_course('jazzquiz', $course);
+if (!$jazzquizzes) {
+    notice('There are no jazzquizes', "../../course/view.php?id=$course->id");
     die;
 }
 
 /// Print the list of instances (your module will probably extend this)
-
 $timenow = time();
-$strname = get_string("name");
-$strweek = get_string("week");
-$strtopic = get_string("topic");
+$strname = get_string('name');
+$strweek = get_string('week');
+$strtopic = get_string('topic');
 
 $table = new html_table();
 
-if ($course->format == "weeks") {
-    $table->head = array($strweek, $strname);
-    $table->align = array("center", "left");
+if ($course->format == 'weeks') {
+    $table->head = [ $strweek, $strname ];
+    $table->align = [ 'center', 'left' ];
 } else if ($course->format == "topics") {
-    $table->head = array($strtopic, $strname);
-    $table->align = array("center", "left");
+    $table->head = [ $strtopic, $strname ];
+    $table->align = [ 'center', 'left' ];
 } else {
-    $table->head = array($strname);
-    $table->align = array("left", "left");
+    $table->head = [ $strname ];
+    $table->align = [ 'left', 'left' ];
 }
 
-foreach ($jazzquizs as $jazzquiz) {
-    $url = new moodle_url('/mod/jazzquiz/view.php', array('id' => $jazzquiz->coursemodule));
+foreach ($jazzquizzes as $jazzquiz) {
+    $url = new moodle_url('/mod/jazzquiz/view.php', [
+        'cmid' => $jazzquiz->coursemodule
+    ]);
     if (!$jazzquiz->visible) {
-        //Show dimmed if the mod is hidden
+        // Show dimmed if the mod is hidden
         $link = '<a class="dimmed" href="' . $url . '">' . $jazzquiz->name . '</a>';
     } else {
-        //Show normal if the mod is visible
+        // Show normal if the mod is visible
         $link = '<a href="' . $url . '">' . $jazzquiz->name . '</a>';
     }
-
-    if ($course->format == 'weeks' or $course->format == 'topics') {
-        $table->data[] = array($jazzquiz->section, $link);
+    if ($course->format == 'weeks' || $course->format == 'topics') {
+        $table->data[] = [ $jazzquiz->section, $link ];
     } else {
-        $table->data[] = array($link);
+        $table->data[] = [ $link ];
     }
 }
 
 echo html_writer::table($table);
-
-/// Finish the page
-
 echo $OUTPUT->footer();
 

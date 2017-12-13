@@ -132,7 +132,7 @@ class mod_jazzquiz_mod_form extends moodleform_mod
         $groupings = groups_get_all_groupings($courseid);
 
         // Create an array with just the grouping id and name
-        $retgroupings = array();
+        $retgroupings = [];
         $retgroupings[''] = get_string('none');
         foreach ($groupings as $grouping) {
             $retgroupings[$grouping->id] = $grouping->name;

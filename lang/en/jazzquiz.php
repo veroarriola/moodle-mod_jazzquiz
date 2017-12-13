@@ -61,6 +61,7 @@ $string['jazzquiz:viewownattempts'] = 'Allows students to see their own attempts
 $string['view'] = 'View';
 $string['edit'] = 'Edit';
 $string['review'] = 'Review';
+$string['reports'] = 'Reports';
 
 // Info
 $string['question_will_start'] = 'The question will start';

@@ -83,7 +83,7 @@ class edit_renderer extends \plugin_renderer_base
         $jsinfo = new \stdClass();
         $jsinfo->sesskey = sesskey();
         $jsinfo->siteroot = $CFG->wwwroot;
-        $jsinfo->cmid = $this->jazzquiz->getCM()->id;
+        $jsinfo->cmid = $this->jazzquiz->course_module->id;
 
         // print jsinfo to javascript
         echo \html_writer::start_tag('script', array('type' => 'text/javascript'));

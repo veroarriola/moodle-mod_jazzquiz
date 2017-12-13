@@ -49,13 +49,10 @@ class start_session extends \moodleform
     public function definition()
     {
         $mform = $this->_form;
-
         $mform->addElement('text', 'session_name', get_string('session_name', 'jazzquiz'));
         $mform->setType('session_name', PARAM_TEXT);
         $mform->addRule('session_name', get_string('session_name_required', 'jazzquiz'), 'required', null, 'client');
-
         $mform->addElement('submit', 'submitbutton', get_string('start_session', 'jazzquiz'));
-
     }
 
     /**

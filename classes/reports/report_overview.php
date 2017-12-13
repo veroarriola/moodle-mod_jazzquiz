@@ -131,7 +131,7 @@ class report_overview
 
             // If no session id just go to the home page
             $redirect_url = new \moodle_url('/mod/jazzquiz/reports.php', [
-                'id' => $this->jazzquiz->getCM()->id,
+                'id' => $this->jazzquiz->course_module->id,
                 'quizid' => $this->jazzquiz->getRTQ()->id
             ]);
             redirect($redirect_url, null, 3);

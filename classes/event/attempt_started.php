@@ -51,8 +51,8 @@ class attempt_started extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->relateduserid' has started the attempt with id '$this->objectid' for the " .
-        "realtime quiz with course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->relateduserid' has started the attempt with id '$this->objectid' for the 
+        JazzQuiz with course module id '$this->contextinstanceid'.";
     }
 
     /**
