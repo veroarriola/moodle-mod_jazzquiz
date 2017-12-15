@@ -334,6 +334,23 @@ jazzquiz.get_question_body_formatted = function (slot) {
 };
 
 /**
+ * Load data such as session key and quiz state.
+ */
+jazzquiz.decode_state = function() {
+    var prop;
+    for (prop in jazzquiz_root_state) {
+        if (jazzquiz_root_state.hasOwnProperty(prop)) {
+            this[prop] = jazzquiz_root_state[prop];
+        }
+    }
+    for (prop in jazzquiz_quiz_state) {
+        if (jazzquiz_quiz_state.hasOwnProperty(prop)) {
+            this.quiz[prop] = jazzquiz_quiz_state[prop];
+        }
+    }
+};
+
+/**
  * Callback for when the quiz page is fully loaded
  */
 jazzquiz.quiz_page_loaded = function () {
@@ -350,30 +367,15 @@ jazzquiz.quiz_page_loaded = function () {
         return;
     }
 
-    // Initialize the AJAX object
     this.ajax.init();
+    this.decode_state();
 
-    // Insert the initialization data
-    var prop;
-    for (prop in jazzquiz_root_state) {
-        if (jazzquiz_root_state.hasOwnProperty(prop)) {
-            this[prop] = jazzquiz_root_state[prop];
-        }
-    }
-    for (prop in jazzquiz_quiz_state) {
-        if (jazzquiz_quiz_state.hasOwnProperty(prop)) {
-            this.quiz[prop] = jazzquiz_quiz_state[prop];
-        }
-    }
-
-    // Show controls
+    // Show controls for instructors
     if (this.is_instructor) {
         jQuery('#controlbox').removeClass('hidden');
     }
 
-    // See if we're resuming a quiz or not
     if (this.quiz.resume.are_we_resuming) {
-        // Yep, let's resume.
         this.resume_quiz();
         return;
     }

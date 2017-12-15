@@ -23,9 +23,8 @@
  */
 
 window.addEventListener('load', function () {
-    jazzquiz.session_key = window.rtqinitinfo.sesskey;
-    jazzquiz.siteroot = window.rtqinitinfo.siteroot;
-    jazzquiz.cm_id = window.rtqinitinfo.cmid;
+
+    jazzquiz.decode_state();
 
     var questionList = document.getElementsByClassName('questionlist')[0];
 
@@ -36,7 +35,7 @@ window.addEventListener('load', function () {
             var question_id = jQuery(this).attr('data-question-id');
             jQuery.ajax({
                 type: 'get',
-                url: '/mod/jazzquiz/edit.php?id=' + jazzquiz.cm_id +'&action=' + action + '&questionid=' + question_id,
+                url: '/mod/jazzquiz/edit.php?id=' + jazzquiz.quiz.course_module_id +'&action=' + action + '&questionid=' + question_id,
                 success: function (response) {
                     location.reload();
                 }
@@ -47,41 +46,25 @@ window.addEventListener('load', function () {
     var sorted = Sortable.create(questionList, {
         handle: '.dragquestion',
         onSort: function (event) {
-            var questionList = document.getElementsByClassName('questionlist')[0];
-            var questionOrder = [];
-
-            for (var x = 0; x < questionList.childNodes.length; x++) {
-                var questionID = questionList.childNodes[x].getAttribute('data-questionid');
-                questionOrder.push(questionID);
+            var question_list = document.getElementsByClassName('questionlist')[0];
+            var question_order = [];
+            for (var i = 0; i < question_list.childNodes.length; i++) {
+                var question_id = question_list.childNodes[i].getAttribute('data-questionid');
+                question_order.push(question_id);
             }
 
             var params = {
-                sesskey: jazzquiz.session_key,
-                id: jazzquiz.cm_id,
-                questionorder: questionOrder,
-                action: 'dragdrop'
+                action: 'dragdrop',
+                questionorder: question_order
             };
 
             jazzquiz.ajax.create_request('/mod/jazzquiz/edit.php', params, function (status, response) {
-                var editStatus = document.getElementById('editstatus');
-                if (status === 500) {
+                if (status !== HTTP_STATUS.OK) {
+                    var editStatus = document.getElementById('editstatus');
                     editStatus.classList.remove('rtqhiddenstatus');
                     editStatus.classList.add('rtqerrorstatus');
                     editStatus.innerHTML = M.util.get_string('error', 'core');
-                } else if (typeof response !== 'object') {
-                    editStatus.classList.remove('rtqhiddenstatus');
-                    editStatus.classList.add('rtqerrorstatus');
-                    editStatus.innerHTML = response;
-                } else {
-                    editStatus.classList.remove('rtqhiddenstatus');
-                    editStatus.classList.remove('rtqerrorstatus');
-                    editStatus.classList.add('rtqsuccessstatus');
-                    editStatus.innerHTML = M.util.get_string('success', 'core');
                 }
-                setTimeout(function () {
-                    var editStatus = document.getElementById('editstatus');
-                    editStatus.innerHTML = '&nbsp;';
-                }, 2000);
             });
         }
     });

@@ -55,39 +55,34 @@ class edit_renderer extends \plugin_renderer_base
         echo \html_writer::start_div('row', [
             'id' => 'questionrow'
         ]);
-
         echo \html_writer::start_div('inline-block span6');
-
         echo \html_writer::tag('h2', get_string('questions', 'jazzquiz'));
-
         echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', [
             'id' => 'editstatus'
         ]);
-
         echo $this->show_questionlist($questions, $url);
-
         echo \html_writer::end_div();
-
         echo \html_writer::start_div('inline-block span6');
         echo $questionbankview;
         echo \html_writer::end_div();
-
         echo \html_writer::end_div();
 
         $this->page->requires->js('/mod/jazzquiz/js/core.js');
         $this->page->requires->js('/mod/jazzquiz/js/sortable/sortable.min.js');
         $this->page->requires->js('/mod/jazzquiz/js/edit_quiz.js');
 
-        // next set up a class to pass to js for js info
-        $jsinfo = new \stdClass();
-        $jsinfo->sesskey = sesskey();
-        $jsinfo->siteroot = $CFG->wwwroot;
-        $jsinfo->cmid = $this->jazzquiz->course_module->id;
+        $jazzquiz = new \stdClass();
+        $jazzquiz->siteroot = $CFG->wwwroot;
 
-        // print jsinfo to javascript
-        echo \html_writer::start_tag('script', array('type' => 'text/javascript'));
-        echo "rtqinitinfo = " . json_encode($jsinfo); // TODO: Look into this variable
-        echo \html_writer::end_tag('script');
+        $quiz = new \stdClass();
+        $quiz->course_module_id = $this->jazzquiz->course_module->id;
+        $quiz->activity_id = $this->jazzquiz->getRTQ()->id;
+        $quiz->session_key = sesskey();
+
+        echo '<script>';
+        echo 'var jazzquiz_root_state = ' . json_encode($jazzquiz) . ';';
+        echo 'var jazzquiz_quiz_state = ' . json_encode($quiz) . ';';
+        echo '</script>';
 
         $this->page->requires->strings_for_js([
             'success',
