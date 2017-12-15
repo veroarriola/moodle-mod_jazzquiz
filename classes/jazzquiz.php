@@ -75,6 +75,7 @@ class jazzquiz
 
         $this->context = \context_module::instance($course_module_id);
         $PAGE->set_context($this->context);
+        $this->renderer = $PAGE->get_renderer('mod_jazzquiz', $renderer_subtype);
 
         // TODO: This can probably be removed when the tables are normalized.
         $this->jazzquiz = new \stdClass();
@@ -83,18 +84,15 @@ class jazzquiz
         $this->update_improvised_questions();
 
         $this->course = $DB->get_record('course', [ 'id' => $this->course_module->course ], '*', MUST_EXIST);
-        $this->jazzquiz = $DB->get_record('jazzquiz', [ 'id' => $this->course_module->instance ], '*', MUST_EXIST);
-
-        $this->renderer = $PAGE->get_renderer('mod_jazzquiz', $renderer_subtype);
-        $this->renderer->set_jazzquiz($this);
-
-        $this->question_manager = new question_manager($this);
+        $this->reload();
     }
 
     public function reload()
     {
         global $DB;
         $this->jazzquiz = $DB->get_record('jazzquiz', [ 'id' => $this->course_module->instance ], '*', MUST_EXIST);
+        $this->renderer->set_jazzquiz($this);
+        $this->question_manager = new question_manager($this);
     }
 
     private function update_improvised_questions()

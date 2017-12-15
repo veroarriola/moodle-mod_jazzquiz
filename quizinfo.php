@@ -25,6 +25,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_jazzquiz;
+
 define('AJAX_SCRIPT', true);
 require_once('../../config.php');
 require_sesskey();
@@ -69,9 +71,9 @@ switch ($session->status) {
 
     // Just a generic response with the state
     case 'notrunning':
-        $jazzquiz = new \mod_jazzquiz\jazzquiz($cm->id);
+        $jazzquiz = new jazzquiz($cm->id);
         if ($jazzquiz->is_instructor()) {
-            $session_obj = new \mod_jazzquiz\jazzquiz_session($jazzquiz, $session);
+            $session_obj = new jazzquiz_session($jazzquiz, $session);
             $attempts = $session_obj->getall_open_attempts(false);
             $jsonlib->set('students', count($attempts));
         }
@@ -86,7 +88,7 @@ switch ($session->status) {
     // TODO: Not send options here. Quizdata should probably take care of that.
     case 'voting':
         $vote_options = $DB->get_records('jazzquiz_votes', [
-            'sessionid' => $sessionid
+            'sessionid' => $session_id
         ]);
         $options = [];
         foreach ($vote_options as $vote_option) {

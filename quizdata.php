@@ -327,7 +327,7 @@ function get_vote_results($session)
     print_json([
         'status' => 'success',
         'answers' => $votes,
-        'total_students' => $session->get_student_count(),
+        'total_students' => $session->get_student_count()
     ]);
 }
 

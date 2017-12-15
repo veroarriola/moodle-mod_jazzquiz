@@ -167,7 +167,7 @@ function jazzquiz_view()
     }
 
     $action = optional_param('action', '', PARAM_ALPHANUM);
-    $jazzquiz = new \mod_jazzquiz\jazzquiz($course_module_id, null);
+    $jazzquiz = new jazzquiz($course_module_id, null);
     $jazzquiz->require_capability('mod/jazzquiz:attempt');
     $module_name = get_string('modulename', 'jazzquiz');
     $quiz_name = format_string($jazzquiz->name, true);
@@ -199,7 +199,6 @@ function jazzquiz_view()
     } else {
         jazzquiz_view_default($jazzquiz);
     }
-
 }
 
 jazzquiz_view();

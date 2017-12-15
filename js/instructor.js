@@ -577,7 +577,7 @@ jazzquiz.get_and_show_vote_results = function () {
             return;
         }
 
-        var answers = JSON.parse(response.answers);
+        var answers = response.answers;
         var target_id = 'wrapper_vote_responses';
         var responses = [];
 
