@@ -151,14 +151,15 @@ class jazzquiz_session
      *
      * Is static so we don't have to instantiate a session class
      *
-     * @param $sessionid
+     * @param int $session_id
      * @return bool
      */
     public static function delete($session_id)
     {
         global $DB;
-        // Delete all attempt qubaids, then all realtime quiz attempts, and then finally itself
-        \question_engine::delete_questions_usage_by_activities(new \mod_jazzquiz\utils\qubaids_for_rtq($session_id));
+        // Delete all attempt qubaids, then all JazzQuiz attempts, and then finally itself
+        $quba_condition = new \qubaid_join('{jazzquiz_attempts} jqa', 'jqa.questionengid', 'jqa.sessionid = :sessionid', [ 'sessionid' => $session_id ]);
+        \question_engine::delete_questions_usage_by_activities($quba_condition);
         $DB->delete_records('jazzquiz_attempts', [ 'sessionid' => $session_id ]);
         $DB->delete_records('jazzquiz_groupattendance', [ 'sessionid' => $session_id ]);
         $DB->delete_records('jazzquiz_sessions', [ 'id' => $session_id ]);
