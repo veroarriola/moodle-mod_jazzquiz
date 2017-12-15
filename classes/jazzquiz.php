@@ -48,7 +48,7 @@ class jazzquiz
     /** @var \context_module $context */
     public $context;
 
-    /** @var \mod_jazzquiz\questionmanager $questionmanager */
+    /** @var question_manager $question_manager */
     public $question_manager;
 
     /** @var \mod_jazzquiz_renderer $renderer */
@@ -61,11 +61,8 @@ class jazzquiz
     protected $is_instructor;
 
     /**
-     * Construct a rtq class
-     *
      * @param object $course_module_id The course module ID
      * @param string $renderer_subtype Renderer sub-type to load if requested
-     *
      */
     public function __construct($course_module_id, $renderer_subtype = null)
     {
@@ -73,9 +70,11 @@ class jazzquiz
 
         $this->course_module = get_coursemodule_from_id('jazzquiz', $course_module_id, 0, false, MUST_EXIST);
 
+        // TODO: Should login requirement be moved over to caller?
         require_login($this->course_module->course, false, $this->course_module);
 
         $this->context = \context_module::instance($course_module_id);
+        $PAGE->set_context($this->context);
 
         // TODO: This can probably be removed when the tables are normalized.
         $this->jazzquiz = new \stdClass();
@@ -83,20 +82,19 @@ class jazzquiz
         //
         $this->update_improvised_questions();
 
-        $this->course = $DB->get_record('course', [
-            'id' => $this->course_module->course
-        ], '*', MUST_EXIST);
-
-        $this->jazzquiz = $DB->get_record('jazzquiz', [
-            'id' => $this->course_module->instance
-        ], '*', MUST_EXIST);
-
-        $PAGE->set_context($this->context);
+        $this->course = $DB->get_record('course', [ 'id' => $this->course_module->course ], '*', MUST_EXIST);
+        $this->jazzquiz = $DB->get_record('jazzquiz', [ 'id' => $this->course_module->instance ], '*', MUST_EXIST);
 
         $this->renderer = $PAGE->get_renderer('mod_jazzquiz', $renderer_subtype);
         $this->renderer->set_jazzquiz($this);
 
-        $this->question_manager = new \mod_jazzquiz\questionmanager($this, $this->renderer);
+        $this->question_manager = new question_manager($this);
+    }
+
+    public function reload()
+    {
+        global $DB;
+        $this->jazzquiz = $DB->get_record('jazzquiz', [ 'id' => $this->course_module->instance ], '*', MUST_EXIST);
     }
 
     private function update_improvised_questions()
@@ -106,7 +104,7 @@ class jazzquiz
             return;
         }
         // Remove and re-add all the improvised questions to make sure they're all added and last.
-        $improviser = new \mod_jazzquiz\improviser();
+        $improviser = new improviser();
         $improviser->remove_improvised_questions_from_quiz($this->jazzquiz->id);
         $improviser->add_improvised_questions_to_quiz($this->jazzquiz->id);
     }
@@ -186,7 +184,7 @@ class jazzquiz
         $session = $DB->get_record('jazzquiz_sessions', [
             'id' => $session_id
         ], '*', MUST_EXIST);
-        return new \mod_jazzquiz\jazzquiz_session($this, $session);
+        return new jazzquiz_session($this, $session);
     }
 
     /**
@@ -202,7 +200,7 @@ class jazzquiz
         $session_records = $DB->get_records('jazzquiz_sessions', $conditions);
         $sessions = [];
         foreach ($session_records as $session_record) {
-            $sessions[] = new \mod_jazzquiz\jazzquiz_session($this, $session_record);
+            $sessions[] = new jazzquiz_session($this, $session_record);
         }
         return $sessions;
     }

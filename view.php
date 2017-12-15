@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,12 +24,17 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_jazzquiz;
+
 require_once("../../config.php");
 require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 
+/**
+ * @param jazzquiz $jazzquiz
+ */
 function jazzquiz_view_start_quiz($jazzquiz)
 {
     global $PAGE;
@@ -65,14 +71,14 @@ function jazzquiz_view_start_quiz($jazzquiz)
 }
 
 /**
- * @param $jazzquiz \mod_jazzquiz\jazzquiz
+ * @param jazzquiz $jazzquiz
  */
 function jazzquiz_view_default($jazzquiz)
 {
     global $PAGE, $DB;
     $renderer = $jazzquiz->renderer;
     $url = $PAGE->url;
-    $session = new \mod_jazzquiz\jazzquiz_session($jazzquiz);
+    $session = new jazzquiz_session($jazzquiz);
 
     // Show view to start quiz (for instructors) or join quiz (for students)
 

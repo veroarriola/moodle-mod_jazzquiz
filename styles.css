@@ -622,3 +622,7 @@
     width: calc(100% - 192px);
     display: inline-block;
 }
+
+.edit-question-action {
+    cursor: pointer;
+}

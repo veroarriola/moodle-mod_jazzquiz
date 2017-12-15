@@ -1,12 +1,14 @@
 <?php
 
+namespace mod_jazzquiz;
+
 define('AJAX_SCRIPT', true);
 
 require_once('../../config.php');
 
 //require_sesskey();
 
-$improviser = new \mod_jazzquiz\improviser();
+$improviser = new improviser();
 
 // Get course module id
 $course_module_id = optional_param('cmid', false, PARAM_INT);

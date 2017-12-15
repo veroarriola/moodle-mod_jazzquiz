@@ -35,7 +35,6 @@ class edit_renderer extends \plugin_renderer_base
 
     /**
      * Prints edit page header
-     *
      */
     public function print_header()
     {
@@ -49,7 +48,7 @@ class edit_renderer extends \plugin_renderer_base
      * @param array $questions Array of questions
      * @param string $questionbankview HTML for the question bank view
      */
-    public function listquestions($questions, $questionbankview)
+    public function listquestions($questions, $questionbankview, $url)
     {
         global $CFG;
 
@@ -65,7 +64,7 @@ class edit_renderer extends \plugin_renderer_base
             'id' => 'editstatus'
         ]);
 
-        echo $this->show_questionlist($questions);
+        echo $this->show_questionlist($questions, $url);
 
         echo \html_writer::end_div();
 
@@ -102,27 +101,23 @@ class edit_renderer extends \plugin_renderer_base
      * @param array $questions an array of \mod_jazzquiz\jazzquiz_question
      * @return string
      */
-    protected function show_questionlist($questions)
+    protected function show_questionlist($questions, $url)
     {
         $return = '<ol class="questionlist">';
-
-        $questioncount = count($questions);
-        $questionnum = 1;
+        $question_count = count($questions);
+        $question_number = 1;
         foreach ($questions as $question) {
-
             // Hide improvised questions
             if (substr($question->getQuestion()->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
                 continue;
             }
-
             /** @var \mod_jazzquiz\jazzquiz_question $question */
             $return .= '<li data-questionid="' . $question->getId() . '">';
-            $return .= $this->display_question_block($question, $questionnum, $questioncount);
+            $return .= $this->display_question_block($question, $question_number, $question_count, $url);
             $return .= '</li>';
-            $questionnum++;
+            $question_number++;
         }
         $return .= '</ol>';
-
         return $return;
     }
 
@@ -135,75 +130,54 @@ class edit_renderer extends \plugin_renderer_base
      *
      * @return string
      */
-    protected function display_question_block($question, $qnum, $qcount)
+    protected function display_question_block($question, $qnum, $qcount, $url)
     {
         $return = '';
 
-        $dragicon = new \pix_icon('i/dragdrop', 'dragdrop');
-        $return .= \html_writer::div($this->output->render($dragicon), 'dragquestion');
-
+        $drag_icon = new \pix_icon('i/dragdrop', 'dragdrop');
+        $return .= \html_writer::div($this->output->render($drag_icon), 'dragquestion');
         $return .= \html_writer::div(print_question_icon($question->getQuestion()), 'icon');
 
-        $namehtml = \html_writer::start_tag('p');
-        $namehtml .= $question->getQuestion()->name;
-        $namehtml .= \html_writer::end_tag('p');
-
-        $return .= \html_writer::div($namehtml, 'name');
-
+        $name_html = '<p>' . $question->getQuestion()->name . '</p>';
+        $return .= \html_writer::div($name_html, 'name');
         $controlHTML = '';
 
-        $spacericon = new \pix_icon('spacer', 'space', null, [
+        $spacer_icon = new \pix_icon('spacer', 'space', null, [
             'class' => 'smallicon space'
         ]);
 
         // If we're on a later question than the first one add the move up control
         if ($qnum > 1) {
-
-            $moveupurl = clone($this->pageurl);
-            $moveupurl->param('action', 'moveup');
-            $moveupurl->param('questionid', $question->getId()); // add the rtqqid so that the question manager handles the translation
-
             $alt = get_string('question_move_up', 'mod_jazzquiz', $qnum);
-
-            $upicon = new \pix_icon('t/up', $alt);
-            $controlHTML .= \html_writer::link($moveupurl, $this->output->render($upicon));
-
+            $up_icon = new \pix_icon('t/up', $alt);
+            $data = 'data-action="moveup" data-question-id="' . $question->getId() . '"';
+            $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($up_icon). '</a>';
         } else {
-
-            $controlHTML .= $this->output->render($spacericon);
-
+            $controlHTML .= $this->output->render($spacer_icon);
         }
 
-        if ($qnum < $qcount) { // if we're not on the last question add the move down control
-
-            $movedownurl = clone($this->pageurl);
-            $movedownurl->param('action', 'movedown');
-            $movedownurl->param('questionid', $question->getId());
-
+        // if we're not on the last question add the move down control
+        if ($qnum < $qcount) {
             $alt = get_string('question_move_down', 'mod_jazzquiz', $qnum);
-
-            $downicon = new \pix_icon('t/down', $alt);
-            $controlHTML .= \html_writer::link($movedownurl, $this->output->render($downicon));
-
+            $down_icon = new \pix_icon('t/down', $alt);
+            $data = 'data-action="movedown" data-question-id="' . $question->getId() . '"';
+            $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($down_icon). '</a>';
         } else {
-            $controlHTML .= $this->output->render($spacericon);
+            $controlHTML .= $this->output->render($spacer_icon);
         }
 
         // Always add edit and delete icons
-        $editurl = clone($this->pageurl);
-        $editurl->param('action', 'editquestion');
-        $editurl->param('rtqquestionid', $question->getId());
+        $edit_url = clone($url);
+        $edit_url->param('action', 'editquestion');
+        $edit_url->param('questionid', $question->getId());
         $alt = get_string('edit_question', 'jazzquiz', $qnum);
-        $deleteicon = new \pix_icon('t/edit', $alt);
-        $controlHTML .= \html_writer::link($editurl, $this->output->render($deleteicon));
+        $delete_icon = new \pix_icon('t/edit', $alt);
+        $controlHTML .= \html_writer::link($edit_url, $this->output->render($delete_icon));
 
-        $deleteurl = clone($this->pageurl);
-        $deleteurl->param('action', 'deletequestion');
-        $deleteurl->param('questionid', $question->getId());
         $alt = get_string('delete_question', 'mod_jazzquiz', $qnum);
-        $deleteicon = new \pix_icon('t/delete', $alt);
-        $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
-
+        $delete_icon = new \pix_icon('t/delete', $alt);
+        $data = 'data-action="deletequestion" data-question-id="' . $question->getId() . '"';
+        $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($delete_icon). '</a>';
         $return .= \html_writer::div($controlHTML, 'controls');
         return $return;
     }

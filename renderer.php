@@ -654,9 +654,7 @@ EOD;
 
                         // First check if the question has a time limit
                         if ($nextQuestion->getNoTime()) {
-
                             $quiz->resume->question_time = 0;
-
                         } else {
 
                             // Otherwise figure out how much time is left
@@ -763,11 +761,8 @@ EOD;
         $response .= html_writer::tag('h3', $name, [
             'class' => 'responsename'
         ]);
-
         $response .= html_writer::div($attempt->responsesummary, 'responsesummary');
-
         $response .= html_writer::end_div();
-
         return $response;
     }*/
 

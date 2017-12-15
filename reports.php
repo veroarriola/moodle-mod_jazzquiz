@@ -32,7 +32,46 @@ require_once($CFG->dirroot . '/question/editlib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
-$reports = new \mod_jazzquiz\controllers\reports();
-$reports->setup_page('/mod/jazzquiz/reports.php');
-$reports->handle_request();
+function jazzquiz_reports()
+{
+    global $PAGE;
 
+    $course_module_id = optional_param('id', false, PARAM_INT);
+    if (!$course_module_id) {
+        // Probably a login redirect that doesn't include any ID.
+        // Go back to the main Moodle page, because we have no info.
+        header('Location: /');
+        exit;
+    }
+
+    $jazzquiz = new \mod_jazzquiz\jazzquiz($course_module_id, 'report');
+    $jazzquiz->require_capability('mod/jazzquiz:seeresponses');
+    $renderer = $jazzquiz->renderer;
+
+    $report_type = optional_param('reporttype', 'overview', PARAM_ALPHA);
+    $action = optional_param('action', '', PARAM_ALPHANUM);
+
+    $url = new \moodle_url('/mod/jazzquiz/reports.php');
+    $url->param('id', $course_module_id);
+    $url->param('quizid', $jazzquiz->getRTQ()->id);
+    $url->param('reporttype', $report_type);
+    $url->param('action', $action);
+
+    $PAGE->set_pagelayout('incourse');
+    $PAGE->set_context($jazzquiz->context);
+    $PAGE->set_title(strip_tags($jazzquiz->course->shortname . ': ' . get_string('modulename', 'jazzquiz') . ': ' . format_string($jazzquiz->name, true)));
+    $PAGE->set_heading($jazzquiz->course->fullname);
+    $PAGE->set_url($url);
+
+    $report = new \mod_jazzquiz\reports\report_overview($jazzquiz);
+    $is_download = isset($_GET['download']);
+    if (!$is_download) {
+        $renderer->report_header();
+    }
+    $report->handle_request($action, $url);
+    if (!$is_download) {
+        $renderer->report_footer();
+    }
+}
+
+jazzquiz_reports();

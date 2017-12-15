@@ -102,4 +102,12 @@ trait renderer_base
         $this->jazzquiz = $jazzquiz;
     }
 
+    /**
+     * @param \mod_jazzquiz\jazzquiz $jazzquiz
+     */
+    public function set_jazzquiz($jazzquiz)
+    {
+        $this->jazzquiz = $jazzquiz;
+    }
+
 }

@@ -6,7 +6,6 @@ defined('MOODLE_INTERNAL') || die();
 
 class improviser
 {
-
     public function add_improvised_question_instance($jazzquiz_id, $question_id)
     {
         global $DB;
@@ -79,7 +78,7 @@ class improviser
         $DB->update_record('jazzquiz', $jazzquiz);
     }
 
-    private function make_generic_question_definition($qtype, $name)
+    private function make_generic_question_definition($question_type, $name)
     {
         $question = new \stdClass();
         $question->category = 4; // This is the 'System Default' for 222
@@ -91,7 +90,7 @@ class improviser
         $question->generalfeedbackformat = 1;
         $question->defaultmark = 1;
         $question->penalty = 0;
-        $question->qtype = $qtype;
+        $question->qtype = $question_type;
         $question->length = 1;
         $question->stamp = '';
         $question->version = '';
@@ -103,10 +102,10 @@ class improviser
         return $question;
     }
 
-    private function make_multichoice_options($questionid)
+    private function make_multichoice_options($question_id)
     {
         $options = new \stdClass();
-        $options->questionid = $questionid;
+        $options->questionid = $question_id;
         $options->layout = 0;
         $options->single = 1;
         $options->shuffleanswers = 0;
@@ -121,18 +120,18 @@ class improviser
         return $options;
     }
 
-    private function make_short_answer_options($questionid)
+    private function make_short_answer_options($question_id)
     {
         $options = new \stdClass();
-        $options->questionid = $questionid;
+        $options->questionid = $question_id;
         $options->usecase = 0;
         return $options;
     }
 
-    private function make_generic_question_answer($questionid, $format, $answer_text)
+    private function make_generic_question_answer($question_id, $format, $answer_text)
     {
         $answer = new \stdClass();
-        $answer->question = $questionid; // NOTE: This might be renamed to questionid in future versions of Moodle.
+        $answer->question = $question_id; // NOTE: This might be renamed to questionid in future versions of Moodle.
         $answer->answer = $answer_text;
         $answer->answerformat = $format;
         $answer->fraction = 1;
@@ -210,17 +209,17 @@ class improviser
         $question->id = $DB->insert_record('question', $question);
 
         // Add answers
-        $trueanswer = $this->make_generic_question_answer($question->id, 0, 'True');
-        $trueanswer->id = $DB->insert_record('question_answers', $trueanswer);
-        $falseanswer = $this->make_generic_question_answer($question->id, 0, 'False');
-        $falseanswer->id = $DB->insert_record('question_answers', $falseanswer);
+        $true_answer = $this->make_generic_question_answer($question->id, 0, 'True');
+        $true_answer->id = $DB->insert_record('question_answers', $true_answer);
+        $false_answer = $this->make_generic_question_answer($question->id, 0, 'False');
+        $false_answer->id = $DB->insert_record('question_answers', $false_answer);
 
         // True / False
-        $truefalse = new \stdClass();
-        $truefalse->question = $question->id; // NOTE: This might be renamed to questionid in future versions of Moodle.
-        $truefalse->trueanswer = $trueanswer->id;
-        $truefalse->falseanswer = $falseanswer->id;
-        $DB->insert_record('question_truefalse', $truefalse);
+        $true_false = new \stdClass();
+        $true_false->question = $question->id; // NOTE: This might be renamed to questionid in future versions of Moodle.
+        $true_false->trueanswer = $true_answer->id;
+        $true_false->falseanswer = $false_answer->id;
+        $DB->insert_record('question_truefalse', $true_false);
     }
 
     private function insert_stack_algebraic_question_definition($name)

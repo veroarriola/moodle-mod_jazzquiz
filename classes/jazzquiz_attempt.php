@@ -38,8 +38,8 @@ class jazzquiz_attempt
     /** @var \stdClass The attempt record */
     protected $attempt;
 
-    /** @var questionmanager $questionmanager $the queestion manager for the class */
-    protected $questionmanager;
+    /** @var question_manager $question_manager $the question manager for the class */
+    protected $question_manager;
 
     /** @var \question_usage_by_activity $quba the question usage by activity for this attempt */
     protected $quba;
@@ -79,13 +79,13 @@ class jazzquiz_attempt
     /**
      * Construct the class.  if a dbattempt object is passed in set it, otherwise initialize empty class
      *
-     * @param questionmanager $question_manager
+     * @param question_manager $question_manager
      * @param \stdClass
      * @param \context_module $context
      */
     public function __construct($question_manager, $dbattempt = null, $context = null)
     {
-        $this->questionmanager = $question_manager;
+        $this->question_manager = $question_manager;
         $this->context = $context;
 
         if (empty($dbattempt)) {
@@ -94,10 +94,10 @@ class jazzquiz_attempt
             $this->attempt = new \stdClass();
 
             // Create a new quba since we're creating a new attempt
-            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->questionmanager->getRTQ()->context);
+            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->question_manager->jazzquiz->context);
             $this->quba->set_preferred_behaviour('immediatefeedback');
 
-            $attempt_layout = $this->questionmanager->add_questions_to_quba($this->quba);
+            $attempt_layout = $this->question_manager->add_questions_to_quba($this->quba);
 
             // Add the attempt layout to this instance
             $this->attempt->qubalayout = implode(',', $attempt_layout);
@@ -377,7 +377,7 @@ class jazzquiz_attempt
      */
     public function get_questions()
     {
-        return $this->questionmanager->get_questions();
+        return $this->question_manager->get_questions();
     }
 
     /**

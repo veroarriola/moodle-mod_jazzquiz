@@ -22,6 +22,7 @@ class report_overview
     {
         global $PAGE;
         $this->renderer = $PAGE->get_renderer('mod_jazzquiz', 'report_overview');
+        $this->renderer->set_jazzquiz($jazzquiz);
         $this->jazzquiz = $jazzquiz;
     }
 
@@ -141,7 +142,7 @@ class report_overview
         $page_url->param('sessionid', $session_id);
 
         $sessions = $this->jazzquiz->get_sessions();
-        $this->renderer->select_session($sessions, $session_id);
+        $this->renderer->select_session($page_url, $sessions, $session_id);
 
         $quiz_attempts = $session->getall_attempts(false);
         $quiz_attempt = reset($quiz_attempts);
@@ -313,23 +314,18 @@ class report_overview
      * @param array $page_vars
      * @return void
      */
-    public function handle_request($page_url, $page_vars)
+    public function handle_request($action, $url)
     {
-        $this->renderer->init($this->jazzquiz, $page_url, $page_vars);
-
-        switch ($page_vars['action']) {
-
+        switch ($action) {
             case 'viewsession':
-                $this->view_session($page_url);
+                $this->view_session($url);
                 break;
-
             case 'csv':
                 $this->output_csv();
                 break;
-
             default:
                 $sessions = $this->jazzquiz->get_sessions();
-                $this->renderer->select_session($sessions);
+                $this->renderer->select_session($url, $sessions);
                 break;
         }
     }

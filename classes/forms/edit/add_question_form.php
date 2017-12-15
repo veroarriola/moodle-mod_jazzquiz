@@ -50,8 +50,8 @@ class add_question_form extends \moodleform
     public function definition()
     {
         $mform = $this->_form;
-        $rtq = $this->_customdata['rtq'];
-        $defaultTime = $rtq->getRTQ()->defaultquestiontime;
+        $jazzquiz = $this->_customdata['jazzquiz'];
+        $defaultTime = $jazzquiz->getRTQ()->defaultquestiontime;
 
         $mform->addElement('static', 'questionid', get_string('question', 'jazzquiz'), $this->_customdata['questionname']);
 

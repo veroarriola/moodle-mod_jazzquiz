@@ -34,13 +34,10 @@ use \mod_jazzquiz\forms\edit\add_question_form;
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class questionmanager
+class question_manager
 {
     /** @var jazzquiz */
-    protected $rtq;
-
-    /** @var \mod_jazzquiz_renderer */
-    protected $renderer;
+    public $jazzquiz;
 
     /** @var array internal use only as we'll always just give out the qbank ordered questions */
     protected $rtqQuestions;
@@ -57,25 +54,14 @@ class questionmanager
      * @param jazzquiz $jazzquiz
      * @param \mod_jazzquiz_renderer $renderer The realtime quiz renderer to render visual elements
      */
-    public function __construct($jazzquiz, $renderer)
+    public function __construct($jazzquiz)
     {
-        $this->rtq = $jazzquiz;
-        $this->renderer = $renderer;
+        $this->jazzquiz = $jazzquiz;
         $this->orderedquestions = [];
         $this->base_url = new \moodle_url('/mod/jazzquiz/edit.php', [
             'id' => $jazzquiz->course_module->id
         ]);
         $this->refresh_questions();
-    }
-
-    /**
-     * return this class's reference of jazzquiz
-     *
-     * @return jazzquiz
-     */
-    public function getRTQ()
-    {
-        return $this->rtq;
     }
 
     /**
@@ -101,16 +87,16 @@ class questionmanager
         }
 
         $question = new \stdClass();
-        $question->jazzquizid = $this->rtq->getRTQ()->id;
+        $question->jazzquizid = $this->jazzquiz->getRTQ()->id;
         $question->questionid = $question_id;
         $question->notime = false;
-        $question->questiontime = $this->rtq->getRTQ()->defaultquestiontime;
+        $question->questiontime = $this->jazzquiz->getRTQ()->defaultquestiontime;
         $question->tries = 1;
         $question->showhistoryduringquiz = false;
 
-        $RTQquestionid = $DB->insert_record('jazzquiz_questions', $question);
+        $jazzquiz_question_id = $DB->insert_record('jazzquiz_questions', $question);
 
-        $this->update_questionorder('addquestion', $RTQquestionid);
+        $this->update_questionorder('addquestion', $jazzquiz_question_id);
 
         // Ensure there is no action or questionid in the base url
         $this->base_url->remove_params('action', 'questionid');
@@ -119,32 +105,32 @@ class questionmanager
     }
 
     /**
-     * Edit a RTQ question
+     * Edit a JazzQuiz question
      *
-     * @param int $questionid the RTQ questionid
+     * @param int $question_id the JazzQuiz question id
      *
      * @return mixed
      */
-    public function edit_question($questionid)
+    public function edit_question($question_id)
     {
         global $DB;
 
-        $actionurl = clone($this->base_url);
-        $actionurl->param('action', 'editquestion');
-        $actionurl->param('rtqquestionid', $questionid);
+        $action_url = clone($this->base_url);
+        $action_url->param('action', 'editquestion');
+        $action_url->param('questionid', $question_id);
 
-        $rtqquestion = $DB->get_record('jazzquiz_questions', [
-            'id' => $questionid
+        $jazzquiz_question = $DB->get_record('jazzquiz_questions', [
+            'id' => $question_id
         ], '*', MUST_EXIST);
 
-        $qrecord = $DB->get_record('question', [
-            'id' => $rtqquestion->questionid
+        $question = $DB->get_record('question', [
+            'id' => $jazzquiz_question->questionid
         ], '*', MUST_EXIST);
 
-        $mform = new add_question_form($actionurl, [
-            'rtq' => $this->rtq,
-            'questionname' => $qrecord->name,
-            'show_history_during_quiz' => $rtqquestion->showhistoryduringquiz,
+        $mform = new add_question_form($action_url, [
+            'jazzquiz' => $this->jazzquiz,
+            'questionname' => $question->name,
+            'show_history_during_quiz' => $jazzquiz_question->showhistoryduringquiz,
             'edit' => true
         ]);
 
@@ -158,9 +144,9 @@ class questionmanager
         } else if ($data = $mform->get_data()) {
 
             $question = new \stdClass();
-            $question->id = $rtqquestion->id;
-            $question->jazzquizid = $this->rtq->getRTQ()->id;
-            $question->questionid = $rtqquestion->questionid;
+            $question->id = $jazzquiz_question->id;
+            $question->jazzquizid = $this->jazzquiz->getRTQ()->id;
+            $question->questionid = $jazzquiz_question->questionid;
             $question->notime = $data->no_time;
             $question->questiontime = $data->question_time;
             $question->tries = $data->number_of_tries;
@@ -175,14 +161,14 @@ class questionmanager
 
             // Display the form
             $mform->set_data([
-                'question_time' => $rtqquestion->questiontime,
-                'no_time' => $rtqquestion->notime,
-                'number_of_tries' => $rtqquestion->tries
+                'question_time' => $jazzquiz_question->questiontime,
+                'no_time' => $jazzquiz_question->notime,
+                'number_of_tries' => $jazzquiz_question->tries
             ]);
 
-            $this->renderer->print_header();
-            $this->renderer->addquestionform($mform);
-            $this->renderer->footer();
+            $this->jazzquiz->renderer->print_header();
+            $this->jazzquiz->renderer->addquestionform($mform);
+            $this->jazzquiz->renderer->footer();
         }
     }
 
@@ -327,10 +313,9 @@ class questionmanager
     public function add_questions_to_quba(\question_usage_by_activity $quba)
     {
         // We need the questionids of our questions
-        $questionids = array();
+        $questionids = [];
         foreach ($this->qbankOrderedQuestions as $qbankquestion) {
             /** @var jazzquiz_question $qbankquestion */
-
             if (!in_array($qbankquestion->getQuestion()->id, $questionids)) {
                 $questionids[] = $qbankquestion->getQuestion()->id;
             }
@@ -363,7 +348,7 @@ class questionmanager
      */
     protected function get_question_order()
     {
-        return $this->rtq->getRTQ()->questionorder;
+        return $this->jazzquiz->getRTQ()->questionorder;
     }
 
     /**
@@ -374,8 +359,8 @@ class questionmanager
      */
     protected function set_question_order($questionorder)
     {
-        $this->rtq->getRTQ()->questionorder = $questionorder;
-        return $this->rtq->saveRTQ();
+        $this->jazzquiz->getRTQ()->questionorder = $questionorder;
+        return $this->jazzquiz->saveRTQ();
     }
 
     /**
@@ -463,7 +448,6 @@ class questionmanager
                 return true;
 
             case 'replaceorder':
-
                 $question_order = $this->get_question_order();
                 $question_order = explode(',', $question_order);
                 // If we don't have the same number of questions return error
@@ -529,7 +513,7 @@ class questionmanager
     {
         global $DB;
         $this->rtqQuestions = $DB->get_records('jazzquiz_questions', [
-            'jazzquizid' => $this->rtq->getRTQ()->id
+            'jazzquizid' => $this->jazzquiz->getRTQ()->id
         ]);
     }
 
@@ -543,7 +527,7 @@ class questionmanager
         global $DB;
 
         // Start by ordering the RTQ question ids into an array
-        $question_order = $this->rtq->getRTQ()->questionorder;
+        $question_order = $this->jazzquiz->getRTQ()->questionorder;
 
         // Generate empty array for ordered questions for no question order
         if (empty($question_order)) {
@@ -589,5 +573,3 @@ class questionmanager
     }
 
 }
-
-

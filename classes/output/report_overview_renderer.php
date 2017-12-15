@@ -34,12 +34,12 @@ class report_overview_renderer extends \plugin_renderer_base
     use renderer_base;
 
     /**
-     * renders and echos the home page fore the responses section
+     * Renders and echos the home page for the responses section
      *
      * @param array $sessions
      * @param string|int $selected_id
      */
-    public function select_session($sessions, $selected_id = '')
+    public function select_session($url, $sessions, $selected_id = '')
     {
         $output = '';
 
@@ -49,7 +49,7 @@ class report_overview_renderer extends \plugin_renderer_base
             'class' => 'inline-block'
         ]) . '<br>';
 
-        $session_select_url = clone($this->pageurl);
+        $session_select_url = clone($url);
         $session_select_url->param('action', 'viewsession');
 
         $session_options = [];
@@ -64,7 +64,6 @@ class report_overview_renderer extends \plugin_renderer_base
         $select_session .= \html_writer::end_div();
 
         $output .= $select_session;
-
         $output = \html_writer::div($output, 'jazzquizbox');
 
         echo $output;

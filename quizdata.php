@@ -24,6 +24,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_jazzquiz;
+
 define('AJAX_SCRIPT', true);
 
 require_once('../../config.php');
@@ -38,8 +40,11 @@ function print_json($array)
     echo json_encode($array);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
+/**
+ * @param jazzquiz $jazzquiz
+ * @param jazzquiz_session $session
+ * @param jazzquiz_question $question
+ */
 function start_question($jazzquiz, $session, $question)
 {
     $attempt = $session->get_open_attempt();
@@ -67,8 +72,8 @@ function start_question($jazzquiz, $session, $question)
 
 /**
  * Sends a list of all the questions tagged for use with improvisation.
+ * @param jazzquiz $jazzquiz
  */
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
 function show_all_improvisation_questions($jazzquiz)
 {
     global $DB;
@@ -134,8 +139,11 @@ function show_all_improvisation_questions($jazzquiz)
     ]);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
+/**
+ * @param jazzquiz $jazzquiz
+ * @param jazzquiz_session $session
+ * @param int $slot
+ */
 function start_goto_question($jazzquiz, $session, $slot)
 {
     // Are we going to keep or break the flow of the quiz?
@@ -169,9 +177,10 @@ function start_goto_question($jazzquiz, $session, $slot)
     start_question($jazzquiz, $session, $question);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
-function start_quiz($jazzquiz, $session)
+/**
+ * @param jazzquiz_session $session
+ */
+function start_quiz($session)
 {
     $session->start_quiz();
     print_json([
@@ -179,9 +188,10 @@ function start_quiz($jazzquiz, $session)
     ]);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
-function save_question($jazzquiz, $session)
+/**
+ * @param jazzquiz_session $session
+ */
+function save_question($session)
 {
     // Check if we're working on the current question for the session
     $current_question = $session->get_session()->currentquestion;
@@ -207,7 +217,6 @@ function save_question($jazzquiz, $session)
     }
 
     $attempt_saved = $attempt->save_question();
-
     if (!$attempt_saved) {
         print_json([
             'status' => 'error',
@@ -234,8 +243,10 @@ function save_question($jazzquiz, $session)
     ]);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
+/**
+ * @param jazzquiz $jazzquiz
+ * @param jazzquiz_session $session
+ */
 function run_voting($jazzquiz, $session)
 {
     // TODO: Not use _POST
@@ -265,7 +276,7 @@ function run_voting($jazzquiz, $session)
     }
 
     // Initialize the votes
-    $vote = new \mod_jazzquiz\jazzquiz_vote($session->get_session()->id);
+    $vote = new jazzquiz_vote($session->get_session()->id);
     $slot = $session->get_session()->currentqnum;
     $vote->prepare_options($jazzquiz->getRTQ()->id, $question_type, $questions, $slot);
 
@@ -276,9 +287,10 @@ function run_voting($jazzquiz, $session)
     ]);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
-function save_vote($jazzquiz, $session)
+/**
+ * @param jazzquiz_session $session
+ */
+function save_vote($session)
 {
     // TODO: Not use _POST
 
@@ -297,7 +309,7 @@ function save_vote($jazzquiz, $session)
     $user_id = $session->get_current_userid();
 
     // Save the vote
-    $vote = new \mod_jazzquiz\jazzquiz_vote($session->get_session()->id);
+    $vote = new jazzquiz_vote($session->get_session()->id);
     $status = $vote->save_vote($vote_id, $user_id);
 
     print_json([
@@ -305,14 +317,13 @@ function save_vote($jazzquiz, $session)
     ]);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
-function get_vote_results($jazzquiz, $session)
+/**
+ * @param jazzquiz_session $session
+ */
+function get_vote_results($session)
 {
-    // Get all the vote results
-    $vote = new \mod_jazzquiz\jazzquiz_vote($session->get_session()->id, $session->get_session()->currentqnum);
+    $vote = new jazzquiz_vote($session->get_session()->id, $session->get_session()->currentqnum);
     $votes = $vote->get_results();
-
     print_json([
         'status' => 'success',
         'answers' => $votes,
@@ -320,8 +331,10 @@ function get_vote_results($jazzquiz, $session)
     ]);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
+/**
+ * @param jazzquiz $jazzquiz
+ * @param jazzquiz_session $session
+ */
 function next_question($jazzquiz, $session)
 {
     // Are we coming from an improvised question?
@@ -338,16 +351,20 @@ function next_question($jazzquiz, $session)
     start_question($jazzquiz, $session, $question);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
+/**
+ * @param jazzquiz $jazzquiz
+ * @param jazzquiz_session $session
+ */
 function repoll_question($jazzquiz, $session)
 {
     $question = $session->repoll_question();
     start_question($jazzquiz, $session, $question);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
+/**
+ * @param jazzquiz $jazzquiz
+ * @param jazzquiz_session $session
+ */
 function goto_question($jazzquiz, $session)
 {
     // Get the question number to go to
@@ -362,9 +379,10 @@ function goto_question($jazzquiz, $session)
     start_goto_question($jazzquiz, $session, $slot);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
-function end_question($jazzquiz, $session) // or vote
+/**
+ * @param jazzquiz_session $session
+ */
+function end_question($session) // or vote
 {
     $session->set_status('reviewing');
     print_json([
@@ -372,9 +390,10 @@ function end_question($jazzquiz, $session) // or vote
     ]);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
-function get_right_response($jazzquiz, $session)
+/**
+ * @param jazzquiz_session $session
+ */
+function get_right_response($session)
 {
     print_json([
         'status' => 'success',
@@ -382,9 +401,10 @@ function get_right_response($jazzquiz, $session)
     ]);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
-function close_session($jazzquiz, $session)
+/**
+ * @param jazzquiz_session $session
+ */
+function close_session($session)
 {
     $session->end_session();
     print_json([
@@ -392,8 +412,10 @@ function close_session($jazzquiz, $session)
     ]);
 }
 
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
+/**
+ * @param jazzquiz $jazzquiz
+ * @param jazzquiz_session $session
+ */
 function get_results($jazzquiz, $session)
 {
     // Get the results
@@ -416,17 +438,19 @@ function get_results($jazzquiz, $session)
     ]);
 }
 
-/** @param string $action */
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
+/**
+ * @param string $action
+ * @param jazzquiz $jazzquiz
+ * @param jazzquiz_session $session
+ */
 function handle_instructor_request($action, $jazzquiz, $session)
 {
     switch ($action) {
         case 'startquiz':
-            start_quiz($jazzquiz, $session);
+            start_quiz($session);
             exit;
         case 'savequestion':
-            save_question($jazzquiz, $session);
+            save_question($session);
             exit;
         case 'listdummyquestions':
             show_all_improvisation_questions($jazzquiz);
@@ -435,7 +459,7 @@ function handle_instructor_request($action, $jazzquiz, $session)
             run_voting($jazzquiz, $session);
             exit;
         case 'getvoteresults':
-            get_vote_results($jazzquiz, $session);
+            get_vote_results($session);
             exit;
         case 'getresults':
             get_results($jazzquiz, $session);
@@ -450,13 +474,13 @@ function handle_instructor_request($action, $jazzquiz, $session)
             goto_question($jazzquiz, $session);
             exit;
         case 'endquestion':
-            end_question($jazzquiz, $session);
+            end_question($session);
             exit;
         case 'getrightresponse':
-            get_right_response($jazzquiz, $session);
+            get_right_response($session);
             exit;
         case 'closesession':
-            close_session($jazzquiz, $session);
+            close_session($session);
             exit;
         default:
             print_json([
@@ -467,17 +491,18 @@ function handle_instructor_request($action, $jazzquiz, $session)
     }
 }
 
-/** @param string $action */
-/** @param \mod_jazzquiz\jazzquiz $jazzquiz */
-/** @param \mod_jazzquiz\jazzquiz_session $session */
-function handle_student_request($action, $jazzquiz, $session)
+/**
+ * @param string $action
+ * @param jazzquiz_session $session
+ */
+function handle_student_request($action, $session)
 {
     switch ($action) {
         case 'savequestion':
-            save_question($jazzquiz, $session);
+            save_question($session);
             exit;
         case 'savevote':
-            save_vote($jazzquiz, $session);
+            save_vote($session);
             exit;
         default:
             print_json([
@@ -523,7 +548,7 @@ function jazzquiz_quizdata()
     if ($jazzquiz->is_instructor()) {
         handle_instructor_request($action, $jazzquiz, $session);
     } else {
-        handle_student_request($action, $jazzquiz, $session);
+        handle_student_request($action, $session);
     }
 }
 
