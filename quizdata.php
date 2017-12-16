@@ -62,6 +62,7 @@ function start_question($jazzquiz, $session, $question)
 
     print_json([
         'status' => 'startedquestion',
+        'slot' => $question->get_slot(),
         'lastquestion' => ($attempt->lastquestion ? 'true' : 'false'),
         'nextstarttime' => $session->get_session()->nextstarttime,
         'notime' => $question->getNoTime(),

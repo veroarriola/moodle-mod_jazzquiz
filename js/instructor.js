@@ -482,8 +482,8 @@ jazzquiz.handle_question = function (slot) {
         jazzquiz.quiz.question.is_running = false;
 
         var params = {
-            'action': 'endquestion',
-            'question': jazzquiz.quiz.current_question_slot
+            action: 'endquestion',
+            question: jazzquiz.quiz.current_question_slot
         };
 
         // make sure we end the question (on end_question function call this is re-doing what we just did)
@@ -623,9 +623,9 @@ jazzquiz.run_voting = function () {
     var vote_options = this.get_selected_answers_for_vote();
     var questions_param = encodeURIComponent(JSON.stringify(vote_options));
     var params = {
-        'action': 'runvoting',
-        'questions': questions_param,
-        'qtype': this.quiz.questions[this.quiz.current_question_slot].question.qtype
+        action: 'runvoting',
+        questions: questions_param,
+        qtype: this.quiz.questions[this.quiz.current_question_slot].question.qtype
     };
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
         if (status !== HTTP_STATUS.OK) {
@@ -664,7 +664,7 @@ jazzquiz.repoll_question = function () {
             return;
         }
         jazzquiz.quiz.question.is_last = (response.lastquestion === 'true');
-        jazzquiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+        jazzquiz.waitfor_question(response.slot, response.questiontime, response.delay, response.nextstarttime);
     });
 };
 
@@ -681,14 +681,14 @@ jazzquiz.next_question = function () {
             return;
         }
         jazzquiz.quiz.question.is_last = (response.lastquestion === 'true');
-        jazzquiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+        jazzquiz.waitfor_question(response.slot, response.questiontime, response.delay, response.nextstarttime);
     });
 };
 
 jazzquiz.end_question = function () {
     var params = {
-        'action': 'endquestion',
-        'question': this.quiz.current_question_slot
+        action: 'endquestion',
+        question: this.quiz.current_question_slot
     };
 
     var vote_callback = function (status, response) {
@@ -755,8 +755,8 @@ jazzquiz.submit_goto_question = function (qnum, keep_flow) {
     // TODO: If two improvised in a row, make sure it still doesn't break the flow
 
     var params = {
-        'action': 'gotoquestion',
-        'qnum': qnum
+        action: 'gotoquestion',
+        qnum: qnum
     };
     if (keep_flow === true) {
         params['keepflow'] = 'true';
@@ -775,7 +775,7 @@ jazzquiz.submit_goto_question = function (qnum, keep_flow) {
         window.location.hash = '';
 
         // Start question
-        jazzquiz.waitfor_question(response.questionid, response.questiontime, response.delay, response.nextstarttime);
+        jazzquiz.waitfor_question(response.slot, response.questiontime, response.delay, response.nextstarttime);
     });
 };
 
