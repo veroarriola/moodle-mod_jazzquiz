@@ -51,7 +51,7 @@ class jazzquiz
     /** @var question_manager $question_manager */
     public $question_manager;
 
-    /** @var \mod_jazzquiz_renderer $renderer */
+    /** @var \plugin_renderer_base|output\edit_renderer $renderer */
     public $renderer;
 
     /** @var \stdClass $jazzquiz */
@@ -61,7 +61,7 @@ class jazzquiz
     protected $is_instructor;
 
     /**
-     * @param object $course_module_id The course module ID
+     * @param int $course_module_id The course module ID
      * @param string $renderer_subtype Renderer sub-type to load if requested
      */
     public function __construct($course_module_id, $renderer_subtype = null)

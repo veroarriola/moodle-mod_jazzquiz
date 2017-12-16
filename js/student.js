@@ -65,7 +65,7 @@ jazzquiz.change_quiz_state = function (state, data) {
 
         case 'voting':
             if (this.quiz.question.is_vote_running === undefined || !this.quiz.question.is_vote_running) {
-                var options = JSON.parse(data.options);
+                var options = data.options;
                 var html = '<div class="jazzquiz-vote">';
                 for (var i = 0; i < options.length; i++) {
                     html += '<label>';
@@ -171,8 +171,8 @@ jazzquiz.handle_question = function (question_slot) {
 
 jazzquiz.save_vote = function () {
     var params = {
-        'action': 'savevote',
-        'answer': this.vote_answer
+        action: 'savevote',
+        answer: this.vote_answer
     };
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
         var $info_container = jQuery('#jazzquiz_info_container');
@@ -185,17 +185,17 @@ jazzquiz.save_vote = function () {
         var wait_for_instructor = jazzquiz.text('wait_for_instructor');
 
         // Output info depending on the status
+        $info_container.removeClass('hidden');
         switch (response.status) {
             case 'success':
-                $info_container.removeClass('hidden').html(wait_for_instructor);
+                $info_container.html(wait_for_instructor);
                 break;
             case 'alreadyvoted':
-                $info_container.removeClass('hidden').html('Sorry, but you have already voted. ' + wait_for_instructor);
+                $info_container.html('Sorry, but you have already voted. ' + wait_for_instructor);
                 break;
             default:
-                $info_container.removeClass('hidden').html('An error has occurred. ' + wait_for_instructor);
+                $info_container.html('An error has occurred. ' + wait_for_instructor);
                 break;
         }
     });
 };
-

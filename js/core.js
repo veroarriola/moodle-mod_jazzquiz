@@ -282,7 +282,7 @@ jazzquiz.hide_info = function() {
  */
 jazzquiz.update_tries = function (count, slot) {
     var try_count = this.text('try_count', 'jazzquiz', {
-        'tries': count
+        tries: count
     });
     jQuery('#q' + slot + '_trycount').html(try_count);
 };

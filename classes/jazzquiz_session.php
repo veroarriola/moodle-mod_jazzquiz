@@ -158,10 +158,11 @@ class jazzquiz_session
     {
         global $DB;
         // Delete all attempt qubaids, then all JazzQuiz attempts, and then finally itself
-        $quba_condition = new \qubaid_join('{jazzquiz_attempts} jqa', 'jqa.questionengid', 'jqa.sessionid = :sessionid', [ 'sessionid' => $session_id ]);
+        $quba_condition = new \qubaid_join('{jazzquiz_attempts} jqa', 'jqa.questionengid', 'jqa.sessionid = :sessionid', [
+            'sessionid' => $session_id
+        ]);
         \question_engine::delete_questions_usage_by_activities($quba_condition);
         $DB->delete_records('jazzquiz_attempts', [ 'sessionid' => $session_id ]);
-        $DB->delete_records('jazzquiz_groupattendance', [ 'sessionid' => $session_id ]);
         $DB->delete_records('jazzquiz_sessions', [ 'id' => $session_id ]);
         return true;
     }
@@ -195,7 +196,7 @@ class jazzquiz_session
         // Get all attempts and close them
         $attempts = $this->getall_open_attempts(true);
         foreach ($attempts as $attempt) {
-            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
+            /** @var jazzquiz_attempt $attempt */
             $attempt->close_attempt($this->rtq);
         }
 
@@ -208,7 +209,7 @@ class jazzquiz_session
     /**
      * The next jazzquiz question instance
      *
-     * @return \mod_jazzquiz\jazzquiz_question
+     * @return jazzquiz_question
      * @throws \Exception Throws exception when invalid question number
      */
     public function next_question()
@@ -273,7 +274,7 @@ class jazzquiz_session
         // Set all responded to 0 for this question
         $attempts = $this->getall_open_attempts(true);
         foreach ($attempts as $attempt) {
-            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
+            /** @var jazzquiz_attempt $attempt */
             $attempt->responded = 0;
             $attempt->responded_count = 0;
             $attempt->save();
@@ -350,20 +351,15 @@ class jazzquiz_session
         $not_responded = [];
 
         foreach ($attempts as $attempt) {
-            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
+            /** @var jazzquiz_attempt $attempt */
             if ($attempt->responded == 0) {
-                if (!is_null($attempt->forgroupid) && $attempt->forgroupid != 0) {
-                    // We have a groupid to use instead of the user's name
-                    $not_responded[] = $this->rtq->get_groupmanager()->get_group_name($attempt->forgroupid);
+                $user = $DB->get_record('user', ['id' => $attempt->userid]);
+                if ($user) {
+                    // Add to the list
+                    $not_responded[] = fullname($user);
                 } else {
-                    // Get the username
-                    if ($user = $DB->get_record('user', [ 'id' => $attempt->userid ])) {
-                        // Add to the list
-                        $not_responded[] = fullname($user);
-                    } else {
-                        // This shouldn't happen
-                        $not_responded[] = 'undefined user';
-                    }
+                    // This shouldn't happen
+                    $not_responded[] = 'undefined user';
                 }
             }
         }
@@ -439,7 +435,7 @@ class jazzquiz_session
                     'courseid' => $this->rtq->course->id,
                     'context' => $this->rtq->context
                 ];
-                $event = \mod_jazzquiz\event\attempt_started::create($params);
+                $event = event\attempt_started::create($params);
                 $event->add_record_snapshot('jazzquiz', $this->rtq->getRTQ());
                 $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
                 $event->trigger();
@@ -564,7 +560,7 @@ class jazzquiz_session
         $query = 'SELECT * FROM {jazzquiz_attempts} WHERE forgroupid = ? AND status = ? AND sessionid = ?';
         $params = [];
         $params[] = $groupid;
-        $params[] = \mod_jazzquiz\jazzquiz_attempt::INPROGRESS;
+        $params[] = jazzquiz_attempt::INPROGRESS;
         $params[] = $this->session->id;
         $attempts = $DB->get_records_sql($query, $params);
 
@@ -618,7 +614,7 @@ class jazzquiz_session
         $attempt = $DB->get_record('jazzquiz_attempts', [
             'id' => $attempt_id
         ]);
-        return new \mod_jazzquiz\jazzquiz_attempt($this->rtq->question_manager, $attempt, $this->rtq->context);
+        return new jazzquiz_attempt($this->rtq->question_manager, $attempt, $this->rtq->context);
     }
 
     /**
@@ -707,26 +703,8 @@ class jazzquiz_session
                 $where[] = 'userid = ?';
                 $sqlparams[] = $userid;
             } else {
-                if ($this->rtq->group_mode()) {
-                    $usergroups = $this->rtq->get_groupmanager()->get_user_groups($userid);
-
-                    if (!empty($usergroups)) {
-                        $selectgroups = [];
-                        foreach ($usergroups as $ugroup) {
-                            $selectgroups[] = $ugroup->id;
-                        }
-                        list($insql, $gparams) = $DB->get_in_or_equal($selectgroups);
-                        $where[] = 'forgroupid ' . $insql;
-                        $sqlparams = array_merge($sqlparams, $gparams);
-                    } else { // continue selecting for user query if no groups
-                        $where[] = 'userid = ?';
-                        $sqlparams[] = $userid;
-                    }
-
-                } else { // otherwise keep going the normal way
-                    $where[] = 'userid = ?';
-                    $sqlparams[] = $userid;
-                }
+                $where[] = 'userid = ?';
+                $sqlparams[] = $userid;
             }
         }
 
@@ -743,4 +721,3 @@ class jazzquiz_session
     }
 
 }
-

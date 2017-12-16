@@ -103,7 +103,7 @@ trait renderer_base
     }
 
     /**
-     * @param \mod_jazzquiz\jazzquiz $jazzquiz
+     * @param jazzquiz $jazzquiz
      */
     public function set_jazzquiz($jazzquiz)
     {

@@ -41,6 +41,8 @@ jazzquiz.change_quiz_state = function (state, data) {
     jQuery('#region-main-settings-menu').css('display', 'none');
     jQuery('.region_main_settings_menu_proxy').css('display', 'none');
 
+    var $start_quiz = jQuery('#startquiz');
+
     this.show_controls();
 
     switch (state) {
@@ -56,7 +58,7 @@ jazzquiz.change_quiz_state = function (state, data) {
             } else if (data.students > 1) {
                 students_joined = data.students + ' students have joined.';
             }
-            jQuery('#startquiz').next().html(students_joined);
+            $start_quiz.next().html(students_joined);
             break;
 
         case 'preparing':
@@ -67,7 +69,7 @@ jazzquiz.change_quiz_state = function (state, data) {
                 'showfullscreenresults',
                 'closesession'
             ]);
-            jQuery('#startquiz').parent().addClass('hidden');
+            $start_quiz.parent().addClass('hidden');
             break;
 
         case 'running':
@@ -133,7 +135,7 @@ jazzquiz.change_quiz_state = function (state, data) {
                 'endquestion'
             ]);
             this.get_and_show_vote_results();
-            jQuery('#startquiz').parent().addClass('hidden');
+            $start_quiz.parent().addClass('hidden');
             break;
 
         case 'sessionclosed':
@@ -444,7 +446,7 @@ jazzquiz.quiz_info_responses = function (wrapper_id, table_id, responses, qtype,
 
 jazzquiz.start_quiz = function () {
     var params = {
-        'action': 'startquiz'
+        action: 'startquiz'
     };
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
         jQuery('#inquizcontrols').removeClass('btn-hide');
@@ -516,7 +518,7 @@ jazzquiz.show_improvised_question_setup = function () {
     }
 
     var params = {
-        'action': 'listdummyquestions'
+        action: 'listdummyquestions'
     };
 
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
@@ -568,7 +570,7 @@ jazzquiz.get_and_show_vote_results = function () {
     }
 
     var params = {
-        'action': 'getvoteresults'
+        action: 'getvoteresults'
     };
 
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {

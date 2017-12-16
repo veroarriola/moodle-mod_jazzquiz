@@ -213,11 +213,12 @@ class jazzquiz_attempt
     }
 
     /**
-     * sets up the display options for the question
-     *
+     * Sets up the display options for the question
+     * @param bool $review
+     * @param string $review_options
      * @return \question_display_options
      */
-    protected function get_display_options($review = false, $reviewoptions = '')
+    protected function get_display_options($review = false, $review_options = '')
     {
         $options = new \question_display_options();
         $options->flags = \question_display_options::HIDDEN;
@@ -230,9 +231,8 @@ class jazzquiz_attempt
             $options->readonly = true;
             $options->hide_all_feedback();
 
-            // Special case for "edit" reviewoptions value
-            if ($reviewoptions === 'edit') {
-
+            // Special case for "edit" review options value
+            if ($review_options === 'edit') {
                 $options->correctness = \question_display_options::VISIBLE;
                 $options->marks = \question_display_options::MARK_AND_MAX;
                 $options->feedback = \question_display_options::VISIBLE;
@@ -241,11 +241,9 @@ class jazzquiz_attempt
                 $options->generalfeedback = \question_display_options::VISIBLE;
                 $options->rightanswer = \question_display_options::VISIBLE;
                 $options->history = \question_display_options::VISIBLE;
-
-            } else if ($reviewoptions instanceof \stdClass) {
-
-                foreach (\mod_jazzquiz\jazzquiz::$review_fields as $field => $not_used) {
-                    if ($reviewoptions->$field == 1) {
+            } else if ($review_options instanceof \stdClass) {
+                foreach (jazzquiz::$review_fields as $field => $not_used) {
+                    if ($review_options->$field == 1) {
                         if ($field == 'specificfeedback') {
                             $field = 'feedback';
                         }
@@ -254,24 +252,21 @@ class jazzquiz_attempt
                         } else {
                             $options->$field = \question_display_options::VISIBLE;
                         }
-
                     }
                 }
             }
         } else {
-
             // Default options for running quiz
             $options->rightanswer = \question_display_options::HIDDEN;
             $options->numpartscorrect = \question_display_options::HIDDEN;
             $options->manualcomment = \question_display_options::HIDDEN;
             $options->manualcommentlink = \question_display_options::HIDDEN;
         }
-
         return $options;
     }
 
     /**
-     * returns an integer representing the question number
+     * Returns an integer representing the question number
      *
      * @return int
      */
@@ -308,11 +303,11 @@ class jazzquiz_attempt
     /**
      * Gets the slot for the jazzquiz question
      *
-     * @param \mod_jazzquiz\jazzquiz_question $q
+     * @param jazzquiz_question $question
      *
      * @return int
      */
-    public function get_question_slot(\mod_jazzquiz\jazzquiz_question $question)
+    public function get_question_slot($question)
     {
         // Build if not available
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
@@ -331,11 +326,11 @@ class jazzquiz_attempt
     }
 
     /**
-     * Gets the jazzquiz question class object for the slot id
+     * Gets the jazzquiz question class object for the slot
      *
      * @param int $asked_slot
      *
-     * @return \mod_jazzquiz\jazzquiz_question | false
+     * @return jazzquiz_question | false
      */
     public function get_question_by_slot($asked_slot)
     {
@@ -354,13 +349,11 @@ class jazzquiz_attempt
         }
 
         $question_id = array_search($asked_slot, $this->slotsbyquestionid);
-
         if (empty($question_id)) {
             return false;
         }
 
         foreach ($this->get_questions() as $question) {
-
             /** @var \mod_jazzquiz\jazzquiz_question $question */
             if ($question->getQuestion()->id == $question_id) {
                 return $question;
@@ -371,7 +364,7 @@ class jazzquiz_attempt
     }
 
     /**
-     * Gets the RTQ questions for this attempt
+     * Gets the JazzQuiz questions for this attempt
      *
      * @return array
      */
@@ -480,25 +473,22 @@ class jazzquiz_attempt
         $this->attempt->responded_count = $this->attempt->responded_count + 1;
 
         $this->save();
-
         $transaction->allow_commit();
-
         return true;
     }
 
-    protected function process_anonymous_response($timenow)
+    protected function process_anonymous_response($time_now)
     {
         foreach ($this->get_slots_in_request() as $slot) {
             if (!$this->quba->validate_sequence_number($slot)) {
                 continue;
             }
-            $submitteddata = $this->quba->extract_responses($slot);
-            //$this->quba->process_action($slot, $submitteddata, $timestamp);
+            $submitted_data = $this->quba->extract_responses($slot);
+            //$this->quba->process_action($slot, $submitted_data, $timestamp);
             $qa = $this->quba->get_question_attempt($slot);
-            $qa->process_action($submitteddata, $timenow, $this->attempt->userid);
+            $qa->process_action($submitted_data, $time_now, $this->attempt->userid);
             $this->quba->get_observer()->notify_attempt_modified($qa);
         }
-
         $this->quba->update_question_flags();
     }
 
@@ -512,13 +502,13 @@ class jazzquiz_attempt
      * instead of the data from $_POST.
      * @return array of slot numbers.
      */
-    protected function get_slots_in_request($postdata = null)
+    protected function get_slots_in_request($post_data = null)
     {
         // Note: we must not use "question_attempt::get_submitted_var()" because there is no attempt instance!!!
-        if (is_null($postdata)) {
+        if (is_null($post_data)) {
             $slots = optional_param('slots', null, PARAM_SEQUENCE);
-        } else if (array_key_exists('slots', $postdata)) {
-            $slots = clean_param($postdata['slots'], PARAM_SEQUENCE);
+        } else if (array_key_exists('slots', $post_data)) {
+            $slots = clean_param($post_data['slots'], PARAM_SEQUENCE);
         } else {
             $slots = null;
         }
@@ -544,23 +534,16 @@ class jazzquiz_attempt
     public function get_question_feedback($slot = -1)
     {
         global $PAGE;
-
         if ($slot === -1) {
-            // attempt to get it from the slots param sent back from a question processing
+            // Attempt to get it from the slots param sent back from a question processing
             $slots = required_param('slots', PARAM_ALPHANUMEXT);
-
             $slots = explode(',', $slots);
             $slot = $slots[0]; // always just get the first thing from explode
         }
-
-        $questiondef = $this->quba->get_question($slot);
-
-        $questionrenderer = $questiondef->get_renderer($PAGE);
-
-        // get default display options
-        $displayoptions = $this->get_display_options();
-
-        return $questionrenderer->feedback($this->quba->get_question_attempt($slot), $displayoptions);
+        $question_definition = $this->quba->get_question($slot);
+        $question_renderer = $question_definition->get_renderer($PAGE);
+        $display_options = $this->get_display_options();
+        return $question_renderer->feedback($this->quba->get_question_attempt($slot), $display_options);
     }
 
     /**
@@ -787,26 +770,20 @@ class jazzquiz_attempt
     {
         $responses = [];
         $question_type = $this->quba->get_question_attempt($slot)->get_question()->get_type_name();
-
         switch ($question_type) {
-
             case 'multichoice':
                 $responses = $this->get_response_data_multichoice($slot);
                 break;
-
             case 'truefalse':
                 $responses[] = $this->get_response_data_true_or_false($slot);
                 break;
-
             case 'stack':
                 $responses[] = $this->get_response_data_stack($slot);
                 break;
-
             default:
                 $responses[] = $this->get_response_data_general($slot);
                 break;
         }
-
         return $responses;
     }
 
@@ -845,12 +822,12 @@ class jazzquiz_attempt
         $this->attempt->timefinish = time();
         $this->save();
 
-        $params = array(
+        $params = [
             'objectid' => $this->attempt->id,
             'context' => $rtq->context,
             'relateduserid' => $this->attempt->userid
-        );
-        $event = \mod_jazzquiz\event\attempt_ended::create($params);
+        ];
+        $event = event\attempt_ended::create($params);
         $event->add_record_snapshot('jazzquiz_attempts', $this->attempt);
         $event->trigger();
 
@@ -877,7 +854,6 @@ class jazzquiz_attempt
 
         foreach ($qa->get_full_step_iterator() as $i => $step) {
             $stepno = $i + 1;
-
             $rowclass = '';
             if ($stepno == $qa->get_num_steps()) {
                 $rowclass = 'current';
