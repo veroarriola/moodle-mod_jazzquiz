@@ -612,6 +612,10 @@
     background: #eee;
 }
 
+#report_overview_controls a {
+    margin-left: 32px;
+}
+
 #report_overview_responded table {
 
 }

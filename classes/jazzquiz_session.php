@@ -292,7 +292,6 @@ class jazzquiz_session
         $responses = [];
 
         foreach ($attempts as $attempt) {
-            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             if ($attempt->responded != 1) {
                 continue;
             }
@@ -321,7 +320,7 @@ class jazzquiz_session
         $attempts = $this->getall_attempts(false, $open);
         $responded = [];
         foreach ($attempts as $attempt) {
-            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
+            /** @var jazzquiz_attempt $attempt */
             if ($attempt->responded != 1) {
                 continue;
             }
@@ -660,7 +659,7 @@ class jazzquiz_session
      * @param int $userid If specified will get the user's attempts
      * @param bool $skipgroups If set to true, we will not also look for attempts for the user's groups if the rtq is in group mode
      *
-     * @return array
+     * @return jazzquiz_attempt[]
      */
     public function getall_attempts($includepreviews, $open = 'all', $userid = null, $skipgroups = false)
     {

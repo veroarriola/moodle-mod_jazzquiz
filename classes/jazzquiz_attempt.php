@@ -119,6 +119,13 @@ class jazzquiz_attempt
         return $this->attempt;
     }
 
+    public function get_user_full_name()
+    {
+        global $DB;
+        $user = $DB->get_record('user', [ 'id' => $this->attempt->userid ]);
+        return fullname($user);
+    }
+
     /**
      * returns a string representation of the "number" status that is actually stored
      *
@@ -764,7 +771,6 @@ class jazzquiz_attempt
 
     /**
      * Returns response data as an array
-     *
      */
     public function get_response_data($slot)
     {
@@ -811,7 +817,7 @@ class jazzquiz_attempt
     /**
      * Closes the attempt
      *
-     * @param \mod_jazzquiz\jazzquiz $rtq
+     * @param jazzquiz $rtq
      *
      * @return bool Weather or not it was successful
      */

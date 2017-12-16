@@ -15,10 +15,9 @@ class report_overview
     protected $renderer;
 
     /**
-     * report_overview constructor.
      * @param \mod_jazzquiz\jazzquiz $jazzquiz
      */
-    public function __construct(\mod_jazzquiz\jazzquiz $jazzquiz)
+    public function __construct($jazzquiz)
     {
         global $PAGE;
         $this->renderer = $PAGE->get_renderer('mod_jazzquiz', 'report_overview');
@@ -26,6 +25,64 @@ class report_overview
         $this->jazzquiz = $jazzquiz;
     }
 
+    /**
+     * Escape the characters used for structuring the CSV contents.
+     * @param string $text
+     * @return string
+     */
+    private function csv_escape($text)
+    {
+        $text = str_replace("\r", '', $text);
+        $text = str_replace("\n", '', $text);
+        $text = str_replace(',', "\,", $text);
+        return $text;
+    }
+
+    /**
+     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param \mod_jazzquiz\jazzquiz_attempt[] $quiz_attempts
+     */
+    private function output_csv_report($session, $quiz_attempts)
+    {
+        $session_data = $session->get_session();
+        $name = $session_data->id . '_' . $session_data->name;
+        header('Content-Disposition: attachment; filename=session_' . $name . '.csv');
+        // Go through the slots on the first attempt to output the header row
+        $quiz_attempt = reset($quiz_attempts);
+        $quba = $quiz_attempt->get_quba();
+        $slots = explode(',', $quiz_attempt->get_attempt()->qubalayout);
+        echo 'Student,';
+        foreach ($slots as $slot) {
+            $question_attempt = $quba->get_question_attempt($slot);
+            $question = $question_attempt->get_question();
+            $question_name = str_replace('{IMPROV}', '', $question->name);
+            $question_type = $quba->get_question_attempt($slot)->get_question()->get_type_name();
+            // TODO: Make adding type optional?
+            $question_name .= " ($question_type)";
+            $question_name = $this->csv_escape($question_name);
+            echo "$question_name,";
+        }
+        echo "\r\n";
+        foreach ($quiz_attempts as $quiz_attempt) {
+            echo $this->csv_escape($quiz_attempt->get_user_full_name()) . ',';
+            $slots = explode(',', $quiz_attempt->get_attempt()->qubalayout);
+            foreach ($slots as $slot) {
+                $attempt_response = reset($quiz_attempt->get_response_data($slot));
+                if (!$attempt_response) {
+                    echo ',';
+                    continue;
+                }
+                $attempt_response = $this->csv_escape($attempt_response);
+                echo "$attempt_response,";
+            }
+            echo "\r\n";
+        }
+    }
+
+    /**
+     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param \mod_jazzquiz\jazzquiz_attempt $quiz_attempt
+     */
     private function output_csv_response($session, $quiz_attempt)
     {
         $slot = required_param('slot', PARAM_INT);
@@ -43,6 +100,10 @@ class report_overview
         }
     }
 
+    /**
+     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param \mod_jazzquiz\jazzquiz_attempt $quiz_attempt
+     */
     private function output_csv_attendance($session, $quiz_attempt)
     {
         global $DB;
@@ -112,6 +173,9 @@ class report_overview
         header('Content-Type: application/csv');
         $csv_type = required_param('csvtype', PARAM_ALPHANUM);
         switch ($csv_type) {
+            case 'report':
+                $this->output_csv_report($session, $quiz_attempts);
+                break;
             case 'response':
                 $this->output_csv_response($session, $quiz_attempt);
                 break;
@@ -123,6 +187,9 @@ class report_overview
         }
     }
 
+    /**
+     * @param \moodle_url $page_url
+     */
     private function view_session($page_url)
     {
         global $DB, $PAGE;
@@ -172,6 +239,8 @@ class report_overview
         echo '<div id="report_overview_controls" class="jazzquizbox">';
         echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responded').fadeIn();jQuery('#report_overview_responses').fadeOut();\">Attendance</button>";
         echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responses').fadeIn();jQuery('#report_overview_responded').fadeOut();\">Responses</button>";
+        $url_params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=report&download&sessionid=$sessionid";
+        echo '<a href="reports.php' . $url_params . '">Download report</a>';
         echo '</div>';
 
         echo '<div id="report_overview_responses" class="hidden">';
@@ -207,7 +276,7 @@ class report_overview
 
             // Output CSV
             $url_params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=response&download&sessionid=$sessionid&slot=$slot";
-            echo '<br><a href="reports.php' . $url_params . '">Download CSV</a>';
+            echo '<br><a href="reports.php' . $url_params . '">Download responses</a>';
             /*echo '<details>';
             echo '<summary style="cursor:pointer;">Show as CSV</summary>';
             echo '<pre style="font-family:monospace;background:white;padding:8px;border:1px solid #666;">';
@@ -296,7 +365,7 @@ class report_overview
                 echo '<p><b>' . count($responded_with_count) . '</b> students answered at least one question.</p>';
                 echo '<br>';
                 $url_params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=attendance&download&sessionid=$sessionid";
-                echo '<a href="reports.php' . $url_params . '">Download CSV</a>';
+                echo '<a href="reports.php' . $url_params . '">Download attendance list</a>';
                 /*echo '<details>';
                 echo '<summary style="cursor:pointer;">Show as CSV</summary>';
                 echo '<pre style="font-family:monospace;background:white;padding:8px;border:1px solid #666;">' . $attendance_list_csv . '</pre>';
@@ -311,7 +380,6 @@ class report_overview
      *
      * @param string $action
      * @param \moodle_url $url
-     * @return void
      */
     public function handle_request($action, $url)
     {
