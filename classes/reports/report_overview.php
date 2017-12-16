@@ -129,7 +129,6 @@ class report_overview
 
         $session_id = required_param('sessionid', PARAM_INT);
         if (empty($session_id)) {
-
             // If no session id just go to the home page
             $redirect_url = new \moodle_url('/mod/jazzquiz/reports.php', [
                 'id' => $this->jazzquiz->course_module->id,
@@ -310,8 +309,8 @@ class report_overview
     /**
      * Handle the request for this specific report
      *
-     * @param \moodle_url $page_url
-     * @param array $page_vars
+     * @param string $action
+     * @param \moodle_url $url
      * @return void
      */
     public function handle_request($action, $url)

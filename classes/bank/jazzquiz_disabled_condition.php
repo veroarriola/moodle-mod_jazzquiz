@@ -21,8 +21,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_jazzquiz;
+namespace mod_jazzquiz\bank;
+
 use core_question\bank\search\condition;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -31,27 +33,31 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2013 Ray Morris
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_disabled_condition extends condition {
+class jazzquiz_disabled_condition extends condition
+{
     /**
      * Constructor.
      * @param bool $hide whether to include old "deleted" questions.
      */
-    public function __construct($hide = true) {
+    public function __construct($hide = true)
+    {
         global $DB;
 
         $config = get_config('jazzquiz');
-        $enabledtypes = explode(',', $config->enabledqtypes);
-        list($sql, $params) = $DB->get_in_or_equal($enabledtypes, SQL_PARAMS_NAMED, 'aqdc');
+        $enabled_types = explode(',', $config->enabledqtypes);
+        list($sql, $params) = $DB->get_in_or_equal($enabled_types, SQL_PARAMS_NAMED, 'aqdc');
 
         $this->where = 'q.qtype ' . $sql;
         $this->params = $params;
     }
 
-    public function where() {
+    public function where()
+    {
         return $this->where;
     }
 
-    public function params() {
+    public function params()
+    {
         return $this->params;
     }
 }

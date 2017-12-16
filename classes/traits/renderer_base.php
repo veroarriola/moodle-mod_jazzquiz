@@ -61,7 +61,7 @@ trait renderer_base
         }
         switch ($this->pageMessage[0]) {
             case 'error':
-                echo $this->output->notification($this->pageMessage[1], 'notifiyproblem');
+                echo $this->output->notification($this->pageMessage[1], 'notifyproblem');
                 break;
             case 'success':
                 echo $this->output->notification($this->pageMessage[1], 'notifysuccess');

@@ -30,31 +30,28 @@ require_once($CFG->libdir . '/tablelib.php');
  */
 class ownattempts extends \flexible_table
 {
-    /** @var \mod_jazzquiz\jazzquiz $rtq */
-    protected $rtq;
+    /** @var \mod_jazzquiz\jazzquiz $jazzquiz */
+    protected $jazzquiz;
 
     /**
-     * Contstruct this table class
-     *
-     * @param string $uniqueid The unique id for the table
-     * @param \mod_jazzquiz\jazzquiz $rtq
+     * @param string $unique_id The unique id for the table
+     * @param \mod_jazzquiz\jazzquiz $jazzquiz
      * @param \moodle_url $pageurl
      */
-    public function __construct($uniqueid, $rtq, $pageurl)
+    public function __construct($unique_id, $jazzquiz, $pageurl)
     {
-        $this->rtq = $rtq;
+        $this->jazzquiz = $jazzquiz;
         $this->baseurl = $pageurl;
-        parent::__construct($uniqueid);
+        parent::__construct($unique_id);
     }
 
     /**
      * Setup the table, i.e. table headers
-     *
      */
     public function setup()
     {
         // Set var for is downloading
-        $isdownloading = $this->is_downloading();
+        $is_downloading = $this->is_downloading();
 
         $this->set_attribute('cellspacing', '0');
 
@@ -64,11 +61,7 @@ class ownattempts extends \flexible_table
             'timefinish' => get_string('time_completed', 'jazzquiz'),
         ];
 
-        if ($this->rtq->group_mode()) {
-            $columns['group'] = get_string('group');
-        }
-
-        if (!$isdownloading) {
+        if (!$is_downloading) {
             $columns['attemptview'] = get_string('view_attempt', 'jazzquiz');
         }
 
@@ -89,31 +82,23 @@ class ownattempts extends \flexible_table
         parent::setup();
     }
 
-
     /**
      * Sets the data to the table
-     *
      */
     public function set_data()
     {
         global $OUTPUT;
-
         $table_data = $this->get_data();
-
         foreach ($table_data as $item) {
-
             $row = [];
-
             $row[] = $item->session_name;
             $row[] = date('m-d-Y H:i:s', $item->timestart);
             $row[] = date('m-d-Y H:i:s', $item->timefinish);
-
             if ($this->rtq->group_mode()) {
                 $row[] = $item->group;
             }
 
             // Add in controls column
-
             // View attempt
             $view_attempt_url = new \moodle_url('/mod/jazzquiz/viewquizattempt.php');
             $view_attempt_url->param('quizid', $this->rtq->getRTQ()->id);
@@ -128,43 +113,32 @@ class ownattempts extends \flexible_table
             ], $view_attempt_pix);
 
             $row[] = $OUTPUT->render($action_link);
-
             $this->add_data($row);
         }
-
     }
 
     /**
      * Gets the data for the table
-     *
      * @return array $data The array of data to show
      */
     protected function get_data()
     {
         global $USER;
-
         $data = [];
-
-        $sessions = $this->rtq->get_sessions();
-
+        $sessions = $this->jazzquiz->get_sessions();
         foreach ($sessions as $session) {
             /** @var \mod_jazzquiz\jazzquiz_session $session */
             $sessionattempts = $session->getall_attempts(false, 'closed', $USER->id);
-
             foreach ($sessionattempts as $sattempt) {
                 $ditem = new \stdClass();
                 $ditem->attemptid = $sattempt->id;
                 $ditem->sessionid = $sattempt->sessionid;
                 $ditem->session_name = $session->get_session()->name;
-                if ($this->rtq->group_mode()) {
-                    $ditem->group = $this->rtq->get_groupmanager()->get_group_name($sattempt->forgroupid);
-                }
                 $ditem->timestart = $sattempt->timestart;
                 $ditem->timefinish = $sattempt->timefinish;
                 $data[$sattempt->id] = $ditem;
             }
         }
-
         return $data;
     }
 

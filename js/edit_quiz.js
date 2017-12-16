@@ -65,6 +65,8 @@ window.addEventListener('load', function () {
                     editStatus.classList.add('rtqerrorstatus');
                     editStatus.innerHTML = M.util.get_string('error', 'core');
                 }
+                // TODO: Correct the up/down arrows locally instead, but for now just refresh.
+                location.reload();
             });
         }
     });

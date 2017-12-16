@@ -52,7 +52,6 @@ class question_manager
      * Construct an instance of question manager
      *
      * @param jazzquiz $jazzquiz
-     * @param \mod_jazzquiz_renderer $renderer The realtime quiz renderer to render visual elements
      */
     public function __construct($jazzquiz)
     {
@@ -70,7 +69,7 @@ class question_manager
      * Displays a form initially to ask how long they'd like the question to be set up for, and then after
      * valid input saves the question to the quiz at the last position
      *
-     * @param int $questionid The question bank questionid
+     * @param int $question_id The question bank's question id
      *
      * @return mixed
      */
@@ -197,16 +196,16 @@ class question_manager
      * Moves a question on the question order for this quiz
      *
      * @param string $direction 'up'||'down'
-     * @param int $questionid The RTQ questionid
+     * @param int $question_id JazzQuiz question id
      *
      * @return bool
      */
-    public function move_question($direction, $questionid)
+    public function move_question($direction, $question_id)
     {
         if ($direction !== 'up' && $direction !== 'down') {
             return false;
         }
-        return $this->update_questionorder('movequestion' . $direction, $questionid);
+        return $this->update_questionorder('movequestion' . $direction, $question_id);
     }
 
     /**

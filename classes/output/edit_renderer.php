@@ -46,9 +46,9 @@ class edit_renderer extends \plugin_renderer_base
      * Render the list questions view for the edit page
      *
      * @param array $questions Array of questions
-     * @param string $questionbankview HTML for the question bank view
+     * @param string $question_bank_view HTML for the question bank view
      */
-    public function listquestions($questions, $questionbankview, $url)
+    public function listquestions($questions, $question_bank_view, $url)
     {
         global $CFG;
 
@@ -63,7 +63,7 @@ class edit_renderer extends \plugin_renderer_base
         echo $this->show_questionlist($questions, $url);
         echo \html_writer::end_div();
         echo \html_writer::start_div('inline-block span6');
-        echo $questionbankview;
+        echo $question_bank_view;
         echo \html_writer::end_div();
         echo \html_writer::end_div();
 

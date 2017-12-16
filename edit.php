@@ -64,7 +64,7 @@ function get_question_bank_view($contexts, $jazzquiz, $url, $page_vars)
     $question_page = optional_param('qpage', 0, PARAM_INT);
     // Capture question bank display in buffer to have the renderer render output.
     ob_start();
-    $question_bank = new jazzquiz_question_bank_view($contexts, $url, $jazzquiz->course, $jazzquiz->course_module);
+    $question_bank = new bank\jazzquiz_question_bank_view($contexts, $url, $jazzquiz->course, $jazzquiz->course_module);
     $question_bank->display('editq', $question_page, $questions_per_page, $page_vars['cat'], true, true, true);
     return ob_get_clean();
 }

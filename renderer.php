@@ -66,13 +66,11 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
     {
         echo $this->output->header();
         echo jazzquiz_view_tabs($this->jazzquiz, $tab);
-        // Shows a message if there is one
         $this->showMessage();
     }
 
     /**
      * Base footer function to do basic footer rendering
-     *
      */
     public function base_footer()
     {
@@ -81,7 +79,6 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
 
     /**
      * shows a message if there is one
-     *
      */
     protected function showMessage()
     {
@@ -90,7 +87,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         }
         switch ($this->pageMessage[0]) {
             case 'error':
-                echo $this->output->notification($this->pageMessage[1], 'notifiyproblem');
+                echo $this->output->notification($this->pageMessage[1], 'notifyproblem');
                 break;
             case 'success':
                 echo $this->output->notification($this->pageMessage[1], 'notifysuccess');
@@ -213,31 +210,12 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
     }
 
     /**
-     * Shows a message to students in a group with an open attempt already started
-     *
-     */
-    public function group_session_started()
-    {
-        echo html_writer::tag('p', get_string('attempt_started_already', 'mod_jazzquiz'));
-    }
-
-    /**
-     * Display the group members select form
-     *
-     * @param \mod_jazzquiz\forms\view\groupselectmembers $select_members_form
-     */
-    public function group_member_select($select_members_form)
-    {
-        $select_members_form->display();
-    }
-
-    /**
      * Renders the quiz to the page
      *
      * @param \mod_jazzquiz\jazzquiz_attempt $attempt
      * @param \mod_jazzquiz\jazzquiz_session $session
      */
-    public function render_quiz(\mod_jazzquiz\jazzquiz_attempt $attempt, \mod_jazzquiz\jazzquiz_session $session)
+    public function render_quiz($attempt, $session)
     {
         $this->init_quiz_js($attempt, $session);
 
@@ -274,19 +252,15 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         ]);
 
         if ($this->jazzquiz->is_instructor()) {
-
             $output .= html_writer::div('', 'jazzquizbox padded-box hidden', [
                 'id' => 'jazzquiz_correct_answer_container'
             ]);
-
             $output .= html_writer::start_div('jazzquizbox', [
                 'id' => 'jazzquiz_side_container'
             ]);
-
             $output .= html_writer::div('', 'jazzquizbox hidden padded-box', [
                 'id' => 'jazzquiz_response_info_container'
             ]);
-
         }
 
         $output .= html_writer::div('', 'jazzquizbox hidden', [
@@ -294,7 +268,6 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         ]);
 
         if ($this->jazzquiz->is_instructor()) {
-
             $output .= html_writer::start_div('jazzquizbox', [
                 'id' => 'jazzquiz_responded_container'
             ]);
@@ -312,7 +285,6 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             $output .= html_writer::end_div();
 
             $output .= html_writer::end_div();
-
         }
 
         $output .= html_writer::div('', 'jazzquizbox padded-box hidden', [
@@ -332,7 +304,6 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         }
 
         $output .= html_writer::end_div();
-
         echo $output;
     }
 
@@ -392,21 +363,16 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         ]);
 
         $rtqQuestion = $attempt->get_question_by_slot($slot);
-
         if ($rtqQuestion !== false && $rtqQuestion->getTries() > 1 && !$this->jazzquiz->is_instructor()) {
-
             $count = new stdClass();
             $count->tries = $rtqQuestion->getTries();
             $try_text = html_writer::div(get_string('trycount', 'jazzquiz', $count), 'trycount', [
                 'id' => 'q' . $qnum . '_trycount'
             ]);
-
         } else {
-
             $try_text = html_writer::div('', 'trycount', [
                 'id' => 'q' . $qnum . '_trycount'
             ]);
-
         }
 
         // Instructors don't need to save questions
@@ -415,7 +381,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             $savebtncont = html_writer::div($savebtn, 'question_save');
         }
 
-        $output .= html_writer::div($savebtncont . '<br>' . $try_text . $timertext . $timercount, 'save_row');
+        $output .= html_writer::div($savebtncont . '<br>' . $try_text, 'save_row');
 
         // Finish the form.
         $output .= html_writer::end_tag('form');

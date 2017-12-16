@@ -25,6 +25,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_jazzquiz;
+
 require_once("../../config.php");
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
@@ -44,7 +46,7 @@ function jazzquiz_reports()
         exit;
     }
 
-    $jazzquiz = new \mod_jazzquiz\jazzquiz($course_module_id, 'report');
+    $jazzquiz = new jazzquiz($course_module_id, 'report');
     $jazzquiz->require_capability('mod/jazzquiz:seeresponses');
     $renderer = $jazzquiz->renderer;
 
@@ -63,7 +65,7 @@ function jazzquiz_reports()
     $PAGE->set_heading($jazzquiz->course->fullname);
     $PAGE->set_url($url);
 
-    $report = new \mod_jazzquiz\reports\report_overview($jazzquiz);
+    $report = new reports\report_overview($jazzquiz);
     $is_download = isset($_GET['download']);
     if (!$is_download) {
         $renderer->report_header();

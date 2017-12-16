@@ -44,11 +44,7 @@ class report_overview_renderer extends \plugin_renderer_base
         $output = '';
 
         $select_session = \html_writer::start_div('');
-
-        $select_session .= \html_writer::tag('h3', get_string('select_session', 'jazzquiz'), [
-            'class' => 'inline-block'
-        ]) . '<br>';
-
+        $select_session .= \html_writer::tag('h3', get_string('select_session', 'jazzquiz'), [ 'class' => 'inline-block' ]) . '<br>';
         $session_select_url = clone($url);
         $session_select_url->param('action', 'viewsession');
 
@@ -65,7 +61,6 @@ class report_overview_renderer extends \plugin_renderer_base
 
         $output .= $select_session;
         $output = \html_writer::div($output, 'jazzquizbox');
-
         echo $output;
     }
 

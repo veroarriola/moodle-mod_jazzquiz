@@ -604,6 +604,14 @@
     color: #2299ff;
 }
 
+.iconcol a:hover .icon {
+    color: #2299ff;
+}
+
+#categoryquestions thead {
+    background: #eee;
+}
+
 #report_overview_responded table {
 
 }
