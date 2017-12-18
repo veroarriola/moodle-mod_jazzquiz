@@ -19,7 +19,7 @@ namespace mod_jazzquiz;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * A realtime quiz question object
+ * A JazzQuiz question object
  *
  * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
@@ -28,144 +28,24 @@ defined('MOODLE_INTERNAL') || die();
  */
 class jazzquiz_question
 {
+    /** @var \stdClass $data */
+    public $data;
 
-    /** @var int $id The RTQ question id */
-    protected $id;
+    /** @var \stdClass $question the question bank question data */
+    public $question;
 
-    /** @var int $notime Whether or not this question is timed */
-    protected $notime;
-
-    /** @var int $questiontime question time for the question */
-    protected $questiontime;
-
-    /** @var int $tries The number of tries */
-    protected $tries;
-
-    /** @var int $showhistoryduringquiz Whether or not to show the history of responses for a student during the quiz
-     *                                  This will show the history table with each of the student's steps
-     */
-    protected $showhistoryduringquiz;
-
-    /** @var object $question the question object from the question bank questions */
-    protected $question;
-
-    /** @var int $slot The quba slot that this question belongs to during page runtime
-     *                  This is used during getting questions for the quizdata callback
-     */
-    protected $slot;
+    /** @var int $slot The quba slot for this question */
+    public $slot;
 
     /**
-     * Construct the question
-     *
-     * @param int $id (jazzquiz_question)
-     * @param  int $no_time
-     * @param int $question_time
-     * @param int $tries
-     * @param int $show_history_during_quiz
-     * @param object $question
+     * @param \stdClass $data (jazzquiz_question)
+     * @param \stdClass $question
      */
-    public function __construct($id, $no_time, $question_time, $tries, $show_history_during_quiz, $question)
+    public function __construct($data, $question)
     {
-        $this->id = $id;
-        $this->notime = $no_time;
-        $this->questiontime = $question_time;
-        $this->tries = $tries;
-        $this->showhistoryduringquiz = $show_history_during_quiz;
+        $this->data = $data;
         $this->question = $question;
         $this->slot = null;
     }
 
-    /**
-     * not used function until we only support 5.4 and higher
-     */
-    public function JsonSerialize()
-    {
-        // to make sue of the is function on json_encode, this class also needs to implement JsonSerializable
-
-        // TODO: This will be supported if Moodle moves to only supporting php 5.4 and higher
-
-    }
-
-    /**
-     * Returns the jazzquiz id
-     *
-     * @return int
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Returns the notime field which is whether or not this question has time
-     *
-     * @return int
-     */
-    public function getNoTime()
-    {
-        return $this->notime;
-    }
-
-    /**
-     * Returns the question time for this realtime quiz question
-     *
-     * @return int
-     */
-    public function getQuestionTime()
-    {
-        return $this->questiontime;
-    }
-
-    /**
-     * Returns the number of tries for the question
-     *
-     * @return int
-     */
-    public function getTries()
-    {
-        return $this->tries;
-    }
-
-    /**
-     * Returns whether or not to show the history during quiz
-     *
-     * @return int
-     */
-    public function getShowHistory()
-    {
-        return $this->showhistoryduringquiz;
-    }
-
-    /**
-     * Returns the standard class question object from the question table
-     *
-     * @return \stdClass
-     */
-    public function getQuestion()
-    {
-        return $this->question;
-    }
-
-    /**
-     * Sets the slot number
-     *
-     * @param int $slot
-     */
-    public function set_slot($slot)
-    {
-        $this->slot = $slot;
-    }
-
-    /**
-     * returns the current slot number
-     *
-     * @return int
-     */
-    public function get_slot()
-    {
-        return $this->slot;
-    }
-
-
 }
-

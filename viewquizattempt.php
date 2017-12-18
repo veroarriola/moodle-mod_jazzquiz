@@ -100,15 +100,15 @@ function jazzquiz_view_quiz_attempt()
             'objectid' => $attempt->id,
             'context' => $RTQ->context,
             'other' => [
-                'jazzquizid' => $RTQ->getRTQ()->id,
+                'jazzquizid' => $RTQ->data->id,
                 'sessionid' => $attempt->sessionid
             ]
         ];
         if ($attempt->userid < 0) {
             $params['relateduserid'] = 0;
         }
-        $event = \mod_jazzquiz\event\attempt_viewed::create($params);
-        $event->add_record_snapshot('jazzquiz_attempts', $attempt->get_attempt());
+        $event = event\attempt_viewed::create($params);
+        $event->add_record_snapshot('jazzquiz_attempts', $attempt->data);
         $event->trigger();
         $RTQ->renderer->render_attempt($attempt, $session);
     }

@@ -36,7 +36,7 @@ class jazzquiz_attempt
     const FINISHED = 30;
 
     /** @var \stdClass The attempt record */
-    protected $attempt;
+    public $data;
 
     /** @var question_manager $question_manager $the question manager for the class */
     protected $question_manager;
@@ -62,36 +62,21 @@ class jazzquiz_attempt
     protected $slotsbyquestionid;
 
     /**
-     * Sort function function for usort.  Is callable outside this class
-     *
-     * @param \mod_jazzquiz\jazzquiz_attempt $a
-     * @param \mod_jazzquiz\jazzquiz_attempt $b
-     * @return int
-     */
-    public static function sortby_timefinish($a, $b)
-    {
-        if ($a->timefinish == $b->timefinish) {
-            return 0;
-        }
-        return ($a->timefinish < $b->timefinish) ? -1 : 1;
-    }
-
-    /**
-     * Construct the class.  if a dbattempt object is passed in set it, otherwise initialize empty class
+     * Construct the class. If data is passed in we set it, otherwise initialize empty class
      *
      * @param question_manager $question_manager
      * @param \stdClass
      * @param \context_module $context
      */
-    public function __construct($question_manager, $dbattempt = null, $context = null)
+    public function __construct($question_manager, $data = null, $context = null)
     {
         $this->question_manager = $question_manager;
         $this->context = $context;
 
-        if (empty($dbattempt)) {
+        if (empty($data)) {
 
             // Create new attempt
-            $this->attempt = new \stdClass();
+            $this->data = new \stdClass();
 
             // Create a new quba since we're creating a new attempt
             $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->question_manager->jazzquiz->context);
@@ -100,41 +85,33 @@ class jazzquiz_attempt
             $attempt_layout = $this->question_manager->add_questions_to_quba($this->quba);
 
             // Add the attempt layout to this instance
-            $this->attempt->qubalayout = implode(',', $attempt_layout);
+            $this->data->qubalayout = implode(',', $attempt_layout);
 
         } else {
             // Load it up in this class instance
-            $this->attempt = $dbattempt;
-            $this->quba = \question_engine::load_questions_usage_by_activity($this->attempt->questionengid);
+            $this->data = $data;
+            $this->quba = \question_engine::load_questions_usage_by_activity($this->data->questionengid);
         }
     }
 
     /**
-     * Get the attempt stdClass object
-     *
-     * @return null|\stdClass
+     * @return string
      */
-    public function get_attempt()
-    {
-        return $this->attempt;
-    }
-
     public function get_user_full_name()
     {
         global $DB;
-        $user = $DB->get_record('user', [ 'id' => $this->attempt->userid ]);
+        $user = $DB->get_record('user', [ 'id' => $this->data->userid ]);
         return fullname($user);
     }
 
     /**
-     * returns a string representation of the "number" status that is actually stored
-     *
+     * Returns a string representation of the "number" status that is actually stored
      * @return string
      * @throws \Exception throws exception upon an undefined status
      */
-    public function getStatus()
+    public function get_status()
     {
-        switch ($this->attempt->status) {
+        switch ($this->data->status) {
             case self::NOTSTARTED:
                 return 'notstarted';
             case self::INPROGRESS:
@@ -151,31 +128,27 @@ class jazzquiz_attempt
 
     /**
      * Set the status of the attempt and then save it
-     *
      * @param string $status
-     *
      * @return bool
      */
-    public function setStatus($status)
+    public function set_status($status)
     {
         switch ($status) {
             case 'notstarted':
-                $this->attempt->status = self::NOTSTARTED;
+                $this->data->status = self::NOTSTARTED;
                 break;
             case 'inprogress':
-                $this->attempt->status = self::INPROGRESS;
+                $this->data->status = self::INPROGRESS;
                 break;
             case 'abandoned':
-                $this->attempt->status = self::ABANDONED;
+                $this->data->status = self::ABANDONED;
                 break;
             case 'finished':
-                $this->attempt->status = self::FINISHED;
+                $this->data->status = self::FINISHED;
                 break;
             default:
                 return false;
         }
-
-        // Save the attempt
         return $this->save();
     }
 
@@ -190,7 +163,7 @@ class jazzquiz_attempt
     }
 
     /**
-     * Uses the quba object to render the slotid's question
+     * Render the question specified by slot
      *
      * @param int $slot
      * @param bool $review Whether or not we're reviewing the attempt
@@ -212,10 +185,10 @@ class jazzquiz_attempt
      */
     public function check_tries_left($total_tries)
     {
-        if (empty($this->attempt->responded_count)) {
-            $this->attempt->responded_count = 0;
+        if (empty($this->data->responded_count)) {
+            $this->data->responded_count = 0;
         }
-        $left = $total_tries - $this->attempt->responded_count;
+        $left = $total_tries - $this->data->responded_count;
         return $left;
     }
 
@@ -289,29 +262,24 @@ class jazzquiz_attempt
 
     /**
      * Adds 1 to the current qnum, effectively going to the next question
-     *
      */
     protected function add_question_number()
     {
-        $this->qnum = $this->qnum + 1;
+        $this->qnum++;
     }
 
     /**
-     * returns quba layout as an array as these are the "slots" or questionids
-     * that the question engine is expecting
-     *
-     * @return array
+     * Returns quba layout as an array (the question slots)
+     * @return int[]
      */
     public function getSlots()
     {
-        return explode(',', $this->attempt->qubalayout);
+        return explode(',', $this->data->qubalayout);
     }
 
     /**
      * Gets the slot for the jazzquiz question
-     *
      * @param jazzquiz_question $question
-     *
      * @return int
      */
     public function get_question_slot($question)
@@ -325,7 +293,7 @@ class jazzquiz_attempt
             }
             $this->slotsbyquestionid = $slots_by_question_id;
         }
-        $question_id = $question->getQuestion()->id;
+        $question_id = $question->question->id;
         if (!empty($this->slotsbyquestionid[$question_id])) {
             return $this->slotsbyquestionid[$question_id];
         }
@@ -336,7 +304,6 @@ class jazzquiz_attempt
      * Gets the jazzquiz question class object for the slot
      *
      * @param int $asked_slot
-     *
      * @return jazzquiz_question | false
      */
     public function get_question_by_slot($asked_slot)
@@ -361,8 +328,7 @@ class jazzquiz_attempt
         }
 
         foreach ($this->get_questions() as $question) {
-            /** @var \mod_jazzquiz\jazzquiz_question $question */
-            if ($question->getQuestion()->id == $question_id) {
+            if ($question->question->id == $question_id) {
                 return $question;
             }
         }
@@ -372,8 +338,7 @@ class jazzquiz_attempt
 
     /**
      * Gets the JazzQuiz questions for this attempt
-     *
-     * @return array
+     * @return jazzquiz_question[]
      */
     public function get_questions()
     {
@@ -381,10 +346,7 @@ class jazzquiz_attempt
     }
 
     /**
-     *
-     *
      * @param int $slot
-     *
      * @return array (array of sequence check name, and then the value
      */
     public function get_sequence_check($slot)
@@ -398,22 +360,19 @@ class jazzquiz_attempt
 
     /**
      * Initialize the head contributions from the question engine
-     *
      * @return string
      */
     public function get_html_head_contributions()
     {
-        $result = '';
-
         // Get the slots ids from the quba layout
-        $slots = explode(',', $this->attempt->qubalayout);
+        $slots = explode(',', $this->data->qubalayout);
 
-        // Next load the slot headhtml and initialize question engine js
+        // Next load the slot head html and initialize question engine js
+        $result = '';
         foreach ($slots as $slot) {
             $result .= $this->quba->render_question_head_html($slot);
         }
         $result .= \question_engine::initialise_js();
-
         return $result;
     }
 
@@ -431,13 +390,13 @@ class jazzquiz_attempt
 
         // Add the quba id as the questionengid
         // This is here because for new usages there is no id until we save it
-        $this->attempt->questionengid = $this->quba->get_id();
-        $this->attempt->timemodified = time();
+        $this->data->questionengid = $this->quba->get_id();
+        $this->data->timemodified = time();
 
-        if (isset($this->attempt->id)) {
+        if (isset($this->data->id)) {
             // Update existing record
             try {
-                $DB->update_record('jazzquiz_attempts', $this->attempt);
+                $DB->update_record('jazzquiz_attempts', $this->data);
             } catch (\Exception $e) {
                 error_log($e->getMessage());
                 return false; // return false on failure
@@ -445,13 +404,11 @@ class jazzquiz_attempt
         } else {
             // Insert new record
             try {
-                $newid = $DB->insert_record('jazzquiz_attempts', $this->attempt);
-                $this->attempt->id = $newid;
+                $this->data->id = $DB->insert_record('jazzquiz_attempts', $this->data);
             } catch (\Exception $e) {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -464,20 +421,20 @@ class jazzquiz_attempt
     {
         global $DB;
 
-        $timenow = time();
+        $time_now = time();
         $transaction = $DB->start_delegated_transaction();
-        if ($this->attempt->userid < 0) {
-            $this->process_anonymous_response($timenow);
+        if ($this->data->userid < 0) {
+            $this->process_anonymous_response($time_now);
         } else {
-            $this->quba->process_all_actions($timenow);
+            $this->quba->process_all_actions($time_now);
         }
-        $this->attempt->timemodified = time();
-        $this->attempt->responded = 1;
+        $this->data->timemodified = time();
+        $this->data->responded = 1;
 
-        if (empty($this->attempt->responded_count)) {
-            $this->attempt->responded_count = 0;
+        if (empty($this->data->responded_count)) {
+            $this->data->responded_count = 0;
         }
-        $this->attempt->responded_count = $this->attempt->responded_count + 1;
+        $this->data->responded_count = $this->data->responded_count + 1;
 
         $this->save();
         $transaction->allow_commit();
@@ -493,7 +450,7 @@ class jazzquiz_attempt
             $submitted_data = $this->quba->extract_responses($slot);
             //$this->quba->process_action($slot, $submitted_data, $timestamp);
             $qa = $this->quba->get_question_attempt($slot);
-            $qa->process_action($submitted_data, $time_now, $this->attempt->userid);
+            $qa->process_action($submitted_data, $time_now, $this->data->userid);
             $this->quba->get_observer()->notify_attempt_modified($qa);
         }
         $this->quba->update_question_flags();
@@ -505,7 +462,7 @@ class jazzquiz_attempt
      *
      * Get the list of slot numbers that should be processed as part of processing
      * the current request.
-     * @param array $postdata optional, only intended for testing. Use this data
+     * @param array $post_data optional, only intended for testing. Use this data
      * instead of the data from $_POST.
      * @return array of slot numbers.
      */
@@ -522,7 +479,7 @@ class jazzquiz_attempt
         if (is_null($slots)) {
             $slots = $this->quba->get_slots();
         } else if (!$slots) {
-            $slots = array();
+            $slots = [];
         } else {
             $slots = explode(',', $slots);
         }
@@ -554,51 +511,19 @@ class jazzquiz_attempt
     }
 
     /**
-     * sets last question bool.  is used for help in controlling quiz
+     * Specify whether this is the last question or not.
      *
-     * @param bool $is whether or not it is
+     * @param bool $is_last_question
      */
-    public function islastquestion($is = false)
+    public function set_last_question($is_last_question = false)
     {
-        $this->lastquestion = $is;
+        $this->lastquestion = $is_last_question;
     }
 
     /**
-     * Summarizes a response for us before the question attempt is finished
-     *
-     * This will get us the question's text and response without the info or other controls
-     *
-     * @param int $slot
-     *
+     * @param $slot
+     * @return \stdClass[]
      */
-    public function summarize_response($slot)
-    {
-        global $PAGE;
-
-        $questionattempt = $this->quba->get_question_attempt($slot);
-        $question = $this->quba->get_question($slot);
-
-        $rtqQuestion = $this->get_question_by_slot($slot);
-
-        // use the renderer to display just the question text area, but in read only mode
-        // basically how the quiz module does it, but we're being much more specific in the output
-        // we want.  This also is more in line with the question engine's rendering of specific questions
-
-        // This will display the question text as well for each response, but for a v1 this is ok
-        $qrenderer = $question->get_renderer($PAGE);
-        $qoptions = $this->get_display_options(true); // get default review options, which is no feedback or anything
-
-        $this->responsesummary = $qrenderer->formulation_and_controls($questionattempt, $qoptions);
-
-        if ($rtqQuestion->getShowHistory()) {
-            $this->responsesummary .= $this->question_attempt_history($questionattempt);
-        }
-
-        // Bad way of doing things
-        // $response = $questionattempt->get_last_step()->get_qt_data();
-        // $this->responsesummary = $question->summarise_response($response);
-    }
-
     private function get_steps($slot)
     {
         global $DB;
@@ -630,6 +555,10 @@ class jazzquiz_attempt
         return $result;
     }
 
+    /**
+     * @param int $step_id
+     * @return \stdClass[]
+     */
     private function get_step_data($step_id)
     {
         global $DB;
@@ -638,6 +567,10 @@ class jazzquiz_attempt
         ], 'id desc');
     }
 
+    /**
+     * @param int $slot
+     * @return string[]
+     */
     private function get_response_data_multichoice($slot)
     {
         global $DB;
@@ -696,6 +629,10 @@ class jazzquiz_attempt
         return $responses;
     }
 
+    /**
+     * @param int $slot
+     * @return string
+     */
     private function get_response_data_true_or_false($slot)
     {
         // Find steps
@@ -719,6 +656,10 @@ class jazzquiz_attempt
         return 'False';
     }
 
+    /**
+     * @param int $slot
+     * @return string
+     */
     private function get_response_data_stack($slot)
     {
         // Find steps
@@ -749,6 +690,10 @@ class jazzquiz_attempt
         return $data->value;
     }
 
+    /**
+     * @param int $slot
+     * @return string
+     */
     private function get_response_data_general($slot)
     {
         // Find step
@@ -771,6 +716,8 @@ class jazzquiz_attempt
 
     /**
      * Returns response data as an array
+     * @param int $slot
+     * @return string[]
      */
     public function get_response_data($slot)
     {
@@ -795,6 +742,8 @@ class jazzquiz_attempt
 
     /**
      * Returns whether current user has responded
+     * @param int $slot
+     * @return bool
      */
     public function has_responded($slot)
     {
@@ -824,102 +773,18 @@ class jazzquiz_attempt
     public function close_attempt($rtq)
     {
         $this->quba->finish_all_questions(time());
-        $this->attempt->status = self::FINISHED;
-        $this->attempt->timefinish = time();
+        $this->data->status = self::FINISHED;
+        $this->data->timefinish = time();
         $this->save();
-
         $params = [
-            'objectid' => $this->attempt->id,
+            'objectid' => $this->data->id,
             'context' => $rtq->context,
-            'relateduserid' => $this->attempt->userid
+            'relateduserid' => $this->data->userid
         ];
         $event = event\attempt_ended::create($params);
-        $event->add_record_snapshot('jazzquiz_attempts', $this->attempt);
+        $event->add_record_snapshot('jazzquiz_attempts', $this->data);
         $event->trigger();
-
         return true;
-    }
-
-    /**
-     * This is a copy of the history function in the question renderer class
-     * Since the access to that function is protected I cannot access it outside of the renderer class.
-     *
-     * There are a few changes to this function to facilitate simpler use
-     *
-     * @param \question_attempt $qa
-     * @return string
-     */
-    public function question_attempt_history($qa)
-    {
-        $table = new \html_table();
-        $table->head = [
-            get_string('step', 'question'),
-            get_string('time'),
-            get_string('action', 'question'),
-        ];
-
-        foreach ($qa->get_full_step_iterator() as $i => $step) {
-            $stepno = $i + 1;
-            $rowclass = '';
-            if ($stepno == $qa->get_num_steps()) {
-                $rowclass = 'current';
-            }
-
-            $user = new \stdClass();
-            $user->id = $step->get_user_id();
-            $row = [
-                $stepno,
-                userdate($step->get_timecreated(), get_string('strftimedatetimeshort')),
-                s($qa->summarise_action($step)),
-            ];
-
-            $table->rowclasses[] = $rowclass;
-            $table->data[] = $row;
-        }
-
-        $history_title = \html_writer::tag('h4', get_string('responsehistory', 'question'), [
-            'class' => 'responsehistoryheader'
-        ]);
-
-        $history_table = \html_writer::tag('div', \html_writer::table($table, true), [
-            'class' => 'responsehistoryheader'
-        ]);
-
-        return $history_title . $history_table;
-    }
-
-    /**
-     * Magic get method for getting attempt properties
-     *
-     * @param string $prop The property desired
-     *
-     * @return mixed
-     * @throws \Exception Throws exception when no property is found
-     */
-    public function __get($prop)
-    {
-        if (property_exists($this->attempt, $prop)) {
-            return $this->attempt->$prop;
-        }
-        // Otherwise throw a new exception
-        throw new \Exception('undefined property(' . $prop . ') on jazzquiz attempt');
-    }
-
-    /**
-     * magic setter method for this class
-     *
-     * @param string $prop
-     * @param mixed $value
-     *
-     * @return jazzquiz_attempt
-     */
-    public function __set($prop, $value)
-    {
-        if (is_null($this->attempt)) {
-            $this->attempt = new \stdClass();
-        }
-        $this->attempt->$prop = $value;
-        return $this;
     }
 
 }

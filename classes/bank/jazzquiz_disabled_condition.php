@@ -36,6 +36,16 @@ defined('MOODLE_INTERNAL') || die();
 class jazzquiz_disabled_condition extends condition
 {
     /**
+     * @var string $where
+     */
+    protected $where;
+
+    /**
+     * @var array $params
+     */
+    protected $params;
+
+    /**
      * Constructor.
      * @param bool $hide whether to include old "deleted" questions.
      */

@@ -44,8 +44,8 @@ function jazzquiz_view_start_quiz($jazzquiz)
     // Set the quiz view page to the base layout for 1 column layout
     $PAGE->set_pagelayout('base');
 
-    $session = new \mod_jazzquiz\jazzquiz_session($jazzquiz);
-    if ($session->get_session() === false) {
+    $session = new jazzquiz_session($jazzquiz);
+    if ($session->data === false) {
         // Redirect them to the default page with a quick message first
         $redirect_url = clone($url);
         $redirect_url->remove_params('action');
@@ -62,7 +62,7 @@ function jazzquiz_view_start_quiz($jazzquiz)
     // Get the current attempt and initialize the head contributions
     $attempt = $session->get_open_attempt();
     $attempt->get_html_head_contributions();
-    $attempt->setStatus('inprogress');
+    $attempt->set_status('inprogress');
 
     // Show the quiz start landing page
     $renderer->view_header(true);
@@ -83,24 +83,24 @@ function jazzquiz_view_default($jazzquiz)
     // Show view to start quiz (for instructors) or join quiz (for students)
 
     // Trigger event for course module viewed
-    $event = \mod_jazzquiz\event\course_module_viewed::create([
+    $event = event\course_module_viewed::create([
         'objectid' => $PAGE->cm->instance,
         'context' => $PAGE->context,
     ]);
     $event->add_record_snapshot('course', $jazzquiz->course);
-    $event->add_record_snapshot($PAGE->cm->modname, $jazzquiz->getRTQ());
+    $event->add_record_snapshot($PAGE->cm->modname, $jazzquiz->data);
     $event->trigger();
 
     // Determine home display based on role
     if ($jazzquiz->is_instructor()) {
-        $start_session_form = new \mod_jazzquiz\forms\view\start_session($url);
+        $start_session_form = new forms\view\start_session($url);
         $data = $start_session_form->get_data();
         if ($data) {
             // Create a new quiz session
             // First check to see if there are any open sessions
             // This shouldn't occur, but never hurts to check
             $sessions = $DB->get_records('jazzquiz_sessions', [
-                'jazzquizid' => $jazzquiz->getRTQ()->id,
+                'jazzquizid' => $jazzquiz->data->id,
                 'sessionopen' => 1
             ]);
 
@@ -108,7 +108,7 @@ function jazzquiz_view_default($jazzquiz)
                 // Error out with that there are existing sessions
                 $renderer->setMessage(get_string('already_existing_sessions', 'jazzquiz'), 'error');
                 $renderer->view_header();
-                $renderer->view_inst_home($start_session_form, $session->get_session()->sessionopen);
+                $renderer->view_inst_home($start_session_form, $session->data->sessionopen);
                 $renderer->view_footer();
                 return;
             }
@@ -119,7 +119,7 @@ function jazzquiz_view_default($jazzquiz)
                 // Error handling
                 $renderer->setMessage(get_string('unable_to_create_session', 'jazzquiz'), 'error');
                 $renderer->view_header();
-                $renderer->view_inst_home($start_session_form, $session->get_session()->sessionopen);
+                $renderer->view_inst_home($start_session_form, $session->data->sessionopen);
                 $renderer->view_footer();
                 return;
             }
@@ -131,12 +131,12 @@ function jazzquiz_view_default($jazzquiz)
 
         } else {
             $renderer->view_header();
-            $renderer->view_inst_home($start_session_form, $session->get_session()->sessionopen);
+            $renderer->view_inst_home($start_session_form, $session->data->sessionopen);
             $renderer->view_footer();
         }
     } else {
 
-        $student_start_form = new \mod_jazzquiz\forms\view\student_start_form($url, [
+        $student_start_form = new forms\view\student_start_form($url, [
             'rtq' => $jazzquiz
         ]);
 

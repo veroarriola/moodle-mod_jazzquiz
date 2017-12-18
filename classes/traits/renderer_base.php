@@ -21,10 +21,10 @@ trait renderer_base
      * @param string $type
      * @param string $message
      */
-    public function setMessage($type, $message)
+    /*public function setMessage($type, $message)
     {
         $this->pageMessage = [ $type, $message ];
-    }
+    }*/
 
     /**
      * Base header function to do basic header rendering
@@ -35,7 +35,7 @@ trait renderer_base
     {
         echo $this->output->header();
         echo jazzquiz_view_tabs($this->jazzquiz, $tab);
-        $this->showMessage(); // shows a message if there is one
+        //$this->showMessage(); // shows a message if there is one
     }
 
     /**
@@ -51,7 +51,7 @@ trait renderer_base
      * Shows a message if there is one
      *
      */
-    public function showMessage()
+    /*public function showMessage()
     {
         if (empty($this->pageMessage)) {
             return;
@@ -73,7 +73,7 @@ trait renderer_base
                 // Unrecognized notification type
                 break;
         }
-    }
+    }*/
 
     /**
      * Shows an error message with the popup layout
@@ -82,9 +82,9 @@ trait renderer_base
      */
     public function render_popup_error($message)
     {
-        $this->setMessage('error', $message);
+        //$this->setMessage('error', $message);
         echo $this->output->header();
-        $this->showMessage();
+        //$this->showMessage();
         $this->base_footer();
     }
 

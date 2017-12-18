@@ -54,8 +54,8 @@ class jazzquiz
     /** @var \plugin_renderer_base|output\edit_renderer $renderer */
     public $renderer;
 
-    /** @var \stdClass $jazzquiz */
-    protected $jazzquiz;
+    /** @var \stdClass $data The jazzquiz database table row */
+    public $data;
 
     /** @var bool $is_instructor */
     protected $is_instructor;
@@ -78,8 +78,8 @@ class jazzquiz
         $this->renderer = $PAGE->get_renderer('mod_jazzquiz', $renderer_subtype);
 
         // TODO: This can probably be removed when the tables are normalized.
-        $this->jazzquiz = new \stdClass();
-        $this->jazzquiz->id = $this->course_module->instance;
+        $this->data = new \stdClass();
+        $this->data->id = $this->course_module->instance;
         //
         $this->update_improvised_questions();
 
@@ -90,7 +90,7 @@ class jazzquiz
     public function reload()
     {
         global $DB;
-        $this->jazzquiz = $DB->get_record('jazzquiz', [ 'id' => $this->course_module->instance ], '*', MUST_EXIST);
+        $this->data = $DB->get_record('jazzquiz', [ 'id' => $this->course_module->instance ], '*', MUST_EXIST);
         $this->renderer->set_jazzquiz($this);
         $this->question_manager = new question_manager($this);
     }
@@ -103,27 +103,18 @@ class jazzquiz
         }
         // Remove and re-add all the improvised questions to make sure they're all added and last.
         $improviser = new improviser();
-        $improviser->remove_improvised_questions_from_quiz($this->jazzquiz->id);
-        $improviser->add_improvised_questions_to_quiz($this->jazzquiz->id);
-    }
-
-    /**
-     * @return object
-     */
-    public function getRTQ()
-    {
-        return $this->jazzquiz;
+        $improviser->remove_improvised_questions_from_quiz($this->data->id);
+        $improviser->add_improvised_questions_to_quiz($this->data->id);
     }
 
     /**
      * Saves the JazzQuiz instance to the database
-     *
      * @return bool
      */
-    public function saveRTQ()
+    public function save()
     {
         global $DB;
-        return $DB->update_record('jazzquiz', $this->jazzquiz);
+        return $DB->update_record('jazzquiz', $this->data);
     }
 
     /**
@@ -158,12 +149,11 @@ class jazzquiz
 
     /**
      * Quick function for whether or not the current user is the instructor/can control the quiz
-     *
      * @return bool
      */
     public function is_instructor()
     {
-        if (is_null($this->isinstructor)) {
+        if (is_null($this->is_instructor)) {
             $this->is_instructor = $this->has_capability('mod/jazzquiz:control');
         }
         return $this->is_instructor;
@@ -171,10 +161,8 @@ class jazzquiz
 
     /**
      * Gets and returns a session specified by id
-     *
      * @param int $session_id
-     *
-     * @return \mod_jazzquiz\jazzquiz_session
+     * @return jazzquiz_session
      */
     public function get_session($session_id)
     {
@@ -189,12 +177,12 @@ class jazzquiz
      * Gets sessions for this jazzquiz
      *
      * @param array $conditions
-     * @return array
+     * @return jazzquiz_session[]
      */
     public function get_sessions($conditions = [])
     {
         global $DB;
-        $conditions = array_merge([ 'jazzquizid' => $this->getRTQ()->id ], $conditions);
+        $conditions = array_merge([ 'jazzquizid' => $this->data->id ], $conditions);
         $session_records = $DB->get_records('jazzquiz_sessions', $conditions);
         $sessions = [];
         foreach ($session_records as $session_record) {

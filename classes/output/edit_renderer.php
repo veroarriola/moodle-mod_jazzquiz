@@ -76,7 +76,7 @@ class edit_renderer extends \plugin_renderer_base
 
         $quiz = new \stdClass();
         $quiz->course_module_id = $this->jazzquiz->course_module->id;
-        $quiz->activity_id = $this->jazzquiz->getRTQ()->id;
+        $quiz->activity_id = $this->jazzquiz->data->id;
         $quiz->session_key = sesskey();
 
         echo '<script>';
@@ -94,6 +94,7 @@ class edit_renderer extends \plugin_renderer_base
      * Builds the question list from the questions passed in
      *
      * @param array $questions an array of \mod_jazzquiz\jazzquiz_question
+     * @param \moodle_url $url
      * @return string
      */
     protected function show_questionlist($questions, $url)
@@ -103,11 +104,11 @@ class edit_renderer extends \plugin_renderer_base
         $question_number = 1;
         foreach ($questions as $question) {
             // Hide improvised questions
-            if (substr($question->getQuestion()->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
+            if (substr($question->question->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
                 continue;
             }
             /** @var \mod_jazzquiz\jazzquiz_question $question */
-            $return .= '<li data-questionid="' . $question->getId() . '">';
+            $return .= '<li data-questionid="' . $question->data->id . '">';
             $return .= $this->display_question_block($question, $question_number, $question_count, $url);
             $return .= '</li>';
             $question_number++;
@@ -122,7 +123,7 @@ class edit_renderer extends \plugin_renderer_base
      * @param \mod_jazzquiz\jazzquiz_question $question
      * @param int $qnum The question number we're currently on
      * @param int $qcount The total number of questions
-     *
+     * @param \moodle_url $url
      * @return string
      */
     protected function display_question_block($question, $qnum, $qcount, $url)
@@ -131,9 +132,9 @@ class edit_renderer extends \plugin_renderer_base
 
         $drag_icon = new \pix_icon('i/dragdrop', 'dragdrop');
         $return .= \html_writer::div($this->output->render($drag_icon), 'dragquestion');
-        $return .= \html_writer::div(print_question_icon($question->getQuestion()), 'icon');
+        $return .= \html_writer::div(print_question_icon($question->question), 'icon');
 
-        $name_html = '<p>' . $question->getQuestion()->name . '</p>';
+        $name_html = '<p>' . $question->question->name . '</p>';
         $return .= \html_writer::div($name_html, 'name');
         $controlHTML = '';
 
@@ -145,7 +146,7 @@ class edit_renderer extends \plugin_renderer_base
         if ($qnum > 1) {
             $alt = get_string('question_move_up', 'mod_jazzquiz', $qnum);
             $up_icon = new \pix_icon('t/up', $alt);
-            $data = 'data-action="moveup" data-question-id="' . $question->getId() . '"';
+            $data = 'data-action="moveup" data-question-id="' . $question->data->id . '"';
             $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($up_icon). '</a>';
         } else {
             $controlHTML .= $this->output->render($spacer_icon);
@@ -155,7 +156,7 @@ class edit_renderer extends \plugin_renderer_base
         if ($qnum < $qcount) {
             $alt = get_string('question_move_down', 'mod_jazzquiz', $qnum);
             $down_icon = new \pix_icon('t/down', $alt);
-            $data = 'data-action="movedown" data-question-id="' . $question->getId() . '"';
+            $data = 'data-action="movedown" data-question-id="' . $question->data->id . '"';
             $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($down_icon). '</a>';
         } else {
             $controlHTML .= $this->output->render($spacer_icon);
@@ -164,14 +165,14 @@ class edit_renderer extends \plugin_renderer_base
         // Always add edit and delete icons
         $edit_url = clone($url);
         $edit_url->param('action', 'editquestion');
-        $edit_url->param('questionid', $question->getId());
+        $edit_url->param('questionid', $question->data->id);
         $alt = get_string('edit_question', 'jazzquiz', $qnum);
         $delete_icon = new \pix_icon('t/edit', $alt);
         $controlHTML .= \html_writer::link($edit_url, $this->output->render($delete_icon));
 
         $alt = get_string('delete_question', 'mod_jazzquiz', $qnum);
         $delete_icon = new \pix_icon('t/delete', $alt);
-        $data = 'data-action="deletequestion" data-question-id="' . $question->getId() . '"';
+        $data = 'data-action="deletequestion" data-question-id="' . $question->data->id . '"';
         $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($delete_icon). '</a>';
         $return .= \html_writer::div($controlHTML, 'controls');
         return $return;
@@ -180,11 +181,11 @@ class edit_renderer extends \plugin_renderer_base
     /**
      * renders the add question form
      *
-     * @param moodleform $mform
+     * @param \moodleform $mform
      */
     public function addquestionform($mform)
     {
-        echo $mform->display();
+        $mform->display();
     }
 
     public function opensession()

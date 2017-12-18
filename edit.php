@@ -226,7 +226,7 @@ function jazzquiz_edit()
     $PAGE->set_title(strip_tags($jazzquiz->course->shortname . ': ' . $module_name . ': ' . $quiz_name));
     $PAGE->set_heading($jazzquiz->course->fullname);
 
-    if (jazzquiz_session_open($jazzquiz->getRTQ()->id)) {
+    if (jazzquiz_session_open($jazzquiz->data->id)) {
         // Can't edit during a session.
         $renderer->print_header();
         $renderer->opensession();

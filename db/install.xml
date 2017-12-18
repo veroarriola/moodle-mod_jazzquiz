@@ -11,9 +11,6 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="workedingroups" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Bit to specify if the activity is set up to work in groups"/>
-        <FIELD NAME="groupattendance" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not we want to have the user specify the group members present for the quiz"/>
-        <FIELD NAME="grouping" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The grouping id that this activity is set up to use for groups"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="defaultquestiontime" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="30" SEQUENCE="false" COMMENT="How long do they get for each question?"/>
@@ -53,19 +50,6 @@
         <FIELD NAME="nextqnum" TYPE="int" LENGTH="11" DEFAULT="0" NOTNULL="true" SEQUENCE="false" COMMENT="If 0, currentqnum is used. Otherwise, this field is the next qnum."/>
         <FIELD NAME="nextstarttime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the timestamp of the next start time"/>
         <FIELD NAME="created" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="the timestamp that this was created"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-    </TABLE>
-    <TABLE NAME="jazzquiz_groupattendance" COMMENT="table to specify users that were a part of the group when a JazzQuiz session took place.">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="jazzquizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The realtime quiz id that this particular matching matches to"/>
-        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The session id that this attendance item belongs to"/>
-        <FIELD NAME="attemptid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The realtime quiz attempt id that this group member is present for"/>
-        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The groupid that the attempt is for.  This is more for display purposes if we want to display this somewhere"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The user that will get a grade for this attempt if they were added during the &quot;attendance check&quot; before a group user started their attempt"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

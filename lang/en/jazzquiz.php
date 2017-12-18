@@ -29,18 +29,8 @@ $string['modulename_help'] = '
     The JazzQuiz activity enables an instructor to create and administer quizzes in real-time. All regular quiz question types can be used in the JazzQuiz.
 </p>
 <p>
-    JazzQuiz allows individual or group participation. Group attendance is possible so points given during the quiz will only be applied to the participants that attended the session.
     Questions can be set to allow multiple attempts. A time limit may be set to automatically end the question, or the instructor can manually end the question and move on to the next one.
-    The instructor also has the ability to jump to different questions while  running the session. Instructors can monitor group or individual participation, real-time responses of the participants and the question being polled.
-</p>
-<p>
-    Grading for group participation can be done automatically by transferring the grade from the single responder to the other group members.
-</p>
-<p>
-    The instructor has options to show hints, give feedback and show correct answers to students upon quiz completion.
-</p>
-<p>
-    JazzQuizzes may be used as a vehicle for delivering Team Based Learning inside Moodle.
+    The instructor also has the ability to jump to different questions while  running the session. Instructors can monitor the responses live.
 </p>';
 
 $string['modulenameplural'] = 'JazzQuizzes';

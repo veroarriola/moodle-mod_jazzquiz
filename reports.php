@@ -55,7 +55,7 @@ function jazzquiz_reports()
 
     $url = new \moodle_url('/mod/jazzquiz/reports.php');
     $url->param('id', $course_module_id);
-    $url->param('quizid', $jazzquiz->getRTQ()->id);
+    $url->param('quizid', $jazzquiz->data->id);
     $url->param('reporttype', $report_type);
     $url->param('action', $action);
 

@@ -134,7 +134,7 @@ class sessionattempts extends \flexible_table implements \renderable
 
             // View attempt
             $view_attempt_url = new \moodle_url('/mod/jazzquiz/viewquizattempt.php');
-            $view_attempt_url->param('quizid', $this->jazzquiz->getRTQ()->id);
+            $view_attempt_url->param('quizid', $this->jazzquiz->data->id);
             $view_attempt_url->param('sessionid', $item->sessionid);
             $view_attempt_url->param('attemptid', $item->attemptid);
 
@@ -160,16 +160,16 @@ class sessionattempts extends \flexible_table implements \renderable
 
         $data = [];
         $attempts = $this->session->getall_attempts(true);
-        $userids = [];
+        $user_ids = [];
         foreach ($attempts as $attempt) {
-            if ($attempt->userid > 0) {
-                $userids[] = $attempt->userid;
+            if ($attempt->data->userid > 0) {
+                $user_ids[] = $attempt->data->userid;
             }
         }
 
         // Get user records to get the full name
-        if (!empty($userids)) {
-            list($useridsql, $params) = $DB->get_in_or_equal($userids);
+        if (!empty($user_ids)) {
+            list($useridsql, $params) = $DB->get_in_or_equal($user_ids);
             $sql = 'SELECT * FROM {user} WHERE id ' . $useridsql;
             $userrecs = $DB->get_records_sql($sql, $params);
         } else {
@@ -177,26 +177,25 @@ class sessionattempts extends \flexible_table implements \renderable
         }
 
         foreach ($attempts as $attempt) {
-            /** @var \mod_jazzquiz\jazzquiz_attempt $attempt */
             $ditem = new \stdClass();
-            $ditem->attemptid = $attempt->id;
-            $ditem->sessionid = $attempt->sessionid;
-            if (isset($userrecs[$attempt->userid])) {
-                $name = fullname($userrecs[$attempt->userid]);
-                $userid = $attempt->userid;
+            $ditem->attemptid = $attempt->data->id;
+            $ditem->sessionid = $attempt->data->sessionid;
+            if (isset($userrecs[$attempt->data->userid])) {
+                $name = fullname($userrecs[$attempt->data->userid]);
+                $user_id = $attempt->data->userid;
             } else {
                 $name = get_string('anonymoususer', 'mod_jazzquiz');
-                $userid = null;
+                $user_id = null;
             }
-            $ditem->userid = $userid;
+            $ditem->userid = $user_id;
             $ditem->username = $name;
-            $ditem->attemptno = $attempt->attemptnum;
-            $ditem->preview = $attempt->preview;
-            $ditem->status = $attempt->getStatus();
-            $ditem->timestart = $attempt->timestart;
-            $ditem->timefinish = $attempt->timefinish;
-            $ditem->timemodified = $attempt->timemodified;
-            $data[$attempt->id] = $ditem;
+            $ditem->attemptno = $attempt->data->attemptnum;
+            $ditem->preview = $attempt->data->preview;
+            $ditem->status = $attempt->get_status();
+            $ditem->timestart = $attempt->data->timestart;
+            $ditem->timefinish = $attempt->data->timefinish;
+            $ditem->timemodified = $attempt->data->timemodified;
+            $data[$attempt->data->id] = $ditem;
         }
         return $data;
     }

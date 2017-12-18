@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_jazzquiz\output;
+
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->libdir . '/questionlib.php');
@@ -26,7 +28,7 @@ require_once($CFG->libdir . '/questionlib.php');
  * @copyright   2014 University of Wisconsin - madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_jazzquiz_renderer extends plugin_renderer_base
+class renderer extends \plugin_renderer_base
 {
     /** @var \mod_jazzquiz\jazzquiz $jazzquiz */
     protected $jazzquiz;
@@ -118,9 +120,9 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
     /**
      * Basic header for the view page
      *
-     * @param bool $renderingquiz
+     * @param bool $rendering_quiz
      */
-    public function view_header($renderingquiz = false)
+    public function view_header($rendering_quiz = false)
     {
         $this->base_header('view');
     }
@@ -135,24 +137,24 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
     {
         global $PAGE;
 
-        echo html_writer::start_div('jazzquizbox');
+        echo \html_writer::start_div('jazzquizbox');
 
         if ($session_started) {
             // Show relevant instructions
-            echo html_writer::tag('p', get_string('instructor_sessions_going', 'jazzquiz'));
+            echo \html_writer::tag('p', get_string('instructor_sessions_going', 'jazzquiz'));
             // Output the link for continuing session
             $course_module_id = $this->jazzquiz->course_module->id;
-            $jazzquiz_id = $this->jazzquiz->getRTQ()->id;
+            $jazzquiz_id = $this->jazzquiz->data->id;
             $path = $PAGE->url->get_path() . '?id=' . $course_module_id . '&quizid=' . $jazzquiz_id . '&action=quizstart';
             $goto_session = get_string('goto_session', 'jazzquiz');
             echo '<p><a href="' . $path . '" class="btn btn-secondary">' . $goto_session . '</a></p>';
         } else {
-            echo html_writer::tag('p', get_string('teacher_start_instructions', 'jazzquiz'));
-            echo html_writer::empty_tag('br');
-            echo $session_form->display();
+            echo \html_writer::tag('p', get_string('teacher_start_instructions', 'jazzquiz'));
+            echo \html_writer::empty_tag('br');
+            $session_form->display();
         }
 
-        echo html_writer::end_div();
+        echo \html_writer::end_div();
     }
 
     /**
@@ -165,20 +167,20 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
     {
         global $PAGE;
 
-        echo html_writer::start_div('jazzquizbox');
+        echo \html_writer::start_div('jazzquizbox');
 
         $course_module_id = $this->jazzquiz->course_module->id;
-        $jazzquiz_id = $this->jazzquiz->getRTQ()->id;
+        $jazzquiz_id = $this->jazzquiz->data->id;
 
         // Check if there is an open session
-        if ($session->get_session()) {
+        if ($session->data) {
             // Show the join quiz button
-            echo html_writer::tag('p', get_string('join_quiz_instructions', 'jazzquiz'));
-            echo html_writer::tag('p', get_string('session_name_text', 'jazzquiz') . $session->get_session()->name);
+            echo \html_writer::tag('p', get_string('join_quiz_instructions', 'jazzquiz'));
+            echo \html_writer::tag('p', get_string('session_name_text', 'jazzquiz') . $session->data->name);
             // See if the user has attempts
             // If so, let them know that continuing will continue them to their attempt
             if ($session->get_open_attempt_for_current_user()) {
-                echo html_writer::tag('p', get_string('attempt_started', 'jazzquiz'), [
+                echo \html_writer::tag('p', get_string('attempt_started', 'jazzquiz'), [
                     'id' => 'quizinfobox'
                 ]);
             }
@@ -186,7 +188,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             $student_start_form->display();
 
         } else {
-            echo html_writer::tag('p', get_string('quiz_not_running', 'jazzquiz'));
+            echo \html_writer::tag('p', get_string('quiz_not_running', 'jazzquiz'));
             // Show a reload page button to make it easy to reload page
             //$reload_button = $this->output->single_button($this->pageurl, get_string('reload'), 'get');
             //echo html_writer::tag('p', $reload_button);
@@ -198,15 +200,15 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             </p>';
         }
 
-        echo html_writer::end_div();
+        echo \html_writer::end_div();
 
         if (count($this->jazzquiz->get_closed_sessions()) == 0) {
             // Return early if there are no closed sessions
             return;
         }
 
-        echo html_writer::start_div('jazzquizbox');
-        echo html_writer::end_div();
+        echo \html_writer::start_div('jazzquizbox');
+        echo \html_writer::end_div();
     }
 
     /**
@@ -220,12 +222,12 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         $this->init_quiz_js($attempt, $session);
 
         $output = '';
-        $output .= html_writer::start_div('', [
+        $output .= \html_writer::start_div('', [
             'id' => 'quizview'
         ]);
 
         if ($this->jazzquiz->is_instructor()) {
-            $output .= html_writer::div($this->render_controls(), 'jazzquizbox hidden', [
+            $output .= \html_writer::div($this->render_controls(), 'jazzquizbox hidden', [
                 'id' => 'controlbox'
             ]);
             $output .= $this->render_jumpto_modal($attempt);
@@ -234,60 +236,60 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             $instructions = get_string('instructions_for_student', 'jazzquiz');
         }
 
-        $loadingpix = $this->output->pix_icon('i/loading', 'loading...');
+        $loading_icon = $this->output->pix_icon('i/loading', 'loading...');
 
-        $output .= html_writer::start_div('jazzquizloading', [
+        $output .= \html_writer::start_div('jazzquizloading', [
             'id' => 'loadingbox'
         ]);
 
-        $output .= html_writer::tag('p', get_string('loading', 'jazzquiz'), [
+        $output .= \html_writer::tag('p', get_string('loading', 'jazzquiz'), [
             'id' => 'loadingtext'
         ]);
 
-        $output .= $loadingpix;
-        $output .= html_writer::end_div();
+        $output .= $loading_icon;
+        $output .= \html_writer::end_div();
 
-        $output .= html_writer::div($instructions, 'jazzquizbox hidden', [
+        $output .= \html_writer::div($instructions, 'jazzquizbox hidden', [
             'id' => 'jazzquiz_instructions_container'
         ]);
 
         if ($this->jazzquiz->is_instructor()) {
-            $output .= html_writer::div('', 'jazzquizbox padded-box hidden', [
+            $output .= \html_writer::div('', 'jazzquizbox padded-box hidden', [
                 'id' => 'jazzquiz_correct_answer_container'
             ]);
-            $output .= html_writer::start_div('jazzquizbox', [
+            $output .= \html_writer::start_div('jazzquizbox', [
                 'id' => 'jazzquiz_side_container'
             ]);
-            $output .= html_writer::div('', 'jazzquizbox hidden padded-box', [
+            $output .= \html_writer::div('', 'jazzquizbox hidden padded-box', [
                 'id' => 'jazzquiz_response_info_container'
             ]);
         }
 
-        $output .= html_writer::div('', 'jazzquizbox hidden', [
+        $output .= \html_writer::div('', 'jazzquizbox hidden', [
             'id' => 'jazzquiz_question_timer',
         ]);
 
         if ($this->jazzquiz->is_instructor()) {
-            $output .= html_writer::start_div('jazzquizbox', [
+            $output .= \html_writer::start_div('jazzquizbox', [
                 'id' => 'jazzquiz_responded_container'
             ]);
-            $output .= html_writer::start_div();
-            $output .= html_writer::start_div('respondedbox', [
+            $output .= \html_writer::start_div();
+            $output .= \html_writer::start_div('respondedbox', [
                 'id' => 'respondedbox'
             ]);
 
-            $output .= html_writer::tag('h4', '', [
+            $output .= \html_writer::tag('h4', '', [
                 'class' => 'inline'
             ]);
 
-            $output .= html_writer::end_div();
-            $output .= html_writer::end_div();
-            $output .= html_writer::end_div();
+            $output .= \html_writer::end_div();
+            $output .= \html_writer::end_div();
+            $output .= \html_writer::end_div();
 
-            $output .= html_writer::end_div();
+            $output .= \html_writer::end_div();
         }
 
-        $output .= html_writer::div('', 'jazzquizbox padded-box hidden', [
+        $output .= \html_writer::div('', 'jazzquizbox padded-box hidden', [
             'id' => 'jazzquiz_info_container',
         ]);
 
@@ -298,12 +300,12 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         }
 
         if ($this->jazzquiz->is_instructor()) {
-            $output .= html_writer::div('', 'jazzquizbox hidden', [
+            $output .= \html_writer::div('', 'jazzquizbox hidden', [
                 'id' => 'jazzquiz_responses_container'
             ]);
         }
 
-        $output .= html_writer::end_div();
+        $output .= \html_writer::end_div();
         echo $output;
     }
 
@@ -326,7 +328,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         if ($this->jazzquiz->is_instructor()) {
             $is_instructor_class = ' instructor';
         }
-        $output .= html_writer::start_tag('div', [
+        $output .= \html_writer::start_tag('div', [
             'class' => 'jazzquizbox hidden' . $is_instructor_class,
             'id' => 'q' . $qnum . '_container'
         ]);
@@ -337,7 +339,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         }
         $onsubmit .= 'return false;';
 
-        $output .= html_writer::start_tag('form', [
+        $output .= \html_writer::start_tag('form', [
             'action' => '',
             'method' => 'post',
             'enctype' => 'multipart/form-data',
@@ -350,27 +352,27 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
 
         $output .= $attempt->render_question($slot);
 
-        $output .= html_writer::empty_tag('input', [
+        $output .= \html_writer::empty_tag('input', [
             'type' => 'hidden',
             'name' => 'slots',
             'value' => $slot
         ]);
 
-        $savebtn = html_writer::tag('button', 'Save', [
+        $savebtn = \html_writer::tag('button', 'Save', [
             'class' => 'btn btn-primary',
             'id' => 'q' . $qnum . '_save',
             'onclick' => 'jazzquiz.save_question(\'q' . $qnum . '\'); return false;'
         ]);
 
         $rtqQuestion = $attempt->get_question_by_slot($slot);
-        if ($rtqQuestion !== false && $rtqQuestion->getTries() > 1 && !$this->jazzquiz->is_instructor()) {
-            $count = new stdClass();
-            $count->tries = $rtqQuestion->getTries();
-            $try_text = html_writer::div(get_string('trycount', 'jazzquiz', $count), 'trycount', [
+        if ($rtqQuestion !== false && $rtqQuestion->data->tries > 1 && !$this->jazzquiz->is_instructor()) {
+            $count = new \stdClass();
+            $count->tries = $rtqQuestion->data->tries;
+            $try_text = \html_writer::div(get_string('trycount', 'jazzquiz', $count), 'trycount', [
                 'id' => 'q' . $qnum . '_trycount'
             ]);
         } else {
-            $try_text = html_writer::div('', 'trycount', [
+            $try_text = \html_writer::div('', 'trycount', [
                 'id' => 'q' . $qnum . '_trycount'
             ]);
         }
@@ -381,11 +383,11 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             $savebtncont = html_writer::div($savebtn, 'question_save');
         }
 
-        $output .= html_writer::div($savebtncont . '<br>' . $try_text, 'save_row');
+        $output .= \html_writer::div($savebtncont . '<br>' . $try_text, 'save_row');
 
         // Finish the form.
-        $output .= html_writer::end_tag('form');
-        $output .= html_writer::end_tag('div');
+        $output .= \html_writer::end_tag('form');
+        $output .= \html_writer::end_tag('div');
 
         return $output;
     }
@@ -393,7 +395,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
     private function write_control_button($icon, $text, $id)
     {
         $text = get_string($text, 'jazzquiz');
-        return html_writer::tag('button', '<i class="fa fa-' . $icon . '"></i> ' . $text, [
+        return \html_writer::tag('button', '<i class="fa fa-' . $icon . '"></i> ' . $text, [
             'class' => 'btn',
             'id' => $id,
             'onclick' => 'jazzquiz.execute_control_action(\'' . $id . '\');'
@@ -444,7 +446,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
             . $this->write_control_button('close', 'quit', 'exitquiz')
             . '</div><div id="jazzquiz_control_separator"></div>';
 
-        return html_writer::div($html, 'btn-hide rtq_inquiz', [
+        return \html_writer::div($html, 'btn-hide rtq_inquiz', [
             'id' => 'inquizcontrols'
         ]);
     }
@@ -457,21 +459,21 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
      */
     public function render_jumpto_modal($attempt)
     {
-        $output = html_writer::start_div('modalDialog', [
+        $output = \html_writer::start_div('modalDialog', [
             'id' => 'jumptoquestion-dialog'
         ]);
 
-        $output .= html_writer::start_div();
-        $output .= html_writer::tag('a', 'X', [
+        $output .= \html_writer::start_div();
+        $output .= \html_writer::tag('a', 'X', [
             'class' => 'jumptoquestionclose',
             'href' => '#'
         ]);
 
-        $output .= html_writer::tag('h2', get_string('jump', 'jazzquiz'));
-        $output .= html_writer::tag('p', get_string('jump_question_instructions', 'jazzquiz'));
+        $output .= \html_writer::tag('h2', get_string('jump', 'jazzquiz'));
+        $output .= \html_writer::tag('p', get_string('jump_question_instructions', 'jazzquiz'));
 
         // Build our own select for the user to select the question they want to go to
-        $output .= html_writer::start_tag('select', [
+        $output .= \html_writer::start_tag('select', [
             'name' => 'jtq-selectquestion',
             'id' => 'jtq-selectquestion'
         ]);
@@ -480,20 +482,20 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         $slot = 1;
         foreach ($attempt->get_questions() as $question) {
             // Hide improvised questions
-            if (substr($question->getQuestion()->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
+            if (substr($question->question->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
                 continue;
             }
-            $output .= html_writer::tag('option', $slot . ': ' . $question->getQuestion()->name, [
+            $output .= \html_writer::tag('option', $slot . ': ' . $question->question->name, [
                 'value' => $slot
             ]);
             $slot++;
         }
-        $output .= html_writer::end_tag('select');
-        $output .= html_writer::tag('button', get_string('jump', 'jazzquiz'), [
+        $output .= \html_writer::end_tag('select');
+        $output .= \html_writer::tag('button', get_string('jump', 'jazzquiz'), [
             'onclick' => 'jazzquiz.jump_question()'
         ]);
-        $output .= html_writer::end_div();
-        $output .= html_writer::end_div();
+        $output .= \html_writer::end_div();
+        $output .= \html_writer::end_div();
 
         return $output;
     }
@@ -504,7 +506,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
      *
      * @param \mod_jazzquiz\jazzquiz_attempt $attempt
      * @param \mod_jazzquiz\jazzquiz_session $session
-     * @throws moodle_exception throws exception when invalid question on the attempt is found
+     * @throws \moodle_exception throws exception when invalid question on the attempt is found
      */
     public function init_quiz_js($attempt, $session)
     {
@@ -515,7 +517,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
         $this->page->requires->js('/mod/jazzquiz/js/core.js');
 
         // add window.onload script manually to handle removing the loading mask
-        echo html_writer::start_tag('script', [
+        echo \html_writer::start_tag('script', [
             'type' => 'text/javascript'
         ]);
 
@@ -524,7 +526,7 @@ class mod_jazzquiz_renderer extends plugin_renderer_base
                 window.addEventListener('load', function(){jazzquiz.quiz_page_loaded();}, false);
             }());
 EOD;
-        echo html_writer::end_tag('script');
+        echo \html_writer::end_tag('script');
 
         if ($this->jazzquiz->is_instructor()) {
             $this->page->requires->js('/mod/jazzquiz/js/instructor.js');
@@ -532,42 +534,38 @@ EOD;
             $this->page->requires->js('/mod/jazzquiz/js/student.js');
         }
 
-        $jazzquiz = new stdClass();
+        $jazzquiz = new \stdClass();
 
         // Root values
-        $jazzquiz->state = $session->get_session()->status;
+        $jazzquiz->state = $session->data->status;
         $jazzquiz->is_instructor = $this->jazzquiz->is_instructor();
         $jazzquiz->siteroot = $CFG->wwwroot;
 
         // Quiz
-        $quiz = new stdClass();
+        $quiz = new \stdClass();
         $quiz->course_module_id = $this->jazzquiz->course_module->id;
-        $quiz->activity_id = $this->jazzquiz->getRTQ()->id;
-        $quiz->session_id = $session->get_session()->id;
-        $quiz->attempt_id = $attempt->id;
+        $quiz->activity_id = $this->jazzquiz->data->id;
+        $quiz->session_id = $session->data->id;
+        $quiz->attempt_id = $attempt->data->id;
         $quiz->session_key = sesskey();
         $quiz->slots = $attempt->getSlots();
         $quiz->total_students = $session->get_student_count();
 
         $quiz->questions = [];
-
-        $quiz->resume = new stdClass();
+        $quiz->resume = new \stdClass();
 
         foreach ($attempt->get_questions() as $q) {
-
-            /** @var \mod_jazzquiz\jazzquiz_question $q */
-            $question = new stdClass();
-            $question->id = $q->getId();
-            $question->questiontime = $q->getQuestionTime();
-            $question->tries = $q->getTries();
-            $question->question = $q->getQuestion();
+            $question = new \stdClass();
+            $question->id = $q->data->id;
+            $question->questiontime = $q->data->questiontime;
+            $question->tries = $q->data->tries;
+            $question->question = $q->question;
             $question->slot = $attempt->get_question_slot($q);
-
             // If the slot is false, throw exception for invalid question on quiz attempt
             if ($question->slot === false) {
-                $a = new stdClass();
-                $a->questionname = $q->getQuestion()->name;
-                throw new moodle_exception(
+                $a = new \stdClass();
+                $a->questionname = $q->question->name;
+                throw new \moodle_exception(
                     'invalidquestionattempt',
                     'mod_jazzquiz',
                     '',
@@ -575,12 +573,11 @@ EOD;
                     'invalid slot when building questions array on quiz renderer'
                 );
             }
-
             // Add question to list
             $quiz->questions[$question->slot] = $question;
         }
 
-        $session_state = $session->get_session()->status;
+        $session_state = $session->data->status;
 
         // Resuming quiz feature
         // This will check if the session has started already and print out
@@ -588,8 +585,8 @@ EOD;
 
         if ($session_state != 'notrunning') {
 
-            $current_question = $session->get_session()->currentquestion;
-            $next_start_time = $session->get_session()->nextstarttime;
+            $current_question = $session->data->currentquestion;
+            $next_start_time = $session->data->nextstarttime;
 
             switch ($session_state) {
 
@@ -603,33 +600,26 @@ EOD;
                     $quiz->resume->state = $session_state;
                     $quiz->resume->current_question_slot = $current_question;
 
-                    $nextQuestion = $this->jazzquiz->question_manager->get_question_with_slot($session->get_session()->currentqnum, $attempt);
+                    $nextQuestion = $this->jazzquiz->question_manager->get_question_with_slot($session->data->currentqnum, $attempt);
 
                     if ($next_start_time > time()) {
-
                         // We're wating for question
                         $quiz->resume->action = 'waitforquestion';
-                        $quiz->resume->delay = $session->get_session()->nextstarttime - time();
-                        $quiz->resume->question_time = $nextQuestion->getQuestionTime();
-
+                        $quiz->resume->delay = $session->data->nextstarttime - time();
+                        $quiz->resume->question_time = $nextQuestion->data->questiontime;
                     } else {
-
                         $quiz->resume->action = 'startquestion';
-
                         // How much time has elapsed since start time
-
                         // First check if the question has a time limit
-                        if ($nextQuestion->getNoTime()) {
+                        if ($nextQuestion->data->notime) {
                             $quiz->resume->question_time = 0;
                         } else {
-
                             // Otherwise figure out how much time is left
                             $time_elapsed = time() - $next_start_time;
-                            $quiz->resume->question_time = $nextQuestion->getQuestionTime() - $time_elapsed;
+                            $quiz->resume->question_time = $nextQuestion->data->questiontime - $time_elapsed;
                         }
-
                         // Next check how many tries left
-                        $quiz->resume->tries_left = $attempt->check_tries_left($nextQuestion->getTries());
+                        $quiz->resume->tries_left = $attempt->check_tries_left($nextQuestion->data->tries);
                     }
                     break;
 
@@ -658,14 +648,14 @@ EOD;
         }
 
         // Print data as JSON
-        echo html_writer::start_tag('script', [
+        echo \html_writer::start_tag('script', [
             'type' => 'text/javascript'
         ]);
 
         echo "var jazzquiz_root_state = " . json_encode($jazzquiz) . ';';
         echo "var jazzquiz_quiz_state = " . json_encode($quiz) . ';';
 
-        echo html_writer::end_tag('script');
+        echo \html_writer::end_tag('script');
 
         // Add localization strings
         $this->page->requires->strings_for_js([
@@ -691,48 +681,6 @@ EOD;
     }
 
     /**
-     * Renders a response for a specific question and attempt
-     *
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
-     * @param int $responsecount The number of the response (used for anonymous mode)
-     *
-     * @return string HTML fragment for the response
-     */
-    /*public function render_response($attempt, $responsecount, $anonymous = true)
-    {
-        global $DB;
-
-        $response = html_writer::start_div('response');
-
-        // Check if group mode, if so, give the group name the attempt is for
-        if ($anonymous) {
-            if ($this->jazzquiz->group_mode()) {
-                $name = get_string('group') . ' ' . $responsecount;
-            } else {
-                $name = get_string('user') . ' ' . $responsecount;
-            }
-        } else {
-            if ($this->jazzquiz->group_mode()) {
-                $name = $this->jazzquiz->get_groupmanager()->get_group_name($attempt->forgroupid);
-            } else {
-                if ($user = $DB->get_record('user', [ 'id' => $attempt->userid ])) {
-                    $name = fullname($user);
-                } else {
-                    $name = get_string('anonymoususer', 'mod_jazzquiz');
-                }
-
-            }
-        }
-
-        $response .= html_writer::tag('h3', $name, [
-            'class' => 'responsename'
-        ]);
-        $response .= html_writer::div($attempt->responsesummary, 'responsesummary');
-        $response .= html_writer::end_div();
-        return $response;
-    }*/
-
-    /**
      * Function to provide a display of how many open attempts have responded
      *
      * @param array $not_responded Array of the people who haven't responded
@@ -744,15 +692,15 @@ EOD;
     public function respondedbox($not_responded, $total, $anonymous)
     {
         $responded_count = $total - count($not_responded);
-        $output = html_writer::start_div();
-        $output .= html_writer::start_div('respondedbox', [
+        $output = \html_writer::start_div();
+        $output .= \html_writer::start_div('respondedbox', [
             'id' => 'respondedbox'
         ]);
-        $output .= html_writer::tag('h4', "$responded_count / $total students have responded.", [
+        $output .= \html_writer::tag('h4', "$responded_count / $total students have responded.", [
             'class' => 'inline'
         ]);
-        $output .= html_writer::end_div();
-        $output .= html_writer::end_div();
+        $output .= \html_writer::end_div();
+        $output .= \html_writer::end_div();
         return $output;
     }
 
@@ -764,148 +712,26 @@ EOD;
     public function no_questions($is_instructor)
     {
         echo $this->output->box_start('generalbox boxaligncenter jazzquizbox');
-        echo html_writer::tag('p', get_string('no_questions', 'jazzquiz'));
+        echo \html_writer::tag('p', get_string('no_questions', 'jazzquiz'));
 
         if ($is_instructor) {
             // "Edit quiz" button
             $params = [
                 'cmid' => $this->jazzquiz->course_module->id
             ];
-            $editurl = new moodle_url('/mod/jazzquiz/edit.php', $params);
+            $editurl = new \moodle_url('/mod/jazzquiz/edit.php', $params);
             $editbutton = $this->output->single_button($editurl, get_string('edit', 'jazzquiz'), 'get');
-            echo html_writer::tag('p', $editbutton);
+            echo \html_writer::tag('p', $editbutton);
         }
         echo $this->output->box_end();
     }
 
     /**
      * Basic footer for the view page
-     *
      */
     public function view_footer()
     {
         $this->base_footer();
     }
-
-    /** End View page functions */
-
-
-    /** Attempt view rendering **/
-
-
-    /**
-     * Render a specific attempt
-     *
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
-     * @param \mod_jazzquiz\jazzquiz_session $session
-     */
-    public function render_attempt($attempt, $session)
-    {
-        echo $this->output->header();
-        $this->showMessage();
-        foreach ($attempt->getSlots() as $slot) {
-            if ($this->jazzquiz->is_instructor()) {
-                echo $this->render_edit_review_question($slot, $attempt);
-            } else {
-                echo $this->render_review_question($slot, $attempt);
-            }
-        }
-        $this->base_footer();
-    }
-
-    /**
-     * Renders an individual question review
-     *
-     * This is the "edit" version that are for instructors/users who have the control capability
-     *
-     * @param int $slot
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
-     *
-     * @return string HTML fragment
-     */
-    public function render_edit_review_question($slot, $attempt)
-    {
-        $qnum = $attempt->get_question_number();
-        $output = '';
-
-        $output .= html_writer::start_div('jazzquizbox', [
-            'id' => 'q' . $qnum . '_container'
-        ]);
-
-        $output .= html_writer::start_tag('form', [
-            'action' => '',
-            'method' => 'post',
-            'enctype' => 'multipart/form-data',
-            'accept-charset' => 'utf-8',
-            'id' => 'q' . $qnum,
-            'class' => 'jazzquiz_question',
-            'onsubmit' => 'return false;',
-            'name' => 'q' . $qnum
-        ]);
-
-        $output .= $attempt->render_question($slot, true, 'edit');
-
-        $output .= html_writer::empty_tag('input', [
-            'type' => 'hidden',
-            'name' => 'slots',
-            'value' => $slot
-        ]);
-
-        $output .= html_writer::empty_tag('input', [
-            'type' => 'hidden',
-            'name' => 'slot',
-            'value' => $slot
-        ]);
-
-        $output .= html_writer::empty_tag('input', [
-            'type' => 'hidden',
-            'name' => 'action',
-            'value' => 'savecomment'
-        ]);
-
-        $output .= html_writer::empty_tag('input', [
-            'type' => 'hidden',
-            'name' => 'sesskey',
-            'value' => sesskey()
-        ]);
-
-        $save_button = html_writer::empty_tag('input', [
-            'type' => 'submit',
-            'name' => 'submit',
-            'value' => get_string('savequestion', 'jazzquiz'),
-            'class' => 'form-submit'
-        ]);
-
-        $output .= html_writer::div($save_button, 'save_row');
-
-        // Finish the form.
-        $output .= html_writer::end_tag('form');
-        $output .= html_writer::end_div();
-
-        return $output;
-    }
-
-    /**
-     * Render a review question with no editing capabilities.
-     *
-     * Reviewing will be based upon the after review options specified in module settings
-     *
-     * @param int $slot
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
-     *
-     * @return string HTML fragment for the question
-     */
-    public function render_review_question($slot, $attempt)
-    {
-        $qnum = $attempt->get_question_number();
-        $output = html_writer::start_div('jazzquizbox', [
-            'id' => 'q' . $qnum . '_container'
-        ]);
-        $output .= $attempt->render_question($slot, true, $this->jazzquiz->get_review_options('after'));
-        $output .= html_writer::end_div();
-        return $output;
-    }
-
-    /** End attempt view rendering **/
 
 }

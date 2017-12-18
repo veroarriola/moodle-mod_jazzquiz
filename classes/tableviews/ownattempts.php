@@ -127,13 +127,12 @@ class ownattempts extends \flexible_table
         $data = [];
         $sessions = $this->jazzquiz->get_sessions();
         foreach ($sessions as $session) {
-            /** @var \mod_jazzquiz\jazzquiz_session $session */
             $sessionattempts = $session->getall_attempts(false, 'closed', $USER->id);
             foreach ($sessionattempts as $sattempt) {
                 $ditem = new \stdClass();
                 $ditem->attemptid = $sattempt->id;
                 $ditem->sessionid = $sattempt->sessionid;
-                $ditem->session_name = $session->get_session()->name;
+                $ditem->session_name = $session->data->name;
                 $ditem->timestart = $sattempt->timestart;
                 $ditem->timefinish = $sattempt->timefinish;
                 $data[$sattempt->id] = $ditem;

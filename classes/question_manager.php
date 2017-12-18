@@ -39,24 +39,18 @@ class question_manager
     /** @var jazzquiz */
     public $jazzquiz;
 
-    /** @var array internal use only as we'll always just give out the qbank ordered questions */
-    protected $rtqQuestions;
-
-    /** @var array */
-    protected $qbankOrderedQuestions;
+    /** @var jazzquiz_question[] */
+    protected $ordered_jazzquiz_questions;
 
     /** @var \moodle_url */
     protected $base_url;
 
     /**
-     * Construct an instance of question manager
-     *
      * @param jazzquiz $jazzquiz
      */
     public function __construct($jazzquiz)
     {
         $this->jazzquiz = $jazzquiz;
-        $this->orderedquestions = [];
         $this->base_url = new \moodle_url('/mod/jazzquiz/edit.php', [
             'id' => $jazzquiz->course_module->id
         ]);
@@ -70,8 +64,6 @@ class question_manager
      * valid input saves the question to the quiz at the last position
      *
      * @param int $question_id The question bank's question id
-     *
-     * @return mixed
      */
     public function add_question($question_id)
     {
@@ -80,16 +72,15 @@ class question_manager
         // Check if question has already been added
         if ($this->is_question_already_present($question_id)) {
             $redirect_url = clone($this->base_url);
-            /** @var \moodle_url $redirect_url */
             $redirect_url->remove_params('action'); // Go back to base edit page
             redirect($redirect_url, get_string('cantaddquestiontwice', 'jazzquiz'));
         }
 
         $question = new \stdClass();
-        $question->jazzquizid = $this->jazzquiz->getRTQ()->id;
+        $question->jazzquizid = $this->jazzquiz->data->id;
         $question->questionid = $question_id;
         $question->notime = false;
-        $question->questiontime = $this->jazzquiz->getRTQ()->defaultquestiontime;
+        $question->questiontime = $this->jazzquiz->data->defaultquestiontime;
         $question->tries = 1;
         $question->showhistoryduringquiz = false;
 
@@ -107,8 +98,6 @@ class question_manager
      * Edit a JazzQuiz question
      *
      * @param int $question_id the JazzQuiz question id
-     *
-     * @return mixed
      */
     public function edit_question($question_id)
     {
@@ -118,13 +107,8 @@ class question_manager
         $action_url->param('action', 'editquestion');
         $action_url->param('questionid', $question_id);
 
-        $jazzquiz_question = $DB->get_record('jazzquiz_questions', [
-            'id' => $question_id
-        ], '*', MUST_EXIST);
-
-        $question = $DB->get_record('question', [
-            'id' => $jazzquiz_question->questionid
-        ], '*', MUST_EXIST);
+        $jazzquiz_question = $DB->get_record('jazzquiz_questions', ['id' => $question_id], '*', MUST_EXIST);
+        $question = $DB->get_record('question', ['id' => $jazzquiz_question->questionid], '*', MUST_EXIST);
 
         $mform = new add_question_form($action_url, [
             'jazzquiz' => $this->jazzquiz,
@@ -144,7 +128,7 @@ class question_manager
 
             $question = new \stdClass();
             $question->id = $jazzquiz_question->id;
-            $question->jazzquizid = $this->jazzquiz->getRTQ()->id;
+            $question->jazzquizid = $this->jazzquiz->data->id;
             $question->questionid = $jazzquiz_question->questionid;
             $question->notime = $data->no_time;
             $question->questiontime = $data->question_time;
@@ -227,37 +211,30 @@ class question_manager
 
     /**
      * Returns the questions in the specified question order
-     *
-     * @return array of the question bank ordered questions of \mod_jazzquiz\jazzquiz_question objects
+     * @return jazzquiz_question[]
      */
     public function get_questions()
     {
-        return $this->qbankOrderedQuestions;
+        return $this->ordered_jazzquiz_questions;
     }
 
     /**
      * Gets the question type for the specified question number
-     *
-     * @param int $slot The question number to get the questiontype
-     *
-     *
+     * @param int $slot
      * @return string
      */
     public function get_questiontype_byqnum($slot)
     {
         // Get the actual key for the bank question
-        $bank_keys = array_keys($this->qbankOrderedQuestions);
+        $bank_keys = array_keys($this->ordered_jazzquiz_questions);
         $desired_key = $bank_keys[$slot - 1];
-        $rtqQuestion = $this->qbankOrderedQuestions[$desired_key];
-        return $rtqQuestion->getQuestion()->qtype;
+        $jazzquiz_question = $this->ordered_jazzquiz_questions[$desired_key];
+        return $jazzquiz_question->question->qtype;
     }
 
     /**
-     * shortcut to get the first question
-     *
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
-     *
-     * @return \mod_jazzquiz\jazzquiz_question
+     * @param jazzquiz_attempt $attempt
+     * @return jazzquiz_question
      */
     public function get_first_question($attempt)
     {
@@ -267,10 +244,10 @@ class question_manager
     /**
      * Gets a jazzquiz_question object with the slot set
      *
-     * @param int $slot The index of the slot we want, i.e. the question number
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt The current attempt
+     * @param int $slot
+     * @param jazzquiz_attempt $attempt The current attempt
      *
-     * @return \mod_jazzquiz\jazzquiz_question
+     * @return jazzquiz_question
      */
     public function get_question_with_slot($slot, $attempt)
     {
@@ -279,7 +256,7 @@ class question_manager
 
         // Check if this is the last question
         $is_last_question = empty($slots[$slot]);
-        $attempt->islastquestion($is_last_question);
+        $attempt->set_last_question($is_last_question);
 
         // Since arrays are indexed starting at 0 and we reference questions starting with 1, we subtract 1
         $slot = $slot - 1;
@@ -287,13 +264,11 @@ class question_manager
         // Get the first question
         $quba_question = $quba->get_question($slots[$slot]);
 
-        foreach ($this->qbankOrderedQuestions as $bank_question) {
-            /** @var \mod_jazzquiz\jazzquiz_question $qbankQuestion */
-
-            if ($bank_question->getQuestion()->id == $quba_question->id) {
+        foreach ($this->ordered_jazzquiz_questions as $jazzquiz_question) {
+            if ($jazzquiz_question->question->id == $quba_question->id) {
                 // Set the slot on the bank question as this is the actual id we're using for question number
-                $bank_question->set_slot($slots[$slot]);
-                return $bank_question;
+                $jazzquiz_question->slot = $slots[$slot];
+                return $jazzquiz_question;
             }
         }
 
@@ -303,30 +278,28 @@ class question_manager
 
     /**
      * add the questions to the question usage
-     * This is called by the question_attmept class on construct of a new attempt
+     * This is called by the question_attempt class on construct of a new attempt
      *
      * @param \question_usage_by_activity $quba
-     *
      * @return array
      */
     public function add_questions_to_quba(\question_usage_by_activity $quba)
     {
-        // We need the questionids of our questions
-        $questionids = [];
-        foreach ($this->qbankOrderedQuestions as $qbankquestion) {
-            /** @var jazzquiz_question $qbankquestion */
-            if (!in_array($qbankquestion->getQuestion()->id, $questionids)) {
-                $questionids[] = $qbankquestion->getQuestion()->id;
+        // We need the question ids of our questions
+        $question_ids = [];
+        foreach ($this->ordered_jazzquiz_questions as $jazzquiz_question) {
+            if (!in_array($jazzquiz_question->question->id, $question_ids)) {
+                $question_ids[] = $jazzquiz_question->question->id;
             }
         }
-        $questions = question_load_questions($questionids);
+        $questions = question_load_questions($question_ids);
 
         // Loop through the ordered question bank questions and add them to the quba object
-        $attemptlayout = [];
-        foreach ($this->qbankOrderedQuestions as $qbankquestion) {
-            $question_id = $qbankquestion->getQuestion()->id;
+        $attempt_layout = [];
+        foreach ($this->ordered_jazzquiz_questions as $jazzquiz_question) {
+            $question_id = $jazzquiz_question->question->id;
             $q = \question_bank::make_question($questions[$question_id]);
-            $attemptlayout[$qbankquestion->getId()] = $quba->add_question($q);
+            $attempt_layout[$jazzquiz_question->data->id] = $quba->add_question($q);
         }
 
         // Start the questions in the quba
@@ -337,7 +310,7 @@ class question_manager
          * these are what are used during an actual attempt rather than the question_id themselves, since the question engine will handle
          * the translation
          */
-        return $attemptlayout;
+        return $attempt_layout;
     }
 
     /**
@@ -347,7 +320,7 @@ class question_manager
      */
     protected function get_question_order()
     {
-        return $this->jazzquiz->getRTQ()->questionorder;
+        return $this->jazzquiz->data->questionorder;
     }
 
     /**
@@ -356,10 +329,10 @@ class question_manager
      * @param string
      * @return bool
      */
-    protected function set_question_order($questionorder)
+    protected function set_question_order($question_order)
     {
-        $this->jazzquiz->getRTQ()->questionorder = $questionorder;
-        return $this->jazzquiz->saveRTQ();
+        $this->jazzquiz->data->questionorder = $question_order;
+        return $this->jazzquiz->save();
     }
 
     /**
@@ -475,16 +448,14 @@ class question_manager
 
     /**
      * Check whether the question id has already been added
-     *
      * @param int $question_id
-     *
      * @return bool
      */
     protected function is_question_already_present($question_id)
     {
         // Loop through the db rtq questions and see if we find a match
-        foreach ($this->rtqQuestions as $dbRTQquestion) {
-            if ($dbRTQquestion->questionid == $question_id) {
+        foreach ($this->ordered_jazzquiz_questions as $jazzquiz_question) {
+            if ($jazzquiz_question->data->questionid == $question_id) {
                 return true;
             }
         }
@@ -496,41 +467,19 @@ class question_manager
      *
      * This is the function that should be called so that questions are loaded
      * in the correct order
-     *
      */
-    protected function refresh_questions()
-    {
-        $this->init_rtq_questions();
-        $this->init_qbank_questions();
-    }
-
-    /**
-     * Gets the list of questions from the DB
-     *
-     */
-    private function init_rtq_questions()
-    {
-        global $DB;
-        $this->rtqQuestions = $DB->get_records('jazzquiz_questions', [
-            'jazzquizid' => $this->jazzquiz->getRTQ()->id
-        ]);
-    }
-
-    /**
-     * Orders the real time questions and then
-     * puts question bank ordered questions into the qbankorderedquestions var
-     *
-     */
-    private function init_qbank_questions()
+    private function refresh_questions()
     {
         global $DB;
 
-        // Start by ordering the RTQ question ids into an array
-        $question_order = $this->jazzquiz->getRTQ()->questionorder;
+        $jazzquiz_questions = $DB->get_records('jazzquiz_questions', ['jazzquizid' => $this->jazzquiz->data->id]);
+
+        // Start by ordering the question ids into an array
+        $question_order = $this->jazzquiz->data->questionorder;
 
         // Generate empty array for ordered questions for no question order
         if (empty($question_order)) {
-            $this->qbankOrderedQuestions = [];
+            $this->ordered_jazzquiz_questions = [];
             return;
         } else {
             // Otherwise explode it and continue on
@@ -539,36 +488,27 @@ class question_manager
 
         // Using the question order saved in rtq object, get the qbank question ids from the rtq questions
         $ordered_question_ids = [];
-        foreach ($question_order as $qorder) {
-            // Store the rtq question id as the key so that it can be used later
+        foreach ($question_order as $order_index) {
+            // Store the jazzquiz_question id as the key so that it can be used later
             // when adding question time to question bank question object
-            $ordered_question_ids[$qorder] = $this->rtqQuestions[$qorder]->questionid;
+            $ordered_question_ids[$order_index] = $jazzquiz_questions[$order_index]->questionid;
         }
 
         // Get bank questions based on the question ids from the RTQ questions table
         list($sql, $params) = $DB->get_in_or_equal($ordered_question_ids);
-        $query = 'SELECT * FROM {question} WHERE id ' . $sql;
+        $query = "SELECT * FROM {question} WHERE id $sql";
         $questions = $DB->get_records_sql($query, $params);
 
         // Now order the qbank questions based on the order that we got above
-        $qbankOrderedQuestions = [];
-        foreach ($ordered_question_ids as $rtqqid => $questionid) {
-            // Use the ordered question IDs we got earlier
-            if (!empty($questions[$questionid])) {
-                // Create quiz question and add it to the array
-                $quiz_question = new \mod_jazzquiz\jazzquiz_question(
-                    $rtqqid,
-                    $this->rtqQuestions[$rtqqid]->notime,
-                    $this->rtqQuestions[$rtqqid]->questiontime,
-                    $this->rtqQuestions[$rtqqid]->tries,
-                    $this->rtqQuestions[$rtqqid]->showhistoryduringquiz,
-                    $questions[$questionid]
-                );
-                // Add question to the ordered questions
-                $qbankOrderedQuestions[$rtqqid] = $quiz_question;
+        $ordered_jazzquiz_questions = [];
+        foreach ($ordered_question_ids as $jazzquiz_question_id => $question_id) {
+            if (empty($questions[$question_id])) {
+                continue;
             }
+            $jazzquiz_question = new jazzquiz_question($jazzquiz_questions[$jazzquiz_question_id], $questions[$question_id]);
+            $ordered_jazzquiz_questions[$jazzquiz_question_id] = $jazzquiz_question;
         }
-        $this->qbankOrderedQuestions = $qbankOrderedQuestions;
+        $this->ordered_jazzquiz_questions = $ordered_jazzquiz_questions;
     }
 
 }

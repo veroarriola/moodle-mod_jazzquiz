@@ -61,7 +61,7 @@ class start_session extends \moodleform
      * @param array $data
      * @param array $files
      *
-     * @return array $errors array of errors
+     * @return string[] $errors array of errors
      */
     public function validations($data, $files)
     {

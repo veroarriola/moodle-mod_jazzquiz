@@ -10,7 +10,7 @@ class report_overview
     protected $jazzquiz;
 
     /**
-     * @var \mod_jazzquiz\output\report_overview_renderer $renderer
+     * @var \mod_jazzquiz\output\report_renderer $renderer
      */
     protected $renderer;
 
@@ -20,7 +20,7 @@ class report_overview
     public function __construct($jazzquiz)
     {
         global $PAGE;
-        $this->renderer = $PAGE->get_renderer('mod_jazzquiz', 'report_overview');
+        $this->renderer = $PAGE->get_renderer('mod_jazzquiz', 'report');
         $this->renderer->set_jazzquiz($jazzquiz);
         $this->jazzquiz = $jazzquiz;
     }
@@ -44,13 +44,13 @@ class report_overview
      */
     private function output_csv_report($session, $quiz_attempts)
     {
-        $session_data = $session->get_session();
+        $session_data = $session->data;
         $name = $session_data->id . '_' . $session_data->name;
         header('Content-Disposition: attachment; filename=session_' . $name . '.csv');
         // Go through the slots on the first attempt to output the header row
         $quiz_attempt = reset($quiz_attempts);
         $quba = $quiz_attempt->get_quba();
-        $slots = explode(',', $quiz_attempt->get_attempt()->qubalayout);
+        $slots = explode(',', $quiz_attempt->data->qubalayout);
         echo 'Student,';
         foreach ($slots as $slot) {
             $question_attempt = $quba->get_question_attempt($slot);
@@ -65,7 +65,7 @@ class report_overview
         echo "\r\n";
         foreach ($quiz_attempts as $quiz_attempt) {
             echo $this->csv_escape($quiz_attempt->get_user_full_name()) . ',';
-            $slots = explode(',', $quiz_attempt->get_attempt()->qubalayout);
+            $slots = explode(',', $quiz_attempt->data->qubalayout);
             foreach ($slots as $slot) {
                 $attempt_response = reset($quiz_attempt->get_response_data($slot));
                 if (!$attempt_response) {
@@ -91,8 +91,7 @@ class report_overview
         $question = $question_attempt->get_question();
         $responses = $session->get_question_results_list($slot, 'all');
         $responses = $responses['responses'];
-        $session_data = $session->get_session();
-        $name = $session_data->id . '_' . $session_data->name . '_' . $question->name;
+        $name = $session->data->id . '_' . $session->data->name . '_' . $question->name;
         header('Content-Disposition: attachment; filename=session_' . $name . '.csv');
         echo $question->questiontext . "\r\n";
         foreach ($responses as $response) {
@@ -114,7 +113,7 @@ class report_overview
         // Should probably be refactored in the future.
         $not_responded_user_ids = $all_user_ids;
         $total_responded = [];
-        $row = $quiz_attempt->get_attempt();
+        $row = $quiz_attempt->data;
         $slots = explode(',', $row->qubalayout);
 
         foreach ($slots as $slot) {
@@ -124,7 +123,7 @@ class report_overview
             }
         }
 
-        $name = $session->get_session()->id . '_' . $session->get_session()->name;
+        $name = $session->data->id . '_' . $session->data->name;
         header('Content-Disposition: attachment; filename=session_' . $name . '_attendance.csv');
 
         if ($total_responded) {
@@ -199,7 +198,7 @@ class report_overview
             // If no session id just go to the home page
             $redirect_url = new \moodle_url('/mod/jazzquiz/reports.php', [
                 'id' => $this->jazzquiz->course_module->id,
-                'quizid' => $this->jazzquiz->getRTQ()->id
+                'quizid' => $this->jazzquiz->data->id
             ]);
             redirect($redirect_url, null, 3);
         }
@@ -218,7 +217,7 @@ class report_overview
             return;
         }
 
-        $row = $quiz_attempt->get_attempt();
+        $row = $quiz_attempt->data;
         $slots = explode(',', $row->qubalayout);
         $quba = $quiz_attempt->get_quba();
 
@@ -254,11 +253,6 @@ class report_overview
             $responded = $session->get_responded_list($slot, 'closed');
             if ($responded) {
                 $total_responded = array_merge($total_responded, $responded);
-                /*echo '<script>';
-                foreach ($responded as $responded_user_id) {
-                    echo 'jazzquiz_responded_users.push(\'' . $responded_user_id . '\');';
-                }
-                echo '</script>';*/
             }
 
             $wrapper_id = 'jazzquiz_wrapper_responses_' . intval($slot);
@@ -274,19 +268,8 @@ class report_overview
                 . '</span>'
                 . '<table id="' . $table_id . '" class="jazzquiz-responses-overview"></table>';
 
-            // Output CSV
             $url_params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=response&download&sessionid=$sessionid&slot=$slot";
             echo '<br><a href="reports.php' . $url_params . '">Download responses</a>';
-            /*echo '<details>';
-            echo '<summary style="cursor:pointer;">Show as CSV</summary>';
-            echo '<pre style="font-family:monospace;background:white;padding:8px;border:1px solid #666;">';
-            foreach ($responses as $response) {
-                $response = $response['response'];
-                echo "$response\n";
-            }
-            echo '</pre>';
-            echo '</details><br>';*/
-
             echo '</div>';
 
             echo '<script>'
@@ -366,10 +349,6 @@ class report_overview
                 echo '<br>';
                 $url_params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=attendance&download&sessionid=$sessionid";
                 echo '<a href="reports.php' . $url_params . '">Download attendance list</a>';
-                /*echo '<details>';
-                echo '<summary style="cursor:pointer;">Show as CSV</summary>';
-                echo '<pre style="font-family:monospace;background:white;padding:8px;border:1px solid #666;">' . $attendance_list_csv . '</pre>';
-                echo '</details>';*/
             }
         }
         echo '</div>';

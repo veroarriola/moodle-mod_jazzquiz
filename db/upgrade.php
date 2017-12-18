@@ -32,225 +32,41 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-function xmldb_jazzquiz_upgrade($oldversion) {
+function xmldb_jazzquiz_upgrade($old_version)
+{
     global $DB;
 
-    $dbman = $DB->get_manager();
+    $db_manager = $DB->get_manager();
 
-    if ($oldversion < 2014112002) { // adding group attendance feature, custom points, and review options
-
-        // Define field groupattendance to be added to jazzquiz.
-        $table = new xmldb_table('jazzquiz');
-        $field = new xmldb_field('groupattendance', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'workedingroups');
-
-        // Conditionally launch add field groupattendance.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define table jazzquiz_groupattendance to be created.
-        $table = new xmldb_table('jazzquiz_groupattendance');
-
-        // Adding fields to table jazzquiz_groupattendance.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('jazzquizid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('attemptid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-
-        // Adding keys to table jazzquiz_groupattendance.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-
-        // Conditionally launch create table for jazzquiz_groupattendance.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
-
-        // Define field points to be added to jazzquiz_questions.
-        $table = new xmldb_table('jazzquiz_questions');
-        $field = new xmldb_field('points', XMLDB_TYPE_NUMBER, '10, 2', null, XMLDB_NOTNULL, null, '1.00', 'tries');
-
-        // Conditionally launch add field points.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define field reviewoptions to be added to jazzquiz.
-        $table = new xmldb_table('jazzquiz');
-        $field = new xmldb_field('reviewoptions', XMLDB_TYPE_TEXT, null, null, null, null, null, 'grouping');
-
-        // Conditionally launch add field reviewoptions.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // jazzquiz savepoint reached.
-        upgrade_mod_savepoint(true, 2014112002, 'jazzquiz');
-    }
-
-    if ($oldversion < 2015030300) {
-
-        // Define field showhistoryduringquiz to be added to jazzquiz_questions.
-        $table = new xmldb_table('jazzquiz_questions');
-        $field = new xmldb_field('showhistoryduringquiz', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0', 'points');
-
-        // Conditionally launch add field showhistoryduringquiz.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        $table = new xmldb_table('jazzquiz');
-        $field = new xmldb_field('waitforquestiontime', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, '5', 'defaultquestiontime');
-
-        // Conditionally launch add field waitforquestiontime.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // jazzquiz savepoint reached.
-        upgrade_mod_savepoint(true, 2015030300, 'jazzquiz');
-    }
-
-    if ($oldversion < 2015072200) {
-
-        // Define field anonymizeresponses to be added to jazzquiz.
-        $table = new xmldb_table('jazzquiz');
-        $field = new xmldb_field('anonymizeresponses', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timemodified');
-
-        // Conditionally launch add field anonymizeresponses.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // jazzquiz savepoint reached.
-        upgrade_mod_savepoint(true, 2015072200, 'jazzquiz');
-    }
-
-    if ($oldversion < 2016013100) {
-        $table = new xmldb_table('jazzquiz_attempts');
-        $field = new xmldb_field('questionengid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, 'attemptnum');
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->change_field_type($table, $field);
-        }
-        // jazzquiz savepoint reached.
-        upgrade_mod_savepoint(true, 2016013100, 'jazzquiz');
-    }
-
-    if( $oldversion < 2016030601 ) {
-
-        // Define field anonymizeresponses to be dropped from jazzquiz.
-        $table = new xmldb_table('jazzquiz');
-        $field = new xmldb_field('anonymizeresponses');
-
-        // Conditionally launch drop field anonymizeresponses.
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->drop_field($table, $field);
-        }
-
-        // Define field anonymize_responses to be added to jazzquiz_sessions.
-        $table = new xmldb_table('jazzquiz_sessions');
-        $field = new xmldb_field('anonymize_responses', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'name');
-
-        // Conditionally launch add field anonymize_responses.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define field fully_anonymize to be added to jazzquiz_sessions.
-        $table = new xmldb_table('jazzquiz_sessions');
-        $field = new xmldb_field('fully_anonymize', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'anonymize_responses');
-
-        // Conditionally launch add field fully_anonymize.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define field responded_count to be added to jazzquiz_attempts.
-        $table = new xmldb_table('jazzquiz_attempts');
-        $field = new xmldb_field('responded_count', XMLDB_TYPE_INTEGER, '11', null, null, null, '0', 'responded');
-
-        // Conditionally launch add field responded_count.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // jazzquiz savepoint reached.
-        upgrade_mod_savepoint(true, 2016030601, 'jazzquiz');
-    }
-
-    if ($oldversion < 2017010433) {
-
-        // Define table jazzquiz_votes to be created.
-        $table = new xmldb_table('jazzquiz_votes');
-
-        // Adding fields to table jazzquiz_votes.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('jazzquizid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('attempt', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
-        $table->add_field('initialcount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('finalcount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('userlist', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
-
-        // Adding keys to table jazzquiz_votes.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-
-        // Conditionally launch create table for jazzquiz_votes.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
-
-        // jazzquiz savepoint reached.
-        upgrade_mod_savepoint(true, 2017010433, 'jazzquiz');
-    }
-
-    if ($oldversion < 2017010880) {
-
+    if ($old_version < 2017010880) {
         $table = new xmldb_table('jazzquiz_votes');
         $field = new xmldb_field('slot', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-
-        // Conditionally launch add field slot.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+        if (!$db_manager->field_exists($table, $field)) {
+            $db_manager->add_field($table, $field);
         }
-
-        // jazzquiz savepoint reached.
         upgrade_mod_savepoint(true, 2017010880, 'jazzquiz');
-
     }
 
-    if ($oldversion < 2017082238) {
-
+    if ($old_version < 2017082238) {
         $jazzquiz_table = new xmldb_table('jazzquiz');
         $jazzquiz_grades_table = new xmldb_table('jazzquiz_grades');
         $jazzquiz_questions_table = new xmldb_table('jazzquiz_questions');
         $jazzquiz_sessions_table = new xmldb_table('jazzquiz_sessions');
-
-        $dbman->drop_table($jazzquiz_grades_table);
-
+        $db_manager->drop_table($jazzquiz_grades_table);
         $field = new xmldb_field('reviewoptions', XMLDB_TYPE_TEXT, null, null, null, null, null);
-        $dbman->drop_field($jazzquiz_table, $field);
-
-        $field = new xmldb_field('scale', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, null, null);
-        $dbman->drop_field($jazzquiz_table, $field);
-
+        $db_manager->drop_field($jazzquiz_table, $field);
+        $field = new xmldb_field('scale', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $db_manager->drop_field($jazzquiz_table, $field);
         $field = new xmldb_field('graded', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '1');
-        $dbman->drop_field($jazzquiz_table, $field);
-
+        $db_manager->drop_field($jazzquiz_table, $field);
         $field = new xmldb_field('grademethod', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, null);
-        $dbman->drop_field($jazzquiz_table, $field);
-
+        $db_manager->drop_field($jazzquiz_table, $field);
         $field = new xmldb_field('points', XMLDB_TYPE_INTEGER, '10, 2', null, XMLDB_NOTNULL, null, '1.00', 'tries');
-        $dbman->drop_field($jazzquiz_questions_table, $field);
-
+        $db_manager->drop_field($jazzquiz_questions_table, $field);
         $field = new xmldb_field('anonymize_responses', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, '0');
-        $dbman->drop_field($jazzquiz_sessions_table, $field);
-
+        $db_manager->drop_field($jazzquiz_sessions_table, $field);
         $field = new xmldb_field('classresult', XMLDB_TYPE_NUMBER, '6, 2', null, null, null, null);
-        $dbman->drop_field($jazzquiz_sessions_table, $field);
-
-        // jazzquiz savepoint reached.
+        $db_manager->drop_field($jazzquiz_sessions_table, $field);
         upgrade_mod_savepoint(true, 2017082238, 'jazzquiz');
     }
 

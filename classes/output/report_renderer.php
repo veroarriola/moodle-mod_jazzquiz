@@ -38,13 +38,52 @@ class report_renderer extends \plugin_renderer_base
         $this->base_header('reports');
     }
 
-    /**
-     * Basic footer for the responses page
-     *
-     */
     public function report_footer()
     {
         $this->base_footer();
+    }
+
+    /**
+     * Renders and echos the home page for the responses section
+     * @param \moodle_url $url
+     * @param \mod_jazzquiz\jazzquiz_session[] $sessions
+     * @param string|int $selected_id
+     */
+    public function select_session($url, $sessions, $selected_id = '')
+    {
+        $output = '';
+
+        $select_session = \html_writer::start_div('');
+        $select_session .= \html_writer::tag('h3', get_string('select_session', 'jazzquiz'), ['class' => 'inline-block']) . '<br>';
+        $session_select_url = clone($url);
+        $session_select_url->param('action', 'viewsession');
+
+        $session_options = [];
+        foreach ($sessions as $session) {
+            $session_options[$session->data->id] = $session->data->name;
+        }
+
+        $session_select = new \single_select($session_select_url, 'sessionid', $session_options, $selected_id);
+
+        $select_session .= \html_writer::div($this->output->render($session_select), 'inline-block');
+        $select_session .= \html_writer::end_div();
+
+        $output .= $select_session;
+        $output = \html_writer::div($output, 'jazzquizbox');
+        echo $output;
+    }
+
+    /**
+     * Renders the session attempts table
+     *
+     * @param \mod_jazzquiz\tableviews\sessionattempts $session_attempts
+     */
+    public function view_session_attempts($session_attempts)
+    {
+        $session_attempts->setup();
+        $session_attempts->show_download_buttons_at([TABLE_P_BOTTOM]);
+        $session_attempts->set_data();
+        $session_attempts->finish_output();
     }
 
 }

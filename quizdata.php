@@ -51,23 +51,23 @@ function start_question($jazzquiz, $session, $question)
     $session->set_status('running');
 
     $question_time = 0;
-    if ($question->getNoTime() == 0) {
+    if ($question->data->notime == 0) {
         // This question has a time limit
-        if ($question->getQuestionTime() == 0) {
-            $question_time = $jazzquiz->getRTQ()->defaultquestiontime;
+        if ($question->data->questiontime == 0) {
+            $question_time = $jazzquiz->data->defaultquestiontime;
         } else {
-            $question_time = $question->getQuestionTime();
+            $question_time = $question->data->questiontime;
         }
     }
 
     print_json([
         'status' => 'startedquestion',
-        'slot' => $question->get_slot(),
+        'slot' => $question->slot,
         'lastquestion' => ($attempt->lastquestion ? 'true' : 'false'),
-        'nextstarttime' => $session->get_session()->nextstarttime,
-        'notime' => $question->getNoTime(),
+        'nextstarttime' => $session->data->nextstarttime,
+        'notime' => $question->data->notime,
         'questiontime' => $question_time,
-        'delay' => $session->get_session()->nextstarttime - time()
+        'delay' => $session->data->nextstarttime - time()
     ]);
 }
 
@@ -80,7 +80,7 @@ function show_all_improvisation_questions($jazzquiz)
     global $DB;
 
     $quiz_questions = $DB->get_records('jazzquiz_questions', [
-        'jazzquizid' => $jazzquiz->getRTQ()->id
+        'jazzquizid' => $jazzquiz->data->id
     ]);
 
     if (!$quiz_questions) {
@@ -116,7 +116,7 @@ function show_all_improvisation_questions($jazzquiz)
         }
 
         // Let's find its question number in the quiz
-        $question_order = $jazzquiz->getRTQ()->questionorder;
+        $question_order = $jazzquiz->data->questionorder;
         $ordered_jazzquiz_question_ids = explode(',', $question_order);
         $slot = 0;
         foreach ($ordered_jazzquiz_question_ids as $id) {
@@ -152,14 +152,14 @@ function start_goto_question($jazzquiz, $session, $slot)
 
     if (!empty($keep_flow)) {
         // Only one keep_flow at a time. Two improvised questions can be run after eachother.
-        if ($session->get_session()->nextqnum == 0) {
+        if ($session->data->nextqnum == 0) {
             // Get last and current slot
-            $last_slot = count($jazzquiz->getRTQ()->questionorder);
-            $current_slot = intval($session->get_session()->currentqnum);
+            $last_slot = count($jazzquiz->data->questionorder);
+            $current_slot = intval($session->data->currentqnum);
             // Does the next slot exist?
             if ($last_slot >= $current_slot + 1) {
                 // Okay, let's save it
-                $session->get_session()->nextqnum = $current_slot + 1;
+                $session->data->nextqnum = $current_slot + 1;
                 $session->save_session();
             }
         }
@@ -183,7 +183,7 @@ function start_goto_question($jazzquiz, $session, $slot)
  */
 function start_quiz($session)
 {
-    $session->start_quiz();
+    $session->set_status('preparing');
     print_json([
         'status' => 'startedquiz'
     ]);
@@ -195,7 +195,7 @@ function start_quiz($session)
 function save_question($session)
 {
     // Check if we're working on the current question for the session
-    $current_question = $session->get_session()->currentquestion;
+    $current_question = $session->data->currentquestion;
     $js_current_question = required_param('questionid', PARAM_INT);
     if ($current_question != $js_current_question) {
         print_json([
@@ -209,7 +209,7 @@ function save_question($session)
     $attempt = $session->get_open_attempt();
 
     // Does it belong to this user?
-    if ($attempt->userid != $session->get_current_userid()) {
+    if ($attempt->data->userid != $session->get_current_userid()) {
         print_json([
             'status' => 'error',
             'message' => 'Invalid user'
@@ -228,13 +228,13 @@ function save_question($session)
 
     // Only give feedback if specified in session
     $feedback = '';
-    if ($session->get_session()->showfeedback) {
+    if ($session->data->showfeedback) {
         $feedback = $attempt->get_question_feedback();
     }
 
     // We need to send the updated sequence check for javascript to update.
     // Get the sequence check on the question form. This allows the question to be resubmitted again.
-    list($seqname, $seqvalue) = $attempt->get_sequence_check($session->get_session()->currentqnum);
+    list($seqname, $seqvalue) = $attempt->get_sequence_check($session->data->currentqnum);
 
     print_json([
         'status' => 'success',
@@ -277,9 +277,9 @@ function run_voting($jazzquiz, $session)
     }
 
     // Initialize the votes
-    $vote = new jazzquiz_vote($session->get_session()->id);
-    $slot = $session->get_session()->currentqnum;
-    $vote->prepare_options($jazzquiz->getRTQ()->id, $question_type, $questions, $slot);
+    $vote = new jazzquiz_vote($session->data->id);
+    $slot = $session->data->currentqnum;
+    $vote->prepare_options($jazzquiz->data->id, $question_type, $questions, $slot);
 
     $session->set_status('voting');
 
@@ -310,7 +310,7 @@ function save_vote($session)
     $user_id = $session->get_current_userid();
 
     // Save the vote
-    $vote = new jazzquiz_vote($session->get_session()->id);
+    $vote = new jazzquiz_vote($session->data->id);
     $status = $vote->save_vote($vote_id, $user_id);
 
     print_json([
@@ -323,7 +323,7 @@ function save_vote($session)
  */
 function get_vote_results($session)
 {
-    $vote = new jazzquiz_vote($session->get_session()->id, $session->get_session()->currentqnum);
+    $vote = new jazzquiz_vote($session->data->id, $session->data->currentqnum);
     $votes = $vote->get_results();
     print_json([
         'status' => 'success',
@@ -339,11 +339,11 @@ function get_vote_results($session)
 function next_question($jazzquiz, $session)
 {
     // Are we coming from an improvised question?
-    if ($session->get_session()->nextqnum != 0) {
+    if ($session->data->nextqnum != 0) {
         // Yes, we likely are. Let's get that question
-        $question = $session->goto_question($session->get_session()->nextqnum);
+        $question = $session->goto_question($session->data->nextqnum);
         // We should also reset the nextqnum, since we're back in the right quiz flow again.
-        $session->get_session()->nextqnum = 0;
+        $session->data->nextqnum = 0;
         $session->save_session();
     } else {
         // Doesn't seem that way. Let's just start the next question in the ordered list.
@@ -421,12 +421,12 @@ function get_results($jazzquiz, $session)
 {
     // Get the results
     $question_manager = $jazzquiz->question_manager;
-    $slot = $session->get_session()->currentqnum;
+    $slot = $session->data->currentqnum;
     $question_type = $question_manager->get_questiontype_byqnum($slot);
     $responses = $session->get_question_results_list($slot, 'open');
 
     // Check if this has been voted on before
-    $vote = new \mod_jazzquiz\jazzquiz_vote($session->get_session()->id, $slot);
+    $vote = new jazzquiz_vote($session->data->id, $slot);
     $has_votes = count($vote->get_results()) > 0;
 
     print_json([
@@ -523,7 +523,7 @@ function jazzquiz_quizdata()
     $attempt_id = required_param('attemptid', PARAM_INT);
     $action = required_param('action', PARAM_ALPHANUMEXT);
 
-    $jazzquiz = new \mod_jazzquiz\jazzquiz($course_module_id, null);
+    $jazzquiz = new jazzquiz($course_module_id, null);
 
     $session = $DB->get_record('jazzquiz_sessions', [ 'id' => $session_id ], '*', MUST_EXIST);
     if (!$session->sessionopen) {
@@ -534,10 +534,10 @@ function jazzquiz_quizdata()
         return;
     }
 
-    $session = new \mod_jazzquiz\jazzquiz_session($jazzquiz, $session);
+    $session = new jazzquiz_session($jazzquiz, $session);
 
     $attempt = $session->get_user_attempt($attempt_id);
-    if ($attempt->getStatus() != 'inprogress') {
+    if ($attempt->get_status() != 'inprogress') {
         print_json([
             'status' => 'error',
             'message' => "Invalid attempt $attempt_id"
