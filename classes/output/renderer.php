@@ -380,7 +380,7 @@ class renderer extends \plugin_renderer_base
         // Instructors don't need to save questions
         $savebtncont = '';
         if (!$this->jazzquiz->is_instructor()) {
-            $savebtncont = html_writer::div($savebtn, 'question_save');
+            $savebtncont = \html_writer::div($savebtn, 'question_save');
         }
 
         $output .= \html_writer::div($savebtncont . '<br>' . $try_text, 'save_row');
