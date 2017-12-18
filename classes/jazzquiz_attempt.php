@@ -81,11 +81,7 @@ class jazzquiz_attempt
             // Create a new quba since we're creating a new attempt
             $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->question_manager->jazzquiz->context);
             $this->quba->set_preferred_behaviour('immediatefeedback');
-
-            $attempt_layout = $this->question_manager->add_questions_to_quba($this->quba);
-
-            // Add the attempt layout to this instance
-            $this->data->qubalayout = implode(',', $attempt_layout);
+            $this->question_manager->add_questions_to_quba($this->quba);
 
         } else {
             // Load it up in this class instance
@@ -269,12 +265,15 @@ class jazzquiz_attempt
     }
 
     /**
-     * Returns quba layout as an array (the question slots)
-     * @return int[]
+     * @return array int[]
      */
-    public function getSlots()
+    public function get_slots()
     {
-        return explode(',', $this->data->qubalayout);
+        $slots = [];
+        foreach ($this->quba->get_slots() as $slot => $question_attempt) {
+            $slots[] = $slot + 1;
+        }
+        return $slots;
     }
 
     /**
@@ -289,7 +288,7 @@ class jazzquiz_attempt
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
             // Build an array of slots keyed by the question id they match to
             $slots_by_question_id = [];
-            foreach ($this->getSlots() as $slot) {
+            foreach ($this->get_slots() as $slot) {
                 $question_id = $this->quba->get_question($slot)->id;
                 $slots_by_question_id[$question_id] = $slot;
             }
@@ -335,12 +334,9 @@ class jazzquiz_attempt
      */
     public function get_html_head_contributions()
     {
-        // Get the slots ids from the quba layout
-        $slots = explode(',', $this->data->qubalayout);
-
         // Next load the slot head html and initialize question engine js
         $result = '';
-        foreach ($slots as $slot) {
+        foreach ($this->get_slots() as $slot) {
             $result .= $this->quba->render_question_head_html($slot);
         }
         $result .= \question_engine::initialise_js();

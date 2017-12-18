@@ -146,8 +146,8 @@ class jazzquiz_session
             'sessionid' => $session_id
         ]);
         \question_engine::delete_questions_usage_by_activities($quba_condition);
-        $DB->delete_records('jazzquiz_attempts', [ 'sessionid' => $session_id ]);
-        $DB->delete_records('jazzquiz_sessions', [ 'id' => $session_id ]);
+        $DB->delete_records('jazzquiz_attempts', ['sessionid' => $session_id]);
+        $DB->delete_records('jazzquiz_sessions', ['id' => $session_id]);
         return true;
     }
 
@@ -196,7 +196,7 @@ class jazzquiz_session
      * Re-poll the "active" question.  really we're just updating times and things to re-poll
      * The question.
      *
-     * @return \mod_jazzquiz\jazzquiz_question
+     * @return jazzquiz_question
      * @throws \Exception Throws exception when invalid question number
      */
     public function repoll_question()
@@ -273,9 +273,7 @@ class jazzquiz_session
 
         // TODO: Remove this and update the JavaScript instead. The 'response' key is kinda useless.
         foreach ($responses as &$response) {
-            $response = [
-                'response' => $response
-            ];
+            $response = ['response' => $response];
         }
 
         return [
@@ -489,11 +487,9 @@ class jazzquiz_session
     }
 
     /**
-     * gets a specific attempt from the DB
-     *
+     * Get the specific attempt from the DB
      * @param int $attempt_id
-     *
-     * @return \mod_jazzquiz\jazzquiz_attempt
+     * @return jazzquiz_attempt
      */
     public function get_user_attempt($attempt_id)
     {
@@ -501,7 +497,7 @@ class jazzquiz_session
         if (empty($this->data)) {
             return null;
         }
-        $attempt = $DB->get_record('jazzquiz_attempts', [ 'id' => $attempt_id ]);
+        $attempt = $DB->get_record('jazzquiz_attempts', ['id' => $attempt_id]);
         return new jazzquiz_attempt($this->jazzquiz->question_manager, $attempt, $this->jazzquiz->context);
     }
 
@@ -509,7 +505,7 @@ class jazzquiz_session
      * Get the current attempt for the current user, if there is one open.  If there is no open attempt
      * for the current user, false is returned
      *
-     * @return \mod_jazzquiz\jazzquiz_attempt|bool Returns the open attempt or false if there is none
+     * @return jazzquiz_attempt|bool Returns the open attempt or false if there is none
      */
     public function get_open_attempt_for_current_user()
     {
@@ -594,7 +590,6 @@ class jazzquiz_session
         foreach ($db_attempts as $db_attempt) {
             $attempts[$db_attempt->id] = new jazzquiz_attempt($this->jazzquiz->question_manager, $db_attempt, $this->jazzquiz->context);
         }
-
         return $attempts;
     }
 

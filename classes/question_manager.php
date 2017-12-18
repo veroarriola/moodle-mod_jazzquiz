@@ -251,23 +251,17 @@ class question_manager
      */
     public function get_question_with_slot($slot, $attempt)
     {
-        $slots = $attempt->getSlots();
         $quba = $attempt->get_quba();
 
-        // Check if this is the last question
-        $is_last_question = empty($slots[$slot]);
-        $attempt->set_last_question($is_last_question);
+        // TODO: Fix this
+        //$attempt->set_last_question($is_last_question);
 
-        // Since arrays are indexed starting at 0 and we reference questions starting with 1, we subtract 1
-        $slot = $slot - 1;
-
-        // Get the first question
-        $quba_question = $quba->get_question($slots[$slot]);
+        $quba_question = $quba->get_question($slot);
 
         foreach ($this->ordered_jazzquiz_questions as $jazzquiz_question) {
             if ($jazzquiz_question->question->id == $quba_question->id) {
                 // Set the slot on the bank question as this is the actual id we're using for question number
-                $jazzquiz_question->slot = $slots[$slot];
+                $jazzquiz_question->slot = $slot;
                 return $jazzquiz_question;
             }
         }
@@ -281,9 +275,9 @@ class question_manager
      * This is called by the question_attempt class on construct of a new attempt
      *
      * @param \question_usage_by_activity $quba
-     * @return array
+     * @return int[] jazzquiz_question id => slot
      */
-    public function add_questions_to_quba(\question_usage_by_activity $quba)
+    public function add_questions_to_quba($quba)
     {
         // We need the question ids of our questions
         $question_ids = [];

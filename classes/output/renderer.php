@@ -294,8 +294,7 @@ class renderer extends \plugin_renderer_base
         ]);
 
         // Question form containers
-        foreach ($attempt->getSlots() as $slot) {
-            // Render the question form.
+        foreach ($attempt->get_slots() as $slot) {
             $output .= $this->render_question_form($slot, $attempt);
         }
 
@@ -545,7 +544,7 @@ EOD;
         $quiz->session_id = $session->data->id;
         $quiz->attempt_id = $attempt->data->id;
         $quiz->session_key = sesskey();
-        $quiz->slots = $attempt->getSlots();
+        $quiz->slots = $attempt->get_slots();
         $quiz->total_students = $session->get_student_count();
 
         $quiz->questions = [];
