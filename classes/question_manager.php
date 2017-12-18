@@ -70,11 +70,11 @@ class question_manager
         global $DB;
 
         // Check if question has already been added
-        if ($this->is_question_already_present($question_id)) {
+        /*if ($this->is_question_already_present($question_id)) {
             $redirect_url = clone($this->base_url);
             $redirect_url->remove_params('action'); // Go back to base edit page
             redirect($redirect_url, get_string('cantaddquestiontwice', 'jazzquiz'));
-        }
+        }*/
 
         $question = new \stdClass();
         $question->jazzquizid = $this->jazzquiz->data->id;

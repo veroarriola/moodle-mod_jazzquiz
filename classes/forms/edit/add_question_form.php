@@ -51,7 +51,7 @@ class add_question_form extends \moodleform
     {
         $mform = $this->_form;
         $jazzquiz = $this->_customdata['jazzquiz'];
-        $defaultTime = $jazzquiz->getRTQ()->defaultquestiontime;
+        $defaultTime = $jazzquiz->data->defaultquestiontime;
 
         $mform->addElement('static', 'questionid', get_string('question', 'jazzquiz'), $this->_customdata['questionname']);
 
@@ -79,12 +79,12 @@ class add_question_form extends \moodleform
         $mform->setDefault('show_history_during_quiz', $this->_customdata['show_history_during_quiz']);
 
         if (!empty($this->_customdata['edit'])) {
-            $savestring = get_string('save_question', 'jazzquiz');
+            $save_string = get_string('save_question', 'jazzquiz');
         } else {
-            $savestring = get_string('add_question', 'jazzquiz');
+            $save_string = get_string('add_question', 'jazzquiz');
         }
 
-        $this->add_action_buttons(true, $savestring);
+        $this->add_action_buttons(true, $save_string);
     }
 
     /**
@@ -98,21 +98,17 @@ class add_question_form extends \moodleform
     public function validation($data, $files)
     {
         $errors = [];
-
         if (!filter_var($data['question_time'], FILTER_VALIDATE_INT) && $data['question_time'] !== 0) {
             $errors['question_time'] = get_string('invalid_question_time', 'jazzquiz');
         } else if ($data['question_time'] < 0) {
             $errors['question_time'] = get_string('invalid_question_time', 'jazzquiz');
         }
-
         if (!filter_var($data['number_of_tries'], FILTER_VALIDATE_INT) && $data['number_of_tries'] !== 0) {
             $errors['number_of_tries'] = get_string('invalid_number_of_tries', 'jazzquiz');
         } else if ($data['number_of_tries'] < 1) {
             $errors['number_of_tries'] = get_string('invalid_number_of_tries', 'jazzquiz');
         }
-
         return $errors;
     }
 
 }
-

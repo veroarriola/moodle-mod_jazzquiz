@@ -278,61 +278,32 @@ class jazzquiz_attempt
     }
 
     /**
-     * Gets the slot for the jazzquiz question
-     * @param jazzquiz_question $question
-     * @return int
-     */
-    public function get_question_slot($question)
-    {
-        // Build if not available
-        if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
-            // Build an array of slots keyed by the question_id they match to
-            $slots_by_question_id = [];
-            foreach ($this->getSlots() as $slot) {
-                $slots_by_question_id[$this->quba->get_question($slot)->id] = $slot;
-            }
-            $this->slotsbyquestionid = $slots_by_question_id;
-        }
-        $question_id = $question->question->id;
-        if (!empty($this->slotsbyquestionid[$question_id])) {
-            return $this->slotsbyquestionid[$question_id];
-        }
-        return false;
-    }
-
-    /**
      * Gets the jazzquiz question class object for the slot
      *
      * @param int $asked_slot
-     * @return jazzquiz_question | false
+     * @return jazzquiz_question|false
      */
     public function get_question_by_slot($asked_slot)
     {
         // Build if not available
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
-
             // Build an array of slots keyed by the question id they match to
             $slots_by_question_id = [];
-
             foreach ($this->getSlots() as $slot) {
                 $question_id = $this->quba->get_question($slot)->id;
                 $slots_by_question_id[$question_id] = $slot;
             }
-
             $this->slotsbyquestionid = $slots_by_question_id;
         }
-
         $question_id = array_search($asked_slot, $this->slotsbyquestionid);
         if (empty($question_id)) {
             return false;
         }
-
         foreach ($this->get_questions() as $question) {
             if ($question->question->id == $question_id) {
                 return $question;
             }
         }
-
         return false;
     }
 

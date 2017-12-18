@@ -71,10 +71,10 @@ function get_question_bank_view($contexts, $jazzquiz, $url, $page_vars)
 
 /**
  * Echos the list of questions using the renderer for jazzquiz.
- * @param $contexts
+ * @param \context[] $contexts
  * @param jazzquiz $jazzquiz
  * @param string $url
- * @param $page_vars
+ * @param array $page_vars
  */
 function list_questions($contexts, $jazzquiz, $url, $page_vars)
 {
@@ -109,10 +109,10 @@ function jazzquiz_edit_drag_and_drop($jazzquiz)
 
 /**
  * @param jazzquiz $jazzquiz
- * @param $contexts
+ * @param \context[] $contexts
  * @param string $url
- * @param $page_vars
- * @param $direction
+ * @param array $page_vars
+ * @param string $direction
  */
 function jazzquiz_edit_move($jazzquiz, $contexts, $url, $page_vars, $direction)
 {
@@ -126,7 +126,7 @@ function jazzquiz_edit_move($jazzquiz, $contexts, $url, $page_vars, $direction)
         $message = get_string('failed_to_move_question', 'jazzquiz');
     }
     $renderer = $jazzquiz->renderer;
-    $renderer->setMessage($type, $message);
+    //$renderer->setMessage($type, $message);
     $renderer->print_header();
     list_questions($contexts, $jazzquiz, $url, $page_vars);
     $renderer->footer();
@@ -152,22 +152,23 @@ function jazzquiz_edit_edit_question($jazzquiz)
 
 /**
  * @param jazzquiz $jazzquiz
- * @param $contexts
+ * @param \context[] $contexts
  * @param string $url
- * @param $page_vars
+ * @param array $page_vars
  */
 function jazzquiz_edit_delete_question($jazzquiz, $contexts, $url, $page_vars)
 {
     $question_id = required_param('questionid', PARAM_INT);
-    if ($jazzquiz->question_manager->delete_question($question_id)) {
+    $success = $jazzquiz->question_manager->delete_question($question_id);
+    /*if ($success) {
         $type = 'success';
         $message = get_string('successfully_deleted_question', 'jazzquiz');
     } else {
         $type = 'error';
         $message = get_string('failed_to_delete_question', 'jazzquiz');
-    }
+    }*/
     $renderer = $jazzquiz->renderer;
-    $renderer->setMessage($type, $message);
+    //$renderer->setMessage($type, $message);
     $renderer->print_header();
     list_questions($contexts, $jazzquiz, $url, $page_vars);
     $renderer->footer();
@@ -220,7 +221,7 @@ function jazzquiz_edit()
     $jazzquiz->reload();
 
     $module_name = get_string('modulename', 'jazzquiz');
-    $quiz_name = format_string($jazzquiz->name, true);
+    $quiz_name = format_string($jazzquiz->data->name, true);
 
     $PAGE->set_url($url);
     $PAGE->set_title(strip_tags($jazzquiz->course->shortname . ': ' . $module_name . ': ' . $quiz_name));

@@ -364,10 +364,10 @@ class renderer extends \plugin_renderer_base
             'onclick' => 'jazzquiz.save_question(\'q' . $qnum . '\'); return false;'
         ]);
 
-        $rtqQuestion = $attempt->get_question_by_slot($slot);
-        if ($rtqQuestion !== false && $rtqQuestion->data->tries > 1 && !$this->jazzquiz->is_instructor()) {
+        $jazzquiz_question = $attempt->get_question_by_slot($slot);
+        if ($jazzquiz_question !== false && $jazzquiz_question->data->tries > 1 && !$this->jazzquiz->is_instructor()) {
             $count = new \stdClass();
-            $count->tries = $rtqQuestion->data->tries;
+            $count->tries = $jazzquiz_question->data->tries;
             $try_text = \html_writer::div(get_string('trycount', 'jazzquiz', $count), 'trycount', [
                 'id' => 'q' . $qnum . '_trycount'
             ]);
@@ -517,10 +517,7 @@ class renderer extends \plugin_renderer_base
         $this->page->requires->js('/mod/jazzquiz/js/core.js');
 
         // add window.onload script manually to handle removing the loading mask
-        echo \html_writer::start_tag('script', [
-            'type' => 'text/javascript'
-        ]);
-
+        echo \html_writer::start_tag('script', [ 'type' => 'text/javascript' ]);
         echo <<<EOD
             (function preLoad(){
                 window.addEventListener('load', function(){jazzquiz.quiz_page_loaded();}, false);
@@ -554,13 +551,17 @@ EOD;
         $quiz->questions = [];
         $quiz->resume = new \stdClass();
 
-        foreach ($attempt->get_questions() as $q) {
+        $ordered_jazzquiz_questions = $attempt->get_questions();
+        $slot = 1;
+        foreach ($ordered_jazzquiz_questions as $q) {
             $question = new \stdClass();
             $question->id = $q->data->id;
             $question->questiontime = $q->data->questiontime;
             $question->tries = $q->data->tries;
             $question->question = $q->question;
-            $question->slot = $attempt->get_question_slot($q);
+            $question->slot = $slot;
+            $slot++;
+
             // If the slot is false, throw exception for invalid question on quiz attempt
             if ($question->slot === false) {
                 $a = new \stdClass();
