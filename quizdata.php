@@ -43,6 +43,41 @@ function print_json($array)
 /**
  * @param jazzquiz $jazzquiz
  * @param jazzquiz_session $session
+ * @param int $question_id (from question bank)
+ * @return int 0 means error, >0 is valid slot
+ */
+function add_question_to_running_quiz($jazzquiz, $session, $question_id)
+{
+    global $DB;
+    $question_definition = reset(question_load_questions([$question_id]));
+    if (!$question_definition) {
+        return 0;
+    }
+    // TODO: Transaction?
+    $jazzquiz_question = new \stdClass();
+    $jazzquiz_question->jazzquizid = $jazzquiz->data->id;
+    $jazzquiz_question->questionid = $question_id;
+    $jazzquiz_question->notime = 0;
+    $jazzquiz_question->questiontime = 111;
+    $jazzquiz_question->tries = 1;
+    $jazzquiz_question->showhistoryduringquiz = 0;
+    $jazzquiz_question->id = $DB->insert_record('jazzquiz_questions', $jazzquiz_question);
+    $jazzquiz->data->questionorder .= ',' . $jazzquiz_question->id;
+    $jazzquiz->save();
+    $slot = 0;
+    $attempts = $session->getall_attempts(true);
+    foreach ($attempts as $attempt) {
+        $question = \question_bank::make_question($question_definition);
+        $slot = $attempt->quba->add_question($question);
+        $attempt->quba->start_question($slot);
+        $attempt->save();
+    }
+    return $slot;
+}
+
+/**
+ * @param jazzquiz $jazzquiz
+ * @param jazzquiz_session $session
  * @param jazzquiz_question $question
  */
 function start_question($jazzquiz, $session, $question)
@@ -150,6 +185,9 @@ function start_goto_question($jazzquiz, $session, $slot)
     // Are we going to keep or break the flow of the quiz?
     $keep_flow = optional_param('keepflow', '', PARAM_TEXT);
 
+    // Do we want to add a duplicate definition to the end of the quiz?
+    $add_slot = optional_param('add', '', PARAM_TEXT);
+
     if (!empty($keep_flow)) {
         // Only one keep_flow at a time. Two improvised questions can be run after eachother.
         if ($session->data->nextqnum == 0) {
@@ -163,6 +201,24 @@ function start_goto_question($jazzquiz, $session, $slot)
                 $session->save_session();
             }
         }
+    }
+
+    if (!empty($add_slot)) {
+        $attempt = $session->get_open_attempt();
+        $question = $attempt->quba->get_question($slot);
+        $slot = add_question_to_running_quiz($jazzquiz, $session, $question->id);
+        if ($slot === 0) {
+            print_json([
+                'status' => 'error',
+                'message' => "Failed to add duplicate question definition by slot $slot"
+            ]);
+            return;
+        }
+        // We must update the quba of our attempt
+        $attempt_id = required_param('attemptid', PARAM_INT);
+        $attempt = $session->get_user_attempt($attempt_id);
+        $session->set_open_attempt($attempt);
+        $session->jazzquiz->question_manager = new question_manager($session->jazzquiz);
     }
 
     // Get question to go to
@@ -369,7 +425,7 @@ function repoll_question($jazzquiz, $session)
 function goto_question($jazzquiz, $session)
 {
     // Get the question number to go to
-    $slot = optional_param('qnum', '', PARAM_INT);
+    $slot = optional_param('slot', '', PARAM_INT);
     if (empty($slot)) {
         print_json([
             'status' => 'error',
@@ -422,7 +478,7 @@ function get_results($jazzquiz, $session)
     // Get the results
     $question_manager = $jazzquiz->question_manager;
     $slot = $session->data->currentqnum;
-    $question_type = $question_manager->get_questiontype_byqnum($slot);
+    $question_type = $question_manager->get_question_type_by_slot($slot);
     $responses = $session->get_question_results_list($slot, 'open');
 
     // Check if this has been voted on before
@@ -525,7 +581,7 @@ function jazzquiz_quizdata()
 
     $jazzquiz = new jazzquiz($course_module_id, null);
 
-    $session = $DB->get_record('jazzquiz_sessions', [ 'id' => $session_id ], '*', MUST_EXIST);
+    $session = $DB->get_record('jazzquiz_sessions', ['id' => $session_id], '*', MUST_EXIST);
     if (!$session->sessionopen) {
         print_json([
             'status' => 'error',

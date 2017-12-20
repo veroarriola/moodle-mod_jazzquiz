@@ -479,7 +479,7 @@ class renderer extends \plugin_renderer_base
 
         // Loop through each question and add it as an option
         $slot = 1;
-        foreach ($attempt->get_questions() as $question) {
+        foreach ($attempt->question_manager->jazzquiz_questions as $question) {
             // Hide improvised questions
             if (substr($question->question->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
                 continue;
@@ -550,7 +550,7 @@ EOD;
         $quiz->questions = [];
         $quiz->resume = new \stdClass();
 
-        $ordered_jazzquiz_questions = $attempt->get_questions();
+        $ordered_jazzquiz_questions = $attempt->question_manager->jazzquiz_questions;
         $slot = 1;
         foreach ($ordered_jazzquiz_questions as $q) {
             $question = new \stdClass();

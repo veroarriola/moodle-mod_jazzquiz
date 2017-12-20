@@ -39,12 +39,12 @@ class jazzquiz_question
 
     /**
      * @param \stdClass $data (jazzquiz_question)
-     * @param \stdClass $question
      */
-    public function __construct($data, $question)
+    public function __construct($data)
     {
+        global $DB;
         $this->data = $data;
-        $this->question = $question;
+        $this->question = $DB->get_record('question', ['id' => $data->questionid], '*', MUST_EXIST);
         $this->slot = null;
     }
 

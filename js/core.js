@@ -461,6 +461,15 @@ jazzquiz.resume_quiz = function () {
  */
 jazzquiz.waitfor_question = function (slot, question_time, delay) {
 
+    // If the slot is > than slots we have, that means a new question was added.
+    // Reloading the site will add that new question form.
+    // TODO: This should be done with XHR.
+    // In the meanwhile, this hopefully will not cause many infinite reload loops.
+    if (this.quiz.slots.length < slot) {
+        location.reload();
+        return;
+    }
+
     this.hide_instructions();
     this.quiz.question.countdown_time_left = delay;
 

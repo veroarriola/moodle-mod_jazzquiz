@@ -47,19 +47,16 @@ class edit_renderer extends \plugin_renderer_base
      *
      * @param array $questions Array of questions
      * @param string $question_bank_view HTML for the question bank view
+     * @param \moodle_url $url
      */
     public function listquestions($questions, $question_bank_view, $url)
     {
         global $CFG;
 
-        echo \html_writer::start_div('row', [
-            'id' => 'questionrow'
-        ]);
+        echo \html_writer::start_div('row', ['id' => 'questionrow']);
         echo \html_writer::start_div('inline-block span6');
         echo \html_writer::tag('h2', get_string('questions', 'jazzquiz'));
-        echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', [
-            'id' => 'editstatus'
-        ]);
+        echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', ['id' => 'editstatus']);
         echo $this->show_questionlist($questions, $url);
         echo \html_writer::end_div();
         echo \html_writer::start_div('inline-block span6');
@@ -93,7 +90,7 @@ class edit_renderer extends \plugin_renderer_base
     /**
      * Builds the question list from the questions passed in
      *
-     * @param array $questions an array of \mod_jazzquiz\jazzquiz_question
+     * @param \mod_jazzquiz\jazzquiz_question[] $questions
      * @param \moodle_url $url
      * @return string
      */
@@ -107,7 +104,6 @@ class edit_renderer extends \plugin_renderer_base
             if (substr($question->question->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
                 continue;
             }
-            /** @var \mod_jazzquiz\jazzquiz_question $question */
             $return .= '<li data-questionid="' . $question->data->id . '">';
             $return .= $this->display_question_block($question, $question_number, $question_count, $url);
             $return .= '</li>';
@@ -138,16 +134,14 @@ class edit_renderer extends \plugin_renderer_base
         $return .= \html_writer::div($name_html, 'name');
         $controlHTML = '';
 
-        $spacer_icon = new \pix_icon('spacer', 'space', null, [
-            'class' => 'smallicon space'
-        ]);
+        $spacer_icon = new \pix_icon('spacer', 'space', null, ['class' => 'smallicon space']);
 
         // If we're on a later question than the first one add the move up control
         if ($qnum > 1) {
             $alt = get_string('question_move_up', 'mod_jazzquiz', $qnum);
             $up_icon = new \pix_icon('t/up', $alt);
-            $data = 'data-action="moveup" data-question-id="' . $question->data->id . '"';
-            $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($up_icon). '</a>';
+            $data = 'data-action="up" data-question-id="' . $question->data->id . '"';
+            $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($up_icon) . '</a>';
         } else {
             $controlHTML .= $this->output->render($spacer_icon);
         }
@@ -156,8 +150,8 @@ class edit_renderer extends \plugin_renderer_base
         if ($qnum < $qcount) {
             $alt = get_string('question_move_down', 'mod_jazzquiz', $qnum);
             $down_icon = new \pix_icon('t/down', $alt);
-            $data = 'data-action="movedown" data-question-id="' . $question->data->id . '"';
-            $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($down_icon). '</a>';
+            $data = 'data-action="down" data-question-id="' . $question->data->id . '"';
+            $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($down_icon) . '</a>';
         } else {
             $controlHTML .= $this->output->render($spacer_icon);
         }
@@ -172,15 +166,14 @@ class edit_renderer extends \plugin_renderer_base
 
         $alt = get_string('delete_question', 'mod_jazzquiz', $qnum);
         $delete_icon = new \pix_icon('t/delete', $alt);
-        $data = 'data-action="deletequestion" data-question-id="' . $question->data->id . '"';
-        $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($delete_icon). '</a>';
+        $data = 'data-action="delete" data-question-id="' . $question->data->id . '"';
+        $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($delete_icon) . '</a>';
         $return .= \html_writer::div($controlHTML, 'controls');
         return $return;
     }
 
     /**
-     * renders the add question form
-     *
+     * Renders the add question form
      * @param \moodleform $mform
      */
     public function addquestionform($mform)

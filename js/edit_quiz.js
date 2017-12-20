@@ -22,52 +22,81 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-window.addEventListener('load', function () {
+var submit_question_order = function(order) {
+    if (order.length === 0) {
+        return;
+    }
+    jQuery.post('/mod/jazzquiz/edit.php', {
+        id: jazzquiz.quiz.course_module_id,
+        action: 'order',
+        order: JSON.stringify(order)
+    }, function () {
+        // TODO: Correct locally instead, but for now just refresh.
+        location.reload();
+    });
+};
 
+var get_question_order = function() {
+    var order = [];
+    jQuery('.questionlist li').each(function() {
+        order.push(jQuery(this).data('questionid'));
+    });
+    return order;
+};
+
+var offset_question = function(question_id, offset) {
+    var order = get_question_order();
+    var original_index = order.indexOf(question_id);
+    if (original_index === -1) {
+        return [];
+    }
+    for (var i = 0; i < order.length; i++) {
+        if (i + offset === original_index) {
+            order[original_index] = order[i];
+            order[i] = question_id;
+            break;
+        }
+    }
+    return order;
+};
+
+window.addEventListener('load', function() {
     jazzquiz.decode_state();
-
-    var questionList = document.getElementsByClassName('questionlist')[0];
 
     // TODO: Timeout because jQuery is not loaded yet when this runs. Modules should be used later on.
     setTimeout(function() {
-        jQuery('.edit-question-action').on('click', function () {
-            var action = jQuery(this).attr('data-action');
-            var question_id = jQuery(this).attr('data-question-id');
-            jQuery.ajax({
-                type: 'get',
-                url: '/mod/jazzquiz/edit.php?id=' + jazzquiz.quiz.course_module_id +'&action=' + action + '&questionid=' + question_id,
-                success: function (response) {
-                    location.reload();
-                }
-            });
+        jQuery('.edit-question-action').on('click', function() {
+            var action = jQuery(this).data('action');
+            var question_id = jQuery(this).data('question-id');
+            var order = [];
+            switch (action) {
+                case 'up':
+                    order = offset_question(question_id, 1);
+                    break;
+                case 'down':
+                    order = offset_question(question_id, -1);
+                    break;
+                case 'delete':
+                    order = get_question_order();
+                    var index = order.indexOf(question_id);
+                    if (index !== -1) {
+                        order.splice(index, 1);
+                    }
+                    break;
+                default:
+                    return;
+            }
+            submit_question_order(order);
         });
     }, 500);
 
-    var sorted = Sortable.create(questionList, {
+    var questionlist = document.getElementsByClassName('questionlist')[0];
+
+    var sorted = Sortable.create(questionlist, {
         handle: '.dragquestion',
         onSort: function (event) {
-            var question_list = document.getElementsByClassName('questionlist')[0];
-            var question_order = [];
-            for (var i = 0; i < question_list.childNodes.length; i++) {
-                var question_id = question_list.childNodes[i].getAttribute('data-questionid');
-                question_order.push(question_id);
-            }
-
-            var params = {
-                action: 'dragdrop',
-                questionorder: question_order
-            };
-
-            jazzquiz.ajax.create_request('/mod/jazzquiz/edit.php', params, function (status, response) {
-                if (status !== HTTP_STATUS.OK) {
-                    var editStatus = document.getElementById('editstatus');
-                    editStatus.classList.remove('rtqhiddenstatus');
-                    editStatus.classList.add('rtqerrorstatus');
-                    editStatus.innerHTML = M.util.get_string('error', 'core');
-                }
-                // TODO: Correct the up/down arrows locally instead, but for now just refresh.
-                location.reload();
-            });
+            var order = get_question_order();
+            submit_question_order(order);
         }
     });
 });

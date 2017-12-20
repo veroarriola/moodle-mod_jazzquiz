@@ -35,14 +35,14 @@ class jazzquiz_attempt
     const ABANDONED = 20;
     const FINISHED = 30;
 
-    /** @var \stdClass The attempt record */
+    /** @var \stdClass */
     public $data;
 
-    /** @var question_manager $question_manager $the question manager for the class */
-    protected $question_manager;
+    /** @var question_manager */
+    public $question_manager;
 
     /** @var \question_usage_by_activity $quba the question usage by activity for this attempt */
-    protected $quba;
+    public $quba;
 
     /** @var int $qnum The question number count when rendering questions */
     protected $qnum;
@@ -243,17 +243,14 @@ class jazzquiz_attempt
 
     /**
      * Returns an integer representing the question number
-     *
      * @return int
      */
     public function get_question_number()
     {
-        // TODO: Why is this returning a string? The annotation says it should return an integer...
         if (is_null($this->qnum)) {
             $this->qnum = 1;
-            return (string)1;
         }
-        return (string)$this->qnum;
+        return $this->qnum;
     }
 
     /**
@@ -298,21 +295,12 @@ class jazzquiz_attempt
         if (empty($question_id)) {
             return false;
         }
-        foreach ($this->get_questions() as $question) {
+        foreach ($this->question_manager->jazzquiz_questions as $question) {
             if ($question->question->id == $question_id) {
                 return $question;
             }
         }
         return false;
-    }
-
-    /**
-     * Gets the JazzQuiz questions for this attempt
-     * @return jazzquiz_question[]
-     */
-    public function get_questions()
-    {
-        return $this->question_manager->get_questions();
     }
 
     /**

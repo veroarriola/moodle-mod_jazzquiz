@@ -334,7 +334,7 @@ class improviser
         $this->insert_stack_algebraic_question_definition('Algebraic');
     }
 
-    public function remove_improvised_questions_from_quiz($jazzquiz_id)
+    /*public function remove_improvised_questions_from_quiz($jazzquiz_id)
     {
         global $DB;
 
@@ -396,6 +396,6 @@ class improviser
                 }
             }
         }
-    }
+    }*/
 
 }

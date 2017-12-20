@@ -6,7 +6,7 @@
   <TABLES>
     <TABLE NAME="jazzquiz" COMMENT="Defines JazzQuizzes">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="id of the table, please edit me"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
@@ -18,7 +18,7 @@
         <FIELD NAME="questionorder" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The question order for the jazzquiz"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for jazzquiz"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="jazzquiz_questions" COMMENT="table to hold question information for JazzQuizzes">
@@ -30,6 +30,7 @@
         <FIELD NAME="questiontime" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Question time in seconds.  0 means default for the quiz"/>
         <FIELD NAME="tries" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="number of tries for the question"/>
         <FIELD NAME="showhistoryduringquiz" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not to show the question step data with a response during the quiz"/>
+        <FIELD NAME="slot" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -58,19 +59,17 @@
     <TABLE NAME="jazzquiz_attempts" COMMENT="The quiz attempts table to hold attempts for students within a particular session">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="sessionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The session this attempt belongs to"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The userid for this attempt"/>
+        <FIELD NAME="sessionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="attemptnum" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="The attempt number for this user, for this session"/>
-        <FIELD NAME="questionengid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The unique id that is used for the question engine's usage for loading the activity by id."/>
-        <FIELD NAME="status" TYPE="int" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="The status of the attempt"/>
-        <FIELD NAME="preview" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="bit as to wether or not this is a preview attempt"/>
-        <FIELD NAME="responded" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not the user responded for the particular sesson's current question"/>
-        <FIELD NAME="responded_count" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Number of times the current question had been responded to for the attempt"/>
-        <FIELD NAME="forgroupid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="This is used when the jazzquiz is set up to be in groups.  The groupid will go here to signify that this attempt is for that group"/>
-        <FIELD NAME="timestart" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="datetime/timestampe for when the attempt was started"/>
-        <FIELD NAME="timefinish" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the datetime/timestamp for when the attempt was finished"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="the datetime/timestamp for when this attempt record was modified"/>
-        <FIELD NAME="qubalayout" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="the layout for this particular attempt"/>
+        <FIELD NAME="questionengid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="question (engine) usage id"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="5" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="preview" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="bit as to whether or not this is a preview attempt"/>
+        <FIELD NAME="responded" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="whether or not the user responded for the particular session's current question"/>
+        <FIELD NAME="responded_count" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="number of times the current question had been responded to for the attempt"/>
+        <FIELD NAME="timestart" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="timestamp for when the attempt was started"/>
+        <FIELD NAME="timefinish" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the timestamp for when the attempt was finished"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="the timestamp for when this attempt was modified"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -79,8 +78,8 @@
     <TABLE NAME="jazzquiz_votes" COMMENT="unique question attempts for the previous question in an jazzquiz session">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="jazzquizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="the jazzquiz id"/>
-        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="the session id that the attempt belongs tt"/>
+        <FIELD NAME="jazzquizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="attempt" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="initialcount" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="finalcount" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

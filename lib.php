@@ -46,7 +46,7 @@ function jazzquiz_add_instance($jazzquiz)
  * (defined by the form in mod.html) this function
  * will update an existing instance with new data.
  *
- * @param object $instance An object from the form in mod.html
+ * @param \stdClass $jazzquiz An object from the form in mod.html
  * @return boolean Success/Fail
  **/
 function jazzquiz_update_instance($jazzquiz)
@@ -75,33 +75,19 @@ function jazzquiz_delete_instance($id)
     require_once($CFG->dirroot . '/question/editlib.php');
 
     try {
-
-        $jazzquiz = $DB->get_record('jazzquiz', [
-            'id' => $id
-        ], '*', MUST_EXIST);
-
+        $jazzquiz = $DB->get_record('jazzquiz', ['id' => $id], '*', MUST_EXIST);
         // Go through each session and then delete them (also deletes all attempts for them)
-        $sessions = $DB->get_records('jazzquiz_sessions', [
-            'jazzquizid' => $jazzquiz->id
-        ]);
+        $sessions = $DB->get_records('jazzquiz_sessions', ['jazzquizid' => $jazzquiz->id]);
         foreach ($sessions as $session) {
             \mod_jazzquiz\jazzquiz_session::delete($session->id);
         }
-
         // Delete all questions for this quiz
-        $DB->delete_records('jazzquiz_questions', [
-            'jazzquizid' => $jazzquiz->id
-        ]);
-
+        $DB->delete_records('jazzquiz_questions', ['jazzquizid' => $jazzquiz->id]);
         // Finally delete the jazzquiz object
-        $DB->delete_records('jazzquiz', [
-            'id' => $jazzquiz->id
-        ]);
-
+        $DB->delete_records('jazzquiz', ['id' => $jazzquiz->id]);
     } catch (Exception $e) {
         return false;
     }
-
     return true;
 }
 
@@ -112,7 +98,6 @@ function jazzquiz_delete_instance($id)
  *
  * @uses $CFG
  * @return boolean
- * @todo Finish documenting this function
  **/
 function jazzquiz_cron()
 {
@@ -126,44 +111,32 @@ function jazzquiz_pluginfile($course, $cm, $context, $file_area, $args, $forcedo
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
     }
-
     if ($file_area != 'question') {
         return false;
     }
 
     require_course_login($course, true, $cm);
 
-    $question_id = (int) array_shift($args);
-
-    $quiz = $DB->get_record('jazzquiz', [
-        'id' => $cm->instance
-    ]);
-
+    $question_id = (int)array_shift($args);
+    $quiz = $DB->get_record('jazzquiz', ['id' => $cm->instance]);
     if (!$quiz) {
         return false;
     }
-
     $question = $DB->get_record('jazzquiz_question', [
         'id' => $question_id,
         'quizid' => $cm->instance
     ]);
-
     if (!$question) {
         return false;
     }
 
     $fs = get_file_storage();
-
     $relative_path = implode('/', $args);
     $full_path = "/$context->id/mod_jazzquiz/$file_area/$question_id/$relative_path";
-
     if (!$file = $fs->get_file_by_hash(sha1($full_path)) or $file->is_directory()) {
         return false;
     }
-
-    // Finally send the file
     send_stored_file($file);
-
     return false;
 }
 
@@ -222,14 +195,9 @@ function mod_jazzquiz_question_pluginfile($course, $context, $component, $filear
 
 function jazzquiz_supports($feature)
 {
-
     if (!defined('FEATURE_PLAGIARISM')) {
         define('FEATURE_PLAGIARISM', 'plagiarism');
     }
-
-    // This plugin does support groups, just that the plugin code
-    // manages it instead of using the Moodle provided functionality
-
     switch ($feature) {
         case FEATURE_GROUPS:
             return false;
@@ -257,9 +225,7 @@ function jazzquiz_supports($feature)
             return false;
         case FEATURE_USES_QUESTIONS:
             return true;
-
         default:
             return null;
     }
 }
-

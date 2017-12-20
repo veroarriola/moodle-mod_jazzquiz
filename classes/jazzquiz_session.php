@@ -95,7 +95,6 @@ class jazzquiz_session
 
     /**
      * @param string $status
-     *
      * @return bool
      */
     public function set_status($status)
@@ -105,8 +104,7 @@ class jazzquiz_session
     }
 
     /**
-     * Saves the session object to the db
-     *
+     * Saves the session object to the database
      * @return bool
      */
     public function save_session()
@@ -141,7 +139,7 @@ class jazzquiz_session
     public static function delete($session_id)
     {
         global $DB;
-        // Delete all attempt qubaids, then all JazzQuiz attempts, and then finally itself
+        // Delete all attempt quba ids, then all JazzQuiz attempts, and then finally itself
         $quba_condition = new \qubaid_join('{jazzquiz_attempts} jqa', 'jqa.questionengid', 'jqa.sessionid = :sessionid', [
             'sessionid' => $session_id
         ]);
@@ -201,11 +199,11 @@ class jazzquiz_session
      */
     public function repoll_question()
     {
-        if (!$question = $this->goto_question($this->data->currentqnum)) {
+        $question = $this->goto_question($this->data->currentqnum);
+        if (!$question) {
             throw new \Exception('invalid question number');
-        } else {
-            return $question;
         }
+        return $question;
     }
 
     /**
@@ -350,18 +348,17 @@ class jazzquiz_session
         $attempt = $this->open_attempt;
         $quba = $attempt->get_quba();
         $correct_response = $quba->get_correct_response($this->data->currentquestion);
-        if (!is_null($correct_response)) {
-            $quba->process_action($this->data->currentquestion, $correct_response);
-            $attempt->save();
-            $review_options = new \stdClass();
-            $review_options->rightanswer = 1;
-            $review_options->correctness = 1;
-            $review_options->specificfeedback = 1;
-            $review_options->generalfeedback = 1;
-            return $attempt->render_question($this->data->currentquestion, true, $review_options);
-        } else {
+        if (is_null($correct_response)) {
             return 'No correct response';
         }
+        $quba->process_action($this->data->currentquestion, $correct_response);
+        $attempt->save();
+        $review_options = new \stdClass();
+        $review_options->rightanswer = 1;
+        $review_options->correctness = 1;
+        $review_options->specificfeedback = 1;
+        $review_options->generalfeedback = 1;
+        return $attempt->render_question($this->data->currentquestion, true, $review_options);
     }
 
     /**
@@ -397,13 +394,12 @@ class jazzquiz_session
 
             if (!$this->data->fully_anonymize) {
                 // Create attempt_created event
-                $params = [
+                $event = event\attempt_started::create([
                     'objectid' => $attempt->data->id,
                     'relateduserid' => $attempt->data->userid,
                     'courseid' => $this->jazzquiz->course->id,
                     'context' => $this->jazzquiz->context
-                ];
-                $event = event\attempt_started::create($params);
+                ]);
                 $event->add_record_snapshot('jazzquiz', $this->jazzquiz->data);
                 $event->add_record_snapshot('jazzquiz_attempts', $attempt->data);
                 $event->trigger();
@@ -425,8 +421,8 @@ class jazzquiz_session
     }
 
     /**
-     * With anonymisation off, just returns the real userid.
-     * With anonymisation on, returns a random, negative userid instead.
+     * With anonymisation off, just returns the real user id.
+     * With anonymisation on, returns a random, negative user id instead.
      * @return int
      */
     public function get_current_userid()

@@ -54,7 +54,7 @@ function jazzquiz_session_open($jazzquiz_id)
  * Gets the question bank view based on the options passed in at the page setup.
  * @param $contexts
  * @param jazzquiz $jazzquiz
- * @param string $url
+ * @param \moodle_url $url
  * @param $page_vars
  * @return string
  */
@@ -73,63 +73,25 @@ function get_question_bank_view($contexts, $jazzquiz, $url, $page_vars)
  * Echos the list of questions using the renderer for jazzquiz.
  * @param \context[] $contexts
  * @param jazzquiz $jazzquiz
- * @param string $url
+ * @param \moodle_url $url
  * @param array $page_vars
  */
 function list_questions($contexts, $jazzquiz, $url, $page_vars)
 {
     $question_bank_view = get_question_bank_view($contexts, $jazzquiz, $url, $page_vars);
-    $questions = $jazzquiz->question_manager->get_questions();
+    $questions = $jazzquiz->question_manager->jazzquiz_questions;
     $jazzquiz->renderer->listquestions($questions, $question_bank_view, $url);
 }
 
 /**
  * @param jazzquiz $jazzquiz
  */
-function jazzquiz_edit_drag_and_drop($jazzquiz)
+function jazzquiz_edit_order($jazzquiz)
 {
-    $question_order = optional_param('questionorder', '', PARAM_RAW);
-    if ($question_order === '') {
-        print_json([
-            'status' => 'error',
-            'message' => 'Question order not specified'
-        ]);
-        exit;
-    }
-    $question_order = explode(',', $question_order);
-    $success = $jazzquiz->question_manager->set_full_order($question_order);
-    if (!$success) {
-        print_json([
-            'status' => 'error',
-            'message' => 'Unable to re-sort questions'
-        ]);
-        exit;
-    }
-}
-
-/**
- * @param jazzquiz $jazzquiz
- * @param \context[] $contexts
- * @param string $url
- * @param array $page_vars
- * @param string $direction
- */
-function jazzquiz_edit_move($jazzquiz, $contexts, $url, $page_vars, $direction)
-{
-    $question_id = required_param('questionid', PARAM_INT);
-    $direction = substr($direction, 4);
-    if ($jazzquiz->question_manager->move_question($direction, $question_id)) {
-        $type = 'success';
-        $message = get_string('successfully_moved_question', 'jazzquiz');
-    } else {
-        $type = 'error';
-        $message = get_string('failed_to_move_question', 'jazzquiz');
-    }
-    $renderer = $jazzquiz->renderer;
-    //$renderer->setMessage($type, $message);
-    $renderer->print_header();
-    list_questions($contexts, $jazzquiz, $url, $page_vars);
-    $renderer->footer();
+    $order = required_param('order', PARAM_RAW);
+    //$order = explode(',', $order);
+    $order = json_decode($order);
+    $jazzquiz->question_manager->set_question_order($order);
 }
 
 /**
@@ -152,32 +114,8 @@ function jazzquiz_edit_edit_question($jazzquiz)
 
 /**
  * @param jazzquiz $jazzquiz
- * @param \context[] $contexts
- * @param string $url
- * @param array $page_vars
- */
-function jazzquiz_edit_delete_question($jazzquiz, $contexts, $url, $page_vars)
-{
-    $question_id = required_param('questionid', PARAM_INT);
-    $success = $jazzquiz->question_manager->delete_question($question_id);
-    /*if ($success) {
-        $type = 'success';
-        $message = get_string('successfully_deleted_question', 'jazzquiz');
-    } else {
-        $type = 'error';
-        $message = get_string('failed_to_delete_question', 'jazzquiz');
-    }*/
-    $renderer = $jazzquiz->renderer;
-    //$renderer->setMessage($type, $message);
-    $renderer->print_header();
-    list_questions($contexts, $jazzquiz, $url, $page_vars);
-    $renderer->footer();
-}
-
-/**
- * @param jazzquiz $jazzquiz
  * @param $contexts
- * @param string $url
+ * @param \moodle_url $url
  * @param $page_vars
  */
 function jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $page_vars)
@@ -212,14 +150,6 @@ function jazzquiz_edit()
     $jazzquiz = new jazzquiz($course_module_id, 'edit');
     $renderer = $jazzquiz->renderer;
 
-    // We know no session is open, and we also know this is an instructor.
-    // Before we modify anything, we have to remove the improvised questions.
-    $improviser = new improviser();
-    $improviser->remove_improvised_questions_from_quiz($module->id);
-    // We don't have to add back the improvised questions, because we only need them in view.
-    // Since $jazzquiz now has outdated question order, we must reload it:
-    $jazzquiz->reload();
-
     $module_name = get_string('modulename', 'jazzquiz');
     $quiz_name = format_string($jazzquiz->data->name, true);
 
@@ -236,21 +166,14 @@ function jazzquiz_edit()
     }
 
     switch ($action) {
-        case 'dragdrop':
-            jazzquiz_edit_drag_and_drop($jazzquiz);
-            break;
-        case 'moveup':
-        case 'movedown':
-            jazzquiz_edit_move($jazzquiz, $contexts, $url, $page_vars, $action);
+        case 'order':
+            jazzquiz_edit_order($jazzquiz);
             break;
         case 'addquestion':
             jazzquiz_edit_add_question($jazzquiz);
             break;
         case 'editquestion':
             jazzquiz_edit_edit_question($jazzquiz);
-            break;
-        case 'deletequestion':
-            jazzquiz_edit_delete_question($jazzquiz, $contexts, $url, $page_vars);
             break;
         case 'listquestions':
             jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $page_vars);

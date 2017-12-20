@@ -77,34 +77,10 @@ class jazzquiz
         $PAGE->set_context($this->context);
         $this->renderer = $PAGE->get_renderer('mod_jazzquiz', $renderer_subtype);
 
-        // TODO: This can probably be removed when the tables are normalized.
-        $this->data = new \stdClass();
-        $this->data->id = $this->course_module->instance;
-        //
-        $this->update_improvised_questions();
-
         $this->course = $DB->get_record('course', [ 'id' => $this->course_module->course ], '*', MUST_EXIST);
-        $this->reload();
-    }
-
-    public function reload()
-    {
-        global $DB;
         $this->data = $DB->get_record('jazzquiz', [ 'id' => $this->course_module->instance ], '*', MUST_EXIST);
         $this->renderer->set_jazzquiz($this);
         $this->question_manager = new question_manager($this);
-    }
-
-    private function update_improvised_questions()
-    {
-        // Add improvised questions if client is an instructor
-        if (!has_capability('mod/jazzquiz:control', $this->context)) {
-            return;
-        }
-        // Remove and re-add all the improvised questions to make sure they're all added and last.
-        $improviser = new improviser();
-        $improviser->remove_improvised_questions_from_quiz($this->data->id);
-        $improviser->add_improvised_questions_to_quiz($this->data->id);
     }
 
     /**

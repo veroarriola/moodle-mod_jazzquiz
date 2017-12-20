@@ -171,7 +171,7 @@ function jazzquiz_view()
     $jazzquiz->require_capability('mod/jazzquiz:attempt');
     $module_name = get_string('modulename', 'jazzquiz');
     $quiz_name = format_string($jazzquiz->name, true);
-    $question_count = count($jazzquiz->question_manager->get_questions());
+    $question_count = count($jazzquiz->question_manager->jazzquiz_questions);
 
     $url = new \moodle_url('/mod/jazzquiz/view.php');
     $url->param('id', $course_module_id);

@@ -40,7 +40,7 @@ class question_manager
     public $jazzquiz;
 
     /** @var jazzquiz_question[] */
-    protected $ordered_jazzquiz_questions;
+    public $jazzquiz_questions;
 
     /** @var \moodle_url */
     protected $base_url;
@@ -51,9 +51,7 @@ class question_manager
     public function __construct($jazzquiz)
     {
         $this->jazzquiz = $jazzquiz;
-        $this->base_url = new \moodle_url('/mod/jazzquiz/edit.php', [
-            'id' => $jazzquiz->course_module->id
-        ]);
+        $this->base_url = new \moodle_url('/mod/jazzquiz/edit.php', ['id' => $jazzquiz->course_module->id]);
         $this->refresh_questions();
     }
 
@@ -69,13 +67,6 @@ class question_manager
     {
         global $DB;
 
-        // Check if question has already been added
-        /*if ($this->is_question_already_present($question_id)) {
-            $redirect_url = clone($this->base_url);
-            $redirect_url->remove_params('action'); // Go back to base edit page
-            redirect($redirect_url, get_string('cantaddquestiontwice', 'jazzquiz'));
-        }*/
-
         $question = new \stdClass();
         $question->jazzquizid = $this->jazzquiz->data->id;
         $question->questionid = $question_id;
@@ -83,10 +74,9 @@ class question_manager
         $question->questiontime = $this->jazzquiz->data->defaultquestiontime;
         $question->tries = 1;
         $question->showhistoryduringquiz = false;
-
-        $jazzquiz_question_id = $DB->insert_record('jazzquiz_questions', $question);
-
-        $this->update_questionorder('addquestion', $jazzquiz_question_id);
+        $question->slot = count($this->jazzquiz_questions) + 1;
+        $DB->insert_record('jazzquiz_questions', $question);
+        $this->refresh_questions();
 
         // Ensure there is no action or questionid in the base url
         $this->base_url->remove_params('action', 'questionid');
@@ -156,80 +146,53 @@ class question_manager
     }
 
     /**
-     * Delete a question on the quiz
+     * Apply a sorted array of jazzquiz_question IDs to the quiz.
+     * Questions that are missing from the array will also be removed from the quiz.
+     * Duplicate values will silently be removed.
      *
-     * @param int $question_id The RTQ questionid to delete
-     *
-     * @return bool
+     * @param int[] $order
      */
-    public function delete_question($question_id)
+    public function set_question_order($order)
     {
         global $DB;
-        try {
-            $DB->delete_records('jazzquiz_questions', [
-                'id' => $question_id
-            ]);
-            $this->update_questionorder('deletequestion', $question_id);
-        } catch (\Exception $e) {
-            return false;
+        $order = array_unique($order);
+        $questions = $DB->get_records('jazzquiz_questions', ['jazzquizid' => $this->jazzquiz->data->id], 'slot');
+        foreach ($questions as $question) {
+            $slot = array_search($question->id, $order);
+            if ($slot === false) {
+                $DB->delete_records('jazzquiz_questions', ['id' => $question->id]);
+                continue;
+            }
+            $question->slot = $slot + 1;
+            $DB->update_record('jazzquiz_questions', $question);
         }
-        return true;
+        $this->refresh_questions();
     }
 
     /**
-     * Moves a question on the question order for this quiz
-     *
-     * @param string $direction 'up'||'down'
-     * @param int $question_id JazzQuiz question id
-     *
-     * @return bool
+     * @return int[] of jazzquiz_question id
      */
-    public function move_question($direction, $question_id)
+    public function get_question_order()
     {
-        if ($direction !== 'up' && $direction !== 'down') {
-            return false;
+        $order = [];
+        foreach ($this->jazzquiz_questions as $question) {
+            $order[] = $question->data->id;
         }
-        return $this->update_questionorder('movequestion' . $direction, $question_id);
+        return $order;
     }
 
     /**
-     * Public API function for setting the full order of the questions on the jazzquiz
-     *
-     * Please note that full order must be an array with no specialized keys as only array values are taken
-     *
-     * @param array $full_order
-     * @return bool
-     */
-    public function set_full_order($full_order = [])
-    {
-        if (!is_array($full_order)) {
-            return false;
-        }
-        $full_order = array_values($full_order);
-        return $this->update_questionorder('replaceorder', null, $full_order);
-    }
-
-    /**
-     * Returns the questions in the specified question order
-     * @return jazzquiz_question[]
-     */
-    public function get_questions()
-    {
-        return $this->ordered_jazzquiz_questions;
-    }
-
-    /**
-     * Gets the question type for the specified question number
+     * Get question type for the specified slot
      * @param int $slot
-     * @return string
+     * @return string|false
      */
-    public function get_questiontype_byqnum($slot)
+    public function get_question_type_by_slot($slot)
     {
-        // Get the actual key for the bank question
-        $bank_keys = array_keys($this->ordered_jazzquiz_questions);
-        $desired_key = $bank_keys[$slot - 1];
-        $jazzquiz_question = $this->ordered_jazzquiz_questions[$desired_key];
-        return $jazzquiz_question->question->qtype;
+        if (count($this->jazzquiz_questions) >= $slot || $slot < 1) {
+            return false;
+        }
+        $question = $this->jazzquiz_questions[$slot - 1];
+        return $question->question->qtype;
     }
 
     /**
@@ -258,7 +221,7 @@ class question_manager
 
         $quba_question = $quba->get_question($slot);
 
-        foreach ($this->ordered_jazzquiz_questions as $jazzquiz_question) {
+        foreach ($this->jazzquiz_questions as $jazzquiz_question) {
             if ($jazzquiz_question->question->id == $quba_question->id) {
                 // Set the slot on the bank question as this is the actual id we're using for question number
                 $jazzquiz_question->slot = $slot;
@@ -281,7 +244,7 @@ class question_manager
     {
         // We need the question ids of our questions
         $question_ids = [];
-        foreach ($this->ordered_jazzquiz_questions as $jazzquiz_question) {
+        foreach ($this->jazzquiz_questions as $jazzquiz_question) {
             if (!in_array($jazzquiz_question->question->id, $question_ids)) {
                 $question_ids[] = $jazzquiz_question->question->id;
             }
@@ -289,220 +252,27 @@ class question_manager
         $questions = question_load_questions($question_ids);
 
         // Loop through the ordered question bank questions and add them to the quba object
-        $attempt_layout = [];
-        foreach ($this->ordered_jazzquiz_questions as $jazzquiz_question) {
+        foreach ($this->jazzquiz_questions as $jazzquiz_question) {
             $question_id = $jazzquiz_question->question->id;
             $q = \question_bank::make_question($questions[$question_id]);
-            $attempt_layout[$jazzquiz_question->data->id] = $quba->add_question($q);
+            $quba->add_question($q);
         }
 
         // Start the questions in the quba
         $quba->start_all_questions();
-
-        /**
-         * Return the attempt layout which is a set of ids that are the slot ids from the question engine usage by activity instance
-         * these are what are used during an actual attempt rather than the question_id themselves, since the question engine will handle
-         * the translation
-         */
-        return $attempt_layout;
     }
 
     /**
-     * Gets the question order from the rtq object
-     *
-     * @return string
-     */
-    protected function get_question_order()
-    {
-        return $this->jazzquiz->data->questionorder;
-    }
-
-    /**
-     * Updates question order on RTQ object and then persists to the database
-     *
-     * @param string
-     * @return bool
-     */
-    protected function set_question_order($question_order)
-    {
-        $this->jazzquiz->data->questionorder = $question_order;
-        return $this->jazzquiz->save();
-    }
-
-    /**
-     * Updates the question order for the question manager
-     *
-     * @param string $action
-     * @param int $question_id the realtime quiz question id, NOT the question engine question id
-     * @param array $full_order An array of question objects to sort as is.
-     *                         This is mainly used for the dragdrop callback on the edit page.  If the full order is not specified
-     *                         with all questions currently on the quiz, the case will return false
-     *
-     * @return bool true/false if it was successful
-     */
-    protected function update_questionorder($action, $question_id, $full_order = [])
-    {
-        switch ($action) {
-            case 'addquestion':
-                $question_order = $this->get_question_order();
-                if (empty($question_order)) {
-                    $question_order = $question_id;
-                } else {
-                    $question_order .= ',' . $question_id;
-                }
-                $this->set_question_order($question_order);
-                $this->refresh_questions();
-                return true;
-
-            case 'deletequestion':
-                $question_order = $this->get_question_order();
-                $question_order = explode(',', $question_order);
-                foreach ($question_order as $index => $current_question_order) {
-                    if ($current_question_order == $question_id) {
-                        unset($question_order[$index]);
-                        break;
-                    }
-                }
-                $new_question_order = implode(',', $question_order);
-                $this->set_question_order($new_question_order);
-                $this->refresh_questions();
-                return true;
-
-            case 'movequestionup':
-                $question_order = $this->get_question_order();
-                $question_order = explode(',', $question_order);
-                foreach ($question_order as $index => $current_question_order) {
-                    if ($current_question_order == $question_id) {
-                        if ($index == 0) {
-                            // Can't move first question up
-                            return false;
-                        }
-                        // If IDs match replace the previous index with the current one
-                        // and make the previous index qid the current index
-                        $previous_question_order = $question_order[$index - 1];
-                        $question_order[$index - 1] = $question_id;
-                        $question_order[$index] = $previous_question_order;
-                        break;
-                    }
-                }
-                $new_question_order = implode(',', $question_order);
-                $this->set_question_order($new_question_order);
-                $this->refresh_questions();
-                return true;
-
-            case 'movequestiondown':
-                $question_order = $this->get_question_order();
-                $question_order = explode(',', $question_order);
-                $question_order_count = count($question_order);
-                foreach ($question_order as $index => $current_question_order) {
-                    if ($current_question_order == $question_id) {
-                        if ($index == $question_order_count - 1) {
-                            // Can't move last question down
-                            return false;
-                        }
-                        // If ids match replace the next index with the current one
-                        // and make the next index qid the current index
-                        $next_question_order = $question_order[$index + 1];
-                        $question_order[$index + 1] = $question_id;
-                        $question_order[$index] = $next_question_order;
-                        break;
-                    }
-                }
-                $new_question_order = implode(',', $question_order);
-                $this->set_question_order($new_question_order);
-                $this->refresh_questions();
-                return true;
-
-            case 'replaceorder':
-                $question_order = $this->get_question_order();
-                $question_order = explode(',', $question_order);
-                // If we don't have the same number of questions return error
-                if (count($full_order) !== count($question_order)) {
-                    return false;
-                }
-                // Next validate that the questions sent all match to a question in the current order
-                $all_match = true;
-                foreach ($question_order as $current_question_order) {
-                    if (!in_array($current_question_order, $full_order)) {
-                        $all_match = false;
-                    }
-                }
-                if ($all_match) {
-                    $new_question_order = implode(',', $full_order);
-                    $this->set_question_order($new_question_order);
-                    $this->refresh_questions();
-                    return true;
-                }
-                return false;
-
-            default:
-                return false;
-        }
-    }
-
-    /**
-     * Check whether the question id has already been added
-     * @param int $question_id
-     * @return bool
-     */
-    protected function is_question_already_present($question_id)
-    {
-        // Loop through the db rtq questions and see if we find a match
-        foreach ($this->ordered_jazzquiz_questions as $jazzquiz_question) {
-            if ($jazzquiz_question->data->questionid == $question_id) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Refreshes question information from the DB
-     *
-     * This is the function that should be called so that questions are loaded
-     * in the correct order
+     * Loads the quiz questions from the database, ordered by slot.
      */
     private function refresh_questions()
     {
         global $DB;
-
-        $jazzquiz_questions = $DB->get_records('jazzquiz_questions', ['jazzquizid' => $this->jazzquiz->data->id]);
-
-        // Start by ordering the question ids into an array
-        $question_order = $this->jazzquiz->data->questionorder;
-
-        // Generate empty array for ordered questions for no question order
-        if (empty($question_order)) {
-            $this->ordered_jazzquiz_questions = [];
-            return;
-        } else {
-            // Otherwise explode it and continue on
-            $question_order = explode(',', $question_order);
+        $this->jazzquiz_questions = [];
+        $questions = $DB->get_records('jazzquiz_questions', ['jazzquizid' => $this->jazzquiz->data->id], 'slot');
+        foreach ($questions as $question) {
+            $this->jazzquiz_questions[] = new jazzquiz_question($question);
         }
-
-        // Using the question order saved in rtq object, get the qbank question ids from the rtq questions
-        $ordered_question_ids = [];
-        foreach ($question_order as $order_index) {
-            // Store the jazzquiz_question id as the key so that it can be used later
-            // when adding question time to question bank question object
-            $ordered_question_ids[$order_index] = $jazzquiz_questions[$order_index]->questionid;
-        }
-
-        // Get bank questions based on the question ids from the RTQ questions table
-        list($sql, $params) = $DB->get_in_or_equal($ordered_question_ids);
-        $query = "SELECT * FROM {question} WHERE id $sql";
-        $questions = $DB->get_records_sql($query, $params);
-
-        // Now order the qbank questions based on the order that we got above
-        $ordered_jazzquiz_questions = [];
-        foreach ($ordered_question_ids as $jazzquiz_question_id => $question_id) {
-            if (empty($questions[$question_id])) {
-                continue;
-            }
-            $jazzquiz_question = new jazzquiz_question($jazzquiz_questions[$jazzquiz_question_id], $questions[$question_id]);
-            $ordered_jazzquiz_questions[$jazzquiz_question_id] = $jazzquiz_question;
-        }
-        $this->ordered_jazzquiz_questions = $ordered_jazzquiz_questions;
     }
 
 }
