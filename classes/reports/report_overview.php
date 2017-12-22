@@ -49,7 +49,7 @@ class report_overview
         header('Content-Disposition: attachment; filename=session_' . $name . '.csv');
         // Go through the slots on the first attempt to output the header row
         $quiz_attempt = reset($quiz_attempts);
-        $quba = $quiz_attempt->get_quba();
+        $quba = $quiz_attempt->quba;
         $slots = $quiz_attempt->get_slots();
         echo 'Student,';
         foreach ($slots as $slot) {
@@ -86,7 +86,7 @@ class report_overview
     private function output_csv_response($session, $quiz_attempt)
     {
         $slot = required_param('slot', PARAM_INT);
-        $quba = $quiz_attempt->get_quba();
+        $quba = $quiz_attempt->quba;
         $question_attempt = $quba->get_question_attempt($slot);
         $question = $question_attempt->get_question();
         $responses = $session->get_question_results_list($slot, 'all');
@@ -163,7 +163,7 @@ class report_overview
     {
         $session_id = required_param('sessionid', PARAM_INT);
         $session = $this->jazzquiz->get_session($session_id);
-        $quiz_attempts = $session->getall_attempts(false);
+        $quiz_attempts = $session->get_all_attempts(false);
         $quiz_attempt = reset($quiz_attempts);
         if (!$quiz_attempt) {
             return;
@@ -208,7 +208,7 @@ class report_overview
         $sessions = $this->jazzquiz->get_sessions();
         $this->renderer->select_session($page_url, $sessions, $session_id);
 
-        $quiz_attempts = $session->getall_attempts(false);
+        $quiz_attempts = $session->get_all_attempts(false);
         $quiz_attempt = reset($quiz_attempts);
 
         if (!$quiz_attempt) {
@@ -218,7 +218,7 @@ class report_overview
 
         $row = $quiz_attempt->data;
         $slots = $quiz_attempt->get_slots();
-        $quba = $quiz_attempt->get_quba();
+        $quba = $quiz_attempt->quba;
 
         $PAGE->requires->js('/mod/jazzquiz/js/core.js');
         $PAGE->requires->js('/mod/jazzquiz/js/instructor.js');

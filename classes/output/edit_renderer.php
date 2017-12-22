@@ -172,15 +172,6 @@ class edit_renderer extends \plugin_renderer_base
         return $return;
     }
 
-    /**
-     * Renders the add question form
-     * @param \moodleform $mform
-     */
-    public function addquestionform($mform)
-    {
-        $mform->display();
-    }
-
     public function opensession()
     {
         echo \html_writer::tag('h3', get_string('edit_page_open_session_error', 'jazzquiz'));

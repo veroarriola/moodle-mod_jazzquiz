@@ -41,49 +41,66 @@ function print_json($array)
 }
 
 /**
- * @param jazzquiz $jazzquiz
- * @param jazzquiz_session $session
- * @param int $question_id (from question bank)
- * @return int 0 means error, >0 is valid slot
+ * Sends a list of all the questions tagged for use with improvisation.
  */
-function add_question_to_running_quiz($jazzquiz, $session, $question_id)
+function show_all_improvisation_questions()
 {
     global $DB;
-    $question_definition = reset(question_load_questions([$question_id]));
-    if (!$question_definition) {
-        return 0;
+    $questions = $DB->get_records_sql('SELECT * FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
+    if (!$questions) {
+        print_json([
+            'status' => 'error',
+            'message' => 'No improvisation questions'
+        ]);
+        return;
     }
-    // TODO: Transaction?
-    $jazzquiz_question = new \stdClass();
-    $jazzquiz_question->jazzquizid = $jazzquiz->data->id;
-    $jazzquiz_question->questionid = $question_id;
-    $jazzquiz_question->notime = 0;
-    $jazzquiz_question->questiontime = 111;
-    $jazzquiz_question->tries = 1;
-    $jazzquiz_question->showhistoryduringquiz = 0;
-    $jazzquiz_question->id = $DB->insert_record('jazzquiz_questions', $jazzquiz_question);
-    $jazzquiz->data->questionorder .= ',' . $jazzquiz_question->id;
-    $jazzquiz->save();
-    $slot = 0;
-    $attempts = $session->getall_attempts(true);
-    foreach ($attempts as $attempt) {
-        $question = \question_bank::make_question($question_definition);
-        $slot = $attempt->quba->add_question($question);
-        $attempt->quba->start_question($slot);
-        $attempt->save();
+    foreach ($questions as $question) {
+        $questions[] = [
+            'question_id' => $question->id,
+            'name' => str_replace('{IMPROV}', '', $question->name)
+        ];
     }
-    return $slot;
+    print_json([
+        'status' => 'success',
+        'questions' => $questions
+    ]);
 }
 
 /**
  * @param jazzquiz $jazzquiz
  * @param jazzquiz_session $session
- * @param jazzquiz_question $question
  */
-function start_question($jazzquiz, $session, $question)
+function start_question($jazzquiz, $session)
 {
-    $attempt = $session->get_open_attempt();
-    $session->set_status('running');
+    $slot = required_param('slot', PARAM_INT);
+    $attempt = $session->open_attempt;
+    $question = $attempt->quba->get_question($slot);
+    $slot = $jazzquiz->add_question_to_running_quiz($session, $question->id);
+    if ($slot === 0) {
+        print_json([
+            'status' => 'error',
+            'message' => "Failed to add duplicate question definition by slot $slot"
+        ]);
+        return;
+    }
+
+    // We must update the quba of our attempt
+    $attempt_id = required_param('attemptid', PARAM_INT);
+    $attempt = $session->get_user_attempt($attempt_id);
+    $session->open_attempt = $attempt;
+
+    // Get question to go to
+    $question = $session->start_question($slot);
+    if (!$question) {
+        print_json([
+            'status' => 'error',
+            'message' => "Invalid slot $slot"
+        ]);
+        return;
+    }
+
+    $session->data->status = 'running';
+    $session->save();
 
     $question_time = 0;
     if ($question->data->notime == 0) {
@@ -97,8 +114,7 @@ function start_question($jazzquiz, $session, $question)
 
     print_json([
         'status' => 'startedquestion',
-        'slot' => $question->slot,
-        'lastquestion' => ($attempt->lastquestion ? 'true' : 'false'),
+        'slot' => $question->data->slot,
         'nextstarttime' => $session->data->nextstarttime,
         'notime' => $question->data->notime,
         'questiontime' => $question_time,
@@ -107,139 +123,12 @@ function start_question($jazzquiz, $session, $question)
 }
 
 /**
- * Sends a list of all the questions tagged for use with improvisation.
- * @param jazzquiz $jazzquiz
- */
-function show_all_improvisation_questions($jazzquiz)
-{
-    global $DB;
-
-    $quiz_questions = $DB->get_records('jazzquiz_questions', [
-        'jazzquizid' => $jazzquiz->data->id
-    ]);
-
-    if (!$quiz_questions) {
-        print_json([
-            'status' => 'error',
-            'message' => 'No questions'
-        ]);
-        return;
-    }
-
-    $questions = [];
-    foreach ($quiz_questions as $quiz_question) {
-
-        // Let's get the question data
-        $question = $DB->get_record('question', [
-            'id' => $quiz_question->questionid
-        ]);
-
-        // Did we find the question?
-        if (!$question) {
-            // Only use for debugging.
-            /*$questions[] = [
-                'questionid' => $quiz_question->questionid,
-                'name' => 'This question does not exist.',
-                'slot' => 0
-            ];*/
-            continue;
-        }
-
-        // Check if it is an improvisation question
-        if (strpos($question->name, '{IMPROV}') === false) {
-            continue;
-        }
-
-        // Let's find its question number in the quiz
-        $question_order = $jazzquiz->data->questionorder;
-        $ordered_jazzquiz_question_ids = explode(',', $question_order);
-        $slot = 0;
-        foreach ($ordered_jazzquiz_question_ids as $id) {
-            $slot++;
-            if ($id == $quiz_question->id) {
-                break;
-            }
-        }
-
-        // Add it to the list
-        $questions[] = [
-            'questionid' => $question->id,
-            'name' => str_replace('{IMPROV}', '', $question->name),
-            'slot' => $slot
-        ];
-    }
-
-    print_json([
-        'status' => 'success',
-        'questions' => $questions
-    ]);
-}
-
-/**
- * @param jazzquiz $jazzquiz
- * @param jazzquiz_session $session
- * @param int $slot
- */
-function start_goto_question($jazzquiz, $session, $slot)
-{
-    // Are we going to keep or break the flow of the quiz?
-    $keep_flow = optional_param('keepflow', '', PARAM_TEXT);
-
-    // Do we want to add a duplicate definition to the end of the quiz?
-    $add_slot = optional_param('add', '', PARAM_TEXT);
-
-    if (!empty($keep_flow)) {
-        // Only one keep_flow at a time. Two improvised questions can be run after eachother.
-        if ($session->data->nextqnum == 0) {
-            // Get last and current slot
-            $last_slot = count($jazzquiz->data->questionorder);
-            $current_slot = intval($session->data->currentqnum);
-            // Does the next slot exist?
-            if ($last_slot >= $current_slot + 1) {
-                // Okay, let's save it
-                $session->data->nextqnum = $current_slot + 1;
-                $session->save_session();
-            }
-        }
-    }
-
-    if (!empty($add_slot)) {
-        $attempt = $session->get_open_attempt();
-        $question = $attempt->quba->get_question($slot);
-        $slot = add_question_to_running_quiz($jazzquiz, $session, $question->id);
-        if ($slot === 0) {
-            print_json([
-                'status' => 'error',
-                'message' => "Failed to add duplicate question definition by slot $slot"
-            ]);
-            return;
-        }
-        // We must update the quba of our attempt
-        $attempt_id = required_param('attemptid', PARAM_INT);
-        $attempt = $session->get_user_attempt($attempt_id);
-        $session->set_open_attempt($attempt);
-        $session->jazzquiz->question_manager = new question_manager($session->jazzquiz);
-    }
-
-    // Get question to go to
-    $question = $session->goto_question($slot);
-    if (!$question) {
-        print_json([
-            'status' => 'error',
-            'message' => "Invalid slot $slot"
-        ]);
-        return;
-    }
-
-    start_question($jazzquiz, $session, $question);
-}
-
-/**
  * @param jazzquiz_session $session
  */
 function start_quiz($session)
 {
-    $session->set_status('preparing');
+    $session->data->status = 'preparing';
+    $session->save();
     print_json([
         'status' => 'startedquiz'
     ]);
@@ -251,7 +140,7 @@ function start_quiz($session)
 function save_question($session)
 {
     // Check if we're working on the current question for the session
-    $current_question = $session->data->currentquestion;
+    $current_question = $session->data->slot;
     $js_current_question = required_param('questionid', PARAM_INT);
     if ($current_question != $js_current_question) {
         print_json([
@@ -262,7 +151,7 @@ function save_question($session)
     }
 
     // Get the attempt for the question
-    $attempt = $session->get_open_attempt();
+    $attempt = $session->open_attempt;
 
     // Does it belong to this user?
     if ($attempt->data->userid != $session->get_current_userid()) {
@@ -290,7 +179,7 @@ function save_question($session)
 
     // We need to send the updated sequence check for javascript to update.
     // Get the sequence check on the question form. This allows the question to be resubmitted again.
-    list($seqname, $seqvalue) = $attempt->get_sequence_check($session->data->currentqnum);
+    list($seqname, $seqvalue) = $attempt->get_sequence_check($session->data->slot);
 
     print_json([
         'status' => 'success',
@@ -306,18 +195,9 @@ function save_question($session)
  */
 function run_voting($jazzquiz, $session)
 {
-    // TODO: Not use _POST
-
-    if (!isset($_POST['questions'])) {
-        print_json([
-            'status' => 'error',
-            'message' => 'No questions sent'
-        ]);
-        return;
-    }
-
     // Decode the questions parameter into an array
-    $questions = json_decode(urldecode($_POST['questions']), true);
+    $questions = required_param('questions', PARAM_RAW);
+    $questions = json_decode(urldecode($questions), true);
     if (!$questions) {
         print_json([
             'status' => 'error',
@@ -325,19 +205,15 @@ function run_voting($jazzquiz, $session)
         ]);
         return;
     }
-
-    // Get question type
-    $question_type = '';
-    if (isset($_POST['qtype'])) {
-        $question_type = $_POST['qtype'];
-    }
+    $question_type = optional_param('qtype', '', PARAM_ALPHANUM);
 
     // Initialize the votes
     $vote = new jazzquiz_vote($session->data->id);
-    $slot = $session->data->currentqnum;
+    $slot = $session->data->slot;
     $vote->prepare_options($jazzquiz->data->id, $question_type, $questions, $slot);
 
-    $session->set_status('voting');
+    $session->data->status = 'voting';
+    $session->save();
 
     print_json([
         'status' => 'success'
@@ -349,18 +225,8 @@ function run_voting($jazzquiz, $session)
  */
 function save_vote($session)
 {
-    // TODO: Not use _POST
-
-    if (!isset($_POST['answer'])) {
-        print_json([
-            'status' => 'error',
-            'message' => 'No vote in parameters'
-        ]);
-        return;
-    }
-
     // Get the id for the attempt that was voted on
-    $vote_id = intval($_POST['answer']);
+    $vote_id = required_param('answer', PARAM_INT);
 
     // Get the user who voted
     $user_id = $session->get_current_userid();
@@ -379,7 +245,7 @@ function save_vote($session)
  */
 function get_vote_results($session)
 {
-    $vote = new jazzquiz_vote($session->data->id, $session->data->currentqnum);
+    $vote = new jazzquiz_vote($session->data->id, $session->data->slot);
     $votes = $vote->get_results();
     print_json([
         'status' => 'success',
@@ -389,59 +255,12 @@ function get_vote_results($session)
 }
 
 /**
- * @param jazzquiz $jazzquiz
- * @param jazzquiz_session $session
- */
-function next_question($jazzquiz, $session)
-{
-    // Are we coming from an improvised question?
-    if ($session->data->nextqnum != 0) {
-        // Yes, we likely are. Let's get that question
-        $question = $session->goto_question($session->data->nextqnum);
-        // We should also reset the nextqnum, since we're back in the right quiz flow again.
-        $session->data->nextqnum = 0;
-        $session->save_session();
-    } else {
-        // Doesn't seem that way. Let's just start the next question in the ordered list.
-        $question = $session->next_question();
-    }
-    start_question($jazzquiz, $session, $question);
-}
-
-/**
- * @param jazzquiz $jazzquiz
- * @param jazzquiz_session $session
- */
-function repoll_question($jazzquiz, $session)
-{
-    $question = $session->repoll_question();
-    start_question($jazzquiz, $session, $question);
-}
-
-/**
- * @param jazzquiz $jazzquiz
- * @param jazzquiz_session $session
- */
-function goto_question($jazzquiz, $session)
-{
-    // Get the question number to go to
-    $slot = optional_param('slot', '', PARAM_INT);
-    if (empty($slot)) {
-        print_json([
-            'status' => 'error',
-            'message' => 'Invalid slot'
-        ]);
-        return;
-    }
-    start_goto_question($jazzquiz, $session, $slot);
-}
-
-/**
  * @param jazzquiz_session $session
  */
 function end_question($session) // or vote
 {
-    $session->set_status('reviewing');
+    $session->data->status = 'reviewing';
+    $session->save();
     print_json([
         'status' => 'success'
     ]);
@@ -476,9 +295,8 @@ function close_session($session)
 function get_results($jazzquiz, $session)
 {
     // Get the results
-    $question_manager = $jazzquiz->question_manager;
-    $slot = $session->data->currentqnum;
-    $question_type = $question_manager->get_question_type_by_slot($slot);
+    $slot = $session->data->slot;
+    $question_type = $jazzquiz->get_question_type_by_slot($slot);
     $responses = $session->get_question_results_list($slot, 'open');
 
     // Check if this has been voted on before
@@ -503,40 +321,34 @@ function get_results($jazzquiz, $session)
 function handle_instructor_request($action, $jazzquiz, $session)
 {
     switch ($action) {
-        case 'startquiz':
+        case 'start_quiz':
             start_quiz($session);
             exit;
-        case 'savequestion':
+        case 'save_question':
             save_question($session);
             exit;
-        case 'listdummyquestions':
-            show_all_improvisation_questions($jazzquiz);
+        case 'list_improvisation_questions':
+            show_all_improvisation_questions();
             exit;
-        case 'runvoting':
+        case 'run_voting':
             run_voting($jazzquiz, $session);
             exit;
-        case 'getvoteresults':
+        case 'get_vote_results':
             get_vote_results($session);
             exit;
-        case 'getresults':
+        case 'get_results':
             get_results($jazzquiz, $session);
             exit;
-        case 'nextquestion':
-            next_question($jazzquiz, $session);
+        case 'start_question':
+            start_question($jazzquiz, $session);
             exit;
-        case 'repollquestion':
-            repoll_question($jazzquiz, $session);
-            exit;
-        case 'gotoquestion':
-            goto_question($jazzquiz, $session);
-            exit;
-        case 'endquestion':
+        case 'end_question':
             end_question($session);
             exit;
-        case 'getrightresponse':
+        case 'get_right_response':
             get_right_response($session);
             exit;
-        case 'closesession':
+        case 'close_session':
             close_session($session);
             exit;
         default:
@@ -555,10 +367,10 @@ function handle_instructor_request($action, $jazzquiz, $session)
 function handle_student_request($action, $session)
 {
     switch ($action) {
-        case 'savequestion':
+        case 'save_question':
             save_question($session);
             exit;
-        case 'savevote':
+        case 'save_vote':
             save_vote($session);
             exit;
         default:
@@ -600,7 +412,7 @@ function jazzquiz_quizdata()
         ]);
         return;
     }
-    $session->set_open_attempt($attempt);
+    $session->open_attempt = $attempt;
 
     if ($jazzquiz->is_instructor()) {
         handle_instructor_request($action, $jazzquiz, $session);

@@ -38,8 +38,8 @@ class jazzquiz_attempt
     /** @var \stdClass */
     public $data;
 
-    /** @var question_manager */
-    public $question_manager;
+    /** @var jazzquiz */
+    public $jazzquiz;
 
     /** @var \question_usage_by_activity $quba the question usage by activity for this attempt */
     public $quba;
@@ -64,25 +64,21 @@ class jazzquiz_attempt
     /**
      * Construct the class. If data is passed in we set it, otherwise initialize empty class
      *
-     * @param question_manager $question_manager
-     * @param \stdClass
+     * @param jazzquiz $jazzquiz
+     * @param \stdClass $data
      * @param \context_module $context
      */
-    public function __construct($question_manager, $data = null, $context = null)
+    public function __construct($jazzquiz, $data = null, $context = null)
     {
-        $this->question_manager = $question_manager;
+        $this->jazzquiz = $jazzquiz;
         $this->context = $context;
-
         if (empty($data)) {
-
             // Create new attempt
             $this->data = new \stdClass();
-
             // Create a new quba since we're creating a new attempt
-            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->question_manager->jazzquiz->context);
+            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->jazzquiz->context);
             $this->quba->set_preferred_behaviour('immediatefeedback');
-            $this->question_manager->add_questions_to_quba($this->quba);
-
+            //$this->jazzquiz->add_questions_to_quba($this->quba);
         } else {
             // Load it up in this class instance
             $this->data = $data;
@@ -146,16 +142,6 @@ class jazzquiz_attempt
                 return false;
         }
         return $this->save();
-    }
-
-    /**
-     * Returns the class instance of the quba
-     *
-     * @return \question_usage_by_activity
-     */
-    public function get_quba()
-    {
-        return $this->quba;
     }
 
     /**
@@ -295,7 +281,7 @@ class jazzquiz_attempt
         if (empty($question_id)) {
             return false;
         }
-        foreach ($this->question_manager->jazzquiz_questions as $question) {
+        foreach ($this->jazzquiz->questions as $question) {
             if ($question->question->id == $question_id) {
                 return $question;
             }
@@ -463,16 +449,6 @@ class jazzquiz_attempt
         $question_renderer = $question_definition->get_renderer($PAGE);
         $display_options = $this->get_display_options();
         return $question_renderer->feedback($this->quba->get_question_attempt($slot), $display_options);
-    }
-
-    /**
-     * Specify whether this is the last question or not.
-     *
-     * @param bool $is_last_question
-     */
-    public function set_last_question($is_last_question = false)
-    {
-        $this->lastquestion = $is_last_question;
     }
 
     /**

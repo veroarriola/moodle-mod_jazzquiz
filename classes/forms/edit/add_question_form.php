@@ -73,11 +73,6 @@ class add_question_form extends \moodleform
         $mform->setDefault('number_of_tries', 1);
         $mform->addHelpButton('number_of_tries', 'number_of_tries', 'jazzquiz');
 
-        $mform->addElement('advcheckbox', 'show_history_during_quiz', get_string('show_history_during_quiz', 'jazzquiz'));
-        $mform->setType('show_history_during_quiz', PARAM_INT);
-        $mform->addHelpButton('show_history_during_quiz', 'show_history_during_quiz', 'jazzquiz');
-        $mform->setDefault('show_history_during_quiz', $this->_customdata['show_history_during_quiz']);
-
         if (!empty($this->_customdata['edit'])) {
             $save_string = get_string('save_question', 'jazzquiz');
         } else {

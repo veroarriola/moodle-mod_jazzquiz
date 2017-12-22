@@ -159,7 +159,7 @@ class sessionattempts extends \flexible_table implements \renderable
         global $DB;
 
         $data = [];
-        $attempts = $this->session->getall_attempts(true);
+        $attempts = $this->session->get_all_attempts(true);
         $user_ids = [];
         foreach ($attempts as $attempt) {
             if ($attempt->data->userid > 0) {

@@ -63,7 +63,7 @@ try {
     $course = $DB->get_record('course', [ 'id' => $jazzquiz->course ], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('jazzquiz', $jazzquiz->id, $course->id, false, MUST_EXIST);
     require_login($course->id, false, $cm, false, true);
-} catch (Exception $e) {
+} catch (\Exception $e) {
     print_json([
         'status' => 'error',
         'message' => 'Did not find course ' . $jazzquiz->course
@@ -86,17 +86,16 @@ switch ($session->status) {
     case 'notrunning':
         $jazzquiz = new jazzquiz($cm->id);
         if ($jazzquiz->is_instructor()) {
-            $session_obj = new jazzquiz_session($jazzquiz, $session);
-            $attempts = $session_obj->getall_open_attempts(false);
+            $session = new jazzquiz_session($jazzquiz, $session);
+            $attempts = $session->get_all_attempts(false, 'open');
             print_json([
-                'status' => $session->status,
+                'status' => $session->data->status,
                 'students' => count($attempts)
             ]);
             exit;
         }
         // fall-through
     case 'preparing':
-    case 'endquestion':
     case 'reviewing':
         print_json([
             'status' => $session->status,
@@ -125,7 +124,7 @@ switch ($session->status) {
 
     // Send the currently active question
     case 'running':
-        if (empty($session->currentquestion)) {
+        if (empty($session->slot)) {
             print_json([
                 'status' => 'notrunning'
             ]);
@@ -135,7 +134,7 @@ switch ($session->status) {
         $delay = $session->nextstarttime - time();
         print_json([
             'status' => 'running',
-            'currentquestion' => $session->currentquestion,
+            'slot' => $session->slot,
             'questiontime' => $session->currentquestiontime,
             'delay' => $delay
         ]);

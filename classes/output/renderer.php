@@ -505,7 +505,6 @@ class renderer extends \plugin_renderer_base
      *
      * @param \mod_jazzquiz\jazzquiz_attempt $attempt
      * @param \mod_jazzquiz\jazzquiz_session $session
-     * @throws \moodle_exception throws exception when invalid question on the attempt is found
      */
     public function init_quiz_js($attempt, $session)
     {
@@ -550,7 +549,7 @@ EOD;
         $quiz->questions = [];
         $quiz->resume = new \stdClass();
 
-        $ordered_jazzquiz_questions = $attempt->question_manager->jazzquiz_questions;
+        $ordered_jazzquiz_questions = $attempt->jazzquiz->questions;
         $slot = 1;
         foreach ($ordered_jazzquiz_questions as $q) {
             $question = new \stdClass();
@@ -559,22 +558,8 @@ EOD;
             $question->tries = $q->data->tries;
             $question->question = $q->question;
             $question->slot = $slot;
-            $slot++;
-
-            // If the slot is false, throw exception for invalid question on quiz attempt
-            if ($question->slot === false) {
-                $a = new \stdClass();
-                $a->questionname = $q->question->name;
-                throw new \moodle_exception(
-                    'invalidquestionattempt',
-                    'mod_jazzquiz',
-                    '',
-                    $a,
-                    'invalid slot when building questions array on quiz renderer'
-                );
-            }
-            // Add question to list
             $quiz->questions[$question->slot] = $question;
+            $slot++;
         }
 
         $session_state = $session->data->status;
@@ -585,22 +570,22 @@ EOD;
 
         if ($session_state != 'notrunning') {
 
-            $current_question = $session->data->currentquestion;
+            $current_slot = $session->data->slot;
             $next_start_time = $session->data->nextstarttime;
 
             switch ($session_state) {
 
                 case 'running':
-                    if (empty($current_question)) {
+                    if (empty($current_slot)) {
                         break;
                     }
 
                     // We're in a currently running question
                     $quiz->resume->are_we_resuming = true;
                     $quiz->resume->state = $session_state;
-                    $quiz->resume->current_question_slot = $current_question;
+                    $quiz->resume->current_question_slot = $current_slot;
 
-                    $nextQuestion = $this->jazzquiz->question_manager->get_question_with_slot($session->data->currentqnum, $attempt);
+                    $nextQuestion = $this->jazzquiz->get_question_with_slot($session->data->slot, $attempt);
 
                     if ($next_start_time > time()) {
                         // We're wating for question
@@ -624,14 +609,12 @@ EOD;
                     break;
 
                 case 'reviewing':
-                case 'endquestion':
                     // If we're reviewing, resume with quiz info of reviewing and just let
                     // set interval capture next question start time
                     $quiz->resume->are_we_resuming = true;
                     $quiz->resume->action = 'reviewing';
                     $quiz->resume->state = $session_state;
-                    $quiz->resume->current_question_slot = $current_question;
-                    $quiz->question->is_last = $attempt->lastquestion;
+                    $quiz->resume->current_question_slot = $current_slot;
                     break;
 
                 case 'preparing':
@@ -639,7 +622,7 @@ EOD;
                     $quiz->resume->are_we_resuming = true;
                     $quiz->resume->action = $session_state;
                     $quiz->resume->state = $session_state;
-                    $quiz->resume->current_question_slot = $current_question;
+                    $quiz->resume->current_question_slot = $current_slot;
                     break;
 
                 default:

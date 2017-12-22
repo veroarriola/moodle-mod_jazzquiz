@@ -79,7 +79,7 @@ function get_question_bank_view($contexts, $jazzquiz, $url, $page_vars)
 function list_questions($contexts, $jazzquiz, $url, $page_vars)
 {
     $question_bank_view = get_question_bank_view($contexts, $jazzquiz, $url, $page_vars);
-    $questions = $jazzquiz->question_manager->jazzquiz_questions;
+    $questions = $jazzquiz->questions;
     $jazzquiz->renderer->listquestions($questions, $question_bank_view, $url);
 }
 
@@ -91,16 +91,20 @@ function jazzquiz_edit_order($jazzquiz)
     $order = required_param('order', PARAM_RAW);
     //$order = explode(',', $order);
     $order = json_decode($order);
-    $jazzquiz->question_manager->set_question_order($order);
+    $jazzquiz->set_question_order($order);
 }
 
 /**
  * @param jazzquiz $jazzquiz
+ * @param \moodle_url $url
  */
-function jazzquiz_edit_add_question($jazzquiz)
+function jazzquiz_edit_add_question($jazzquiz, $url)
 {
     $question_id = required_param('questionid', PARAM_INT);
-    $jazzquiz->question_manager->add_question($question_id);
+    $jazzquiz->add_question($question_id);
+    // Ensure there is no action or questionid in the base url
+    $url->remove_params('action', 'questionid');
+    redirect($url, null, 0);
 }
 
 /**
@@ -109,7 +113,7 @@ function jazzquiz_edit_add_question($jazzquiz)
 function jazzquiz_edit_edit_question($jazzquiz)
 {
     $question_id = required_param('questionid', PARAM_INT);
-    $jazzquiz->question_manager->edit_question($question_id);
+    $jazzquiz->edit_question($question_id);
 }
 
 /**
@@ -170,7 +174,7 @@ function jazzquiz_edit()
             jazzquiz_edit_order($jazzquiz);
             break;
         case 'addquestion':
-            jazzquiz_edit_add_question($jazzquiz);
+            jazzquiz_edit_add_question($jazzquiz, $url);
             break;
         case 'editquestion':
             jazzquiz_edit_edit_question($jazzquiz);

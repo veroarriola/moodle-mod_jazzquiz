@@ -29,7 +29,7 @@ var jazzquiz = {
 
     current_responses: [],
     total_responses: 0,
-    chosen_improvisation_question_slot: 0,
+    chosen_improvisation_question_id: 0,
 
     qcounter: false,
 
@@ -108,7 +108,7 @@ jazzquiz.ajax = {
 
     httpRequest: {},
 
-    init: function () {
+    init: function() {
 
     },
 
@@ -125,7 +125,7 @@ jazzquiz.ajax = {
      *
      * @param callback callable function to be the callback onreadystatechange, must accept httpstatus and the response
      */
-    create_request: function (url, params, callback) {
+    create_request: function(url, params, callback) {
 
         // Append default parameters
         if (params instanceof FormData) {
@@ -205,7 +205,7 @@ jazzquiz.ajax = {
     }
 };
 
-jazzquiz.request_quiz_info = function () {
+jazzquiz.request_quiz_info = function() {
     jazzquiz.ajax.create_request('/mod/jazzquiz/quizinfo.php', {}, function (status, response) {
         if (status !== HTTP_STATUS.OK) {
             console.log('Error ' + status + ' occurred.' + response);
@@ -233,7 +233,7 @@ jazzquiz.text = function(key, from, args) {
     return M.util.get_string(key, from, args);
 };
 
-jazzquiz.hide_all_questions = function () {
+jazzquiz.hide_all_questions = function() {
     for (var prop in this.quiz.questions) {
         if (this.quiz.questions.hasOwnProperty(prop)) {
             var slot = this.quiz.questions[prop].slot;
@@ -259,7 +259,7 @@ jazzquiz.hide_loading = function() {
     jQuery('#loadingbox').addClass('hidden');
 };
 
-jazzquiz.hide_instructions = function () {
+jazzquiz.hide_instructions = function() {
     jQuery('#jazzquiz_instructions_container').addClass('hidden');
 };
 
@@ -588,7 +588,6 @@ jazzquiz.goto_question = function (slot, question_time, tries) {
 
 /**
  * Wrapper for handle_question when the user clicks save
- *
  */
 jazzquiz.save_question = function () {
     var slot = this.quiz.current_question_slot;

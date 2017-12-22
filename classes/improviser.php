@@ -6,79 +6,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class improviser
 {
-    public function add_improvised_question_instance($jazzquiz_id, $question_id)
-    {
-        global $DB;
-
-        // Get the JazzQuiz
-        $jazzquiz = $DB->get_record('jazzquiz', [ 'id' => $jazzquiz_id ]);
-        if (!$jazzquiz) {
-            return;
-        }
-
-        // Create the new JazzQuiz question
-        $question = new \stdClass();
-        $question->jazzquizid = $jazzquiz_id;
-        $question->questionid = $question_id;
-        $question->notime = 0;
-        $question->questiontime = $jazzquiz->defaultquestiontime;
-        $question->tries = 1;
-        $question->showhistoryduringquiz = 0;
-
-        // Save to database
-        $jazzquiz_question_id = $DB->insert_record('jazzquiz_questions', $question);
-
-        // We must also update the question order for the JazzQuiz
-        if ($jazzquiz->questionorder != '') {
-            $jazzquiz->questionorder .= ',';
-        }
-        $jazzquiz->questionorder .= $jazzquiz_question_id;
-        $DB->update_record('jazzquiz', $jazzquiz);
-    }
-
-    public function remove_improvised_question_instance($jazzquiz_id, $question_id)
-    {
-        global $DB;
-
-        // Get the JazzQuiz
-        $jazzquiz = $DB->get_record('jazzquiz', [
-            'id' => $jazzquiz_id
-        ]);
-        if (!$jazzquiz) {
-            return;
-        }
-
-        // Get current quiz questions with this question
-        // We need the ID
-        $existing_improvised_questions = $DB->get_records('jazzquiz_questions', [
-            'jazzquizid' => $jazzquiz_id,
-            'questionid' => $question_id
-        ]);
-        if (!$existing_improvised_questions) {
-            return;
-        }
-
-        // Delete the improvised question
-        $DB->delete_records('jazzquiz_questions', [
-            'jazzquizid' => $jazzquiz_id,
-            'questionid' => $question_id
-        ]);
-
-        // Update question order
-        $question_order = explode(',', $jazzquiz->questionorder);
-        foreach ($question_order as $index => $order_question_id) {
-            foreach ($existing_improvised_questions as $existing_improvised_question) {
-                if ($order_question_id == $existing_improvised_question->id) {
-                    unset($question_order[$index]);
-                    break;
-                }
-            }
-        }
-        $jazzquiz->questionorder = implode(',', $question_order);
-        $DB->update_record('jazzquiz', $jazzquiz);
-    }
-
-    private function make_generic_question_definition($question_type, $name)
+    private static function make_generic_question_definition($question_type, $name)
     {
         $question = new \stdClass();
         $question->category = 4; // This is the 'System Default' for 222
@@ -102,14 +30,14 @@ class improviser
         return $question;
     }
 
-    private function make_multichoice_options($question_id)
+    private static function make_multichoice_options($question_id)
     {
         $options = new \stdClass();
         $options->questionid = $question_id;
         $options->layout = 0;
         $options->single = 1;
         $options->shuffleanswers = 0;
-        $options->correctfeedback = ''; // There is no feedback
+        $options->correctfeedback = '';
         $options->correctfeedbackformat = 1;
         $options->partiallycorrectfeedback = '';
         $options->partiallycorrectfeedbackformat = 1;
@@ -120,7 +48,7 @@ class improviser
         return $options;
     }
 
-    private function make_short_answer_options($question_id)
+    private static function make_short_answer_options($question_id)
     {
         $options = new \stdClass();
         $options->questionid = $question_id;
@@ -128,10 +56,10 @@ class improviser
         return $options;
     }
 
-    private function make_generic_question_answer($question_id, $format, $answer_text)
+    private static function make_generic_question_answer($question_id, $format, $answer_text)
     {
         $answer = new \stdClass();
-        $answer->question = $question_id; // NOTE: This might be renamed to questionid in future versions of Moodle.
+        $answer->question = $question_id;
         $answer->answer = $answer_text;
         $answer->answerformat = $format;
         $answer->fraction = 1;
@@ -140,27 +68,27 @@ class improviser
         return $answer;
     }
 
-    private function improvised_question_definition_exists($name)
+    private static function improvised_question_definition_exists($name)
     {
         global $DB;
         return $DB->record_exists('question', ['name' => '{IMPROV}' . $name]);
     }
 
-    private function insert_multichoice_question_definition($name, $option_count)
+    private static function insert_multichoice_question_definition($name, $option_count)
     {
         global $DB;
 
         // Check if duplicate
-        if ($this->improvised_question_definition_exists($name)) {
+        if (self::improvised_question_definition_exists($name)) {
             return;
         }
 
         // Add question
-        $question = $this->make_generic_question_definition('multichoice', $name);
+        $question = self::make_generic_question_definition('multichoice', $name);
         $question->id = $DB->insert_record('question', $question);
 
         // Add options
-        $options = $this->make_multichoice_options($question->id);
+        $options = self::make_multichoice_options($question->id);
         $DB->insert_record('qtype_multichoice_options', $options);
 
         // Add answers
@@ -168,71 +96,71 @@ class improviser
         $end = $begin + intval($option_count);
         for ($a = $begin; $a < $end; $a++) {
             $letter = chr($a);
-            $answer = $this->make_generic_question_answer($question->id, 1, $letter);
+            $answer = self::make_generic_question_answer($question->id, 1, $letter);
             $DB->insert_record('question_answers', $answer);
         }
     }
 
-    private function insert_shortanswer_question_definition($name)
+    private static function insert_shortanswer_question_definition($name)
     {
         global $DB;
 
         // Check if duplicate
-        if ($this->improvised_question_definition_exists($name)) {
+        if (self::improvised_question_definition_exists($name)) {
             return;
         }
 
         // Add question
-        $question = $this->make_generic_question_definition('shortanswer', 'Short answer');
+        $question = self::make_generic_question_definition('shortanswer', 'Short answer');
         $question->id = $DB->insert_record('question', $question);
 
         // Add options
-        $options = $this->make_short_answer_options($question->id);
+        $options = self::make_short_answer_options($question->id);
         $DB->insert_record('qtype_shortanswer_options', $options);
 
         // Add answer
-        $answer = $this->make_generic_question_answer($question->id, 0, '*');
+        $answer = self::make_generic_question_answer($question->id, 0, '*');
         $DB->insert_record('question_answers', $answer);
     }
 
-    private function insert_truefalse_question_definition($name)
+    private static function insert_truefalse_question_definition($name)
     {
         global $DB;
 
         // Check if duplicate
-        if ($this->improvised_question_definition_exists($name)) {
+        if (self::improvised_question_definition_exists($name)) {
             return;
         }
 
         // Add question
-        $question = $this->make_generic_question_definition('truefalse', 'True / False');
+        $question = self::make_generic_question_definition('truefalse', 'True / False');
         $question->id = $DB->insert_record('question', $question);
 
         // Add answers
-        $true_answer = $this->make_generic_question_answer($question->id, 0, 'True');
+        $true_answer = self::make_generic_question_answer($question->id, 0, 'True');
         $true_answer->id = $DB->insert_record('question_answers', $true_answer);
-        $false_answer = $this->make_generic_question_answer($question->id, 0, 'False');
+        $false_answer = self::make_generic_question_answer($question->id, 0, 'False');
         $false_answer->id = $DB->insert_record('question_answers', $false_answer);
 
         // True / False
         $true_false = new \stdClass();
-        $true_false->question = $question->id; // NOTE: This might be renamed to questionid in future versions of Moodle.
+        $true_false->question = $question->id;
         $true_false->trueanswer = $true_answer->id;
         $true_false->falseanswer = $false_answer->id;
         $DB->insert_record('question_truefalse', $true_false);
     }
 
-    private function insert_stack_algebraic_question_definition($name)
+    private static function insert_stack_algebraic_question_definition($name)
     {
         global $DB;
 
         // Check if duplicate
-        if ($this->improvised_question_definition_exists($name)) {
+        if (self::improvised_question_definition_exists($name)) {
             return;
         }
 
         // Add question
-        $question = $this->make_generic_question_definition('stack', $name);
+        $question = self::make_generic_question_definition('stack', $name);
         $question->questiontext = '<p>[[input:ans1]] [[validation:ans1]]</p>';
         $question->id = $DB->insert_record('question', $question);
 
@@ -302,14 +230,14 @@ class improviser
         $prt_node->quiet = 0;
         $prt_node->truescoremode = '=';
         $prt_node->truescore = 1;
-        $prt_node->truepenalty = NULL;
+        $prt_node->truepenalty = null;
         $prt_node->truenextnode = -1;
         $prt_node->trueanswernote = 'prt1-1-T';
         $prt_node->truefeedback = '';
         $prt_node->truefeedbackformat = 1;
         $prt_node->falsescoremode = '=';
         $prt_node->falsescore = 0;
-        $prt_node->falsepenalty = NULL;
+        $prt_node->falsepenalty = null;
         $prt_node->falsenextnode = -1;
         $prt_node->falseanswernote = 'prt1-1-F';
         $prt_node->falsefeedback = '';
@@ -317,85 +245,21 @@ class improviser
         $prt_node->id = $DB->insert_record('qtype_stack_prt_nodes', $prt_node);
     }
 
-    public function insert_default_improvised_question_definitions()
+    public static function insert_default_improvised_question_definitions()
     {
         // Multichoice (3, 4 and  5 options)
         for ($i = 3; $i <= 5; $i++) {
-            $this->insert_multichoice_question_definition("$i Multichoice Options", $i);
+            self::insert_multichoice_question_definition("$i Multichoice Options", $i);
         }
 
         // Short answer
-        $this->insert_shortanswer_question_definition('Short answer');
+        self::insert_shortanswer_question_definition('Short answer');
 
         // True or False
-        $this->insert_truefalse_question_definition('True / False');
+        self::insert_truefalse_question_definition('True / False');
 
         // STACK Algebraic
-        $this->insert_stack_algebraic_question_definition('Algebraic');
+        self::insert_stack_algebraic_question_definition('Algebraic');
     }
-
-    /*public function remove_improvised_questions_from_quiz($jazzquiz_id)
-    {
-        global $DB;
-
-        // Find all the improvised questions
-        $improvised_questions = $DB->get_records_sql('SELECT * FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
-        if (!$improvised_questions) {
-            return;
-        }
-
-        // Get the questions for the quiz
-        $quiz_questions = $DB->get_records('jazzquiz_questions', [
-            'jazzquizid' => $jazzquiz_id
-        ]);
-        if (!$quiz_questions) {
-            return;
-        }
-
-        // Remove the improvised questions
-        foreach ($improvised_questions as $improvised_question) {
-            foreach ($quiz_questions as $quiz_question) {
-                if ($improvised_question->id == $quiz_question->questionid) {
-                    $this->remove_improvised_question_instance($jazzquiz_id, $improvised_question->id);
-                }
-            }
-        }
-    }
-
-    public function add_improvised_questions_to_quiz($jazzquiz_id)
-    {
-        global $DB;
-
-        // Find all the improvised questions
-        $improvised_questions = $DB->get_records_sql('SELECT * FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
-        if (!$improvised_questions) {
-            $this->insert_default_improvised_question_definitions();
-        }
-
-        $quiz_questions = $DB->get_records('jazzquiz_questions', [
-            'jazzquizid' => $jazzquiz_id
-        ]);
-
-        if (!$quiz_questions) {
-            // No questions for this quiz? Let's get right to adding the dummy ones then.
-            foreach ($improvised_questions as $improvised_question) {
-                $this->add_improvised_question_instance($jazzquiz_id, $improvised_question->id);
-            }
-        } else {
-            // We should only add the ones that don't already exist.
-            foreach ($improvised_questions as $improvised_question) {
-                $exists = false;
-                foreach ($quiz_questions as $quiz_question) {
-                    if ($improvised_question->id == $quiz_question->questionid) {
-                        $exists = true;
-                        break;
-                    }
-                }
-                if (!$exists) {
-                    $this->add_improvised_question_instance($jazzquiz_id, $improvised_question->id);
-                }
-            }
-        }
-    }*/
 
 }

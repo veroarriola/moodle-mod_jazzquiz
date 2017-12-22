@@ -31,7 +31,7 @@
  *               interval this function defines.  It is also updated by other functions in conjunction with "question.is_running"
  *
  */
-jazzquiz.change_quiz_state = function (state, data) {
+jazzquiz.change_quiz_state = function(state, data) {
 
     this.is_new_state = (this.state !== state);
     this.state = state;
@@ -171,12 +171,12 @@ jazzquiz.align_side_container = function() {
 };
 */
 
-jazzquiz.end_response_merge = function () {
+jazzquiz.end_response_merge = function() {
     jQuery('.merge-into').removeClass('merge-into');
     jQuery('.merge-from').removeClass('merge-from');
 };
 
-jazzquiz.start_response_merge = function (from_row_bar_id) {
+jazzquiz.start_response_merge = function(from_row_bar_id) {
     var bar_cell = document.getElementById(from_row_bar_id);
     var row = bar_cell.parentNode;
     if (row.classList.contains('merge-into')) {
@@ -202,7 +202,7 @@ jazzquiz.start_response_merge = function (from_row_bar_id) {
     }
 };
 
-jazzquiz.create_response_controls = function (name) {
+jazzquiz.create_response_controls = function(name) {
     var $response_info_container = jQuery('#jazzquiz_response_info_container');
     if (!this.quiz.question.has_votes) {
         $response_info_container.addClass('hidden');
@@ -229,7 +229,7 @@ jazzquiz.create_response_controls = function (name) {
     }
 };
 
-jazzquiz.create_response_bar_graph = function (responses, name, name_unique, target_id, slot) {
+jazzquiz.create_response_bar_graph = function(responses, name, name_unique, target_id, slot) {
     var target = document.getElementById(target_id);
     if (target === null) {
         return;
@@ -330,7 +330,7 @@ jazzquiz.create_response_bar_graph = function (responses, name, name_unique, tar
     }
 };
 
-jazzquiz.sort_response_bar_graph = function (target_id) {
+jazzquiz.sort_response_bar_graph = function(target_id) {
     var target = document.getElementById(target_id);
     if (target === null) {
         return;
@@ -350,7 +350,7 @@ jazzquiz.sort_response_bar_graph = function (target_id) {
     }
 };
 
-jazzquiz.quiz_info_responses = function (wrapper_id, table_id, responses, qtype, slot) {
+jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype, slot) {
     if (responses === undefined) {
         console.log('Responses is undefined.');
         return;
@@ -443,30 +443,27 @@ jazzquiz.quiz_info_responses = function (wrapper_id, table_id, responses, qtype,
     this.sort_response_bar_graph(table_id);
 };
 
-
-jazzquiz.start_quiz = function () {
+jazzquiz.start_quiz = function() {
     var params = {
-        action: 'startquiz'
+        action: 'start_quiz'
     };
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
         jQuery('#inquizcontrols').removeClass('btn-hide');
     });
     jQuery('#startquiz').parent().addClass('hidden');
     jazzquiz.hide_instructions();
 };
 
-jazzquiz.handle_question = function (slot) {
+jazzquiz.handle_question = function(slot) {
     this.show_loading(this.text('gathering_results'));
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
     }
-
-    var qform = document.forms.namedItem('q' + slot);
-    var params = new FormData(qform);
-    params.append('action', 'savequestion');
-    params.append('questionid', slot);
-
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    var params = {
+        action: 'save_question',
+        questionid: slot
+    };
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
         if (status === HTTP_STATUS.ERROR) {
             window.alert('There was an error with your request ... ' + response.error);
             return;
@@ -482,13 +479,13 @@ jazzquiz.handle_question = function (slot) {
         jazzquiz.quiz.question.is_running = false;
 
         var params = {
-            action: 'endquestion',
+            action: 'end_question',
             question: jazzquiz.quiz.current_question_slot
         };
 
         // make sure we end the question (on end_question function call this is re-doing what we just did)
         // but handle_request is also called on ending of the question timer in core.js
-        jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+        jazzquiz.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
             if (status === HTTP_STATUS.ERROR) {
                 jQuery('#loadingbox').addClass('hidden');
                 jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request');
@@ -502,7 +499,7 @@ jazzquiz.handle_question = function (slot) {
     });
 };
 
-jazzquiz.show_improvised_question_setup = function () {
+jazzquiz.show_improvised_question_setup = function() {
     var button = jQuery('#startimprovisedquestion');
     if (button.hasClass('active')) {
         // It's already open. Let's not send another request.
@@ -518,10 +515,10 @@ jazzquiz.show_improvised_question_setup = function () {
     }
 
     var params = {
-        action: 'listdummyquestions'
+        action: 'list_improvisation_questions'
     };
 
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
         if (status !== HTTP_STATUS.OK) {
             return;
         }
@@ -535,7 +532,7 @@ jazzquiz.show_improvised_question_setup = function () {
             // TODO: This is a bit ugly. Redo the onclick event.
             var html = '<button class="btn" ';
             html += 'onclick="';
-            html += 'jazzquiz.chosen_improvisation_question_slot = ' + questions[i].slot + ';';
+            html += 'jazzquiz.chosen_improvisation_question_id = ' + questions[i].question_id + ';';
             html += 'jazzquiz.start_improvised_question();';
             html += "jQuery('.improvise-menu').html('').removeClass('active');";
             html += "jQuery('#startimprovisedquestion').removeClass('active').attr('data-isclosed', 'yes');";
@@ -545,13 +542,9 @@ jazzquiz.show_improvised_question_setup = function () {
     });
 };
 
-jazzquiz.start_improvised_question = function () {
-    this.submit_goto_question(this.chosen_improvisation_question_slot, true, true);
-};
-
-jazzquiz.get_selected_answers_for_vote = function () {
+jazzquiz.get_selected_answers_for_vote = function() {
     var result = [];
-    jQuery('.selected-vote-option').each(function (i, option) {
+    jQuery('.selected-vote-option').each(function(i, option) {
         result.push({
             text: option.dataset.response,
             count: option.dataset.count
@@ -560,7 +553,7 @@ jazzquiz.get_selected_answers_for_vote = function () {
     return result;
 };
 
-jazzquiz.get_and_show_vote_results = function () {
+jazzquiz.get_and_show_vote_results = function() {
 
     // Should we show the results?
     if (!this.options.show_responses && this.state !== 'reviewing') {
@@ -570,10 +563,10 @@ jazzquiz.get_and_show_vote_results = function () {
     }
 
     var params = {
-        action: 'getvoteresults'
+        action: 'get_vote_results'
     };
 
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
         if (status !== HTTP_STATUS.OK) {
             jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error getting the vote results.');
             return;
@@ -619,29 +612,28 @@ jazzquiz.get_and_show_vote_results = function () {
     });
 };
 
-jazzquiz.run_voting = function () {
+jazzquiz.run_voting = function() {
     var vote_options = this.get_selected_answers_for_vote();
     var questions_param = encodeURIComponent(JSON.stringify(vote_options));
     var params = {
-        action: 'runvoting',
+        action: 'run_voting',
         questions: questions_param,
         qtype: this.quiz.questions[this.quiz.current_question_slot].question.qtype
     };
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
         if (status !== HTTP_STATUS.OK) {
             jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error starting the vote.');
         }
     });
 };
 
-jazzquiz.gather_results = function () {
+jazzquiz.gather_results = function() {
     var params = {
-        action: 'getresults'
+        action: 'get_results'
     };
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
         jazzquiz.hide_loading();
         if (status !== HTTP_STATUS.OK) {
-            // Something went wrong
             jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error getting current results.');
             return;
         }
@@ -651,53 +643,63 @@ jazzquiz.gather_results = function () {
     });
 };
 
-jazzquiz.repoll_question = function () {
+jazzquiz.submit_goto_question = function(slot) {
     this.hide_all_questions();
     this.hide_info();
     var params = {
-        action: 'repollquestion'
+        action: 'start_question',
+        slot: slot
     };
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
         if (status !== HTTP_STATUS.OK) {
             jQuery('#loadingbox').addClass('hidden');
             jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
             return;
         }
-        jazzquiz.quiz.question.is_last = (response.lastquestion === 'true');
+        window.location.hash = '';
         jazzquiz.waitfor_question(response.slot, response.questiontime, response.delay, response.nextstarttime);
     });
 };
 
-jazzquiz.next_question = function () {
-    this.hide_all_questions();
-    this.hide_info();
-    var params = {
-        action: 'nextquestion'
-    };
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
-        if (status !== HTTP_STATUS.OK) {
-            jQuery('#loadingbox').addClass('hidden');
-            jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
-            return;
-        }
-        jazzquiz.quiz.question.is_last = (response.lastquestion === 'true');
-        jazzquiz.waitfor_question(response.slot, response.questiontime, response.delay, response.nextstarttime);
-    });
+jazzquiz.repoll_question = function() {
+    this.submit_goto_question(this.quiz.current_question_slot);
 };
 
-jazzquiz.end_question = function () {
+jazzquiz.next_question = function() {
+    this.submit_goto_question(this.quiz.current_question_slot + 1);
+};
+
+jazzquiz.jump_question = function() {
+    if (window.location.hash === '#jumptoquestion-dialog') {
+        // Assume that we want to go to that the question in the select.
+        // The x/close removes the hash and doesn't re-call this function.
+        // It is only called on the "Jump to" button click when the dialog is open.
+        var select = document.getElementById('jtq-selectquestion');
+        var slot = select.options[select.selectedIndex].value;
+        this.submit_goto_question(slot);
+    } else {
+        // Open the dialog
+        window.location.hash = 'jumptoquestion-dialog';
+    }
+};
+
+jazzquiz.start_improvised_question = function() {
+    this.submit_goto_question(this.chosen_improvisation_question_id);
+};
+
+jazzquiz.end_question = function() {
     var params = {
-        action: 'endquestion',
+        action: 'end_question',
         question: this.quiz.current_question_slot
     };
 
-    var vote_callback = function (status, response) {
+    var vote_callback = function(status, response) {
         if (status === HTTP_STATUS.ERROR) {
             console.log('Failed to end vote.');
         }
     };
 
-    var callback = function (status, response) {
+    var callback = function(status, response) {
         if (status !== HTTP_STATUS.OK) {
             jQuery('#loadingbox').addClass('hidden');
             jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
@@ -713,7 +715,7 @@ jazzquiz.end_question = function () {
         jazzquiz.quiz.question.is_running = false;
         jazzquiz.quiz.question.is_ended = true;
 
-        // After getting endquestion response, go through the normal handle_question flow
+        // After getting end_question response, go through the normal handle_question flow
         jazzquiz.handle_question(jazzquiz.quiz.current_question_slot, true);
     };
 
@@ -726,7 +728,7 @@ jazzquiz.end_question = function () {
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, callback);
 };
 
-jazzquiz.close_session = function () {
+jazzquiz.close_session = function() {
     this.show_loading(this.text('closing_session'));
     this.hide_instructions();
     this.hide_all_questions();
@@ -735,9 +737,9 @@ jazzquiz.close_session = function () {
     jQuery('#controlbox').addClass('hidden');
 
     var params = {
-        action: 'closesession'
+        action: 'close_session'
     };
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
         jazzquiz.hide_loading();
         if (status !== HTTP_STATUS.OK) {
             jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
@@ -747,63 +749,14 @@ jazzquiz.close_session = function () {
     });
 };
 
-// keep_flow: if true, the "next question" won't change.
-jazzquiz.submit_goto_question = function (slot, keep_flow, add_question) {
-    this.hide_all_questions();
-    this.hide_info();
-
-    // TODO: If two improvised in a row, make sure it still doesn't break the flow
-
-    var params = {
-        action: 'gotoquestion',
-        slot: slot
-    };
-    if (keep_flow === true) {
-        params['keepflow'] = 'true';
-    }
-    if (add_question === true) {
-        params['add'] = 'true';
-    }
-
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
-        if (status !== HTTP_STATUS.OK) {
-            jQuery('#loadingbox').addClass('hidden');
-            jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
-            return;
-        }
-        jazzquiz.quiz.question.is_last = (response.lastquestion === 'true');
-        // Reset location.hash to nothing so that the modal dialog disappears
-        window.location.hash = '';
-        // Start question
-        jazzquiz.waitfor_question(response.slot, response.questiontime, response.delay, response.nextstarttime);
-    });
-};
-
-jazzquiz.jump_question = function () {
-    if (window.location.hash === '#jumptoquestion-dialog') {
-        // Assume that we want to go to that the question in the select.
-        // The x/close removes the hash and doesn't re-call this function.
-        // It is only called on the "Jump to" button click when the dialog is open.
-        var select = document.getElementById('jtq-selectquestion');
-        var slot = select.options[select.selectedIndex].value;
-        this.submit_goto_question(slot, false, false);
-    } else {
-        // Open the dialog
-        window.location.hash = 'jumptoquestion-dialog';
-    }
-};
-
-jazzquiz.show_correct_answer = function () {
+jazzquiz.show_correct_answer = function() {
     // Hide if already showing.
     if (this.options.is_showing_correct_answer) {
         // Make sure it's gone
         jQuery('#jazzquiz_correct_answer_container').addClass('hidden').html('');
-
         // Change button icon
         jQuery('#showcorrectanswer').html('<i class="fa fa-square-o"></i> Answer');
-
         this.options.is_showing_correct_answer = false;
-
         // We don't need to ask for the answer, so let's return.
         return;
     }
@@ -811,12 +764,12 @@ jazzquiz.show_correct_answer = function () {
     this.show_loading(this.text('loading'));
 
     var params = {
-        action: 'getrightresponse'
+        action: 'get_right_response'
     };
 
     // Make sure we end the question (on end_question function call this is re-doing what we just did)
     // handle_request is also called on ending of the question timer in core.js
-    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
+    this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function(status, response) {
         if (status !== HTTP_STATUS.OK) {
             jQuery('#loadingbox').addClass('hidden');
             jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
@@ -839,7 +792,7 @@ jazzquiz.show_correct_answer = function () {
 /**
  * Hides the responses
  */
-jazzquiz.hide_responses = function () {
+jazzquiz.hide_responses = function() {
     this.options.show_responses = false;
     jQuery('#toggleresponses').html('<i class="fa fa-square-o"></i> Responses');
     jQuery('#jazzquiz_response_info_container').addClass('hidden').html('');
@@ -849,7 +802,7 @@ jazzquiz.hide_responses = function () {
 /**
  * Shows the responses
  */
-jazzquiz.show_responses = function () {
+jazzquiz.show_responses = function() {
     this.options.show_responses = true;
     jQuery('#toggleresponses').html('<i class="fa fa-check-square-o"></i> Responses');
     this.gather_results();
@@ -858,7 +811,7 @@ jazzquiz.show_responses = function () {
 /**
  * Toggle whether to show or hide the responses
  */
-jazzquiz.toggle_responses = function () {
+jazzquiz.toggle_responses = function() {
     if (this.options.show_responses) {
         this.hide_responses();
     } else {
@@ -870,7 +823,7 @@ jazzquiz.toggle_responses = function () {
  * Disable/enable buttons from the array passed.
  * @param buttons An array of button ids to have enabled in the in quiz controls buttons
  */
-jazzquiz.control_buttons = function (buttons) {
+jazzquiz.control_buttons = function(buttons) {
     // Let's find the direct child nodes.
     var children = jQuery('#inquizcontrols').find('.quiz-control-buttons').children();
 
@@ -881,15 +834,15 @@ jazzquiz.control_buttons = function (buttons) {
     }
 };
 
-jazzquiz.hide_controls = function () {
+jazzquiz.hide_controls = function() {
     jQuery('#inquizcontrols').find('.quiz-control-buttons').addClass('hidden');
 };
 
-jazzquiz.show_controls = function () {
+jazzquiz.show_controls = function() {
     jQuery('#inquizcontrols').find('.quiz-control-buttons').removeClass('hidden');
 };
 
-jazzquiz.show_fullscreen_view = function () {
+jazzquiz.show_fullscreen_view = function() {
     var $quiz_view = jQuery('#quizview');
 
     // Are we already in fullscreen mode?
@@ -906,7 +859,7 @@ jazzquiz.show_fullscreen_view = function () {
     $quiz_view.addClass('fullscreen-quizview');
 };
 
-jazzquiz.close_fullscreen_view = function () {
+jazzquiz.close_fullscreen_view = function() {
     // Reset the overflow-y back to auto.
     document.documentElement.style.overflowY = 'auto';
 
@@ -914,7 +867,7 @@ jazzquiz.close_fullscreen_view = function () {
     jQuery('#quizview').removeClass('fullscreen-quizview');
 };
 
-jazzquiz.execute_control_action = function (action) {
+jazzquiz.execute_control_action = function(action) {
 
     // Prevent duplicate clicks
     // TODO: Find a better way to check if this is a direct action or not. Perhaps a class?
@@ -965,7 +918,7 @@ jazzquiz.execute_control_action = function (action) {
 };
 
 // Listens for key event to remove the projector view container
-document.addEventListener('keyup', function (e) {
+document.addEventListener('keyup', function(e) {
     // Check if 'Escape' key was pressed
     if (e.keyCode === 27) {
         jazzquiz.close_fullscreen_view();
@@ -973,7 +926,7 @@ document.addEventListener('keyup', function (e) {
 });
 
 // Listens for click events to hide the improvise menu when there is an outside click
-document.addEventListener('click', function (e) {
+document.addEventListener('click', function(e) {
     // Clicking on improvisation menu
     var menu = jQuery(e.target).closest('.improvise-menu');
     if (!menu.length) {

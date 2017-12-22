@@ -45,7 +45,7 @@ jazzquiz.change_quiz_state = function (state, data) {
             this.quiz.question.is_running = true;
             // Set this to false if we're going to a new question
             this.quiz.question.is_ended = false;
-            this.waitfor_question(data.currentquestion, data.questiontime, data.delay);
+            this.waitfor_question(data.slot, data.questiontime, data.delay);
             break;
 
         case 'reviewing':
@@ -125,21 +125,16 @@ jazzquiz.handle_question = function (question_slot) {
         return;
     }
     this.quiz.question.is_saving = true;
-
     jQuery('#loadingtext').html(this.text('gathering_results'));
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
     }
-
-    var question_form = document.forms.namedItem('q' + question_slot);
-    var params = new FormData(question_form);
-    params.append('action', 'savequestion');
-    params.append('questionid', question_slot);
-
+    var params = {
+        action: 'save_question',
+        questionid: question_slot
+    };
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {
         jQuery('#loadingbox').addClass('hidden');
-
-        // Was there an error with the request?
         if (status !== HTTP_STATUS.OK) {
             jazzquiz.quiz.question.is_saving = false;
             jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request');
@@ -171,7 +166,7 @@ jazzquiz.handle_question = function (question_slot) {
 
 jazzquiz.save_vote = function () {
     var params = {
-        action: 'savevote',
+        action: 'save_vote',
         answer: this.vote_answer
     };
     this.ajax.create_request('/mod/jazzquiz/quizdata.php', params, function (status, response) {

@@ -35,10 +35,13 @@ class jazzquiz_session
     public $data;
 
     /** @var array An array of jazzquiz_attempts for the session */
-    protected $attempts;
+    public $attempts;
 
     /** @var jazzquiz_attempt $open_attempt The current open attempt */
-    protected $open_attempt;
+    public $open_attempt;
+
+    /** @var \stdClass[] jazzquiz_session_questions */
+    public $questions;
 
     /**
      * @param jazzquiz $jazzquiz
@@ -94,20 +97,10 @@ class jazzquiz_session
     }
 
     /**
-     * @param string $status
-     * @return bool
-     */
-    public function set_status($status)
-    {
-        $this->data->status = $status;
-        return $this->save_session();
-    }
-
-    /**
      * Saves the session object to the database
      * @return bool
      */
-    public function save_session()
+    public function save()
     {
         global $DB;
         // Update if we already have a session, otherwise create it.
@@ -119,8 +112,7 @@ class jazzquiz_session
             }
         } else {
             try {
-                $newId = $DB->insert_record('jazzquiz_sessions', $this->data);
-                $this->data->id = $newId;
+                $this->data->id = $DB->insert_record('jazzquiz_sessions', $this->data);
             } catch (\Exception $e) {
                 return false;
             }
@@ -158,72 +150,37 @@ class jazzquiz_session
         // Clear and reset properties on the session
         $this->data->status = 'notrunning';
         $this->data->sessionopen = 0;
-        $this->data->currentquestion = null;
-        $this->data->currentqnum = null;
         $this->data->currentquestiontime = null;
         $this->data->nextstarttime = null;
 
         // Get all attempts and close them
-        $attempts = $this->getall_open_attempts(true);
+        $attempts = $this->get_all_attempts(true, 'open');
         foreach ($attempts as $attempt) {
             $attempt->close_attempt($this->jazzquiz);
         }
 
         // Save the session as closed
-        $this->save_session();
+        $this->save();
         return true;
-    }
-
-    /**
-     * The next jazzquiz question instance
-     *
-     * @return jazzquiz_question
-     * @throws \Exception Throws exception when invalid question number
-     */
-    public function next_question()
-    {
-        $slot = $this->data->currentqnum + 1;
-        $question = $this->goto_question($slot);
-        if (!$question) {
-            throw new \Exception('invalid slot');
-        }
-        return $question;
-    }
-
-    /**
-     * Re-poll the "active" question.  really we're just updating times and things to re-poll
-     * The question.
-     *
-     * @return jazzquiz_question
-     * @throws \Exception Throws exception when invalid question number
-     */
-    public function repoll_question()
-    {
-        $question = $this->goto_question($this->data->currentqnum);
-        if (!$question) {
-            throw new \Exception('invalid question number');
-        }
-        return $question;
     }
 
     /**
      * Tells the session to go to the specified question number
      * That jazzquiz_question is then returned
      *
-     * @param int|bool $slot The question number to go to
+     * @param int $slot The question number to go to
      * @return jazzquiz_question|bool
+     * @throws \Exception if slot is not valid
      */
-    public function goto_question($slot = false)
+    public function start_question($slot)
     {
-        if ($slot === false) {
-            return false;
+        $question = $this->jazzquiz->get_question_with_slot($slot, $this->open_attempt);
+        if (!$question) {
+            throw new \Exception("Invalid slot $slot");
         }
 
-        $question = $this->jazzquiz->question_manager->get_question_with_slot($slot, $this->open_attempt);
-
-        $this->data->currentqnum = $slot;
         $this->data->nextstarttime = time() + $this->jazzquiz->data->waitforquestiontime;
-        $this->data->currentquestion = $question->slot;
+        $this->data->slot = $slot;
 
         if ($question->data->questiontime == 0 && $question->data->notime == 0) {
             $question_time = $this->jazzquiz->data->defaultquestiontime;
@@ -237,10 +194,10 @@ class jazzquiz_session
         }
 
         $this->data->currentquestiontime = $question_time;
-        $this->save_session();
+        $this->save();
 
         // Set all responded to 0 for this question
-        $attempts = $this->getall_open_attempts(true);
+        $attempts = $this->get_all_attempts(true, 'open');
         foreach ($attempts as $attempt) {
             $attempt->data->responded = 0;
             $attempt->data->responded_count = 0;
@@ -258,7 +215,7 @@ class jazzquiz_session
      */
     public function get_question_results_list($slot, $open)
     {
-        $attempts = $this->getall_attempts(false, $open);
+        $attempts = $this->get_all_attempts(false, $open);
         $responses = [];
 
         foreach ($attempts as $attempt) {
@@ -288,7 +245,7 @@ class jazzquiz_session
      */
     public function get_responded_list($slot, $open)
     {
-        $attempts = $this->getall_attempts(false, $open);
+        $attempts = $this->get_all_attempts(false, $open);
         $responded = [];
         foreach ($attempts as $attempt) {
             if ($attempt->data->responded != 1) {
@@ -304,7 +261,7 @@ class jazzquiz_session
 
     public function get_student_count()
     {
-        return count($this->getall_open_attempts(false));
+        return count($this->get_all_attempts(false, 'open'));
     }
 
     /**
@@ -316,7 +273,7 @@ class jazzquiz_session
     {
         global $DB;
 
-        $attempts = $this->getall_open_attempts(false);
+        $attempts = $this->get_all_attempts(false, 'open');
         $not_responded = [];
 
         foreach ($attempts as $attempt) {
@@ -346,19 +303,19 @@ class jazzquiz_session
     {
         // Just use the instructor's question attempt to re-render the question with the right response
         $attempt = $this->open_attempt;
-        $quba = $attempt->get_quba();
-        $correct_response = $quba->get_correct_response($this->data->currentquestion);
+        $quba = $attempt->quba;
+        $correct_response = $quba->get_correct_response($this->data->slot);
         if (is_null($correct_response)) {
             return 'No correct response';
         }
-        $quba->process_action($this->data->currentquestion, $correct_response);
+        $quba->process_action($this->data->slot, $correct_response);
         $attempt->save();
         $review_options = new \stdClass();
         $review_options->rightanswer = 1;
         $review_options->correctness = 1;
         $review_options->specificfeedback = 1;
         $review_options->generalfeedback = 1;
-        return $attempt->render_question($this->data->currentquestion, true, $review_options);
+        return $attempt->render_question($this->data->slot, true, $review_options);
     }
 
     /**
@@ -378,7 +335,7 @@ class jazzquiz_session
         $open_attempt = $this->get_open_attempt_for_current_user();
         if (!$open_attempt) {
 
-            $attempt = new jazzquiz_attempt($this->jazzquiz->question_manager);
+            $attempt = new jazzquiz_attempt($this->jazzquiz);
             $attempt->data->sessionid = $this->data->id;
             $attempt->data->userid = $this->get_current_userid();
             $attempt->data->attemptnum = count($this->attempts) + 1;
@@ -444,28 +401,6 @@ class jazzquiz_session
     }
 
     /**
-     * get the open attempt for the user
-     *
-     * @return jazzquiz_attempt
-     */
-    public function get_open_attempt()
-    {
-        return $this->open_attempt;
-    }
-
-    /**
-     * Sets the open attempt
-     * Normally this is only called on the quizdata callback because
-     * validation of the attempt occurs before the openAttempt is set for the session
-     *
-     * @param jazzquiz_attempt $attempt
-     */
-    public function set_open_attempt($attempt)
-    {
-        $this->open_attempt = $attempt;
-    }
-
-    /**
      * Get the users who have attempted this session
      *
      * @return array returns an array of user IDs that have attempted this session
@@ -477,9 +412,7 @@ class jazzquiz_session
             return [];
         }
         $sql = 'SELECT DISTINCT userid FROM {jazzquiz_attempts} WHERE sessionid = :sessionid';
-        return $DB->get_records_sql($sql, [
-            'sessionid' => $this->data->id
-        ]);
+        return $DB->get_records_sql($sql, ['sessionid' => $this->data->id]);
     }
 
     /**
@@ -494,7 +427,7 @@ class jazzquiz_session
             return null;
         }
         $attempt = $DB->get_record('jazzquiz_attempts', ['id' => $attempt_id]);
-        return new jazzquiz_attempt($this->jazzquiz->question_manager, $attempt, $this->jazzquiz->context);
+        return new jazzquiz_attempt($this->jazzquiz, $attempt, $this->jazzquiz->context);
     }
 
     /**
@@ -505,9 +438,9 @@ class jazzquiz_session
      */
     public function get_open_attempt_for_current_user()
     {
-        // Use the getall attempts with the specified options
-        // skip checking for groups since we only want to initialize attempts for the actual current user
-        $this->attempts = $this->getall_attempts(true, 'all', $this->get_current_userid());
+        // Use the get_all_attempts with the specified options
+        // Skip checking for groups since we only want to initialize attempts for the actual current user
+        $this->attempts = $this->get_all_attempts(true, 'all', $this->get_current_userid());
 
         // Go through each attempt and see if any are open.  if not, create a new one.
         $open_attempt = false;
@@ -520,17 +453,6 @@ class jazzquiz_session
     }
 
     /**
-     * Gets all of the open attempts for the session
-     *
-     * @param bool $include_previews Whether or not to include the preview attempts
-     * @return jazzquiz_attempt[]
-     */
-    public function getall_open_attempts($include_previews)
-    {
-        return $this->getall_attempts($include_previews, 'open');
-    }
-
-    /**
      *
      * @param bool $include_previews Whether or not to include the preview attempts
      * @param string $open Whether or not to get open attempts.  'all' means both, otherwise 'open' means open attempts,
@@ -539,7 +461,7 @@ class jazzquiz_session
      *
      * @return jazzquiz_attempt[]
      */
-    public function getall_attempts($include_previews, $open = 'all', $user_id = null)
+    public function get_all_attempts($include_previews, $open = 'all', $user_id = null)
     {
         global $DB;
 
@@ -584,7 +506,7 @@ class jazzquiz_session
 
         $attempts = [];
         foreach ($db_attempts as $db_attempt) {
-            $attempts[$db_attempt->id] = new jazzquiz_attempt($this->jazzquiz->question_manager, $db_attempt, $this->jazzquiz->context);
+            $attempts[$db_attempt->id] = new jazzquiz_attempt($this->jazzquiz, $db_attempt, $this->jazzquiz->context);
         }
         return $attempts;
     }
