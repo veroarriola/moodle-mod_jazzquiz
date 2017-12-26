@@ -43,7 +43,7 @@ function print_json($array)
 /**
  * Sends a list of all the questions tagged for use with improvisation.
  */
-function show_all_improvisation_questions()
+function show_all_improvise_questions()
 {
     global $DB;
     $question_records = $DB->get_records_sql('SELECT * FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
@@ -68,6 +68,31 @@ function show_all_improvisation_questions()
 }
 
 /**
+ * Sends a list of all the questions added to the quiz.
+ * @param jazzquiz $jazzquiz
+ */
+function show_all_jump_questions($jazzquiz)
+{
+    global $DB;
+    $sql  = 'SELECT q.id AS id, q.name AS name';
+    $sql .= '  FROM {jazzquiz_questions} AS jq';
+    $sql .= '  JOIN {question} AS q ON q.id = jq.questionid';
+    $sql .= ' WHERE jq.jazzquizid = ?';
+    $question_records = $DB->get_records_sql($sql, [$jazzquiz->data->id]);
+    $questions = [];
+    foreach ($question_records as $question) {
+        $questions[] = [
+            'question_id' => $question->id,
+            'name' => $question->name
+        ];
+    }
+    print_json([
+        'status' => 'success',
+        'questions' => $questions
+    ]);
+}
+
+/**
  * @param jazzquiz $jazzquiz
  * @param jazzquiz_session $session
  */
@@ -79,7 +104,11 @@ function get_question_form($jazzquiz, $session)
     }
     /** @var output\renderer $renderer */
     $renderer = $jazzquiz->renderer;
-    echo $renderer->render_question_form($slot, $session->open_attempt);
+    $html = $renderer->render_question_form($slot, $session->open_attempt);
+    print_json([
+        'status' => 'success',
+        'html' => $html
+    ]);
 }
 
 /**
@@ -108,9 +137,8 @@ function start_question($jazzquiz, $session)
 
     print_json([
         'status' => 'started_question',
-        'next_start_time' => $session->data->nextstarttime,
         'no_time' => $no_time,
-        'questiontime' => $question_time,
+        'question_time' => $question_time,
         'delay' => $session->data->nextstarttime - time()
     ]);
 }
@@ -187,7 +215,7 @@ function run_voting($jazzquiz, $session)
         ]);
         return;
     }
-    $question_type = optional_param('qtype', '', PARAM_ALPHANUM);
+    $question_type = optional_param('question_type', '', PARAM_ALPHANUM);
 
     // Initialize the votes
     $vote = new jazzquiz_vote($session->data->id);
@@ -255,7 +283,7 @@ function get_right_response($session)
 {
     print_json([
         'status' => 'success',
-        'rightanswer' => $session->get_question_right_response()
+        'right_answer' => $session->get_question_right_response()
     ]);
 }
 
@@ -288,7 +316,7 @@ function get_results($jazzquiz, $session)
     print_json([
         'status' => 'success',
         'has_votes' => $has_votes,
-        'qtype' => $question_type,
+        'question_type' => $question_type,
         'slot' => $slot,
         'responses' => $responses['responses'],
         'total_students' => $responses['student_count']
@@ -312,8 +340,11 @@ function handle_instructor_request($action, $jazzquiz, $session)
         case 'save_question':
             save_question($session);
             exit;
-        case 'list_improvisation_questions':
-            show_all_improvisation_questions();
+        case 'list_improvise_questions':
+            show_all_improvise_questions();
+            exit;
+        case 'list_jump_questions':
+            show_all_jump_questions();
             exit;
         case 'run_voting':
             run_voting($jazzquiz, $session);

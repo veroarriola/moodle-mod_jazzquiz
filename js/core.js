@@ -29,7 +29,7 @@ let jazzquiz = {
 
     current_responses: [],
     total_responses: 0,
-    chosen_improvisation_question_id: 0,
+    chosen_question_id: 0,
 
     question_countdown_interval: 0,
 
@@ -239,7 +239,7 @@ jazzquiz.quiz_page_loaded = function() {
         if (this.jquery_errors > 50) {
             location.reload(true);
         }
-        setTimeout(function () {
+        setTimeout(function() {
             jazzquiz.quiz_page_loaded();
         }, 50);
         return;
@@ -322,7 +322,7 @@ jazzquiz.reload_question_box = function() {
     this.post('/mod/jazzquiz/quizdata.php', {
         action: 'get_question_form'
     }, function(data) {
-        jQuery('#jazzquiz_question_box').html(data);
+        jQuery('#jazzquiz_question_box').html(data.html);
     }).fail(function() {
         jQuery('#jazzquiz_info_container').removeClass('hidden').html('Failed to load question form.');
     });
@@ -357,10 +357,24 @@ jazzquiz.set_countdown_timer_text = function(time_left) {
 };
 
 /**
+ * Is called for every second of the question countdown.
+ */
+jazzquiz.on_question_countdown_tick = function(question_time) {
+    this.quiz.question.countdown_time_left--;
+    const time_left = this.quiz.question.countdown_time_left;
+    if (time_left <= 0) {
+        clearInterval(this.question_countdown_interval);
+        this.question_countdown_interval = 0;
+        this.start_question(question_time);
+    } else {
+        this.set_countdown_timer_text(time_left);
+    }
+};
+
+/**
  * Show countdown for the question.
- *
- * @param question_time
- * @param delay
+ * @param {number} question_time
+ * @param {number} delay
  */
 jazzquiz.start_question_countdown = function(question_time, delay) {
     this.quiz.question.countdown_time_left = delay;
@@ -372,26 +386,31 @@ jazzquiz.start_question_countdown = function(question_time, delay) {
         return;
     }
     this.set_countdown_timer_text(delay);
-    this.question_countdown_interval = setInterval(function() {
-        jazzquiz.quiz.question.countdown_time_left--;
-        let time_left = jazzquiz.quiz.question.countdown_time_left;
-        if (time_left <= 0) {
-            clearInterval(jazzquiz.question_countdown_interval);
-            jazzquiz.question_countdown_interval = 0;
-            jazzquiz.start_question(question_time);
-        } else {
-            jazzquiz.set_countdown_timer_text(time_left);
-        }
-    }, 1000);
+    this.question_countdown_interval = setInterval(function() { jazzquiz.on_question_countdown_tick(question_time); }, 1000);
 };
 
 /**
  * When the question "ending in" timer reaches 0 seconds, this will be called.
  */
 jazzquiz.on_question_timer_ending = function() {
-    jazzquiz.quiz.question.is_running = false;
-    if (jazzquiz.is_instructor) {
-        jazzquiz.end_question();
+    this.quiz.question.is_running = false;
+    if (this.is_instructor) {
+        this.end_question();
+    }
+};
+
+/**
+ * Is called for every second of the "ending in" timer.
+ */
+jazzquiz.on_question_timer_tick = function() {
+    const current_time = new Date().getTime();
+    if (current_time > this.quiz.question.end_time) {
+        clearInterval(this.question_countdown_interval);
+        this.question_countdown_interval = false;
+        this.on_question_timer_ending();
+    } else {
+        const time_left = parseInt((this.quiz.question.end_time - current_time) / 1000);
+        this.set_question_timer_text(time_left);
     }
 };
 
@@ -415,15 +434,5 @@ jazzquiz.start_question = function(question_time) {
     }
     this.set_question_timer_text(question_time);
     this.quiz.question.end_time = new Date().getTime() + question_time * 1000;
-    this.question_countdown_interval = setInterval(function () {
-        const current_time = new Date().getTime();
-        if (current_time > jazzquiz.quiz.question.end_time) {
-            clearInterval(jazzquiz.question_countdown_interval);
-            jazzquiz.question_countdown_interval = false;
-            jazzquiz.on_question_timer_ending();
-        } else {
-            let time_left = parseInt((jazzquiz.quiz.question.end_time - current_time) / 1000);
-            jazzquiz.set_question_timer_text(time_left);
-        }
-    }, 1000);
+    this.question_countdown_interval = setInterval(function() { jazzquiz.on_question_timer_tick(); }, 1000);
 };

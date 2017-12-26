@@ -50,20 +50,18 @@ class jazzquiz_session
     public function __construct($jazzquiz, $data = null)
     {
         global $DB;
-
         $this->jazzquiz = $jazzquiz;
-
         if (!empty($data)) {
             $this->data = $data;
-            return;
+        } else {
+            // Next attempt to get a "current" session for this quiz
+            // Returns false if no record is found
+            $this->data = $DB->get_record('jazzquiz_sessions', [
+                'jazzquizid' => $this->jazzquiz->data->id,
+                'sessionopen' => 1
+            ]);
         }
-
-        // Next attempt to get a "current" session for this quiz
-        // Returns false if no record is found
-        $this->data = $DB->get_record('jazzquiz_sessions', [
-            'jazzquizid' => $this->jazzquiz->data->id,
-            'sessionopen' => 1
-        ]);
+        $this->questions = $DB->get_records('jazzquiz_session_questions', ['sessionid' => $this->data->id]);
     }
 
     /**

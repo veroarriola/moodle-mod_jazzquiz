@@ -51,12 +51,12 @@ jazzquiz.change_quiz_state = function(state, data) {
             this.control_buttons([]);
             this.hide_controls();
             this.quiz.question.is_ended = false;
-            this.quiz.total_students = data.students;
+            this.quiz.total_students = data.student_count;
             let students_joined = 'No students have joined.';
-            if (data.students === 1) {
+            if (data.student_count === 1) {
                 students_joined = '1 student has joined.';
-            } else if (data.students > 1) {
-                students_joined = data.students + ' students have joined.';
+            } else if (data.student_count > 1) {
+                students_joined = data.student_count + ' students have joined.';
             }
             $start_quiz.next().html(students_joined);
             break;
@@ -471,8 +471,8 @@ jazzquiz.end_question = function() {
     });
 };
 
-jazzquiz.show_improvised_question_setup = function() {
-    let $button = jQuery('#startimprovisedquestion');
+jazzquiz.show_question_list_setup = function(name, action) {
+    let $button = jQuery('#jazzquiz_' + name + '_button');
     if ($button.hasClass('active')) {
         // It's already open. Let's not send another request.
         return;
@@ -487,24 +487,30 @@ jazzquiz.show_improvised_question_setup = function() {
     }
 
     this.get('/mod/jazzquiz/quizdata.php', {
-        action: 'list_improvisation_questions'
+        action: action
     }, function(data) {
-        let $menu = jQuery('.improvise-menu');
+        let $menu = jQuery('#jazzquiz_' + name + '_menu');
         $menu.html('').addClass('active');
-        jQuery('#startimprovisedquestion').addClass('active');
+        $button.addClass('active');
         const questions = data.questions;
         for (let i in questions) {
-            // TODO: This is a bit ugly. Redo the onclick event.
-            let html = '<button class="btn" ';
-            html += 'onclick="';
-            html += 'jazzquiz.chosen_improvisation_question_id = ' + questions[i].question_id + ';';
-            html += 'jazzquiz.start_improvised_question();';
-            html += "jQuery('.improvise-menu').html('').removeClass('active');";
-            html += "jQuery('#startimprovisedquestion').removeClass('active').attr('data-isclosed', 'yes');";
-            html += '">' + questions[i].name + '</button>';
-            $menu.append(html);
+            let $button = jQuery('<button>' + questions[i].name + '</button>');
+            $button.on('click', function() {
+                jazzquiz.submit_start_question(questions[i].id);
+                $menu.html('').removeClass('active');
+                jQuery('#jazzquiz_' + name + '_button').removeClass('active').attr('data-isclosed', 'yes');
+            });
+            $menu.append($button);
         }
     });
+};
+
+jazzquiz.show_improvise_question_setup = function() {
+    this.show_question_list_setup('improvise', 'list_improvise_questions');
+};
+
+jazzquiz.show_jump_question_setup = function() {
+    this.show_question_list_setup('jump', 'list_jump_questions');
 };
 
 jazzquiz.get_selected_answers_for_vote = function() {
@@ -575,7 +581,7 @@ jazzquiz.run_voting = function() {
     this.post('/mod/jazzquiz/quizdata.php', {
         action: 'run_voting',
         questions: questions_param,
-        qtype: this.quiz.question.qtype
+        question_type: this.quiz.question.qtype
     }, function() {
 
     }).fail(function() {
@@ -590,7 +596,7 @@ jazzquiz.gather_results = function() {
         jazzquiz.hide_loading();
         jazzquiz.quiz.question.has_votes = data.has_votes;
         jazzquiz.quiz.total_students = parseInt(data.total_students);
-        jazzquiz.quiz_info_responses('jazzquiz_responses_container', 'current_responses_wrapper', data.responses, data.qtype, data.slot);
+        jazzquiz.quiz_info_responses('jazzquiz_responses_container', 'current_responses_wrapper', data.responses, data.question_type, data.slot);
     }).fail(function() {
         jazzquiz.hide_loading();
         jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error getting current results.');
@@ -604,7 +610,7 @@ jazzquiz.submit_start_question = function(question_id) {
         question_id: question_id
     }, function(data) {
         window.location.hash = '';
-        jazzquiz.start_question_countdown(data.question_time, data.delay, data.next_start_time);
+        jazzquiz.start_question_countdown(data.question_time, data.delay);
     }).fail(function() {
         jQuery('#loadingbox').addClass('hidden');
         jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
@@ -617,24 +623,6 @@ jazzquiz.repoll_question = function() {
 
 jazzquiz.next_question = function() {
     this.submit_start_question(this.quiz.questions[this.quiz.current_question_slot + 1].question_id);
-};
-
-jazzquiz.jump_question = function() {
-    if (window.location.hash === '#jumptoquestion-dialog') {
-        // Assume that we want to go to that the question in the select.
-        // The x/close removes the hash and doesn't re-call this function.
-        // It is only called on the "Jump to" button click when the dialog is open.
-        let select = document.getElementById('jtq-selectquestion');
-        let question_id = select.options[select.selectedIndex].value;
-        this.submit_start_question(question_id);
-    } else {
-        // Open the dialog
-        window.location.hash = 'jumptoquestion-dialog';
-    }
-};
-
-jazzquiz.start_improvised_question = function() {
-    this.submit_start_question(this.chosen_improvisation_question_id);
 };
 
 jazzquiz.close_session = function() {
@@ -673,9 +661,7 @@ jazzquiz.show_correct_answer = function() {
         action: 'get_right_response'
     }, function(data) {
         jazzquiz.hide_loading();
-        jQuery('#jazzquiz_correct_answer_container')
-            .removeClass('hidden')
-            .html('<span class="jazzquiz-latex-wrapper">' + data.rightanswer + '</span>');
+        jQuery('#jazzquiz_correct_answer_container').removeClass('hidden').html('<span class="jazzquiz-latex-wrapper">' + data.right_answer + '</span>');
         jazzquiz.render_all_mathjax();
         jQuery('#showcorrectanswer').html('<i class="fa fa-check-square-o"></i> Answer');
         jazzquiz.options.is_showing_correct_answer = true;
@@ -761,7 +747,7 @@ jazzquiz.close_fullscreen_view = function() {
 jazzquiz.execute_control_action = function(action) {
     // Prevent duplicate clicks
     // TODO: Find a better way to check if this is a direct action or not. Perhaps a class?
-    if (action !== 'startimprovisedquestion') {
+    if (action !== 'startimprovisequestion' && action !== 'startjumpquestion') {
         this.control_buttons([]);
     }
     // Execute action
@@ -772,11 +758,11 @@ jazzquiz.execute_control_action = function(action) {
         case 'runvoting':
             this.run_voting();
             break;
-        case 'startimprovisedquestion':
-            this.show_improvised_question_setup();
+        case 'startimprovisequestion':
+            this.show_improvise_question_setup();
             break;
-        case 'jumptoquestion':
-            this.jump_question();
+        case 'startjumpquestion':
+            this.show_jump_question_setup();
             break;
         case 'nextquestion':
             this.next_question();
@@ -814,14 +800,19 @@ document.addEventListener('keyup', function(e) {
     }
 });
 
-// Listens for click events to hide the improvise menu when there is an outside click
-document.addEventListener('click', function(e) {
-    // Clicking on improvisation menu
-    const menu = jQuery(e.target).closest('.improvise-menu');
+jazzquiz.close_question_list_menu = function(name) {
+    const menu_id = '#jazzquiz_' + name + '_menu';
+    // Close the menu if the click was not inside.
+    const menu = jQuery(e.target).closest(menu_id);
     if (!menu.length) {
-        jQuery('.improvise-menu').html('').removeClass('active');
-        jQuery('#startimprovisedquestion').removeClass('active');
+        jQuery(menu_id).html('').removeClass('active');
+        jQuery('#start' + name + 'question').removeClass('active');
     }
+};
+
+document.addEventListener('click', function(e) {
+    jazzquiz.close_question_list_menu('improvise');
+    jazzquiz.close_question_list_menu('jump');
     // Clicking a row to merge
     if (jazzquiz.state === 'reviewing') {
         if (e.target.classList.contains('bar')) {

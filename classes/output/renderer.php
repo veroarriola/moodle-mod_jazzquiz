@@ -212,7 +212,6 @@ class renderer extends \plugin_renderer_base
 
         if ($this->jazzquiz->is_instructor()) {
             $output .= \html_writer::div($this->render_controls(), 'jazzquizbox hidden', ['id' => 'controlbox']);
-            $output .= $this->render_jumpto_modal($attempt);
             $instructions = get_string('instructions_for_instructor', 'jazzquiz');
         } else {
             $instructions = get_string('instructions_for_student', 'jazzquiz');
@@ -249,8 +248,7 @@ class renderer extends \plugin_renderer_base
 
         $output .= \html_writer::div('', 'jazzquizbox padded-box hidden', ['id' => 'jazzquiz_info_container']);
 
-        // JavaScript will place the forms in here.
-        $output .= '<div id="jazzquiz_question_forms"></div>';
+        $output .= '<div id="jazzquiz_question_box"></div>';
 
         if ($this->jazzquiz->is_instructor()) {
             $output .= \html_writer::div('', 'jazzquizbox hidden', ['id' => 'jazzquiz_responses_container']);
@@ -277,10 +275,7 @@ class renderer extends \plugin_renderer_base
         if ($this->jazzquiz->is_instructor()) {
             $is_instructor_class = ' instructor';
         }
-        $output .= \html_writer::start_tag('div', [
-            'class' => 'jazzquizbox hidden' . $is_instructor_class,
-            'id' => 'jazzquiz_question_box'
-        ]);
+        $output .= \html_writer::start_tag('div', ['class' => 'jazzquizbox' . $is_instructor_class]);
 
         $on_submit = '';
         if (!$this->jazzquiz->is_instructor()) {
@@ -355,8 +350,8 @@ class renderer extends \plugin_renderer_base
             . $this->write_control_buttons([
                 ['repeat', 'repoll', 'repollquestion'],
                 ['bar-chart', 'vote', 'runvoting'],
-                ['edit', 'improvise', 'startimprovisedquestion'],
-                ['bars', 'jump', 'jumptoquestion'],
+                ['edit', 'improvise', 'startimprovisequestion'],
+                ['bars', 'jump', 'startjumpquestion'],
                 ['forward', 'next', 'nextquestion'],
                 ['close', 'end', 'endquestion'],
                 ['expand', 'fullscreen', 'showfullscreenresults'],
@@ -366,7 +361,8 @@ class renderer extends \plugin_renderer_base
             ])
             . '<p id="inquizcontrols_state"></p>'
             . '</div>'
-            . '<div class="improvise-menu"></div>'
+            . '<div id="jazzquiz_improvise_menu" class="start-question-menu"></div>'
+            . '<div id="jazzquiz_jump_menu" class="start-question-menu"></div>'
 
             . '<div class="quiz-list-buttons">'
             . $this->write_control_button('start', 'startquiz', 'startquiz')
@@ -374,52 +370,7 @@ class renderer extends \plugin_renderer_base
             . $this->write_control_button('close', 'quit', 'exitquiz')
             . '</div><div id="jazzquiz_control_separator"></div>';
 
-        return \html_writer::div($html, 'btn-hide rtq_inquiz', [
-            'id' => 'inquizcontrols'
-        ]);
-    }
-
-    /**
-     * Returns a modal div for displaying the jump to question feature
-     *
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
-     * @return string HTML fragment for the modal box
-     */
-    public function render_jumpto_modal($attempt)
-    {
-        $output = \html_writer::start_div('modalDialog', [
-            'id' => 'jumptoquestion-dialog'
-        ]);
-
-        $output .= \html_writer::start_div();
-        $output .= \html_writer::tag('a', 'X', [
-            'class' => 'jumptoquestionclose',
-            'href' => '#'
-        ]);
-
-        $output .= \html_writer::tag('h2', get_string('jump', 'jazzquiz'));
-        $output .= \html_writer::tag('p', get_string('jump_question_instructions', 'jazzquiz'));
-
-        // Build our own select for the user to select the question they want to go to
-        $output .= \html_writer::start_tag('select', [
-            'name' => 'jtq-selectquestion',
-            'id' => 'jtq-selectquestion'
-        ]);
-
-        // Loop through each question and add it as an option
-        foreach ($attempt->jazzquiz->questions as $question) {
-            $output .= \html_writer::tag('option', $question->question->name, [
-                'value' => $question->question->id
-            ]);
-        }
-        $output .= \html_writer::end_tag('select');
-        $output .= \html_writer::tag('button', get_string('jump', 'jazzquiz'), [
-            'onclick' => 'jazzquiz.jump_question()'
-        ]);
-        $output .= \html_writer::end_div();
-        $output .= \html_writer::end_div();
-
-        return $output;
+        return \html_writer::div($html, 'btn-hide rtq_inquiz', ['id' => 'inquizcontrols']);
     }
 
     /**
@@ -499,26 +450,32 @@ class renderer extends \plugin_renderer_base
                         break;
                     }
                     // We're in a currently running question
-                    // TODO: Fix this nextQuestion stuff
                     $quiz->resume->are_we_resuming = true;
                     $quiz->resume->state = $session_state;
                     $quiz->resume->current_question_slot = $current_slot;
-                    $nextQuestion = $this->jazzquiz->get_question_with_slot($session->data->slot, $attempt);
+                    $no_time = 0;
+                    $question_time = $this->jazzquiz->data->defaultquestiontime;
+                    // TODO: Check for notime and questiontime in questions that are not improvisational.
+                    /*$session_question_index = count($session->questions) - 1;
+                    if (isset($session->questions[$session_question_index])) {
+                        $session_question = $session->questions[$session_question_index];
+                    }*/
+
                     if ($next_start_time > time()) {
                         // We're waiting for question
                         $quiz->resume->action = 'waitforquestion';
                         $quiz->resume->delay = $session->data->nextstarttime - time();
-                        $quiz->resume->question_time = $nextQuestion->data->questiontime;
+                        $quiz->resume->question_time = $question_time;
                     } else {
                         $quiz->resume->action = 'startquestion';
                         // How much time has elapsed since start time
                         // First check if the question has a time limit
-                        if ($nextQuestion->data->notime) {
+                        if ($no_time) {
                             $quiz->resume->question_time = 0;
                         } else {
                             // Otherwise figure out how much time is left
                             $time_elapsed = time() - $next_start_time;
-                            $quiz->resume->question_time = $nextQuestion->data->questiontime - $time_elapsed;
+                            $quiz->resume->question_time = $question_time - $time_elapsed;
                         }
                     }
                     break;
@@ -586,9 +543,7 @@ class renderer extends \plugin_renderer_base
         $responded_count = $total - count($not_responded);
         $output = \html_writer::start_div();
         $output .= \html_writer::start_div('respondedbox', ['id' => 'respondedbox']);
-        $output .= \html_writer::tag('h4', "$responded_count / $total students have responded.", [
-            'class' => 'inline'
-        ]);
+        $output .= \html_writer::tag('h4', "$responded_count / $total students have responded.", ['class' => 'inline']);
         $output .= \html_writer::end_div();
         $output .= \html_writer::end_div();
         return $output;
@@ -609,9 +564,9 @@ class renderer extends \plugin_renderer_base
             $params = [
                 'cmid' => $this->jazzquiz->course_module->id
             ];
-            $editurl = new \moodle_url('/mod/jazzquiz/edit.php', $params);
-            $editbutton = $this->output->single_button($editurl, get_string('edit', 'jazzquiz'), 'get');
-            echo \html_writer::tag('p', $editbutton);
+            $edit_url = new \moodle_url('/mod/jazzquiz/edit.php', $params);
+            $edit_button = $this->output->single_button($edit_url, get_string('edit', 'jazzquiz'), 'get');
+            echo \html_writer::tag('p', $edit_button);
         }
         echo $this->output->box_end();
     }

@@ -90,7 +90,7 @@ switch ($session->status) {
             $attempts = $session->get_all_attempts(false, 'open');
             print_json([
                 'status' => $session->data->status,
-                'students' => count($attempts)
+                'student_count' => count($attempts)
             ]);
             exit;
         }
@@ -110,8 +110,7 @@ switch ($session->status) {
             $options[] = [
                 'text' => $vote_option->attempt,
                 'id' => $vote_option->id,
-                'qtype' => $vote_option->qtype,
-                'slot' => $vote_option->slot
+                'question_type' => $vote_option->qtype
             ];
         }
         print_json([
@@ -122,19 +121,10 @@ switch ($session->status) {
 
     // Send the currently active question
     case 'running':
-        if (empty($session->slot)) {
-            print_json([
-                'status' => 'notrunning'
-            ]);
-            exit;
-        }
-        // Otherwise send the current question with the next start time
-        $delay = $session->nextstarttime - time();
         print_json([
             'status' => 'running',
-            'slot' => $session->slot,
             'question_time' => $session->currentquestiontime,
-            'delay' => $delay
+            'delay' => $session->nextstarttime - time()
         ]);
         exit;
 

@@ -38,11 +38,9 @@ jazzquiz.change_quiz_state = function (state, data) {
             break;
 
         case 'running':
-            if (this.quiz.question.is_running) {
-                break;
+            if (!this.quiz.question.is_running) {
+                this.start_question_countdown(data.question_time, data.delay);
             }
-            // Make sure the loading box hides (this is a catch for when the quiz is resuming)
-            this.start_question_countdown(data.question_time, data.delay);
             break;
 
         case 'reviewing':
@@ -72,7 +70,7 @@ jazzquiz.change_quiz_state = function (state, data) {
                 $info_container.removeClass('hidden').html(html);
                 for (let i = 0; i < options.length; i++) {
                     this.add_mathjax_element('vote_answer_label' + i, options[i].text);
-                    if (options[i].qtype === 'stack') {
+                    if (options[i].question_type === 'stack') {
                         this.render_maxima_equation(options[i].text, 'vote_answer_label' + i, options[i].slot);
                     }
                 }
@@ -150,7 +148,6 @@ jazzquiz.save_vote = function () {
         answer: this.vote_answer
     }, function (data) {
         const wait_for_instructor = jazzquiz.text('wait_for_instructor');
-        // Output info depending on the status
         let $info_container = jQuery('#jazzquiz_info_container');
         $info_container.removeClass('hidden');
         switch (data.status) {
