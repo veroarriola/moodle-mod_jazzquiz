@@ -61,12 +61,10 @@ $string['wait_for_students'] = 'Waiting for students to connect';
 $string['loading'] = 'Initializing quiz';
 $string['closing_session'] = 'Closing session...';
 $string['session_closed'] = 'Session is now closed';
-$string['no_tries'] = 'You have no tries left for this question';
 $string['wait_for_reviewing_to_end'] = 'The instructor is currently reviewing the previous question. Please wait for the next question to start';
 $string['wait_for_instructor'] = 'Please wait for the instructor to start the next question.';
 $string['gathering_results'] = 'Gathering results...';
 $string['question_will_end_in'] = 'The question will end in';
-$string['you_have_n_tries_left'] = 'You have {$a->tries} tries left.';
 
 // Event
 $string['event_attempt_started'] = 'Attempt started';
@@ -111,9 +109,6 @@ $string['question_time_help'] = 'Question time in seconds.';
 $string['no_time_limit'] = 'No time limit';
 $string['no_time_help'] = 'Check this field to have no timer on this question. <p>The instructor will then be required to click the end question button for the question to end</p>';
 $string['invalid_question_time'] = 'Question time must be an integer of 0 or above';
-$string['number_of_tries'] = 'Number of tries';
-$string['invalid_number_of_tries'] = 'Number of tries must be an integer of 1 or above';
-$string['number_of_tries_help'] = 'Number of tries for a user to try at a question. Students will still be bound by the question time limit';
 $string['show_history_during_quiz'] = 'Show response history';
 $string['show_history_during_quiz_help'] = 'Show the student/group response history for this question while reviewing responses to a question during a quiz.';
 $string['successfully_moved_question'] = 'Successfully moved question';

@@ -44,9 +44,6 @@ class jazzquiz_attempt
     /** @var \question_usage_by_activity $quba the question usage by activity for this attempt */
     public $quba;
 
-    /** @var int $qnum The question number count when rendering questions */
-    protected $qnum;
-
     /** @var bool $lastquestion Signifies if this is the last question
      *  Is used during quiz callbacks to help with instructor control
      */
@@ -57,9 +54,6 @@ class jazzquiz_attempt
 
     /** @var string $response summary HTML fragment of the response summary for the current question */
     public $responsesummary;
-
-    /** @var  array $slotsbyquestionid array of slots keyed by the questionid that they match to */
-    protected $slotsbyquestionid;
 
     /**
      * Construct the class. If data is passed in we set it, otherwise initialize empty class
@@ -78,7 +72,6 @@ class jazzquiz_attempt
             // Create a new quba since we're creating a new attempt
             $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->jazzquiz->context);
             $this->quba->set_preferred_behaviour('immediatefeedback');
-            //$this->jazzquiz->add_questions_to_quba($this->quba);
         } else {
             // Load it up in this class instance
             $this->data = $data;
@@ -155,23 +148,7 @@ class jazzquiz_attempt
     public function render_question($slot, $review = false, $review_options = '')
     {
         $display_options = $this->get_display_options($review, $review_options);
-        $question_number = $this->get_question_number();
-        $this->add_question_number();
-        return $this->quba->render_question($slot, $display_options, $question_number);
-    }
-
-    /**
-     * @param int $total_tries The total tries
-     *
-     * @return int The number of tries left
-     */
-    public function check_tries_left($total_tries)
-    {
-        if (empty($this->data->responded_count)) {
-            $this->data->responded_count = 0;
-        }
-        $left = $total_tries - $this->data->responded_count;
-        return $left;
+        return $this->quba->render_question($slot, $display_options, $slot);
     }
 
     /**
@@ -228,68 +205,6 @@ class jazzquiz_attempt
     }
 
     /**
-     * Returns an integer representing the question number
-     * @return int
-     */
-    public function get_question_number()
-    {
-        if (is_null($this->qnum)) {
-            $this->qnum = 1;
-        }
-        return $this->qnum;
-    }
-
-    /**
-     * Adds 1 to the current qnum, effectively going to the next question
-     */
-    protected function add_question_number()
-    {
-        $this->qnum++;
-    }
-
-    /**
-     * @return array int[]
-     */
-    public function get_slots()
-    {
-        $slots = [];
-        foreach ($this->quba->get_slots() as $slot => $question_attempt) {
-            $slots[] = $slot + 1;
-        }
-        return $slots;
-    }
-
-    /**
-     * Gets the jazzquiz question class object for the slot
-     *
-     * @param int $asked_slot
-     * @return jazzquiz_question|false
-     */
-    public function get_question_by_slot($asked_slot)
-    {
-        // Build if not available
-        if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
-            // Build an array of slots keyed by the question id they match to
-            $slots_by_question_id = [];
-            foreach ($this->get_slots() as $slot) {
-                $question_id = $this->quba->get_question($slot)->id;
-                $slots_by_question_id[$question_id] = $slot;
-            }
-            $this->slotsbyquestionid = $slots_by_question_id;
-        }
-        $question_id = array_search($asked_slot, $this->slotsbyquestionid);
-        if (empty($question_id)) {
-            return false;
-        }
-        foreach ($this->jazzquiz->questions as $question) {
-            if ($question->question->id == $question_id) {
-                return $question;
-            }
-        }
-        return false;
-    }
-
-    /**
      * @param int $slot
      * @return array (array of sequence check name, and then the value
      */
@@ -310,7 +225,7 @@ class jazzquiz_attempt
     {
         // Next load the slot head html and initialize question engine js
         $result = '';
-        foreach ($this->get_slots() as $slot) {
+        foreach ($this->quba->get_slots() as $slot) {
             $result .= $this->quba->render_question_head_html($slot);
         }
         $result .= \question_engine::initialise_js();

@@ -19,7 +19,7 @@ namespace mod_jazzquiz;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * A class holder for a jazzquiz session
+ * A JazzQuiz session
  *
  * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>
@@ -167,44 +167,48 @@ class jazzquiz_session
     /**
      * Tells the session to go to the specified question number
      * That jazzquiz_question is then returned
-     *
-     * @param int $slot The question number to go to
-     * @return jazzquiz_question|bool
-     * @throws \Exception if slot is not valid
+     * @param int $question_id (from question bank)
+     * @return mixed[] $success, $no_time, $question_time
      */
-    public function start_question($slot)
+    public function start_question($question_id)
     {
-        $question = $this->jazzquiz->get_question_with_slot($slot, $this->open_attempt);
-        if (!$question) {
-            throw new \Exception("Invalid slot $slot");
+        global $DB;
+        $question_definition = reset(question_load_questions([$question_id]));
+        if (!$question_definition) {
+            return [false, 0, 0];
         }
-
-        $this->data->nextstarttime = time() + $this->jazzquiz->data->waitforquestiontime;
-        $this->data->slot = $slot;
-
-        if ($question->data->questiontime == 0 && $question->data->notime == 0) {
-            $question_time = $this->jazzquiz->data->defaultquestiontime;
-        } else if ($question->data->notime == 1) {
-            // Here we're spoofing a question time of 0.
-            // This is so the javascript recognizes that we don't want a timer
-            // as it reads a question time of 0 as no timer
-            $question_time = 0;
-        } else {
-            $question_time = $question->data->questiontime;
-        }
-
-        $this->data->currentquestiontime = $question_time;
-        $this->save();
-
-        // Set all responded to 0 for this question
-        $attempts = $this->get_all_attempts(true, 'open');
-        foreach ($attempts as $attempt) {
+        // TODO: Transaction?
+        $session_question = new \stdClass();
+        $session_question->sessionid = $this->data->id;
+        $session_question->questionid = $question_id;
+        $session_question->slot = count($DB->get_records('jazzquiz_session_questions', ['sessionid' => $this->data->id])) + 1;
+        $session_question->id = $DB->insert_record('jazzquiz_session_questions', $session_question);
+        $slot = 0;
+        $attempts = $this->get_all_attempts(true);
+        foreach ($attempts as &$attempt) {
+            $question = \question_bank::make_question($question_definition);
+            $slot = $attempt->quba->add_question($question);
+            $attempt->quba->start_question($slot);
             $attempt->data->responded = 0;
             $attempt->data->responded_count = 0;
             $attempt->save();
         }
 
-        return $question;
+        $no_time = 0;
+        $question_time = $this->jazzquiz->data->defaultquestiontime;
+
+        // Update session data
+        if ($question_time == 0 && $no_time == 0) {
+            $this->data->currentquestiontime = $this->jazzquiz->data->defaultquestiontime;
+        } else if ($no_time == 1) {
+            $this->data->currentquestiontime = 0; // No time limit.
+        } else {
+            $this->data->currentquestiontime = $question_time;
+        }
+        $this->data->nextstarttime = time() + $this->jazzquiz->data->waitforquestiontime;
+        $this->save();
+
+        return [true, $no_time, $question_time];
     }
 
     /**

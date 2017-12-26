@@ -6,7 +6,7 @@ require_once( __DIR__ . '/../../config.php');
 
 $input = required_param('input', PARAM_RAW);
 $input_name = required_param('name', PARAM_ALPHANUMEXT);
-$jazzquiz_attempt_id = required_param('id', PARAM_INT);
+$jazzquiz_attempt_id = required_param('attemptid', PARAM_INT);
 $slot = required_param('slot', PARAM_INT);
 
 $path_stack_utils = __DIR__ . '/../../question/type/stack/stack/utils.class.php';

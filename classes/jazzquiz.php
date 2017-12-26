@@ -110,7 +110,6 @@ class jazzquiz
         $question->questionid = $question_id;
         $question->notime = false;
         $question->questiontime = $this->data->defaultquestiontime;
-        $question->tries = 1;
         $question->slot = count($this->questions) + 1;
         $DB->insert_record('jazzquiz_questions', $question);
         $this->refresh_questions();
@@ -159,78 +158,12 @@ class jazzquiz
      */
     public function get_question_type_by_slot($slot)
     {
-        if (count($this->questions) >= $slot || $slot < 1) {
+        if (!isset($this->questions[$slot])) {
             return false;
         }
-        $question = $this->questions[$slot - 1];
+        $question = $this->questions[$slot];
         return $question->question->qtype;
     }
-
-    /**
-     * Gets a jazzquiz_question object with the slot set
-     *
-     * @param int $slot
-     * @param jazzquiz_attempt $attempt The current attempt
-     *
-     * @return jazzquiz_question
-     */
-    public function get_question_with_slot($slot, $attempt)
-    {
-        $quba = $attempt->quba;
-
-        // TODO: Fix this
-        //$attempt->set_last_question($is_last_question);
-
-        $quba_question = $quba->get_question($slot);
-
-        foreach ($this->questions as $jazzquiz_question) {
-            if ($jazzquiz_question->question->id == $quba_question->id) {
-                $jazzquiz_question->slot = $slot;
-                return $jazzquiz_question;
-            }
-        }
-
-        // No question
-        return null;
-    }
-
-    /**
-     * @param jazzquiz_attempt $attempt
-     * @return jazzquiz_question
-     */
-    public function get_first_question($attempt)
-    {
-        return $this->get_question_with_slot(1, $attempt);
-    }
-
-    /**
-     * Add the questions to the question usage
-     * This is called by the question_attempt class on construct of a new attempt
-     *
-     * @param \question_usage_by_activity $quba
-     * @return int[] jazzquiz_question id => slot
-     */
-    /*public function add_questions_to_quba($quba)
-    {
-        // We need the question ids of our questions
-        $question_ids = [];
-        foreach ($this->questions as $jazzquiz_question) {
-            if (!in_array($jazzquiz_question->question->id, $question_ids)) {
-                $question_ids[] = $jazzquiz_question->question->id;
-            }
-        }
-        $questions = question_load_questions($question_ids);
-
-        // Loop through the ordered question bank questions and add them to the quba object
-        foreach ($this->questions as $jazzquiz_question) {
-            $question_id = $jazzquiz_question->question->id;
-            $q = \question_bank::make_question($questions[$question_id]);
-            $quba->add_question($q);
-        }
-
-        // Start the questions in the quba
-        $quba->start_all_questions();
-    }*/
 
     /**
      * Edit a JazzQuiz question
@@ -266,7 +199,6 @@ class jazzquiz
             $question->questionid = $jazzquiz_question->questionid;
             $question->notime = $data->no_time;
             $question->questiontime = $data->question_time;
-            $question->tries = $data->number_of_tries;
             $DB->update_record('jazzquiz_questions', $question);
             // Ensure there is no action or question_id in the base url
             $url->remove_params('action', 'questionid');
@@ -275,8 +207,7 @@ class jazzquiz
             // Display the form
             $mform->set_data([
                 'question_time' => $jazzquiz_question->questiontime,
-                'no_time' => $jazzquiz_question->notime,
-                'number_of_tries' => $jazzquiz_question->tries
+                'no_time' => $jazzquiz_question->notime
             ]);
             $this->renderer->print_header();
             $mform->display();
@@ -293,37 +224,8 @@ class jazzquiz
         $this->questions = [];
         $questions = $DB->get_records('jazzquiz_questions', ['jazzquizid' => $this->data->id], 'slot');
         foreach ($questions as $question) {
-            $this->questions[] = new jazzquiz_question($question);
+            $this->questions[$question->slot] = new jazzquiz_question($question);
         }
-    }
-
-    /**
-     * @param jazzquiz_session $session
-     * @param int $question_id (from question bank)
-     * @return int 0 means error, >0 is valid slot
-     */
-    public function add_question_to_running_quiz($session, $question_id)
-    {
-        global $DB;
-        $question_definition = reset(question_load_questions([$question_id]));
-        if (!$question_definition) {
-            return 0;
-        }
-        // TODO: Transaction?
-        $session_question = new \stdClass();
-        $session_question->jazzquizid = $this->data->id;
-        $session_question->questionid = $question_id;
-        $session_question->slot = count($DB->get_records('jazzquiz_session_questions', ['sessionid' => $session->data->id])) + 1;
-        $session_question->id = $DB->insert_record('jazzquiz_session_questions', $session_question);
-        $slot = 0;
-        $attempts = $session->get_all_attempts(true);
-        foreach ($attempts as $attempt) {
-            $question = \question_bank::make_question($question_definition);
-            $slot = $attempt->quba->add_question($question);
-            $attempt->quba->start_question($slot);
-            $attempt->save();
-        }
-        return $slot;
     }
 
     /**

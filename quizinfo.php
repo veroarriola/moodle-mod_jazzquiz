@@ -104,9 +104,7 @@ switch ($session->status) {
 
     // TODO: Not send options here. Quizdata should probably take care of that.
     case 'voting':
-        $vote_options = $DB->get_records('jazzquiz_votes', [
-            'sessionid' => $session_id
-        ]);
+        $vote_options = $DB->get_records('jazzquiz_votes', ['sessionid' => $session_id]);
         $options = [];
         foreach ($vote_options as $vote_option) {
             $options[] = [
@@ -135,7 +133,7 @@ switch ($session->status) {
         print_json([
             'status' => 'running',
             'slot' => $session->slot,
-            'questiontime' => $session->currentquestiontime,
+            'question_time' => $session->currentquestiontime,
             'delay' => $delay
         ]);
         exit;

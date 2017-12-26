@@ -89,7 +89,6 @@ function list_questions($contexts, $jazzquiz, $url, $page_vars)
 function jazzquiz_edit_order($jazzquiz)
 {
     $order = required_param('order', PARAM_RAW);
-    //$order = explode(',', $order);
     $order = json_decode($order);
     $jazzquiz->set_question_order($order);
 }

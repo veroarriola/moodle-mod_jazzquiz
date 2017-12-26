@@ -50,7 +50,7 @@ class report_overview
         // Go through the slots on the first attempt to output the header row
         $quiz_attempt = reset($quiz_attempts);
         $quba = $quiz_attempt->quba;
-        $slots = $quiz_attempt->get_slots();
+        $slots = $quiz_attempt->quba->get_slots();
         echo 'Student,';
         foreach ($slots as $slot) {
             $question_attempt = $quba->get_question_attempt($slot);
@@ -65,7 +65,7 @@ class report_overview
         echo "\r\n";
         foreach ($quiz_attempts as $quiz_attempt) {
             echo $this->csv_escape($quiz_attempt->get_user_full_name()) . ',';
-            $slots = $quiz_attempt->get_slots();
+            $slots = $quiz_attempt->quba->get_slots();
             foreach ($slots as $slot) {
                 $attempt_response = reset($quiz_attempt->get_response_data($slot));
                 if (!$attempt_response) {
@@ -113,7 +113,7 @@ class report_overview
         // Should probably be refactored in the future.
         $not_responded_user_ids = $all_user_ids;
         $total_responded = [];
-        $slots = $quiz_attempt->get_slots();
+        $slots = $quiz_attempt->quba->get_slots();
 
         foreach ($slots as $slot) {
             $responded = $session->get_responded_list($slot, 'all');
@@ -217,7 +217,7 @@ class report_overview
         }
 
         $row = $quiz_attempt->data;
-        $slots = $quiz_attempt->get_slots();
+        $slots = $quiz_attempt->quba->get_slots();
         $quba = $quiz_attempt->quba;
 
         $PAGE->requires->js('/mod/jazzquiz/js/core.js');

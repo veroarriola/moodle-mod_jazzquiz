@@ -66,13 +66,6 @@ class add_question_form extends \moodleform
         $mform->setDefault('question_time', $defaultTime);
         $mform->addHelpButton('question_time', 'question_time', 'jazzquiz');
 
-        $mform->addElement('text', 'number_of_tries', get_string('number_of_tries', 'jazzquiz'));
-        $mform->addRule('number_of_tries', get_string('invalid_number_of_tries', 'jazzquiz'), 'required', null, 'client');
-        $mform->addRule('number_of_tries', get_string('invalid_number_of_tries', 'jazzquiz'), 'numeric', null, 'client');
-        $mform->setType('number_of_tries', PARAM_INT);
-        $mform->setDefault('number_of_tries', 1);
-        $mform->addHelpButton('number_of_tries', 'number_of_tries', 'jazzquiz');
-
         if (!empty($this->_customdata['edit'])) {
             $save_string = get_string('save_question', 'jazzquiz');
         } else {
@@ -97,11 +90,6 @@ class add_question_form extends \moodleform
             $errors['question_time'] = get_string('invalid_question_time', 'jazzquiz');
         } else if ($data['question_time'] < 0) {
             $errors['question_time'] = get_string('invalid_question_time', 'jazzquiz');
-        }
-        if (!filter_var($data['number_of_tries'], FILTER_VALIDATE_INT) && $data['number_of_tries'] !== 0) {
-            $errors['number_of_tries'] = get_string('invalid_number_of_tries', 'jazzquiz');
-        } else if ($data['number_of_tries'] < 1) {
-            $errors['number_of_tries'] = get_string('invalid_number_of_tries', 'jazzquiz');
         }
         return $errors;
     }

@@ -51,7 +51,7 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
 
         $questions = new backup_nested_element('questions');
         $question = new backup_nested_element('question', array('id'), array(
-            'questionid', 'notime', 'questiontime', 'tries', 'points'
+            'questionid', 'notime', 'questiontime', 'points'
         ));
 
         $sessions = new backup_nested_element('sessions');
