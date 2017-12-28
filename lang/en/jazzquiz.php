@@ -78,15 +78,6 @@ $string['default_question_time'] = 'Default question time';
 $string['default_question_time_help'] = 'The default time to display each question.<br>This can be overridden by individual questions.';
 $string['wait_for_question_time'] = 'Wait for question time';
 $string['wait_for_question_time_help'] = 'The time to wait for a question to start.';
-$string['group_work_settings'] = 'Group settings';
-$string['no_change_groups_label'] = '&nbsp;';
-$string['no_change_groups'] = 'You cannot change groups after creating sessions or there are no groupings defined for this course.';
-$string['worked_in_groups'] = 'Will work in groups.';
-$string['worked_in_groups_help'] = 'Check this box to indicate that students will work in groups. Be sure to select a grouping below';
-$string['grouping'] = 'Grouping';
-$string['grouping_help'] = 'Select the grouping that you\'d like to use for grouping students';
-$string['group_attendance'] = 'Allow group attendance';
-$string['group_attendance_help'] = 'If this box is enabled, the student taking the quiz can select which students in their group that are in attendance.';
 $string['review_option_settings'] = 'Review options';
 $string['review_after'] = 'Review options after session is over';
 $string['the_attempt'] = 'The attempt';
@@ -129,7 +120,7 @@ $string['no_questions'] = 'There are no questions added to this quiz.';
 $string['session_name'] = 'Session name';
 $string['session_name_required'] = 'The session name is required';
 $string['start_session'] = 'Start Session';
-$string['unable_to_create_session'] = 'Unable to create sesson';
+$string['unable_to_create_session'] = 'Unable to create session';
 $string['cant_init_attempts'] = 'Can\'t initialize attempts for you';
 $string['session_name_text'] = '<span style="font-weight:bold;">Session: </span>';
 $string['join_quiz_instructions'] = 'Click below to join the quiz';
@@ -137,10 +128,7 @@ $string['instructor_sessions_going'] = 'There is a session already in progress. 
 $string['goto_session'] = 'Go to session in progress';
 $string['no_session'] = 'There is no open session';
 $string['join_quiz'] = 'Join Quiz';
-$string['select_group'] = 'Select your group';
-$string['attempt_started_already'] = 'An attempt has already been started by one of your group members';
 $string['attempt_started'] = 'An attempt has already been started by you, please click below to continue to your open attempt';
-$string['invalid_group_id'] = 'A valid group id is required for students';
 $string['first_session'] = 'First session';
 $string['last_session'] = 'Last session';
 $string['view_stats'] = 'View quiz stats';
@@ -186,7 +174,8 @@ $string['instructions_for_instructor'] = '
                 <i class="fa fa-repeat"></i> Re-poll
             </td>
             <td>
-                Allows the instructor to re-poll the current or previous question.
+                Allows the instructor to re-poll the question that was just asked.
+                This is the same as starting a question from the <i class="fa fa-bars"></i> Jump dropdown list.
             </td>
         </tr>
         <tr>
@@ -194,7 +183,10 @@ $string['instructions_for_instructor'] = '
                 <i class="fa fa-bar-chart"></i> Vote
             </td>
             <td>
-                 Let the students vote on their answers. The instructor can click on an answer to toggle whether it should be included in the vote or not.
+                 Let the students vote on their answers.
+                 The instructor can click on an answer to toggle whether it should be included in the vote or not.
+                 Clicking on the bar to the right of the answer will start a merge from that answer.
+                 Note that the bar you click on is the bar that will be merged into the bar you click on next.
             </td>
         </tr>
         <tr>
@@ -207,10 +199,10 @@ $string['instructions_for_instructor'] = '
         </tr>
         <tr>
             <td>
-                <i class="fa fa-bars"></i> Jump to
+                <i class="fa fa-bars"></i> Jump
             </td>
             <td>
-                Open a dialog box to direct all users to a specific question in the quiz.
+                Shows a list of all the questions planned for the quiz.
             </td>
         </tr>
         <tr>
@@ -218,7 +210,7 @@ $string['instructions_for_instructor'] = '
                 <i class="fa fa-forward"></i> Next
             </td>
             <td>
-                Continue on to the next question.
+                Continue on to the next question in the list of planned questions.
             </td>
         </tr>
         <tr>

@@ -30,10 +30,10 @@ jazzquiz.change_quiz_state = function (state, data) {
     switch (state) {
 
         case 'notrunning':
+            $info_container.removeClass('hidden').html(this.text('instructions_for_student'));
             break;
 
         case 'preparing':
-            this.hide_instructions();
             $info_container.removeClass('hidden').html(this.text('wait_for_instructor'));
             break;
 
@@ -46,32 +46,22 @@ jazzquiz.change_quiz_state = function (state, data) {
         case 'reviewing':
             this.quiz.question.is_vote_running = false;
             this.quiz.question.is_running = false;
-            this.hide_instructions();
+            this.hide_question_timer();
             $info_container.removeClass('hidden').html(this.text('wait_for_instructor'));
             break;
 
         case 'sessionclosed':
-            this.hide_instructions();
             $info_container.removeClass('hidden').html(this.text('session_closed'));
             break;
 
         case 'voting':
             if (this.quiz.question.is_vote_running === undefined || !this.quiz.question.is_vote_running) {
                 const options = data.options;
-                let html = '<div class="jazzquiz-vote">';
+                $info_container.removeClass('hidden').html(data.html);
                 for (let i = 0; i < options.length; i++) {
-                    html += '<label>';
-                    html += '<input type="radio" name="vote" value="' + options[i].id + '" onclick="jazzquiz.vote_answer = this.value;">';
-                    html += '<span id="vote_answer_label' + i + '">' + options[i].text + '</span>';
-                    html += '</label><br>';
-                }
-                html += '</div>';
-                html += '<button class="btn" onclick="jazzquiz.save_vote(); return false;">Save</button>';
-                $info_container.removeClass('hidden').html(html);
-                for (let i = 0; i < options.length; i++) {
-                    this.add_mathjax_element('vote_answer_label' + i, options[i].text);
+                    this.add_mathjax_element(options[i].content_id, options[i].text);
                     if (options[i].question_type === 'stack') {
-                        this.render_maxima_equation(options[i].text, 'vote_answer_label' + i, options[i].slot);
+                        this.render_maxima_equation(options[i].text, options[i].content_id);
                     }
                 }
                 this.quiz.question.is_vote_running = true;
@@ -87,10 +77,7 @@ jazzquiz.change_quiz_state = function (state, data) {
  * Submit answer for the current question.
  */
 jazzquiz.submit_answer = function() {
-    if (this.question_countdown_interval) {
-        clearInterval(this.question_countdown_interval);
-    }
-    jQuery('#jazzquiz_question_timer').html('').addClass('hidden');
+    this.hide_question_timer();
     if (this.quiz.question.is_saving) {
         // Don't save twice
         return;
@@ -99,28 +86,23 @@ jazzquiz.submit_answer = function() {
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
     }
-    this.post('/mod/jazzquiz/quizdata.php', {
+    const serialized = jQuery('#jazzquiz_question_form').serializeArray();
+    let data = {
         action: 'save_question'
-    }, function(data) {
-        let $info_container = jQuery('#jazzquiz_info_container');
-
-        // Update the sequence check for the question
-        const sequence_check = document.getElementsByName(data.seqcheckname);
-        let field = sequence_check[0];
-        field.value = data.seqcheckval;
-
-        // Show feedback to the students
-        const feedback = data.feedback;
-        const feedback_intro = document.createElement('div');
-        feedback_intro.innerHTML = jazzquiz.text('wait_for_instructor');
-        $info_container.removeClass('hidden').html(feedback_intro);
-
-        if (feedback.length > 0) {
-            let feedback_box = document.createElement('div');
-            feedback_box.innerHTML = feedback;
-            $info_container.removeClass('hidden').html(feedback_box);
+    };
+    for (let name in serialized) {
+        if (serialized.hasOwnProperty(name)) {
+            data[serialized[name].name] = serialized[name].value;
         }
-
+    }
+    this.post('/mod/jazzquiz/quizdata.php', data, function(data) {
+        let $info_container = jQuery('#jazzquiz_info_container');
+        $info_container.removeClass('hidden');
+        if (data.feedback.length > 0) {
+            $info_container.html('<div>' + data.feedback + '</div>');
+        } else {
+            $info_container.html('<div>' + jazzquiz.text('wait_for_instructor') + '</div>');
+        }
         jazzquiz.quiz.question.is_submitted = true;
         jazzquiz.quiz.question.is_saving = false;
         if (jazzquiz.quiz.question.is_ended) {
@@ -130,12 +112,7 @@ jazzquiz.submit_answer = function() {
             return;
         }
         jazzquiz.quiz.question.is_ended = true;
-        if (jazzquiz.question_countdown_interval) {
-            clearInterval(jazzquiz.question_countdown_interval);
-            jazzquiz.question_countdown_interval = false;
-            jQuery('#questiontimetext').html('');
-            jQuery('#questiontime').html('');
-        }
+        jazzquiz.clear_question_box();
     }).fail(function() {
         jazzquiz.quiz.question.is_saving = false;
         jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request');

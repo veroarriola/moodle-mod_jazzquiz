@@ -2,49 +2,27 @@
 
 define('AJAX_SCRIPT', true);
 
-require_once( __DIR__ . '/../../config.php');
+require_once(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/../../question/engine/lib.php');
 
 $input = required_param('input', PARAM_RAW);
-$input_name = required_param('name', PARAM_ALPHANUMEXT);
-$jazzquiz_attempt_id = required_param('attemptid', PARAM_INT);
-$slot = required_param('slot', PARAM_INT);
+$input = urldecode($input);
 
-$path_stack_utils = __DIR__ . '/../../question/type/stack/stack/utils.class.php';
-$path_stack_mathsoutput = __DIR__ . '/../../question/type/stack/stack/mathsoutput/mathsoutput.class.php';
-
-if (!file_exists($path_stack_utils) || !file_exists($path_stack_mathsoutput)) {
+$question = $DB->get_record_sql('SELECT id FROM {question} WHERE qtype = ? AND name LIKE ?', ['stack', '{IMPROV}%']);
+if (!$question) {
     echo json_encode([
-        'status' => 'stack not found',
+        'message' => 'STACK question not found.',
         'latex' => $input,
         'original' => $input
     ]);
     exit;
 }
 
-require_once(__DIR__ . '/../../question/engine/lib.php');
-require_once($path_stack_utils);
-require_once($path_stack_mathsoutput);
-
-$PAGE->set_context(context_system::instance());
-
-$result = stack_maths::process_display_castext($input);
-
-$jazzquiz_attempt = $DB->get_record('jazzquiz_attempts', [
-    'id' => $jazzquiz_attempt_id
-]);
-
-$question_attempt = $DB->get_record('question_attempts', [
-    'slot' => $slot,
-    'questionusageid' => $jazzquiz_attempt->questionengid
-]);
-
-$data_mapper = new question_engine_data_mapper();
-$qa = $data_mapper->load_question_attempt($question_attempt->id);
-$question = $qa->get_question();
-
-$state = $question->get_input_state($input_name, [$input_name => $input]);
-
-$latex = $state->__get('contentsdisplayed');
+/** @var qtype_stack_question $question */
+$question = question_bank::load_question($question->id);
+$question->initialise_question_from_seed();
+$state = $question->get_input_state('ans1', ['ans1' => $input]);
+$latex = $state->contentsdisplayed;
 
 echo json_encode([
     'latex' => $latex,

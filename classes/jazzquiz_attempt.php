@@ -44,16 +44,8 @@ class jazzquiz_attempt
     /** @var \question_usage_by_activity $quba the question usage by activity for this attempt */
     public $quba;
 
-    /** @var bool $lastquestion Signifies if this is the last question
-     *  Is used during quiz callbacks to help with instructor control
-     */
-    public $lastquestion;
-
     /** @var \context_module $context The context for this attempt */
     protected $context;
-
-    /** @var string $response summary HTML fragment of the response summary for the current question */
-    public $responsesummary;
 
     /**
      * Construct the class. If data is passed in we set it, otherwise initialize empty class
@@ -80,6 +72,7 @@ class jazzquiz_attempt
     }
 
     /**
+     * Fetches user from database and returns the full name.
      * @return string
      */
     public function get_user_full_name()
@@ -205,19 +198,6 @@ class jazzquiz_attempt
     }
 
     /**
-     * @param int $slot
-     * @return array (array of sequence check name, and then the value
-     */
-    public function get_sequence_check($slot)
-    {
-        $attempt = $this->quba->get_question_attempt($slot);
-        return [
-            $attempt->get_control_field_name('sequencecheck'),
-            $attempt->get_sequence_check_count()
-        ];
-    }
-
-    /**
      * Initialize the head contributions from the question engine
      * @return string
      */
@@ -270,76 +250,20 @@ class jazzquiz_attempt
 
     /**
      * Saves a question attempt from the jazzquiz question
-     *
-     * @return bool
      */
     public function save_question()
     {
         global $DB;
-
-        $time_now = time();
         $transaction = $DB->start_delegated_transaction();
-        if ($this->data->userid < 0) {
-            $this->process_anonymous_response($time_now);
-        } else {
-            $this->quba->process_all_actions($time_now);
-        }
+        $this->quba->process_all_actions();
         $this->data->timemodified = time();
         $this->data->responded = 1;
-
         if (empty($this->data->responded_count)) {
             $this->data->responded_count = 0;
         }
-        $this->data->responded_count = $this->data->responded_count + 1;
-
+        $this->data->responded_count++;
         $this->save();
         $transaction->allow_commit();
-        return true;
-    }
-
-    protected function process_anonymous_response($time_now)
-    {
-        foreach ($this->get_slots_in_request() as $slot) {
-            if (!$this->quba->validate_sequence_number($slot)) {
-                continue;
-            }
-            $submitted_data = $this->quba->extract_responses($slot);
-            //$this->quba->process_action($slot, $submitted_data, $timestamp);
-            $qa = $this->quba->get_question_attempt($slot);
-            $qa->process_action($submitted_data, $time_now, $this->data->userid);
-            $this->quba->get_observer()->notify_attempt_modified($qa);
-        }
-        $this->quba->update_question_flags();
-    }
-
-    /**
-     * COPY FROM QUBA IN ORDER TO RUN ANONYMOUS RESPONSES
-     *
-     *
-     * Get the list of slot numbers that should be processed as part of processing
-     * the current request.
-     * @param array $post_data optional, only intended for testing. Use this data
-     * instead of the data from $_POST.
-     * @return array of slot numbers.
-     */
-    protected function get_slots_in_request($post_data = null)
-    {
-        // Note: we must not use "question_attempt::get_submitted_var()" because there is no attempt instance!!!
-        if (is_null($post_data)) {
-            $slots = optional_param('slots', null, PARAM_SEQUENCE);
-        } else if (array_key_exists('slots', $post_data)) {
-            $slots = clean_param($post_data['slots'], PARAM_SEQUENCE);
-        } else {
-            $slots = null;
-        }
-        if (is_null($slots)) {
-            $slots = $this->quba->get_slots();
-        } else if (!$slots) {
-            $slots = [];
-        } else {
-            $slots = explode(',', $slots);
-        }
-        return $slots;
     }
 
     /**

@@ -38,7 +38,6 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="jazzquizid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="anonymize_responses" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Anonymize student names"/>
         <FIELD NAME="sessionopen" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not the session is open"/>
         <FIELD NAME="showfeedback" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not students should receive feedback after answering"/>
         <FIELD NAME="status" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="the current status/state of the session"/>

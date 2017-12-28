@@ -104,10 +104,11 @@ function get_question_form($jazzquiz, $session)
     }
     /** @var output\renderer $renderer */
     $renderer = $jazzquiz->renderer;
-    $html = $renderer->render_question_form($slot, $session->open_attempt);
+    list($html, $js) = $renderer->render_question_form($slot, $session->open_attempt);
     print_json([
         'status' => 'success',
-        'html' => $html
+        'html' => $html,
+        'js' => $js
     ]);
 }
 
@@ -136,7 +137,7 @@ function start_question($jazzquiz, $session)
     }
 
     print_json([
-        'status' => 'started_question',
+        'status' => 'success',
         'no_time' => $no_time,
         'question_time' => $question_time,
         'delay' => $session->data->nextstarttime - time()
@@ -148,10 +149,17 @@ function start_question($jazzquiz, $session)
  */
 function start_quiz($session)
 {
+    if ($session->data->status !== 'notrunning') {
+        print_json([
+            'status' => 'error',
+            'message' => 'Quiz is already running'
+        ]);
+        return;
+    }
     $session->data->status = 'preparing';
     $session->save();
     print_json([
-        'status' => 'startedquiz'
+        'status' => 'success'
     ]);
 }
 
@@ -172,14 +180,7 @@ function save_question($session)
         return;
     }
 
-    $attempt_saved = $attempt->save_question();
-    if (!$attempt_saved) {
-        print_json([
-            'status' => 'error',
-            'message' => 'Unable to save attempt'
-        ]);
-        return;
-    }
+    $attempt->save_question();
 
     // Only give feedback if specified in session
     $feedback = '';
@@ -187,15 +188,9 @@ function save_question($session)
         $feedback = $attempt->get_question_feedback();
     }
 
-    // We need to send the updated sequence check for javascript to update.
-    // Get the sequence check on the question form. This allows the question to be resubmitted again.
-    list($seqname, $seqvalue) = $attempt->get_sequence_check($session->data->slot);
-
     print_json([
         'status' => 'success',
-        'feedback' => $feedback,
-        'seqcheckname' => $seqname,
-        'seqcheckval' => $seqvalue
+        'feedback' => $feedback
     ]);
 }
 
@@ -219,7 +214,7 @@ function run_voting($jazzquiz, $session)
 
     // Initialize the votes
     $vote = new jazzquiz_vote($session->data->id);
-    $slot = $session->data->slot;
+    $slot = count($session->questions);
     $vote->prepare_options($jazzquiz->data->id, $question_type, $questions, $slot);
 
     $session->data->status = 'voting';
@@ -255,7 +250,8 @@ function save_vote($session)
  */
 function get_vote_results($session)
 {
-    $vote = new jazzquiz_vote($session->data->id, $session->data->slot);
+    $slot = count($session->questions);
+    $vote = new jazzquiz_vote($session->data->id, $slot);
     $votes = $vote->get_results();
     print_json([
         'status' => 'success',
@@ -299,15 +295,14 @@ function close_session($session)
 }
 
 /**
- * @param jazzquiz $jazzquiz
  * @param jazzquiz_session $session
  */
-function get_results($jazzquiz, $session)
+function get_results($session)
 {
     // Get the results
     $slot = count($session->questions);
-    $question_type = $jazzquiz->get_question_type_by_slot($slot);
-    $responses = $session->get_question_results_list($slot, 'open');
+    $question_type = $session->get_question_type_by_slot($slot);
+    $responses = $session->get_question_results_list($slot);
 
     // Check if this has been voted on before
     $vote = new jazzquiz_vote($session->data->id, $slot);
@@ -317,7 +312,6 @@ function get_results($jazzquiz, $session)
         'status' => 'success',
         'has_votes' => $has_votes,
         'question_type' => $question_type,
-        'slot' => $slot,
         'responses' => $responses['responses'],
         'total_students' => $responses['student_count']
     ]);
@@ -344,7 +338,7 @@ function handle_instructor_request($action, $jazzquiz, $session)
             show_all_improvise_questions();
             exit;
         case 'list_jump_questions':
-            show_all_jump_questions();
+            show_all_jump_questions($jazzquiz);
             exit;
         case 'run_voting':
             run_voting($jazzquiz, $session);
@@ -353,7 +347,7 @@ function handle_instructor_request($action, $jazzquiz, $session)
             get_vote_results($session);
             exit;
         case 'get_results':
-            get_results($jazzquiz, $session);
+            get_results($session);
             exit;
         case 'start_question':
             start_question($jazzquiz, $session);

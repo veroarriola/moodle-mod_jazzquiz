@@ -42,12 +42,16 @@ jazzquiz.change_quiz_state = function(state, data) {
     jQuery('.region_main_settings_menu_proxy').css('display', 'none');
 
     let $start_quiz = jQuery('#startquiz');
+    let $side_container = jQuery('#jazzquiz_side_container');
+    let $info_container = jQuery('#jazzquiz_info_container');
 
     this.show_controls();
 
     switch (state) {
 
         case 'notrunning':
+            $info_container.removeClass('hidden').html(this.text('instructions_for_instructor'));
+            $side_container.addClass('hidden');
             this.control_buttons([]);
             this.hide_controls();
             this.quiz.question.is_ended = false;
@@ -62,10 +66,12 @@ jazzquiz.change_quiz_state = function(state, data) {
             break;
 
         case 'preparing':
+            $info_container.removeClass('hidden').html(this.text('instructions_for_instructor'));
+            $side_container.addClass('hidden');
             this.control_buttons([
-                'startimprovisedquestion',
-                'jumptoquestion',
                 'nextquestion',
+                'startimprovisequestion',
+                'startjumpquestion',
                 'showfullscreenresults',
                 'closesession'
             ]);
@@ -73,6 +79,7 @@ jazzquiz.change_quiz_state = function(state, data) {
             break;
 
         case 'running':
+            $side_container.removeClass('hidden');
             this.control_buttons([
                 'endquestion',
                 'toggleresponses',
@@ -80,7 +87,7 @@ jazzquiz.change_quiz_state = function(state, data) {
             ]);
             if (this.quiz.question.is_running) {
                 // Update current responses and responded.
-                this.gather_results();
+                this.get_results();
             } else {
                 if (this.quiz.question.is_ended) {
                     // Set to false since we're waiting for a new question
@@ -95,15 +102,15 @@ jazzquiz.change_quiz_state = function(state, data) {
             break;
 
         case 'reviewing':
+            $side_container.removeClass('hidden');
             let enabled_buttons = [
                 'showcorrectanswer',
                 'runvoting',
-                'reloadresults',
                 'repollquestion',
-                'jumptoquestion',
-                'closesession',
                 'showfullscreenresults',
-                'startimprovisedquestion',
+                'startimprovisequestion',
+                'startjumpquestion',
+                'closesession',
                 // Temporarily disable this while in review mode. See below before the break.
                 //'toggleresponses'
             ];
@@ -119,7 +126,7 @@ jazzquiz.change_quiz_state = function(state, data) {
                     this.get_and_show_vote_results();
                     this.quiz.show_votes_upon_review = false;
                 } else {
-                    this.gather_results();
+                    this.get_results();
                 }
             }
             // No longer in question
@@ -127,6 +134,7 @@ jazzquiz.change_quiz_state = function(state, data) {
             break;
 
         case 'voting':
+            $side_container.removeClass('hidden');
             this.control_buttons([
                 'closesession',
                 'showfullscreenresults',
@@ -139,6 +147,7 @@ jazzquiz.change_quiz_state = function(state, data) {
             break;
 
         case 'sessionclosed':
+            $side_container.addClass('hidden');
             this.control_buttons([]);
             this.quiz.question.is_running = false;
             break;
@@ -216,7 +225,7 @@ jazzquiz.create_response_controls = function(name) {
         if (name === 'vote_response') {
             if ($show_normal_result.length === 0) {
                 $response_info_container.html('<h4 class="inline">Showing vote results</h4>');
-                $response_info_container.append('<button id="review_show_normal_results" onclick="jazzquiz.gather_results();" class="btn btn-primary">Click to show original results</button><br>');
+                $response_info_container.append('<button id="review_show_normal_results" onclick="jazzquiz.get_results();" class="btn btn-primary">Click to show original results</button><br>');
                 $show_vote_result.remove();
             }
         } else if (name === 'current_response') {
@@ -289,10 +298,7 @@ jazzquiz.create_response_bar_graph = function(responses, name, name_unique, targ
             row.dataset.count = responses[i].count;
             row.classList.add('selected-vote-option');
 
-            // TODO: Use classes instead of IDs for these elements. At the moment it's just easier to use an ID.
-
             const count_html = '<span id="' + name + '_count_' + row_i + '">' + responses[i].count + '</span>';
-
             let response_cell = row.insertCell(0);
             response_cell.onclick = function () {
                 jQuery(this).parent().toggleClass('selected-vote-option');
@@ -316,12 +322,10 @@ jazzquiz.create_response_bar_graph = function(responses, name, name_unique, targ
             target.rows[current_row_index].dataset.response_i = i;
             target.rows[current_row_index].dataset.percent = percent;
             target.rows[current_row_index].dataset.count = responses[i].count;
-
             let count_element = document.getElementById(name + '_count_' + row_i);
             if (count_element !== null) {
                 count_element.innerHTML = responses[i].count;
             }
-
             let bar_element = document.getElementById(name + '_bar_' + row_i);
             if (bar_element !== null) {
                 bar_element.firstElementChild.style.width = percent + '%';
@@ -439,13 +443,12 @@ jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype) 
     }
 
     // Update HTML
-    this.create_response_bar_graph(this.current_responses, 'current_response', slot, table_id);
+    this.create_response_bar_graph(this.current_responses, 'current_response', '', table_id);
     this.sort_response_bar_graph(table_id);
 };
 
 jazzquiz.start_quiz = function() {
     jQuery('#startquiz').parent().addClass('hidden');
-    this.hide_instructions();
     this.post('/mod/jazzquiz/quizdata.php', {
         action: 'start_quiz'
     }, function() {
@@ -454,6 +457,7 @@ jazzquiz.start_quiz = function() {
 };
 
 jazzquiz.end_question = function() {
+    this.hide_question_timer();
     this.post('/mod/jazzquiz/quizdata.php', {
         action: 'end_question'
     }, function() {
@@ -472,8 +476,8 @@ jazzquiz.end_question = function() {
 };
 
 jazzquiz.show_question_list_setup = function(name, action) {
-    let $button = jQuery('#jazzquiz_' + name + '_button');
-    if ($button.hasClass('active')) {
+    let $control_button = jQuery('#jazzquiz_' + name + '_button');
+    if ($control_button.hasClass('active')) {
         // It's already open. Let's not send another request.
         return;
     }
@@ -481,8 +485,8 @@ jazzquiz.show_question_list_setup = function(name, action) {
     // The dropdown lies within the button, so we have to do this extra step
     // This attribute is set in the onclick function for one of the buttons in the dropdown
     // TODO: Redo the dropdown so we don't have to do this.
-    if ($button.data('isclosed') === 'yes') {
-        $button.data('isclosed', '');
+    if ($control_button.data('isclosed') === 'yes') {
+        $control_button.data('isclosed', '');
         return;
     }
 
@@ -491,16 +495,19 @@ jazzquiz.show_question_list_setup = function(name, action) {
     }, function(data) {
         let $menu = jQuery('#jazzquiz_' + name + '_menu');
         $menu.html('').addClass('active');
-        $button.addClass('active');
+        $control_button.addClass('active');
         const questions = data.questions;
         for (let i in questions) {
-            let $button = jQuery('<button>' + questions[i].name + '</button>');
-            $button.on('click', function() {
-                jazzquiz.submit_start_question(questions[i].id);
+            if (!questions.hasOwnProperty(i)) {
+                continue;
+            }
+            let $question_button = jQuery('<button class="btn" data-question-id="' + questions[i].question_id + '">' + questions[i].name + '</button>');
+            $question_button.on('click', function() {
+                jazzquiz.submit_start_question(jQuery(this).data('question-id'));
                 $menu.html('').removeClass('active');
-                jQuery('#jazzquiz_' + name + '_button').removeClass('active').attr('data-isclosed', 'yes');
+                $control_button.removeClass('active').data('isclosed', 'yes');
             });
-            $menu.append($button);
+            $menu.append($question_button);
         }
     });
 };
@@ -542,6 +549,9 @@ jazzquiz.get_and_show_vote_results = function() {
         jazzquiz.quiz.total_students = parseInt(data.total_students);
 
         for (let i in answers) {
+            if (!answers.hasOwnProperty(i)) {
+                continue;
+            }
             responses.push({
                 response: answers[i].attempt,
                 count: answers[i].finalcount,
@@ -589,7 +599,7 @@ jazzquiz.run_voting = function() {
     });
 };
 
-jazzquiz.gather_results = function() {
+jazzquiz.get_results = function() {
     this.get('/mod/jazzquiz/quizdata.php', {
         action: 'get_results'
     }, function(data) {
@@ -609,7 +619,6 @@ jazzquiz.submit_start_question = function(question_id) {
         action: 'start_question',
         question_id: question_id
     }, function(data) {
-        window.location.hash = '';
         jazzquiz.start_question_countdown(data.question_time, data.delay);
     }).fail(function() {
         jQuery('#loadingbox').addClass('hidden');
@@ -627,7 +636,6 @@ jazzquiz.next_question = function() {
 
 jazzquiz.close_session = function() {
     this.show_loading(this.text('closing_session'));
-    this.hide_instructions();
     this.clear_question_box();
     this.hide_info();
     jQuery('#controlbox').addClass('hidden');
@@ -657,7 +665,7 @@ jazzquiz.show_correct_answer = function() {
     // Make sure we end the question (on end_question function call this is re-doing what we just did)
     // handle_request is also called on ending of the question timer in core.js
     this.show_loading(this.text('loading'));
-    this.ajax.get('/mod/jazzquiz/quizdata.php', {
+    this.get('/mod/jazzquiz/quizdata.php', {
         action: 'get_right_response'
     }, function(data) {
         jazzquiz.hide_loading();
@@ -687,7 +695,7 @@ jazzquiz.hide_responses = function() {
 jazzquiz.show_responses = function() {
     this.options.show_responses = true;
     jQuery('#toggleresponses').html('<i class="fa fa-check-square-o"></i> Responses');
-    this.gather_results();
+    this.get_results();
 };
 
 /**
@@ -800,7 +808,7 @@ document.addEventListener('keyup', function(e) {
     }
 });
 
-jazzquiz.close_question_list_menu = function(name) {
+jazzquiz.close_question_list_menu = function(e, name) {
     const menu_id = '#jazzquiz_' + name + '_menu';
     // Close the menu if the click was not inside.
     const menu = jQuery(e.target).closest(menu_id);
@@ -811,8 +819,8 @@ jazzquiz.close_question_list_menu = function(name) {
 };
 
 document.addEventListener('click', function(e) {
-    jazzquiz.close_question_list_menu('improvise');
-    jazzquiz.close_question_list_menu('jump');
+    jazzquiz.close_question_list_menu(e, 'improvise');
+    jazzquiz.close_question_list_menu(e, 'jump');
     // Clicking a row to merge
     if (jazzquiz.state === 'reviewing') {
         if (e.target.classList.contains('bar')) {

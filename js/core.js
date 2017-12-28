@@ -32,6 +32,7 @@ let jazzquiz = {
     chosen_question_id: 0,
 
     question_countdown_interval: 0,
+    question_timer_interval: 0,
 
     jquery_errors: 0,
 
@@ -76,19 +77,6 @@ let jazzquiz = {
     // Student temporary variables
     vote_answer: undefined
 
-};
-
-// Set HTTP status codes for easier readability
-let HTTP_STATUS = {
-    OK: 200,
-    BAD_REQUEST: 400,
-    UNAUTHORIZED: 401,
-    FORBIDDEN: 403,
-    NOT_FOUND: 404,
-    ERROR: 500,
-    BAD_GATEWAY: 502,
-    SERVICE_UNAVAILABLE: 503,
-    GATEWAY_TIMEOUT: 504
 };
 
 jazzquiz.ajax = function(method, url, data, success) {
@@ -140,17 +128,19 @@ jazzquiz.text = function(key, from, args) {
     return M.util.get_string(key, from, args);
 };
 
+/**
+ * Show the loading animation with some text.
+ * @param {string} text
+ */
 jazzquiz.show_loading = function(text) {
-    jQuery('#loadingbox').removeClass('hidden');
-    jQuery('#loadingtext').html(text);
+    jQuery('#loadingbox').removeClass('hidden').children('#loadingtext').html(text);
 };
 
+/**
+ * Hide the loading animation.
+ */
 jazzquiz.hide_loading = function() {
     jQuery('#loadingbox').addClass('hidden');
-};
-
-jazzquiz.hide_instructions = function() {
-    jQuery('#jazzquiz_instructions_container').addClass('hidden');
 };
 
 jazzquiz.hide_info = function() {
@@ -162,6 +152,13 @@ jazzquiz.hide_info = function() {
     }
     jQuery('#jazzquiz_question_timer').addClass('hidden').html('');
     jQuery('#jazzquiz_info_container').addClass('hidden').html('');
+};
+
+/**
+ * @param {string} text
+ */
+jazzquiz.show_info = function(text) {
+    jQuery('#jazzquiz_info_container').removeClass('hidden').html(text);
 };
 
 jazzquiz.render_all_mathjax = function() {
@@ -181,12 +178,7 @@ jazzquiz.render_maxima_equation = function(input, target_id) {
         console.log('Target element #' + target_id + ' not found.');
         return;
     }
-
-    // TODO: Get slot for a STACK question
-    let slot = 0;
-
     this.get('/mod/jazzquiz/stack.php', {
-        slot: slot,
         input: encodeURIComponent(input)
     }, function(data) {
         jazzquiz.add_mathjax_element(target_id, data.latex);
@@ -239,15 +231,13 @@ jazzquiz.quiz_page_loaded = function() {
         if (this.jquery_errors > 50) {
             location.reload(true);
         }
-        setTimeout(function() {
-            jazzquiz.quiz_page_loaded();
-        }, 50);
+        setTimeout(function() { jazzquiz.quiz_page_loaded(); }, 50);
         return;
     }
 
     this.decode_state();
+    this.hide_loading();
 
-    // Show controls for instructors
     if (this.is_instructor) {
         jQuery('#controlbox').removeClass('hidden');
     }
@@ -257,16 +247,10 @@ jazzquiz.quiz_page_loaded = function() {
         return;
     }
 
-    // Not resuming, so we'll show the instructions
-    jQuery('#jazzquiz_instructions_container').removeClass('hidden');
-    jQuery('#loadingbox').addClass('hidden');
-
-    // Lastly call the instructor/student's quiz_info function
     this.request_quiz_info();
 };
 
 jazzquiz.resume_quiz = function() {
-    this.hide_loading();
     switch (this.quiz.resume.action) {
 
         case 'waitforquestion':
@@ -298,7 +282,7 @@ jazzquiz.resume_quiz = function() {
                 jQuery('#startquiz').parent().addClass('hidden');
                 this.quiz.question.is_ended = true;
                 this.quiz.question.is_running = false;
-                this.gather_results();
+                this.get_results();
             } else {
                 jQuery('#jazzquiz_info_container').removeClass('hidden').html(this.text('wait_for_reviewing_to_end'));
             }
@@ -315,17 +299,29 @@ jazzquiz.resume_quiz = function() {
 };
 
 jazzquiz.clear_question_box = function() {
-    jQuery('#jazzquiz_question_box').addClass('hidden').html('');
+    jQuery('#jazzquiz_question_box').html('').addClass('hidden');
 };
 
 jazzquiz.reload_question_box = function() {
     this.post('/mod/jazzquiz/quizdata.php', {
         action: 'get_question_form'
     }, function(data) {
-        jQuery('#jazzquiz_question_box').html(data.html);
+        jQuery('#jazzquiz_question_box').html(data.html).removeClass('hidden');
+        eval(data.js);
     }).fail(function() {
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('Failed to load question form.');
+        this.show_info('Failed to load question.');
     });
+};
+
+/**
+ * Hide the question "ending in" timer, and clears the interval.
+ */
+jazzquiz.hide_question_timer = function() {
+    jQuery('#jazzquiz_question_timer').html('').addClass('hidden');
+    if (this.question_timer_interval !== 0) {
+        clearInterval(this.question_timer_interval);
+        this.question_timer_interval = 0;
+    }
 };
 
 /**
@@ -405,8 +401,7 @@ jazzquiz.on_question_timer_ending = function() {
 jazzquiz.on_question_timer_tick = function() {
     const current_time = new Date().getTime();
     if (current_time > this.quiz.question.end_time) {
-        clearInterval(this.question_countdown_interval);
-        this.question_countdown_interval = false;
+        this.hide_question_timer();
         this.on_question_timer_ending();
     } else {
         const time_left = parseInt((this.quiz.question.end_time - current_time) / 1000);
@@ -420,7 +415,6 @@ jazzquiz.on_question_timer_tick = function() {
  */
 jazzquiz.start_question = function(question_time) {
     this.hide_loading();
-    this.hide_instructions();
     this.hide_info();
     this.reload_question_box();
 
@@ -434,5 +428,5 @@ jazzquiz.start_question = function(question_time) {
     }
     this.set_question_timer_text(question_time);
     this.quiz.question.end_time = new Date().getTime() + question_time * 1000;
-    this.question_countdown_interval = setInterval(function() { jazzquiz.on_question_timer_tick(); }, 1000);
+    this.question_timer_interval = setInterval(function() { jazzquiz.on_question_timer_tick(); }, 1000);
 };

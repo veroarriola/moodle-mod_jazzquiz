@@ -89,7 +89,7 @@ class report_overview
         $quba = $quiz_attempt->quba;
         $question_attempt = $quba->get_question_attempt($slot);
         $question = $question_attempt->get_question();
-        $responses = $session->get_question_results_list($slot, 'all');
+        $responses = $session->get_question_results_list($slot);
         $responses = $responses['responses'];
         $name = $session->data->id . '_' . $session->data->name . '_' . $question->name;
         header('Content-Disposition: attachment; filename=session_' . $name . '.csv');
@@ -246,7 +246,7 @@ class report_overview
         foreach ($slots as $slot) {
             $question_attempt = $quba->get_question_attempt($slot);
             $question = $question_attempt->get_question();
-            $responses = $session->get_question_results_list($slot, 'all');
+            $responses = $session->get_question_results_list($slot);
             $responses = $responses['responses'];
 
             $responded = $session->get_responded_list($slot, 'closed');

@@ -21,6 +21,25 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir . '/questionlib.php');
 
 /**
+ * To load a question without refreshing the page, we need the JavaScript for the question.
+ * Moodle stores this in page_requirements_manager, but there is no way to read the JS that is required.
+ * This class takes in the manager and keeps the JS for when we want to get a diff.
+ * NOTE: This class is placed here because it will only ever be used by renderer::render_question_form()
+ * TODO: Look into removing this class in the future.
+ * @package mod_jazzquiz\output
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class page_requirements_diff extends \page_requirements_manager {
+    private $before;
+    public function __construct($manager) {
+        $this->before = $manager->jsinitcode;
+    }
+    public function get_js_diff($manager) {
+        return array_diff($manager->jsinitcode, $this->before);
+    }
+}
+
+/**
  * Quiz renderer
  *
  * @package     mod_jazzquiz
@@ -201,20 +220,16 @@ class renderer extends \plugin_renderer_base
     /**
      * Renders the quiz to the page
      *
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
      * @param \mod_jazzquiz\jazzquiz_session $session
      */
-    public function render_quiz($attempt, $session)
+    public function render_quiz($session)
     {
-        $this->init_quiz_js($attempt, $session);
+        $this->init_quiz_js($session);
 
         $output = \html_writer::start_div('', ['id' => 'quizview']);
 
         if ($this->jazzquiz->is_instructor()) {
             $output .= \html_writer::div($this->render_controls(), 'jazzquizbox hidden', ['id' => 'controlbox']);
-            $instructions = get_string('instructions_for_instructor', 'jazzquiz');
-        } else {
-            $instructions = get_string('instructions_for_student', 'jazzquiz');
         }
 
         $loading_icon = $this->output->pix_icon('i/loading', 'loading...');
@@ -223,8 +238,6 @@ class renderer extends \plugin_renderer_base
         $output .= \html_writer::tag('p', get_string('loading', 'jazzquiz'), ['id' => 'loadingtext']);
         $output .= $loading_icon;
         $output .= \html_writer::end_div();
-
-        $output .= \html_writer::div($instructions, 'jazzquizbox hidden', ['id' => 'jazzquiz_instructions_container']);
 
         if ($this->jazzquiz->is_instructor()) {
             $output .= \html_writer::div('', 'jazzquizbox padded-box hidden', ['id' => 'jazzquiz_correct_answer_container']);
@@ -265,10 +278,12 @@ class renderer extends \plugin_renderer_base
      * @param int $slot the id of the question we're rendering
      * @param \mod_jazzquiz\jazzquiz_attempt $attempt
      *
-     * @return string HTML fragment of the question
+     * @return string[] html, javascript
      */
     public function render_question_form($slot, $attempt)
     {
+        global $PAGE;
+
         $output = '';
 
         $is_instructor_class = '';
@@ -284,6 +299,7 @@ class renderer extends \plugin_renderer_base
         $on_submit .= 'return false;';
 
         $output .= \html_writer::start_tag('form', [
+            'id' => 'jazzquiz_question_form',
             'action' => '',
             'method' => 'post',
             'enctype' => 'multipart/form-data',
@@ -291,7 +307,9 @@ class renderer extends \plugin_renderer_base
             'onsubmit' => $on_submit
         ]);
 
+        $differ = new page_requirements_diff($PAGE->requires);
         $output .= $attempt->render_question($slot);
+        $js = implode("\n", $differ->get_js_diff($PAGE->requires)) . "\n";
 
         $output .= \html_writer::empty_tag('input', [
             'type' => 'hidden',
@@ -299,22 +317,20 @@ class renderer extends \plugin_renderer_base
             'value' => $slot
         ]);
 
-        // Instructors don't need to save questions
-        $save_button = '';
+        // Only students need to save their answers.
         if (!$this->jazzquiz->is_instructor()) {
             $save_button = \html_writer::tag('button', 'Save', [
                 'class' => 'btn btn-primary',
                 'onclick' => 'jazzquiz.submit_answer(); return false;'
             ]);
             $save_button = \html_writer::div($save_button, 'question_save');
+            $output .= \html_writer::div($save_button, 'save_row');
         }
-
-        $output .= \html_writer::div($save_button, 'save_row');
 
         $output .= \html_writer::end_tag('form');
         $output .= \html_writer::end_tag('div');
 
-        return $output;
+        return [ $output, $js ];
     }
 
     private function write_control_button($icon, $text, $id)
@@ -377,15 +393,12 @@ class renderer extends \plugin_renderer_base
      * Initializes quiz javascript and strings for javascript when on the
      * quiz view page, or the "quizstart" action
      *
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
      * @param \mod_jazzquiz\jazzquiz_session $session
      */
-    public function init_quiz_js($attempt, $session)
+    public function init_quiz_js($session)
     {
         global $CFG;
 
-        // Include classList to add the class List HTML5 for compatibility below IE 10
-        $this->page->requires->js('/mod/jazzquiz/js/classList.js');
         $this->page->requires->js('/mod/jazzquiz/js/core.js');
 
         // Add window.onload script manually to handle removing the loading mask
@@ -400,9 +413,8 @@ class renderer extends \plugin_renderer_base
             $this->page->requires->js('/mod/jazzquiz/js/student.js');
         }
 
-        $jazzquiz = new \stdClass();
-
         // Root values
+        $jazzquiz = new \stdClass();
         $jazzquiz->state = $session->data->status;
         $jazzquiz->is_instructor = $this->jazzquiz->is_instructor();
         $jazzquiz->siteroot = $CFG->wwwroot;
@@ -412,15 +424,15 @@ class renderer extends \plugin_renderer_base
         $quiz->course_module_id = $this->jazzquiz->course_module->id;
         $quiz->activity_id = $this->jazzquiz->data->id;
         $quiz->session_id = $session->data->id;
-        $quiz->attempt_id = $attempt->data->id;
+        $quiz->attempt_id = $session->open_attempt->data->id;
         $quiz->session_key = sesskey();
-        $quiz->slots = $attempt->quba->get_slots();
+        $quiz->slots = $session->open_attempt->quba->get_slots();
         $quiz->total_students = $session->get_student_count();
 
         $quiz->questions = [];
         $quiz->resume = new \stdClass();
 
-        $ordered_jazzquiz_questions = $attempt->jazzquiz->questions;
+        $ordered_jazzquiz_questions = $session->jazzquiz->questions;
         $slot = 1;
         foreach ($ordered_jazzquiz_questions as $q) {
             $question = new \stdClass();
@@ -440,19 +452,14 @@ class renderer extends \plugin_renderer_base
 
         if ($session_state != 'notrunning') {
 
-            $current_slot = $session->data->slot;
             $next_start_time = $session->data->nextstarttime;
 
             switch ($session_state) {
 
                 case 'running':
-                    if (empty($current_slot)) {
-                        break;
-                    }
                     // We're in a currently running question
                     $quiz->resume->are_we_resuming = true;
                     $quiz->resume->state = $session_state;
-                    $quiz->resume->current_question_slot = $current_slot;
                     $no_time = 0;
                     $question_time = $this->jazzquiz->data->defaultquestiontime;
                     // TODO: Check for notime and questiontime in questions that are not improvisational.
@@ -486,7 +493,6 @@ class renderer extends \plugin_renderer_base
                     $quiz->resume->are_we_resuming = true;
                     $quiz->resume->action = 'reviewing';
                     $quiz->resume->state = $session_state;
-                    $quiz->resume->current_question_slot = $current_slot;
                     break;
 
                 case 'preparing':
@@ -494,7 +500,6 @@ class renderer extends \plugin_renderer_base
                     $quiz->resume->are_we_resuming = true;
                     $quiz->resume->action = $session_state;
                     $quiz->resume->state = $session_state;
-                    $quiz->resume->current_question_slot = $current_slot;
                     break;
 
                 default:
@@ -521,7 +526,9 @@ class renderer extends \plugin_renderer_base
             'answer',
             'responses',
             'responded',
-            'wait_for_instructor'
+            'wait_for_instructor',
+            'instructions_for_student',
+            'instructions_for_instructor'
         ], 'jazzquiz');
 
         $this->page->requires->strings_for_js([
@@ -534,11 +541,10 @@ class renderer extends \plugin_renderer_base
      *
      * @param array $not_responded Array of the people who haven't responded
      * @param int $total
-     * @param int $anonymous (0 or 1)
      *
      * @return string HTML fragment for the amount responded
      */
-    public function respondedbox($not_responded, $total, $anonymous)
+    public function respondedbox($not_responded, $total)
     {
         $responded_count = $total - count($not_responded);
         $output = \html_writer::start_div();

@@ -106,15 +106,26 @@ switch ($session->status) {
     case 'voting':
         $vote_options = $DB->get_records('jazzquiz_votes', ['sessionid' => $session_id]);
         $options = [];
+        $html = '<div class="jazzquiz-vote">';
+        $i = 0;
         foreach ($vote_options as $vote_option) {
             $options[] = [
                 'text' => $vote_option->attempt,
                 'id' => $vote_option->id,
-                'question_type' => $vote_option->qtype
+                'question_type' => $vote_option->qtype,
+                'content_id' => "vote_answer_label_$i"
             ];
+            $html .= '<label>';
+            $html .= '<input type="radio" name="vote" value="' . $vote_option->id . '" onclick="jazzquiz.vote_answer = this.value;">';
+            $html .= '<span id="vote_answer_label_' . $i . '">' . $vote_option->attempt . '</span>';
+            $html .= '</label><br>';
+            $i++;
         }
+        $html .= '</div>';
+        $html .= '<button class="btn" onclick="jazzquiz.save_vote(); return false;">Save</button>';
         print_json([
             'status' => 'voting',
+            'html' => $html,
             'options' => $options
         ]);
         exit;

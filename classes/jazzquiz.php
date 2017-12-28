@@ -152,20 +152,6 @@ class jazzquiz
     }
 
     /**
-     * Get question type for the specified slot
-     * @param int $slot
-     * @return string|false
-     */
-    public function get_question_type_by_slot($slot)
-    {
-        if (!isset($this->questions[$slot])) {
-            return false;
-        }
-        $question = $this->questions[$slot];
-        return $question->question->qtype;
-    }
-
-    /**
      * Edit a JazzQuiz question
      *
      * @param int $question_id the JazzQuiz question id

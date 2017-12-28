@@ -61,7 +61,19 @@ class jazzquiz_session
                 'sessionopen' => 1
             ]);
         }
-        $this->questions = $DB->get_records('jazzquiz_session_questions', ['sessionid' => $this->data->id]);
+        $this->questions = $DB->get_records('jazzquiz_session_questions', ['sessionid' => $this->data->id], 'slot');
+        foreach ($this->questions as $question) {
+            unset($this->questions[$question->id]);
+            $this->questions[$question->slot] = $question;
+        }
+    }
+
+    // TODO: Temporary function. Should be removed at a later time.
+    public function get_question_type_by_slot($slot) {
+        global $DB;
+        $id =  $this->questions[$slot - 1]->questionid;
+        $question = $DB->get_record('question', ['id' => $id], 'qtype');
+        return $question->qtype;
     }
 
     /**
@@ -212,12 +224,11 @@ class jazzquiz_session
     /**
      * Gets the results of the current question as an array
      * @param int $slot
-     * @param bool $open
      * @return array
      */
-    public function get_question_results_list($slot, $open)
+    public function get_question_results_list($slot)
     {
-        $attempts = $this->get_all_attempts(false, $open);
+        $attempts = $this->get_all_attempts(false, 'all');
         $responses = [];
 
         foreach ($attempts as $attempt) {
@@ -274,27 +285,17 @@ class jazzquiz_session
     public function get_not_responded()
     {
         global $DB;
-
         $attempts = $this->get_all_attempts(false, 'open');
         $not_responded = [];
-
         foreach ($attempts as $attempt) {
             if ($attempt->data->responded == 0) {
                 $user = $DB->get_record('user', ['id' => $attempt->data->userid]);
                 if ($user) {
                     $not_responded[] = fullname($user);
-                } else {
-                    $not_responded[] = 'undefined user';
                 }
             }
         }
-
-        $anonymous = true;
-        if ($this->data->anonymize_responses == 0 && $this->data->fully_anonymize == 0) {
-            $anonymous = false;
-        }
-
-        $not_responded_box = $this->jazzquiz->renderer->respondedbox($not_responded, count($attempts), $anonymous);
+        $not_responded_box = $this->jazzquiz->renderer->respondedbox($not_responded, count($attempts));
         return $not_responded_box;
     }
 
@@ -306,18 +307,19 @@ class jazzquiz_session
         // Just use the instructor's question attempt to re-render the question with the right response
         $attempt = $this->open_attempt;
         $quba = $attempt->quba;
-        $correct_response = $quba->get_correct_response($this->data->slot);
+        $slot = count($this->questions);
+        $correct_response = $quba->get_correct_response($slot);
         if (is_null($correct_response)) {
             return 'No correct response';
         }
-        $quba->process_action($this->data->slot, $correct_response);
+        $quba->process_action($slot, $correct_response);
         $attempt->save();
         $review_options = new \stdClass();
         $review_options->rightanswer = 1;
         $review_options->correctness = 1;
         $review_options->specificfeedback = 1;
         $review_options->generalfeedback = 1;
-        return $attempt->render_question($this->data->slot, true, $review_options);
+        return $attempt->render_question($slot, true, $review_options);
     }
 
     /**
@@ -348,7 +350,6 @@ class jazzquiz_session
             $attempt->data->responded = null;
             $attempt->data->responded_count = 0;
             $attempt->data->timefinish = null;
-            $attempt->data->forgroupid = null;
             $attempt->save();
 
             if (!$this->data->fully_anonymize) {

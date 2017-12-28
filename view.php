@@ -60,13 +60,12 @@ function jazzquiz_view_start_quiz($jazzquiz)
     }
 
     // Get the current attempt and initialize the head contributions
-    $attempt = $session->open_attempt;
-    $attempt->get_html_head_contributions();
-    $attempt->set_status('inprogress');
+    $session->open_attempt->get_html_head_contributions();
+    $session->open_attempt->set_status('inprogress');
 
     // Show the quiz start landing page
     $renderer->view_header(true);
-    $renderer->render_quiz($attempt, $session);
+    $renderer->render_quiz($session);
     $renderer->view_footer();
 }
 
