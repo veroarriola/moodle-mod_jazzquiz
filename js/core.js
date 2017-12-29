@@ -308,6 +308,7 @@ jazzquiz.reload_question_box = function() {
         action: 'get_question_form'
     }, function(data) {
         jQuery('#jazzquiz_question_box').html(data.html).removeClass('hidden');
+        console.log(data.js);
         eval(data.js);
     }).fail(function() {
         this.show_info('Failed to load question.');

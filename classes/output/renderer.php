@@ -399,19 +399,19 @@ class renderer extends \plugin_renderer_base
     {
         global $CFG;
 
+        $this->page->requires->js('/question/qengine.js');
         $this->page->requires->js('/mod/jazzquiz/js/core.js');
+        if ($this->jazzquiz->is_instructor()) {
+            $this->page->requires->js('/mod/jazzquiz/js/instructor.js');
+        } else {
+            $this->page->requires->js('/mod/jazzquiz/js/student.js');
+        }
 
         // Add window.onload script manually to handle removing the loading mask
         // TODO: Remove this inline JavaScript.
         echo \html_writer::start_tag('script');
         echo "(function preLoad(){window.addEventListener('load', function(){jazzquiz.quiz_page_loaded();}, false);}());";
         echo \html_writer::end_tag('script');
-
-        if ($this->jazzquiz->is_instructor()) {
-            $this->page->requires->js('/mod/jazzquiz/js/instructor.js');
-        } else {
-            $this->page->requires->js('/mod/jazzquiz/js/student.js');
-        }
 
         // Root values
         $jazzquiz = new \stdClass();
