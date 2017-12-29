@@ -18,6 +18,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="jazzquiz_questions" COMMENT="Reference table for questions in a JazzQuiz. Does not change during a session.">
@@ -31,6 +32,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="jazzquizid" TYPE="foreign" FIELDS="jazzquizid" REFTABLE="jazzquiz" REFFIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="question" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="jazzquiz_sessions" COMMENT="A session is a unique instance of a JazzQuiz">
@@ -40,7 +43,7 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="sessionopen" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not the session is open"/>
         <FIELD NAME="showfeedback" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not students should receive feedback after answering"/>
-        <FIELD NAME="status" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="the current status/state of the session"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="The current status/state of the session"/>
         <FIELD NAME="slot" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="This is which JazzQuiz question was last run. Not related to session questions."/>
         <FIELD NAME="currentquestiontime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The time the current question is allowed in seconds"/>
         <FIELD NAME="nextstarttime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The timestamp of the next start time"/>
@@ -48,6 +51,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="jazzquizid" TYPE="foreign" FIELDS="jazzquizid" REFTABLE="jazzquiz" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="jazzquiz_session_questions" COMMENT="Questions for a specific JazzQuiz session">
@@ -59,6 +63,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="sessionid" TYPE="foreign" FIELDS="sessionid" REFTABLE="jazzquiz_sessions" REFFIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="question" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="jazzquiz_attempts" COMMENT="A JazzQuiz attempt maps the question usage by activity (quba) and its question attempts for a student within a particular session.">
@@ -78,6 +84,9 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="sessionid" TYPE="foreign" FIELDS="sessionid" REFTABLE="jazzquiz_sessions" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="questionengid" TYPE="foreign" FIELDS="questionengid" REFTABLE="question_usages" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="jazzquiz_votes" COMMENT="Votes for a question">
@@ -94,6 +103,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="jazzquizid" TYPE="foreign" FIELDS="jazzquizid" REFTABLE="jazzquiz" REFFIELDS="id"/>
+        <KEY NAME="sessionid" TYPE="foreign" FIELDS="sessionid" REFTABLE="jazzquiz_sessions" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>
