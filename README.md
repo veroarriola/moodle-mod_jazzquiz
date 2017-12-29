@@ -27,12 +27,12 @@ block.
 Delete the module from the **Activities** module list in the admin section.
 
 ## Feedback:
-**Project lead:** Hans Georg Schaathun: [hasc@ntnu.no](hasc@ntnu.no)
+**Project lead:** Hans Georg Schaathun: <hasc@ntnu.no>
 
-**Developer:** Sebastian S. Gundersen: [sebastsg@stud.ntnu.no](sebastsg@stud.ntnu.no)
+**Developer:** Sebastian S. Gundersen: <sebastsg@stud.ntnu.no>
 
 ## Please note
-The original plugin, Realtime Quiz, was written by Davo Smith: [moodle@davosmith.co.uk](moodle@davosmith.co.uk)
+The original plugin, Realtime Quiz, was written by Davo Smith: <moodle@davosmith.co.uk>
 
 ActiveQuiz was funded by an educational innovation grant given to the Medical school, the University of Wisconsin - Madison.
-The plugin was rewritten to integrate the core Moodle question engine. John Hoopes: [moodle@madisoncreativeweb.com](moodle@madisoncreativeweb.com)
+The plugin was rewritten to integrate the core Moodle question engine. John Hoopes: <moodle@madisoncreativeweb.com>
