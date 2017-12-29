@@ -70,33 +70,25 @@ class jazzquiz_vote
     public function save_vote($vote_id, $user_id)
     {
         global $DB;
-
-        // Check if this user has already voted on any of the options already
         if ($this->has_user_voted($user_id)) {
-            return 'alreadyvoted';
+            return false;
         }
-
-        // Does it exist?
         $exists = $DB->record_exists('jazzquiz_votes', [ 'id' => $vote_id ]);
         if (!$exists) {
-            return 'error';
+            return false;
         }
-
-        // Let's get it from the database
         $row = $DB->get_record('jazzquiz_votes', [ 'id' => $vote_id ]);
         if (!$row) {
-            return 'error';
+            return false;
         }
-
-        // Seems like an honest vote. Let's add it!
+        // Likely an honest vote.
         $row->finalcount++;
         if ($row->userlist != '') {
             $row->userlist .= ',';
         }
         $row->userlist .= $user_id;
         $DB->update_record('jazzquiz_votes', $row);
-
-        return 'success';
+        return true;
     }
 
     public function prepare_options($jazzquiz_id, $question_type, $options, $slot)
@@ -104,9 +96,7 @@ class jazzquiz_vote
         global $DB;
 
         // Delete previous voting options for this session
-        $DB->delete_records('jazzquiz_votes', [
-            'sessionid' => $this->session_id
-        ]);
+        $DB->delete_records('jazzquiz_votes', ['sessionid' => $this->session_id]);
 
         // Add to database
         foreach ($options as $option) {

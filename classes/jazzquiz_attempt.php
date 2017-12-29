@@ -72,6 +72,30 @@ class jazzquiz_attempt
     }
 
     /**
+     * @param jazzquiz_session $session
+     * @return bool false if invalid question id
+     */
+    public function create_missing_attempts($session)
+    {
+        foreach ($session->questions as $slot => $question) {
+            if ($this->quba->next_slot_number() > $slot) {
+                continue;
+            }
+            $question_definition = reset(question_load_questions([$question->questionid]));
+            if (!$question_definition) {
+                return false;
+            }
+            $question = \question_bank::make_question($question_definition);
+            $slot = $this->quba->add_question($question);
+            $this->quba->start_question($slot);
+            $this->data->responded = 0;
+            $this->data->responded_count = 0;
+            $this->save();
+        }
+        return true;
+    }
+
+    /**
      * Fetches user from database and returns the full name.
      * @return string
      */
@@ -230,15 +254,13 @@ class jazzquiz_attempt
         $this->data->timemodified = time();
 
         if (isset($this->data->id)) {
-            // Update existing record
             try {
                 $DB->update_record('jazzquiz_attempts', $this->data);
             } catch (\Exception $e) {
                 error_log($e->getMessage());
-                return false; // return false on failure
+                return false;
             }
         } else {
-            // Insert new record
             try {
                 $this->data->id = $DB->insert_record('jazzquiz_attempts', $this->data);
             } catch (\Exception $e) {

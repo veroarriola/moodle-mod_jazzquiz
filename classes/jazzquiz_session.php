@@ -131,10 +131,7 @@ class jazzquiz_session
     }
 
     /**
-     * Static function to delete a session instance
-     *
-     * Is static so we don't have to instantiate a session class
-     *
+     * Deletes the specified session, as well as the attempts.
      * @param int $session_id
      * @return bool
      */
@@ -152,7 +149,7 @@ class jazzquiz_session
     }
 
     /**
-     * Ends the quiz and session
+     * Ends this session.
      * @return bool Whether or not this was successful
      */
     public function end_session()
@@ -170,8 +167,7 @@ class jazzquiz_session
         }
 
         // Save the session as closed
-        $this->save();
-        return true;
+        return $this->save();
     }
 
     /**
@@ -183,25 +179,26 @@ class jazzquiz_session
     public function start_question($question_id)
     {
         global $DB;
-        $question_definition = reset(question_load_questions([$question_id]));
+        /*$question_definition = reset(question_load_questions([$question_id]));
         if (!$question_definition) {
             return [false, 0, 0];
-        }
+        }*/
         // TODO: Transaction?
         $session_question = new \stdClass();
         $session_question->sessionid = $this->data->id;
         $session_question->questionid = $question_id;
         $session_question->slot = count($DB->get_records('jazzquiz_session_questions', ['sessionid' => $this->data->id])) + 1;
         $session_question->id = $DB->insert_record('jazzquiz_session_questions', $session_question);
-        $slot = 0;
+        $this->questions[$session_question->slot] = $session_question;
         $attempts = $this->get_all_attempts(true);
         foreach ($attempts as &$attempt) {
-            $question = \question_bank::make_question($question_definition);
+            $attempt->create_missing_attempts($this);
+            /*$question = \question_bank::make_question($question_definition);
             $slot = $attempt->quba->add_question($question);
             $attempt->quba->start_question($slot);
             $attempt->data->responded = 0;
             $attempt->data->responded_count = 0;
-            $attempt->save();
+            $attempt->save();*/
         }
 
         $no_time = 0;
@@ -324,21 +321,16 @@ class jazzquiz_session
 
     /**
      * Loads/initializes attempts
-     *
      * @param int $preview Whether or not to initialize an attempt as a preview attempt
      * @return bool Returns bool depending on whether or not successful
-     *
-     * @throws \Exception Throws exception when we can't add group attendance members
      */
     public function init_attempts($preview = 0)
     {
         if (empty($this->data)) {
             return false;
         }
-
-        $open_attempt = $this->get_open_attempt_for_current_user();
-        if (!$open_attempt) {
-
+        $attempt = $this->get_open_attempt_for_current_user();
+        if (!$attempt) {
             $attempt = new jazzquiz_attempt($this->jazzquiz);
             $attempt->data->sessionid = $this->data->id;
             $attempt->data->userid = $this->get_current_userid();
@@ -351,32 +343,25 @@ class jazzquiz_session
             $attempt->data->responded_count = 0;
             $attempt->data->timefinish = null;
             $attempt->save();
-
-            if (!$this->data->fully_anonymize) {
-                // Create attempt_created event
-                $event = event\attempt_started::create([
-                    'objectid' => $attempt->data->id,
-                    'relateduserid' => $attempt->data->userid,
-                    'courseid' => $this->jazzquiz->course->id,
-                    'context' => $this->jazzquiz->context
-                ]);
-                $event->add_record_snapshot('jazzquiz', $this->jazzquiz->data);
-                $event->add_record_snapshot('jazzquiz_attempts', $attempt->data);
-                $event->trigger();
-            }
-
-            $this->open_attempt = $attempt;
-
+            $event = event\attempt_started::create([
+                'objectid' => $attempt->data->id,
+                'relateduserid' => $attempt->data->userid,
+                'courseid' => $this->jazzquiz->course->id,
+                'context' => $this->jazzquiz->context
+            ]);
+            $event->add_record_snapshot('jazzquiz', $this->jazzquiz->data);
+            $event->add_record_snapshot('jazzquiz_attempts', $attempt->data);
+            $event->trigger();
         } else {
             // Check the preview field on the attempt to see if it's in line with the value passed
             // If not set it to be correct
-            if ($open_attempt->data->preview != $preview) {
-                $open_attempt->data->preview = $preview;
-                $open_attempt->save();
+            if ($attempt->data->preview != $preview) {
+                $attempt->data->preview = $preview;
+                $attempt->save();
             }
-            $this->open_attempt = $open_attempt;
         }
-
+        $attempt->create_missing_attempts($this);
+        $this->open_attempt = $attempt;
         return true;
     }
 

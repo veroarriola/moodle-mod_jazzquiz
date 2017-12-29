@@ -239,9 +239,14 @@ function save_vote($session)
     // Save the vote
     $vote = new jazzquiz_vote($session->data->id);
     $status = $vote->save_vote($vote_id, $user_id);
-
+    if (!$status) {
+        print_json([
+            'status' => 'error'
+        ]);
+        return;
+    }
     print_json([
-        'status' => $status
+        'status' => 'success'
     ]);
 }
 

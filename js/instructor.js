@@ -443,7 +443,7 @@ jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype) 
     }
 
     // Update HTML
-    this.create_response_bar_graph(this.current_responses, 'current_response', '', table_id);
+    this.create_response_bar_graph(this.current_responses, 'current_response', parseInt(Math.random()), table_id);
     this.sort_response_bar_graph(table_id);
 };
 
@@ -467,11 +467,9 @@ jazzquiz.end_question = function() {
         }
         jazzquiz.quiz.question.is_ended = true;
         jazzquiz.quiz.question.is_running = false;
-        jQuery('#jazzquiz_question_timer').html('').addClass('hidden');
         jazzquiz.control_buttons([]);
     }).fail(function() {
-        jQuery('#loadingbox').addClass('hidden');
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('Failed to end the question.');
+        this.show_info('Failed to end the question.');
     });
 };
 

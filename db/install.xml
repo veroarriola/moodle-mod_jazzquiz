@@ -27,7 +27,7 @@
         <FIELD NAME="questionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The question id for the question in the question engine"/>
         <FIELD NAME="notime" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Bit field to signify there is no time limit for this question"/>
         <FIELD NAME="questiontime" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Question time in seconds. 0 means default for the quiz"/>
-        <FIELD NAME="slot" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="slot" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Which order the question is in. Not to be confused with the slot in a session question."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -44,7 +44,7 @@
         <FIELD NAME="slot" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="This is which JazzQuiz question was last run. Not related to session questions."/>
         <FIELD NAME="currentquestiontime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The time the current question is allowed in seconds"/>
         <FIELD NAME="nextstarttime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The timestamp of the next start time"/>
-        <FIELD NAME="created" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The timestamp that this was created"/>
+        <FIELD NAME="created" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp for when this session was created."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -55,13 +55,13 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sessionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="questionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The id for the question in the question bank"/>
-        <FIELD NAME="slot" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="slot" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The question number in the question usage by activity (quba). Starts at 1 and is incremented for every new question."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="jazzquiz_attempts" COMMENT="The quiz attempts table to hold attempts for students within a particular session">
+    <TABLE NAME="jazzquiz_attempts" COMMENT="A JazzQuiz attempt maps the question usage by activity (quba) and its question attempts for a student within a particular session.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sessionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
@@ -90,7 +90,7 @@
         <FIELD NAME="finalcount" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="How many students answered this during the vote"/>
         <FIELD NAME="userlist" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="List of users who have voted. TODO: Normalize"/>
         <FIELD NAME="qtype" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Which question type it was. TODO: Remove, as it can be reached by slot column"/>
-        <FIELD NAME="slot" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The question slot this vote was created for"/>
+        <FIELD NAME="slot" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The session question slot this vote was created for"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

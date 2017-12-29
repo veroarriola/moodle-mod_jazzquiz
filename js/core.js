@@ -303,7 +303,7 @@ jazzquiz.clear_question_box = function() {
 };
 
 jazzquiz.reload_question_box = function() {
-    this.post('/mod/jazzquiz/quizdata.php', {
+    this.get('/mod/jazzquiz/quizdata.php', {
         action: 'get_question_form'
     }, function(data) {
         jQuery('#jazzquiz_question_box').html(data.html).removeClass('hidden');
