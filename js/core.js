@@ -33,6 +33,7 @@ let jazzquiz = {
 
     question_countdown_interval: 0,
     question_timer_interval: 0,
+    graph_id_counter: 0,
 
     jquery_errors: 0,
 

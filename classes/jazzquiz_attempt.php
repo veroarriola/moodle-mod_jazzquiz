@@ -423,21 +423,21 @@ class jazzquiz_attempt
 
     /**
      * @param int $slot
-     * @return string
+     * @return string|bool false if no step or step data is found
      */
     private function get_response_data_true_or_false($slot)
     {
         // Find steps
         $steps = $this->get_steps($slot);
         if (!$steps) {
-            return '';
+            return false;
         }
         $step = reset($steps);
 
         // Find data
         $data = $this->get_step_data($step->id);
         if (!$data) {
-            return '';
+            return false;
         }
         $data = array_shift($data);
 
@@ -450,21 +450,21 @@ class jazzquiz_attempt
 
     /**
      * @param int $slot
-     * @return string
+     * @return string|bool false if no step or step data is found
      */
     private function get_response_data_stack($slot)
     {
         // Find steps
         $steps = $this->get_steps($slot);
         if (!$steps) {
-            return '';
+            return false;
         }
         $step = reset($steps);
 
         // Find data
         $data = $this->get_step_data($step->id);
         if (!$data) {
-            return '';
+            return false;
         }
 
         // STACK saves two rows for some reason, and it seems impossible to tell apart the answers in a general way.
@@ -484,24 +484,22 @@ class jazzquiz_attempt
 
     /**
      * @param int $slot
-     * @return string
+     * @return string|bool false if no step or step data is found
      */
     private function get_response_data_general($slot)
     {
         // Find step
         $steps = $this->get_steps($slot);
         if (!$steps) {
-            return '';
+            return false;
         }
         $step = reset($steps);
-
         // Find data
         $data = $this->get_step_data($step->id);
         if (!$data) {
-            return '';
+            return false;
         }
         $data = reset($data);
-
         // Return response
         return $data->value;
     }
@@ -515,19 +513,23 @@ class jazzquiz_attempt
     {
         $responses = [];
         $question_type = $this->quba->get_question_attempt($slot)->get_question()->get_type_name();
+        $response = false;
         switch ($question_type) {
             case 'multichoice':
                 $responses = $this->get_response_data_multichoice($slot);
                 break;
             case 'truefalse':
-                $responses[] = $this->get_response_data_true_or_false($slot);
+                $response = $this->get_response_data_true_or_false($slot);
                 break;
             case 'stack':
-                $responses[] = $this->get_response_data_stack($slot);
+                $response = $this->get_response_data_stack($slot);
                 break;
             default:
-                $responses[] = $this->get_response_data_general($slot);
+                $response = $this->get_response_data_general($slot);
                 break;
+        }
+        if ($response !== false) {
+            $responses[] = $response;
         }
         return $responses;
     }

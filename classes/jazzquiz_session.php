@@ -179,10 +179,6 @@ class jazzquiz_session
     public function start_question($question_id)
     {
         global $DB;
-        /*$question_definition = reset(question_load_questions([$question_id]));
-        if (!$question_definition) {
-            return [false, 0, 0];
-        }*/
         // TODO: Transaction?
         $session_question = new \stdClass();
         $session_question->sessionid = $this->data->id;
@@ -193,12 +189,6 @@ class jazzquiz_session
         $attempts = $this->get_all_attempts(true);
         foreach ($attempts as &$attempt) {
             $attempt->create_missing_attempts($this);
-            /*$question = \question_bank::make_question($question_definition);
-            $slot = $attempt->quba->add_question($question);
-            $attempt->quba->start_question($slot);
-            $attempt->data->responded = 0;
-            $attempt->data->responded_count = 0;
-            $attempt->save();*/
         }
 
         $no_time = 0;

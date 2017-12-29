@@ -238,7 +238,7 @@ jazzquiz.create_response_controls = function(name) {
     }
 };
 
-jazzquiz.create_response_bar_graph = function(responses, name, name_unique, target_id) {
+jazzquiz.create_response_bar_graph = function(responses, name, target_id) {
     let target = document.getElementById(target_id);
     if (target === null) {
         return;
@@ -268,7 +268,8 @@ jazzquiz.create_response_bar_graph = function(responses, name, name_unique, targ
 
     this.create_response_controls(name);
 
-    name += name_unique;
+    this.graph_id_counter++;
+    name += this.graph_id_counter;
 
     // Add rows
     for (let i = 0; i < responses.length; i++) {
@@ -443,7 +444,7 @@ jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype) 
     }
 
     // Update HTML
-    this.create_response_bar_graph(this.current_responses, 'current_response', parseInt(Math.random()), table_id);
+    this.create_response_bar_graph(this.current_responses, 'current_response', table_id);
     this.sort_response_bar_graph(table_id);
 };
 
@@ -576,7 +577,7 @@ jazzquiz.get_and_show_vote_results = function() {
             slot = responses[0].slot;
         }
 
-        jazzquiz.create_response_bar_graph(responses, 'vote_response', slot, target_id, slot);
+        jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id);
         jazzquiz.sort_response_bar_graph(target_id);
     }).fail(function() {
         jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error getting the vote results.');
