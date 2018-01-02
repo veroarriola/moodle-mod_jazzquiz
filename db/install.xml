@@ -26,7 +26,6 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="jazzquizid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The JazzQuiz this question is associated with"/>
         <FIELD NAME="questionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The question id for the question in the question engine"/>
-        <FIELD NAME="notime" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Bit field to signify there is no time limit for this question"/>
         <FIELD NAME="questiontime" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Question time in seconds. 0 means default for the quiz"/>
         <FIELD NAME="slot" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Which order the question is in. Not to be confused with the slot in a session question."/>
       </FIELDS>
@@ -59,6 +58,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sessionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="questionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The id for the question in the question bank"/>
+        <FIELD NAME="questiontime" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Question time in seconds."/>
         <FIELD NAME="slot" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The question number in the question usage by activity (quba). Starts at 1 and is incremented for every new question."/>
       </FIELDS>
       <KEYS>

@@ -102,14 +102,13 @@ class jazzquiz_attempt
     public function get_user_full_name()
     {
         global $DB;
-        $user = $DB->get_record('user', [ 'id' => $this->data->userid ]);
+        $user = $DB->get_record('user', ['id' => $this->data->userid]);
         return fullname($user);
     }
 
     /**
      * Returns a string representation of the "number" status that is actually stored
      * @return string
-     * @throws \Exception throws exception upon an undefined status
      */
     public function get_status()
     {
@@ -123,7 +122,6 @@ class jazzquiz_attempt
             case self::FINISHED:
                 return 'finished';
             default:
-                throw new \Exception('undefined status for attempt');
                 break;
         }
     }
@@ -272,12 +270,14 @@ class jazzquiz_attempt
 
     /**
      * Saves a question attempt from the jazzquiz question
+     * @param int $slot
      */
-    public function save_question()
+    public function save_question($slot)
     {
         global $DB;
         $transaction = $DB->start_delegated_transaction();
         $this->quba->process_all_actions();
+        $this->quba->finish_question($slot, time());
         $this->data->timemodified = time();
         $this->data->responded = 1;
         if (empty($this->data->responded_count)) {
@@ -313,195 +313,27 @@ class jazzquiz_attempt
     }
 
     /**
-     * @param $slot
-     * @return \stdClass[]
-     */
-    private function get_steps($slot)
-    {
-        global $DB;
-
-        // Fetch all steps from the database
-        $attempt = $this->quba->get_question_attempt($slot);
-        $steps = $DB->get_records('question_attempt_steps', [
-            'questionattemptid' => $attempt->get_database_id()
-        ], 'sequencenumber desc');
-
-        // Let's filter the steps
-        $result = [];
-        foreach ($steps as $step) {
-            switch ($step->state) {
-                case 'gaveup':
-                    // The attempt is irrelevant, since it was never completed.
-                    return [];
-                case 'gradedright':
-                    // We don't want the correct answer, which is saved in this step.
-                    break;
-                default:
-                    // This is most likely an input step.
-                    $result[] = $step;
-                    break;
-            }
-        }
-
-        // Return the filtered steps
-        return $result;
-    }
-
-    /**
-     * @param int $step_id
-     * @return \stdClass[]
-     */
-    private function get_step_data($step_id)
-    {
-        global $DB;
-        return $DB->get_records('question_attempt_step_data', [
-            'attemptstepid' => $step_id
-        ], 'id desc');
-    }
-
-    /**
+     * Returns whether current user has responded
      * @param int $slot
-     * @return string[]
+     * @return bool
      */
-    private function get_response_data_multichoice($slot)
+    public function has_responded($slot)
     {
-        global $DB;
-
-        // Find steps
-        $steps = $this->get_steps($slot);
-        if (!$steps) {
-            return [];
+        //$response = $this->quba->get_question_attempt($slot)->get_response_summary();
+        //return $response != null && $response != '';
+        $step = $this->quba->get_question_attempt($slot)->get_last_step();
+        $state = $step->get_state();
+        // https://docs.moodle.org/dev/Overview_of_the_Moodle_question_engine#Attempt_steps
+        switch ($state) {
+            case 'notstarted':
+            case 'todo':
+            case 'gaveup':
+                return false;
+            case 'gradedright':
+                return true;
+            default:
+                return true;
         }
-
-        // Go through all the steps to find the needed data
-        $order = [];
-        $chosen_answers = [];
-        foreach ($steps as $step) {
-
-            // Find step data
-            $all_data = $this->get_step_data($step->id);
-            if (!$all_data) {
-                continue;
-            }
-
-            $choices_found = count($chosen_answers) > 0;
-
-            // Keep in mind we're looping backwards.
-            // Therefore, the last answer is prioritised.
-            foreach ($all_data as $data) {
-                if ($data->name === '_order') {
-                    if (!$order) {
-                        $order = explode(',', $data->value);
-                    }
-                } else if ($data->name === 'answer') {
-                    if (!$choices_found) {
-                        $chosen_answers[] = $data->value;
-                    }
-                } else if (substr($data->name, 0, 6) === 'choice') {
-                    if (!$choices_found && $data->value == 1) {
-                        $chosen_answers[] = substr($data->name, 6);
-                    }
-                }
-            }
-        }
-
-        // Find the answer strings
-        $responses = [];
-        foreach ($chosen_answers as $chosen_answer) {
-            if (isset($order[$chosen_answer])) {
-                $option = $DB->get_record('question_answers', [
-                    'id' => $order[$chosen_answer]
-                ]);
-                if ($option) {
-                    $responses[] = $option->answer;
-                }
-            }
-        }
-
-        return $responses;
-    }
-
-    /**
-     * @param int $slot
-     * @return string|bool false if no step or step data is found
-     */
-    private function get_response_data_true_or_false($slot)
-    {
-        // Find steps
-        $steps = $this->get_steps($slot);
-        if (!$steps) {
-            return false;
-        }
-        $step = reset($steps);
-
-        // Find data
-        $data = $this->get_step_data($step->id);
-        if (!$data) {
-            return false;
-        }
-        $data = array_shift($data);
-
-        // Return response
-        if ($data->value == 1) {
-            return 'True';
-        }
-        return 'False';
-    }
-
-    /**
-     * @param int $slot
-     * @return string|bool false if no step or step data is found
-     */
-    private function get_response_data_stack($slot)
-    {
-        // Find steps
-        $steps = $this->get_steps($slot);
-        if (!$steps) {
-            return false;
-        }
-        $step = reset($steps);
-
-        // Find data
-        $data = $this->get_step_data($step->id);
-        if (!$data) {
-            return false;
-        }
-
-        // STACK saves two rows for some reason, and it seems impossible to tell apart the answers in a general way.
-        if (count($data) > 1) {
-            $data_1 = array_shift($data);
-            $data_2 = array_shift($data);
-            $data = $data_1;
-            if (substr($data_1->name, -4, 4) === '_val') {
-                $data = $data_2;
-            }
-        } else {
-            $data = array_shift($data);
-        }
-
-        return $data->value;
-    }
-
-    /**
-     * @param int $slot
-     * @return string|bool false if no step or step data is found
-     */
-    private function get_response_data_general($slot)
-    {
-        // Find step
-        $steps = $this->get_steps($slot);
-        if (!$steps) {
-            return false;
-        }
-        $step = reset($steps);
-        // Find data
-        $data = $this->get_step_data($step->id);
-        if (!$data) {
-            return false;
-        }
-        $data = reset($data);
-        // Return response
-        return $data->value;
     }
 
     /**
@@ -511,60 +343,27 @@ class jazzquiz_attempt
      */
     public function get_response_data($slot)
     {
-        $responses = [];
-        $question_type = $this->quba->get_question_attempt($slot)->get_question()->get_type_name();
-        $response = false;
+        $question_attempt = $this->quba->get_question_attempt($slot);
+        $question_type = $question_attempt->get_question()->get_type_name();
+        $response = $question_attempt->get_response_summary();
         switch ($question_type) {
-            case 'multichoice':
-                $responses = $this->get_response_data_multichoice($slot);
-                break;
-            case 'truefalse':
-                $response = $this->get_response_data_true_or_false($slot);
-                break;
             case 'stack':
-                $response = $this->get_response_data_stack($slot);
-                break;
+                $response = str_replace('[valid]', '', $response);
+                $response = str_replace('[score]', '', $response);
+                return [$response];
+            case 'multichoice':
+                return explode("\n; ", trim($response, "\n"));
             default:
-                $response = $this->get_response_data_general($slot);
-                break;
+                return [$response];
         }
-        if ($response !== false) {
-            $responses[] = $response;
-        }
-        return $responses;
-    }
-
-    /**
-     * Returns whether current user has responded
-     * @param int $slot
-     * @return bool
-     */
-    public function has_responded($slot)
-    {
-        $steps = $this->get_steps($slot);
-        if (!$steps) {
-            return false;
-        }
-        foreach ($steps as $step) {
-            if ($step->state === 'gradedright') {
-                return true;
-            }
-            if ($step->state === 'gaveup') {
-                return false;
-            }
-        }
-        // There is no "gaveup" step, which means it might be under a different state.
-        return true;
     }
 
     /**
      * Closes the attempt
-     *
-     * @param jazzquiz $rtq
-     *
-     * @return bool Weather or not it was successful
+     * @param jazzquiz $jazzquiz
+     * @return bool Whether or not it was successful
      */
-    public function close_attempt($rtq)
+    public function close_attempt($jazzquiz)
     {
         $this->quba->finish_all_questions(time());
         $this->data->status = self::FINISHED;
@@ -572,7 +371,7 @@ class jazzquiz_attempt
         $this->save();
         $params = [
             'objectid' => $this->data->id,
-            'context' => $rtq->context,
+            'context' => $jazzquiz->context,
             'relateduserid' => $this->data->userid
         ];
         $event = event\attempt_ended::create($params);

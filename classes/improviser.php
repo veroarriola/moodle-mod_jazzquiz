@@ -6,6 +6,16 @@ defined('MOODLE_INTERNAL') || die();
 
 class improviser
 {
+    private static function question_type_exists($name) {
+        $question_types = \core_plugin_manager::instance()->get_plugins_of_type('qtype');
+        foreach ($question_types as $question_type) {
+            if ($question_type->name === $name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static function make_generic_question_definition($question_type, $name)
     {
         $question = new \stdClass();
@@ -153,6 +163,10 @@ class improviser
     private static function insert_stack_algebraic_question_definition($name)
     {
         global $DB;
+
+        if (!self::question_type_exists('stack')) {
+            return;
+        }
 
         // Check if duplicate
         if (self::improvised_question_definition_exists($name)) {

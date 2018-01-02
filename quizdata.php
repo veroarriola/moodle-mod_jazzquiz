@@ -43,7 +43,7 @@ function print_json($array)
 /**
  * Sends a list of all the questions tagged for use with improvisation.
  */
-function show_all_improvise_questions()
+function show_all_improvise_questions($jazzquiz)
 {
     global $DB;
     $question_records = $DB->get_records_sql('SELECT * FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
@@ -58,7 +58,8 @@ function show_all_improvise_questions()
     foreach ($question_records as $question) {
         $questions[] = [
             'question_id' => $question->id,
-            'name' => str_replace('{IMPROV}', '', $question->name)
+            'name' => str_replace('{IMPROV}', '', $question->name),
+            'time' => $jazzquiz->data->defaultquestiontime
         ];
     }
     print_json([
@@ -74,7 +75,7 @@ function show_all_improvise_questions()
 function show_all_jump_questions($jazzquiz)
 {
     global $DB;
-    $sql  = 'SELECT q.id AS id, q.name AS name';
+    $sql  = 'SELECT q.id AS id, q.name AS name, jq.questiontime AS time';
     $sql .= '  FROM {jazzquiz_questions} AS jq';
     $sql .= '  JOIN {question} AS q ON q.id = jq.questionid';
     $sql .= ' WHERE jq.jazzquizid = ?';
@@ -83,7 +84,8 @@ function show_all_jump_questions($jazzquiz)
     foreach ($question_records as $question) {
         $questions[] = [
             'question_id' => $question->id,
-            'name' => $question->name
+            'name' => $question->name,
+            'time' => $question->time
         ];
     }
     print_json([
@@ -102,25 +104,32 @@ function get_question_form($jazzquiz, $session)
     if ($slot === 0) {
         $slot = count($session->questions);
     }
-    /** @var output\renderer $renderer */
-    $renderer = $jazzquiz->renderer;
-    list($html, $js) = $renderer->render_question_form($slot, $session->open_attempt);
+    $html = '';
+    $js = '';
+    $is_already_submitted = true;
+    if (!$session->open_attempt->has_responded($slot)) {
+        /** @var output\renderer $renderer */
+        $renderer = $jazzquiz->renderer;
+        list($html, $js) = $renderer->render_question_form($slot, $session->open_attempt);
+        $is_already_submitted = false;
+    }
     print_json([
-        'status' => 'success',
         'html' => $html,
-        'js' => $js
+        'js' => $js,
+        'question_type' => $session->get_question_type_by_slot($slot),
+        'is_already_submitted' => $is_already_submitted
     ]);
 }
 
 /**
- * @param jazzquiz $jazzquiz
  * @param jazzquiz_session $session
  */
-function start_question($jazzquiz, $session)
+function start_question($session)
 {
     // Moodle question id
     $question_id = required_param('question_id', PARAM_INT);
-    list($success, $no_time, $question_time) = $session->start_question($question_id);
+    $question_time = optional_param('question_time', 0, PARAM_INT);
+    list($success, $question_time) = $session->start_question($question_id, $question_time);
     if (!$success) {
         print_json([
             'status' => 'error',
@@ -132,13 +141,8 @@ function start_question($jazzquiz, $session)
     $session->data->status = 'running';
     $session->save();
 
-    if ($no_time == 0 && $question_time == 0) {
-        $question_time = $jazzquiz->data->defaultquestiontime;
-    }
-
     print_json([
         'status' => 'success',
-        'no_time' => $no_time,
         'question_time' => $question_time,
         'delay' => $session->data->nextstarttime - time()
     ]);
@@ -180,7 +184,7 @@ function save_question($session)
         return;
     }
 
-    $attempt->save_question();
+    $attempt->save_question(count($session->questions));
 
     // Only give feedback if specified in session
     $feedback = '';
@@ -259,7 +263,6 @@ function get_vote_results($session)
     $vote = new jazzquiz_vote($session->data->id, $slot);
     $votes = $vote->get_results();
     print_json([
-        'status' => 'success',
         'answers' => $votes,
         'total_students' => $session->get_student_count()
     ]);
@@ -283,7 +286,6 @@ function end_question($session) // or vote
 function get_right_response($session)
 {
     print_json([
-        'status' => 'success',
         'right_answer' => $session->get_question_right_response()
     ]);
 }
@@ -314,7 +316,6 @@ function get_results($session)
     $has_votes = count($vote->get_results()) > 0;
 
     print_json([
-        'status' => 'success',
         'has_votes' => $has_votes,
         'question_type' => $question_type,
         'responses' => $responses['responses'],
@@ -340,7 +341,7 @@ function handle_instructor_request($action, $jazzquiz, $session)
             save_question($session);
             exit;
         case 'list_improvise_questions':
-            show_all_improvise_questions();
+            show_all_improvise_questions($jazzquiz);
             exit;
         case 'list_jump_questions':
             show_all_jump_questions($jazzquiz);
@@ -355,7 +356,7 @@ function handle_instructor_request($action, $jazzquiz, $session)
             get_results($session);
             exit;
         case 'start_question':
-            start_question($jazzquiz, $session);
+            start_question($session);
             exit;
         case 'end_question':
             end_question($session);
@@ -424,7 +425,7 @@ function jazzquiz_quizdata()
     $session = new jazzquiz_session($jazzquiz, $session);
 
     $attempt = $session->get_user_attempt($attempt_id);
-    if ($attempt->get_status() != 'inprogress') {
+    if ($attempt->get_status() !== 'inprogress') {
         print_json([
             'status' => 'error',
             'message' => "Invalid attempt $attempt_id"

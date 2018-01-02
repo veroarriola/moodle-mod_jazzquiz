@@ -22,14 +22,6 @@
 
 /**
  * The instructor's quiz state change handler
- *
- * This function works to maintain instructor state as well as to assist in getting student responses
- * while the question is still running. There are 2 variables that are set/get which are important
- *
- * "question.is_running" signifies that we are in a question, and is updated in other functions to signify the end of a question
- * "question.is_ended" This variable is needed to help to keep the "question.is_running" variable from being overwritten on the
- *               interval this function defines.  It is also updated by other functions in conjunction with "question.is_running"
- *
  */
 jazzquiz.change_quiz_state = function(state, data) {
 
@@ -43,18 +35,17 @@ jazzquiz.change_quiz_state = function(state, data) {
 
     let $start_quiz = jQuery('#startquiz');
     let $side_container = jQuery('#jazzquiz_side_container');
-    let $info_container = jQuery('#jazzquiz_info_container');
 
     this.show_controls();
+    $start_quiz.parent().addClass('hidden');
 
     switch (state) {
 
         case 'notrunning':
-            $info_container.removeClass('hidden').html(this.text('instructions_for_instructor'));
+            this.show_info(this.text('instructions_for_instructor'));
             $side_container.addClass('hidden');
-            this.control_buttons([]);
+            this.enable_controls([]);
             this.hide_controls();
-            this.quiz.question.is_ended = false;
             this.quiz.total_students = data.student_count;
             let students_joined = 'No students have joined.';
             if (data.student_count === 1) {
@@ -62,41 +53,40 @@ jazzquiz.change_quiz_state = function(state, data) {
             } else if (data.student_count > 1) {
                 students_joined = data.student_count + ' students have joined.';
             }
+            $start_quiz.parent().removeClass('hidden');
             $start_quiz.next().html(students_joined);
             break;
 
         case 'preparing':
-            $info_container.removeClass('hidden').html(this.text('instructions_for_instructor'));
+            this.show_info(this.text('instructions_for_instructor'));
             $side_container.addClass('hidden');
-            this.control_buttons([
+            this.enable_controls([
                 'nextquestion',
                 'startimprovisequestion',
                 'startjumpquestion',
                 'showfullscreenresults',
                 'closesession'
             ]);
-            $start_quiz.parent().addClass('hidden');
             break;
 
         case 'running':
             $side_container.removeClass('hidden');
-            this.control_buttons([
+            this.enable_controls([
                 'endquestion',
                 'toggleresponses',
                 'showfullscreenresults'
             ]);
             if (this.quiz.question.is_running) {
+                // Check if the question has already ended.
+                if (data.delay < -data.question_time) {
+                    this.end_question();
+                }
                 // Update current responses and responded.
                 this.get_results();
             } else {
-                if (this.quiz.question.is_ended) {
-                    // Set to false since we're waiting for a new question
-                    this.quiz.question.is_ended = false;
-                } else {
-                    if (data.delay <= 0) {
-                        // Only set is_running if we're in it, not waiting for it to start
-                        this.quiz.question.is_running = true;
-                    }
+                const started = this.start_question_countdown(data.question_time, data.delay);
+                if (started) {
+                    this.quiz.question.is_running = true;
                 }
             }
             break;
@@ -110,14 +100,17 @@ jazzquiz.change_quiz_state = function(state, data) {
                 'showfullscreenresults',
                 'startimprovisequestion',
                 'startjumpquestion',
-                'closesession',
-                // Temporarily disable this while in review mode. See below before the break.
-                //'toggleresponses'
+                'closesession'
             ];
             if (!this.quiz.question.is_last) {
                 enabled_buttons.push('nextquestion');
             }
-            this.control_buttons(enabled_buttons);
+            this.enable_controls(enabled_buttons);
+
+            // In case page was refreshed, we should ensure the question is showing.
+            if (jQuery('#jazzquiz_question_box').html() === '') {
+                this.reload_question_box();
+            }
 
             // For now, just always show responses while reviewing
             // In the future, there should be an additional toggle.
@@ -135,7 +128,7 @@ jazzquiz.change_quiz_state = function(state, data) {
 
         case 'voting':
             $side_container.removeClass('hidden');
-            this.control_buttons([
+            this.enable_controls([
                 'closesession',
                 'showfullscreenresults',
                 'showcorrectanswer',
@@ -143,17 +136,16 @@ jazzquiz.change_quiz_state = function(state, data) {
                 'endquestion'
             ]);
             this.get_and_show_vote_results();
-            $start_quiz.parent().addClass('hidden');
             break;
 
         case 'sessionclosed':
             $side_container.addClass('hidden');
-            this.control_buttons([]);
+            this.enable_controls([]);
             this.quiz.question.is_running = false;
             break;
 
         default:
-            this.control_buttons([]);
+            this.enable_controls([]);
             break;
     }
 };
@@ -186,29 +178,28 @@ jazzquiz.end_response_merge = function() {
 };
 
 jazzquiz.start_response_merge = function(from_row_bar_id) {
-    const bar_cell = document.getElementById(from_row_bar_id);
-    let row = bar_cell.parentNode;
-    if (row.classList.contains('merge-into')) {
+    const $bar_cell = jQuery('#' + from_row_bar_id);
+    let $row = $bar_cell.parent();
+    if ($row.hasClass('merge-into')) {
         this.end_response_merge();
         return;
     }
-
-    if (row.classList.contains('merge-from')) {
-        let into_row = jQuery('.merge-into')[0];
-        this.current_responses[into_row.dataset.response_i].count += parseInt(row.dataset.count);
-        this.current_responses.splice(row.dataset.response_i, 1);
-        this.quiz_info_responses('jazzquiz_responses_container', 'current_responses_wrapper', this.current_responses, this.qtype);
+    if ($row.hasClass('merge-from')) {
+        const $into_row = jQuery('.merge-into');
+        this.current_responses[$into_row.data('response_i')].count += parseInt($row.data('count'));
+        this.current_responses.splice($row.data('response_i'), 1);
+        this.quiz_info_responses('jazzquiz_responses_container', 'current_responses_wrapper', this.current_responses, this.quiz.question.question_type, 'results');
         this.end_response_merge();
         return;
     }
-
-    row.classList.add('merge-into');
-    let table = row.parentNode.parentNode;
-    for (let i = 0; i < table.rows.length; i++) {
-        if (table.rows[i].cells[1].id !== bar_cell.id) {
-            table.rows[i].classList.add('merge-from');
+    $row.addClass('merge-into');
+    let $table = $row.parent().parent();
+    $table.find('tr').each(function() {
+        const $cells = jQuery(this).find('td');
+        if ($cells[1].id !== $bar_cell.attr('id')) {
+            jQuery(this).addClass('merge-from');
         }
-    }
+    });
 };
 
 jazzquiz.create_response_controls = function(name) {
@@ -238,7 +229,7 @@ jazzquiz.create_response_controls = function(name) {
     }
 };
 
-jazzquiz.create_response_bar_graph = function(responses, name, target_id) {
+jazzquiz.create_response_bar_graph = function(responses, name, target_id, graph_id) {
     let target = document.getElementById(target_id);
     if (target === null) {
         return;
@@ -268,13 +259,12 @@ jazzquiz.create_response_bar_graph = function(responses, name, target_id) {
 
     this.create_response_controls(name);
 
-    this.graph_id_counter++;
-    name += this.graph_id_counter;
+    name += graph_id;
 
     // Add rows
     for (let i = 0; i < responses.length; i++) {
 
-        let percent = (parseInt(responses[i].count) / total) * 100;
+        const percent = (parseInt(responses[i].count) / total) * 100;
 
         // Check if row with same response already exists
         let row_i = -1;
@@ -301,7 +291,7 @@ jazzquiz.create_response_bar_graph = function(responses, name, target_id) {
 
             const count_html = '<span id="' + name + '_count_' + row_i + '">' + responses[i].count + '</span>';
             let response_cell = row.insertCell(0);
-            response_cell.onclick = function () {
+            response_cell.onclick = function() {
                 jQuery(this).parent().toggleClass('selected-vote-option');
             };
 
@@ -355,15 +345,17 @@ jazzquiz.sort_response_bar_graph = function(target_id) {
     }
 };
 
-jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype) {
+jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype, graph_id) {
     if (responses === undefined) {
         console.log('Responses is undefined.');
         return;
     }
 
+    let $responded_container = jQuery('#jazzquiz_responded_container');
+
     // Check if any responses to show
     if (responses.length === 0) {
-        jQuery('#jazzquiz_responded_container').removeClass('hidden').find('h4').html('0 / ' + this.quiz.total_students + ' responded');
+        $responded_container.removeClass('hidden').find('h4').html('0 / ' + this.quiz.total_students + ' responded');
         return;
     }
 
@@ -387,7 +379,6 @@ jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype) 
     // Update data
     this.current_responses = [];
     this.total_responses = responses.length;
-    this.qtype = qtype;
     this.quiz.responded_count = 0;
     for (let i = 0; i < responses.length; i++) {
 
@@ -396,7 +387,6 @@ jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype) 
         if (responses[i].count !== undefined) {
             count = parseInt(responses[i].count);
         }
-
         this.quiz.responded_count += count;
 
         // Check if response is a duplicate
@@ -419,7 +409,6 @@ jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype) 
     }
 
     // Update responded container
-    let $responded_container = jQuery('#jazzquiz_responded_container');
     if ($responded_container.length !== 0) {
         $responded_container.removeClass('hidden').find('h4').html(this.quiz.responded_count + ' / ' + this.quiz.total_students + ' responded');
     }
@@ -436,7 +425,6 @@ jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype) 
     if (wrapper_current_responses === null) {
         jQuery('#' + wrapper_id).removeClass('hidden').html('<table id="' + table_id + '" class="jazzquiz-responses-overview"></table>', true);
         wrapper_current_responses = document.getElementById(table_id);
-
         // This should not happen, but check just in case quiz_info fails to set the html.
         if (wrapper_current_responses === null) {
             return;
@@ -444,13 +432,13 @@ jazzquiz.quiz_info_responses = function(wrapper_id, table_id, responses, qtype) 
     }
 
     // Update HTML
-    this.create_response_bar_graph(this.current_responses, 'current_response', table_id);
+    this.create_response_bar_graph(this.current_responses, 'current_response', table_id, graph_id);
     this.sort_response_bar_graph(table_id);
 };
 
 jazzquiz.start_quiz = function() {
     jQuery('#startquiz').parent().addClass('hidden');
-    this.post('/mod/jazzquiz/quizdata.php', {
+    this.post('quizdata.php', {
         action: 'start_quiz'
     }, function() {
         jQuery('#inquizcontrols').removeClass('btn-hide');
@@ -459,16 +447,15 @@ jazzquiz.start_quiz = function() {
 
 jazzquiz.end_question = function() {
     this.hide_question_timer();
-    this.post('/mod/jazzquiz/quizdata.php', {
+    this.post('quizdata.php', {
         action: 'end_question'
     }, function() {
         if (jazzquiz.state === 'voting') {
             jazzquiz.quiz.show_votes_upon_review = true;
             return;
         }
-        jazzquiz.quiz.question.is_ended = true;
         jazzquiz.quiz.question.is_running = false;
-        jazzquiz.control_buttons([]);
+        jazzquiz.enable_controls([]);
     }).fail(function() {
         this.show_info('Failed to end the question.');
     });
@@ -489,7 +476,7 @@ jazzquiz.show_question_list_setup = function(name, action) {
         return;
     }
 
-    this.get('/mod/jazzquiz/quizdata.php', {
+    this.get('quizdata.php', {
         action: action
     }, function(data) {
         let $menu = jQuery('#jazzquiz_' + name + '_menu');
@@ -500,9 +487,14 @@ jazzquiz.show_question_list_setup = function(name, action) {
             if (!questions.hasOwnProperty(i)) {
                 continue;
             }
-            let $question_button = jQuery('<button class="btn" data-question-id="' + questions[i].question_id + '">' + questions[i].name + '</button>');
+            let $question_button = jQuery('<button class="btn">' + questions[i].name + '</button>');
+            $question_button.data({
+                time: questions[i].time,
+                'question-id': questions[i].question_id
+            });
+            $question_button.data('test', 1);
             $question_button.on('click', function() {
-                jazzquiz.submit_start_question(jQuery(this).data('question-id'));
+                jazzquiz.submit_start_question(jQuery(this).data('question-id'), jQuery(this).data('time'));
                 $menu.html('').removeClass('active');
                 $control_button.removeClass('active').data('isclosed', 'yes');
             });
@@ -537,7 +529,7 @@ jazzquiz.get_and_show_vote_results = function() {
         jQuery('#jazzquiz_responses_container').addClass('hidden').html('');
         return;
     }
-    this.get('/mod/jazzquiz/quizdata.php', {
+    this.get('quizdata.php', {
         action: 'get_vote_results'
     }, function(data) {
         const answers = data.answers;
@@ -572,65 +564,59 @@ jazzquiz.get_and_show_vote_results = function() {
             }
         }
 
-        let slot = 0;
-        if (responses.length > 0) {
-            slot = responses[0].slot;
-        }
-
-        jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id);
+        jazzquiz.create_response_bar_graph(responses, 'vote_response', target_id, 'vote');
         jazzquiz.sort_response_bar_graph(target_id);
     }).fail(function() {
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error getting the vote results.');
+        jazzquiz.show_info('There was an error getting the vote results.');
     });
 };
 
 jazzquiz.run_voting = function() {
     const vote_options = this.get_selected_answers_for_vote();
     const questions_param = encodeURIComponent(JSON.stringify(vote_options));
-    this.post('/mod/jazzquiz/quizdata.php', {
+    this.post('quizdata.php', {
         action: 'run_voting',
-        questions: questions_param,
-        question_type: this.quiz.question.qtype
+        questions: questions_param
     }, function() {
 
     }).fail(function() {
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error starting the vote.');
+        jazzquiz.show_info('There was an error starting the vote.');
     });
 };
 
 jazzquiz.get_results = function() {
-    this.get('/mod/jazzquiz/quizdata.php', {
+    this.get('quizdata.php', {
         action: 'get_results'
     }, function(data) {
-        jazzquiz.hide_loading();
         jazzquiz.quiz.question.has_votes = data.has_votes;
         jazzquiz.quiz.total_students = parseInt(data.total_students);
-        jazzquiz.quiz_info_responses('jazzquiz_responses_container', 'current_responses_wrapper', data.responses, data.question_type, data.slot);
+        jazzquiz.quiz_info_responses('jazzquiz_responses_container', 'current_responses_wrapper', data.responses, data.question_type, 'results');
+
     }).fail(function() {
-        jazzquiz.hide_loading();
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error getting current results.');
+        jazzquiz.show_info('There was an error getting current results.');
     });
 };
 
-jazzquiz.submit_start_question = function(question_id) {
+jazzquiz.submit_start_question = function(question_id, question_time) {
     this.hide_info();
-    this.post('/mod/jazzquiz/quizdata.php', {
+    this.post('quizdata.php', {
         action: 'start_question',
-        question_id: question_id
+        question_id: question_id,
+        question_time: question_time
     }, function(data) {
         jazzquiz.start_question_countdown(data.question_time, data.delay);
     }).fail(function() {
-        jQuery('#loadingbox').addClass('hidden');
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
+        jazzquiz.hide_loading();
+        jazzquiz.show_info('There was an error with your request.');
     })
 };
 
 jazzquiz.repoll_question = function() {
-    this.submit_start_question(this.quiz.questions[this.quiz.current_question_slot].question_id);
+    //this.submit_start_question(this.quiz.questions[this.quiz.current_question_slot].question_id);
 };
 
 jazzquiz.next_question = function() {
-    this.submit_start_question(this.quiz.questions[this.quiz.current_question_slot + 1].question_id);
+    //this.submit_start_question(this.quiz.questions[this.quiz.current_question_slot + 1].question_id);
 };
 
 jazzquiz.close_session = function() {
@@ -638,14 +624,14 @@ jazzquiz.close_session = function() {
     this.clear_question_box();
     this.hide_info();
     jQuery('#controlbox').addClass('hidden');
-    this.post('/mod/jazzquiz/quizdata.php', {
+    this.post('quizdata.php', {
         action: 'close_session'
     }, function() {
         jazzquiz.hide_loading();
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html(jazzquiz.text('session_closed'));
+        jazzquiz.show_info(jazzquiz.text('session_closed'));
     }).fail(function() {
         jazzquiz.hide_loading();
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
+        jazzquiz.show_info('There was an error with your request.');
     });
 };
 
@@ -664,7 +650,7 @@ jazzquiz.show_correct_answer = function() {
     // Make sure we end the question (on end_question function call this is re-doing what we just did)
     // handle_request is also called on ending of the question timer in core.js
     this.show_loading(this.text('loading'));
-    this.get('/mod/jazzquiz/quizdata.php', {
+    this.get('quizdata.php', {
         action: 'get_right_response'
     }, function(data) {
         jazzquiz.hide_loading();
@@ -674,7 +660,7 @@ jazzquiz.show_correct_answer = function() {
         jazzquiz.options.is_showing_correct_answer = true;
     }).fail(function() {
         jazzquiz.hide_loading();
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request.');
+        jazzquiz.show_info('There was an error with your request.');
     });
 };
 
@@ -712,7 +698,7 @@ jazzquiz.toggle_responses = function() {
  * Disable/enable buttons from the array passed.
  * @param buttons An array of button ids to have enabled in the in quiz controls buttons
  */
-jazzquiz.control_buttons = function(buttons) {
+jazzquiz.enable_controls = function(buttons) {
     // Let's find the direct child nodes.
     let children = jQuery('#inquizcontrols').find('.quiz-control-buttons').children();
     // Disable all the buttons that are not present in the "buttons" parameter.
@@ -755,7 +741,7 @@ jazzquiz.execute_control_action = function(action) {
     // Prevent duplicate clicks
     // TODO: Find a better way to check if this is a direct action or not. Perhaps a class?
     if (action !== 'startimprovisequestion' && action !== 'startjumpquestion') {
-        this.control_buttons([]);
+        this.enable_controls([]);
     }
     // Execute action
     switch (action) {

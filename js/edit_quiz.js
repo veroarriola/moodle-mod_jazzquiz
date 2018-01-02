@@ -22,11 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-var submit_question_order = function(order) {
-    if (order.length === 0) {
-        return;
-    }
-    jQuery.post('/mod/jazzquiz/edit.php', {
+function submit_question_order(order) {
+    jQuery.post('edit.php', {
         id: jazzquiz.quiz.course_module_id,
         action: 'order',
         order: JSON.stringify(order)
@@ -34,23 +31,23 @@ var submit_question_order = function(order) {
         // TODO: Correct locally instead, but for now just refresh.
         location.reload();
     });
-};
+}
 
-var get_question_order = function() {
-    var order = [];
+function get_question_order() {
+    let order = [];
     jQuery('.questionlist li').each(function() {
-        order.push(jQuery(this).data('questionid'));
+        order.push(jQuery(this).data('question-id'));
     });
     return order;
-};
+}
 
-var offset_question = function(question_id, offset) {
-    var order = get_question_order();
-    var original_index = order.indexOf(question_id);
+function offset_question(question_id, offset) {
+    let order = get_question_order();
+    let original_index = order.indexOf(question_id);
     if (original_index === -1) {
-        return [];
+        return order;
     }
-    for (var i = 0; i < order.length; i++) {
+    for (let i = 0; i < order.length; i++) {
         if (i + offset === original_index) {
             order[original_index] = order[i];
             order[i] = question_id;
@@ -58,7 +55,7 @@ var offset_question = function(question_id, offset) {
         }
     }
     return order;
-};
+}
 
 window.addEventListener('load', function() {
     jazzquiz.decode_state();
@@ -66,9 +63,9 @@ window.addEventListener('load', function() {
     // TODO: Timeout because jQuery is not loaded yet when this runs. Modules should be used later on.
     setTimeout(function() {
         jQuery('.edit-question-action').on('click', function() {
-            var action = jQuery(this).data('action');
-            var question_id = jQuery(this).data('question-id');
-            var order = [];
+            const action = jQuery(this).data('action');
+            const question_id = jQuery(this).data('question-id');
+            let order = [];
             switch (action) {
                 case 'up':
                     order = offset_question(question_id, 1);
@@ -78,7 +75,7 @@ window.addEventListener('load', function() {
                     break;
                 case 'delete':
                     order = get_question_order();
-                    var index = order.indexOf(question_id);
+                    const index = order.indexOf(question_id);
                     if (index !== -1) {
                         order.splice(index, 1);
                     }
@@ -90,12 +87,11 @@ window.addEventListener('load', function() {
         });
     }, 500);
 
-    var questionlist = document.getElementsByClassName('questionlist')[0];
-
-    var sorted = Sortable.create(questionlist, {
+    let questionlist = document.getElementsByClassName('questionlist')[0];
+    Sortable.create(questionlist, {
         handle: '.dragquestion',
-        onSort: function (event) {
-            var order = get_question_order();
+        onSort: function () {
+            const order = get_question_order();
             submit_question_order(order);
         }
     });

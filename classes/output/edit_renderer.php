@@ -100,11 +100,7 @@ class edit_renderer extends \plugin_renderer_base
         $question_count = count($questions);
         $question_number = 1;
         foreach ($questions as $question) {
-            // Hide improvised questions
-            if (substr($question->question->name, 0, strlen('{IMPROV}')) === '{IMPROV}') {
-                continue;
-            }
-            $return .= '<li data-questionid="' . $question->data->id . '">';
+            $return .= '<li data-question-id="' . $question->data->id . '">';
             $return .= $this->display_question_block($question, $question_number, $question_count, $url);
             $return .= '</li>';
             $question_number++;

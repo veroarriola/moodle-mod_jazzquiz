@@ -186,6 +186,11 @@ function jazzquiz_view()
 
     $renderer = $jazzquiz->renderer;
 
+    if ($jazzquiz->is_instructor()) {
+        // TODO: Find a better place to add the question definitions.
+        improviser::insert_default_improvised_question_definitions();
+    }
+
     if ($question_count === 0) {
         $renderer->view_header();
         $renderer->no_questions($jazzquiz->is_instructor());

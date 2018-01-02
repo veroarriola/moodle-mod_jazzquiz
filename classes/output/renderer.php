@@ -415,7 +415,6 @@ class renderer extends \plugin_renderer_base
 
         // Root values
         $jazzquiz = new \stdClass();
-        $jazzquiz->state = $session->data->status;
         $jazzquiz->is_instructor = $this->jazzquiz->is_instructor();
         $jazzquiz->siteroot = $CFG->wwwroot;
 
@@ -426,86 +425,7 @@ class renderer extends \plugin_renderer_base
         $quiz->session_id = $session->data->id;
         $quiz->attempt_id = $session->open_attempt->data->id;
         $quiz->session_key = sesskey();
-        $quiz->slots = $session->open_attempt->quba->get_slots();
         $quiz->total_students = $session->get_student_count();
-
-        $quiz->questions = [];
-        $quiz->resume = new \stdClass();
-
-        $ordered_jazzquiz_questions = $session->jazzquiz->questions;
-        $slot = 1;
-        foreach ($ordered_jazzquiz_questions as $q) {
-            $question = new \stdClass();
-            $question->id = $q->data->id;
-            $question->questiontime = $q->data->questiontime;
-            $question->question_id = $q->question;
-            $question->slot = $slot;
-            $quiz->questions[$question->slot] = $question;
-            $slot++;
-        }
-
-        $session_state = $session->data->status;
-
-        // Resuming quiz feature
-        // This will check if the session has started already and print out
-        $quiz->resume->are_we_resuming = false;
-
-        if ($session_state != 'notrunning') {
-
-            $next_start_time = $session->data->nextstarttime;
-
-            switch ($session_state) {
-
-                case 'running':
-                    // We're in a currently running question
-                    $quiz->resume->are_we_resuming = true;
-                    $quiz->resume->state = $session_state;
-                    $no_time = 0;
-                    $question_time = $this->jazzquiz->data->defaultquestiontime;
-                    // TODO: Check for notime and questiontime in questions that are not improvisational.
-                    /*$session_question_index = count($session->questions) - 1;
-                    if (isset($session->questions[$session_question_index])) {
-                        $session_question = $session->questions[$session_question_index];
-                    }*/
-
-                    if ($next_start_time > time()) {
-                        // We're waiting for question
-                        $quiz->resume->action = 'waitforquestion';
-                        $quiz->resume->delay = $session->data->nextstarttime - time();
-                        $quiz->resume->question_time = $question_time;
-                    } else {
-                        $quiz->resume->action = 'startquestion';
-                        // How much time has elapsed since start time
-                        // First check if the question has a time limit
-                        if ($no_time) {
-                            $quiz->resume->question_time = 0;
-                        } else {
-                            // Otherwise figure out how much time is left
-                            $time_elapsed = time() - $next_start_time;
-                            $quiz->resume->question_time = $question_time - $time_elapsed;
-                        }
-                    }
-                    break;
-
-                case 'reviewing':
-                    // If we're reviewing, resume with quiz info of reviewing and just let
-                    // set interval capture next question start time
-                    $quiz->resume->are_we_resuming = true;
-                    $quiz->resume->action = 'reviewing';
-                    $quiz->resume->state = $session_state;
-                    break;
-
-                case 'preparing':
-                case 'voting':
-                    $quiz->resume->are_we_resuming = true;
-                    $quiz->resume->action = $session_state;
-                    $quiz->resume->state = $session_state;
-                    break;
-
-                default:
-                    break;
-            }
-        }
 
         // Print data as JSON
         echo \html_writer::start_tag('script');

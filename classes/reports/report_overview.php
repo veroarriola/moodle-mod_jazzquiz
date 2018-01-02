@@ -281,7 +281,7 @@ class report_overview
                 . 'jazzquiz.state = "reviewing";'
 
                 . 'jazzquiz.quiz_info_responses("'
-                . $wrapper_id . '", "' . $table_id . '", jazzquiz_responses[' . $slot . '], "' . $question_type . '", ' . $slot
+                . $wrapper_id . '", "' . $table_id . '", jazzquiz_responses[' . $slot . '], "' . $question_type . '", "report_' . $slot . '"'
                 . ');'
                 . '}, 1000);'
                 . '</script>';

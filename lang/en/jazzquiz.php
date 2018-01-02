@@ -68,7 +68,6 @@ $string['question_will_end_in'] = 'The question will end in';
 
 // Event
 $string['event_attempt_started'] = 'Attempt started';
-$string['event_attempt_viewed'] = 'Attempt viewed';
 $string['event_question_answered'] = 'Question answered for attempt';
 
 // Form

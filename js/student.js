@@ -20,9 +20,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-jazzquiz.change_quiz_state = function (state, data) {
-
-    let $info_container = jQuery('#jazzquiz_info_container');
+jazzquiz.change_quiz_state = function(state, data) {
 
     this.is_new_state = (this.state !== state);
     this.state = state;
@@ -30,16 +28,19 @@ jazzquiz.change_quiz_state = function (state, data) {
     switch (state) {
 
         case 'notrunning':
-            $info_container.removeClass('hidden').html(this.text('instructions_for_student'));
+            this.show_info(this.text('instructions_for_student'));
             break;
 
         case 'preparing':
-            $info_container.removeClass('hidden').html(this.text('wait_for_instructor'));
+            this.show_info(this.text('wait_for_instructor'));
             break;
 
         case 'running':
             if (!this.quiz.question.is_running) {
-                this.start_question_countdown(data.question_time, data.delay);
+                const started = this.start_question_countdown(data.question_time, data.delay);
+                if (!started) {
+                    this.show_info(this.text('wait_for_instructor'));
+                }
             }
             break;
 
@@ -47,17 +48,17 @@ jazzquiz.change_quiz_state = function (state, data) {
             this.quiz.question.is_vote_running = false;
             this.quiz.question.is_running = false;
             this.hide_question_timer();
-            $info_container.removeClass('hidden').html(this.text('wait_for_instructor'));
+            this.show_info(this.text('wait_for_instructor'));
             break;
 
         case 'sessionclosed':
-            $info_container.removeClass('hidden').html(this.text('session_closed'));
+            this.show_info(this.text('session_closed'));
             break;
 
         case 'voting':
             if (this.quiz.question.is_vote_running === undefined || !this.quiz.question.is_vote_running) {
+                this.show_info(data.html);
                 const options = data.options;
-                $info_container.removeClass('hidden').html(data.html);
                 for (let i = 0; i < options.length; i++) {
                     this.add_mathjax_element(options[i].content_id, options[i].text);
                     if (options[i].question_type === 'stack') {
@@ -95,50 +96,44 @@ jazzquiz.submit_answer = function() {
             data[serialized[name].name] = serialized[name].value;
         }
     }
-    this.post('/mod/jazzquiz/quizdata.php', data, function(data) {
-        let $info_container = jQuery('#jazzquiz_info_container');
-        $info_container.removeClass('hidden');
+    this.post('quizdata.php', data, function(data) {
         if (data.feedback.length > 0) {
-            $info_container.html('<div>' + data.feedback + '</div>');
+            jazzquiz.show_info(data.feedback);
         } else {
-            $info_container.html('<div>' + jazzquiz.text('wait_for_instructor') + '</div>');
+            jazzquiz.show_info(jazzquiz.text('wait_for_instructor'));
         }
-        jazzquiz.quiz.question.is_submitted = true;
         jazzquiz.quiz.question.is_saving = false;
-        if (jazzquiz.quiz.question.is_ended) {
+        if (!jazzquiz.quiz.question.is_running) {
             return;
         }
         if (jazzquiz.quiz.question.is_vote_running !== undefined && jazzquiz.quiz.question.is_vote_running) {
             return;
         }
-        jazzquiz.quiz.question.is_ended = true;
         jazzquiz.clear_question_box();
     }).fail(function() {
         jazzquiz.quiz.question.is_saving = false;
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error with your request');
+        jazzquiz.show_info('There was an error with your request');
     });
 };
 
-jazzquiz.save_vote = function () {
-    this.post('/mod/jazzquiz/quizdata.php', {
+jazzquiz.save_vote = function() {
+    this.post('quizdata.php', {
         action: 'save_vote',
         answer: this.vote_answer
-    }, function (data) {
+    }, function(data) {
         const wait_for_instructor = jazzquiz.text('wait_for_instructor');
-        let $info_container = jQuery('#jazzquiz_info_container');
-        $info_container.removeClass('hidden');
         switch (data.status) {
             case 'success':
-                $info_container.html(wait_for_instructor);
+                jazzquiz.show_info(wait_for_instructor);
                 break;
             case 'alreadyvoted':
-                $info_container.html('Sorry, but you have already voted. ' + wait_for_instructor);
+                jazzquiz.show_info('Sorry, but you have already voted. ' + wait_for_instructor);
                 break;
             default:
-                $info_container.html('An error has occurred. ' + wait_for_instructor);
+                jazzquiz.show_info('An error has occurred. ' + wait_for_instructor);
                 break;
         }
     }).fail(function() {
-        jQuery('#jazzquiz_info_container').removeClass('hidden').html('There was an error saving the vote.');
+        jazzquiz.show_info('There was an error saving the vote.');
     });
 };

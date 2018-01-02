@@ -34,7 +34,7 @@ class jazzquiz_session
     /** @var \stdClass $data The jazzquiz_session database table row */
     public $data;
 
-    /** @var array An array of jazzquiz_attempts for the session */
+    /** @var jazzquiz_attempt[] */
     public $attempts;
 
     /** @var jazzquiz_attempt $open_attempt The current open attempt */
@@ -174,38 +174,39 @@ class jazzquiz_session
      * Tells the session to go to the specified question number
      * That jazzquiz_question is then returned
      * @param int $question_id (from question bank)
-     * @return mixed[] $success, $no_time, $question_time
+     * @param int $question_time in seconds ("<0" => no time, "0" => default)
+     * @return mixed[] $success, $question_time (if parameter was 0, this question time will be the default)
      */
-    public function start_question($question_id)
+    public function start_question($question_id, $question_time)
     {
         global $DB;
-        // TODO: Transaction?
+
+        $transaction = $DB->start_delegated_transaction();
+
+        if ($question_time === 0) {
+            $question_time = $this->jazzquiz->data->defaultquestiontime;
+        }
+
         $session_question = new \stdClass();
         $session_question->sessionid = $this->data->id;
         $session_question->questionid = $question_id;
+        $session_question->questiontime = $question_time;
         $session_question->slot = count($DB->get_records('jazzquiz_session_questions', ['sessionid' => $this->data->id])) + 1;
         $session_question->id = $DB->insert_record('jazzquiz_session_questions', $session_question);
         $this->questions[$session_question->slot] = $session_question;
+
         $attempts = $this->get_all_attempts(true);
         foreach ($attempts as &$attempt) {
             $attempt->create_missing_attempts($this);
         }
 
-        $no_time = 0;
-        $question_time = $this->jazzquiz->data->defaultquestiontime;
-
-        // Update session data
-        if ($question_time == 0 && $no_time == 0) {
-            $this->data->currentquestiontime = $this->jazzquiz->data->defaultquestiontime;
-        } else if ($no_time == 1) {
-            $this->data->currentquestiontime = 0; // No time limit.
-        } else {
-            $this->data->currentquestiontime = $question_time;
-        }
+        $this->data->currentquestiontime = $question_time;
         $this->data->nextstarttime = time() + $this->jazzquiz->data->waitforquestiontime;
         $this->save();
 
-        return [true, $no_time, $question_time];
+        $transaction->allow_commit();
+
+        return [true, $question_time];
     }
 
     /**
