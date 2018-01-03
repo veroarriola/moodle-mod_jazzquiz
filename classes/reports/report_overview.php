@@ -2,6 +2,12 @@
 
 namespace mod_jazzquiz\reports;
 
+/**
+ * @package     mod_jazzquiz
+ * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
+ * @copyright   2018 NTNU
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class report_overview
 {
     /**

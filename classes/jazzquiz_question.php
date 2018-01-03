@@ -19,11 +19,9 @@ namespace mod_jazzquiz;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * A JazzQuiz question object
- *
  * @package     mod_jazzquiz
- * @author      John Hoopes <moodle@madisoncreativeweb.com>
- * @copyright   2014 University of Wisconsin - Madison
+ * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
+ * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_question
@@ -31,11 +29,8 @@ class jazzquiz_question
     /** @var \stdClass $data */
     public $data;
 
-    /** @var \stdClass $question the question bank question data */
+    /** @var \stdClass $question question definition data */
     public $question;
-
-    /** @var int $slot The quba slot for this question */
-    public $slot;
 
     /**
      * @param \stdClass $data (jazzquiz_question)
@@ -45,7 +40,6 @@ class jazzquiz_question
         global $DB;
         $this->data = $data;
         $this->question = $DB->get_record('question', ['id' => $data->questionid], '*', MUST_EXIST);
-        $this->slot = null;
     }
 
 }

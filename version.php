@@ -16,16 +16,17 @@
 
 /**
  * @package   mod_jazzquiz
- * @author    John Hoopes <moodle@madisoncreativeweb.com>
+ * @author    Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
  * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2018 NTNU
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2017082470; // The current module version (Date: YYYYMMDDXX)
+$plugin->version = 2017082472; // The current module version (Date: YYYYMMDDXX)
 $plugin->requires = 2016052304; // Moodle 3.1 (or above)
 $plugin->cron = 0; // Period for cron to check this module (secs)
 $plugin->component = 'mod_jazzquiz';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '0.2 (Build: 2017082436)';
+$plugin->release = '0.2 (Build: 2017082471)';

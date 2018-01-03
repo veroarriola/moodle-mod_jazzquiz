@@ -20,8 +20,9 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * @package     mod_jazzquiz
- * @author      John Hoopes <moodle@madisoncreativeweb.com>
+ * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
  * @copyright   2014 University of Wisconsin - Madison
+ * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz
@@ -212,6 +213,19 @@ class jazzquiz
         foreach ($questions as $question) {
             $this->questions[$question->slot] = new jazzquiz_question($question);
         }
+    }
+
+    /**
+     * @param int $jazzquiz_question_id
+     * @return jazzquiz_question|bool
+     */
+    public function get_question_by_id($jazzquiz_question_id) {
+        foreach ($this->questions as $question) {
+            if ($question->data->id == $jazzquiz_question_id) {
+                return $question;
+            }
+        }
+        return false;
     }
 
     /**

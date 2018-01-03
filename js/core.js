@@ -15,8 +15,9 @@
 
 /**
  * @package   mod_jazzquiz
- * @author    John Hoopes <moodle@madisoncreativeweb.com>
+ * @author    Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
  * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2018 NTNU
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -55,7 +56,8 @@ let jazzquiz = {
             is_vote_running: false,
             has_votes: false,
             countdown_time_left: 0,
-            question_type: undefined
+            question_type: undefined,
+            question_time: 0
         }
 
     },
@@ -307,7 +309,7 @@ jazzquiz.on_question_countdown_tick = function(question_time) {
     if (time_left <= 0) {
         clearInterval(this.question_countdown_interval);
         this.question_countdown_interval = 0;
-        this.start_question(question_time);
+        this.start_question_attempt(question_time);
     } else {
         this.set_countdown_timer_text(time_left);
     }
@@ -330,7 +332,7 @@ jazzquiz.start_question_countdown = function(question_time, time_left) {
         // We want to show some text, as we must also request the question form from the server.
         this.set_countdown_timer_text(0);
         // No need to start the countdown. Just start the question.
-        this.start_question(question_time + time_left);
+        this.start_question_attempt(question_time + time_left);
         return true;
     }
     this.set_countdown_timer_text(time_left);
@@ -368,11 +370,10 @@ jazzquiz.on_question_timer_tick = function() {
  * Request the current question from the server.
  * @param {number} question_time
  */
-jazzquiz.start_question = function(question_time) {
+jazzquiz.start_question_attempt = function(question_time) {
     this.hide_loading();
     this.hide_info();
     this.reload_question_box();
-
     // Set this to true so that we don't keep calling this over and over
     this.quiz.question.is_running = true;
     if (question_time === 0) {

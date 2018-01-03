@@ -19,12 +19,12 @@ namespace mod_jazzquiz;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * jazzquiz Attempt wrapper class to encapsulate functions needed to individual
- * attempt records
+ * An attempt for the quiz. Maps to individual question attempts.
  *
  * @package     mod_jazzquiz
- * @author      John Hoopes <moodle@madisoncreativeweb.com>
+ * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
  * @copyright   2014 University of Wisconsin - Madison
+ * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_attempt
@@ -319,21 +319,8 @@ class jazzquiz_attempt
      */
     public function has_responded($slot)
     {
-        //$response = $this->quba->get_question_attempt($slot)->get_response_summary();
-        //return $response != null && $response != '';
-        $step = $this->quba->get_question_attempt($slot)->get_last_step();
-        $state = $step->get_state();
-        // https://docs.moodle.org/dev/Overview_of_the_Moodle_question_engine#Attempt_steps
-        switch ($state) {
-            case 'notstarted':
-            case 'todo':
-            case 'gaveup':
-                return false;
-            case 'gradedright':
-                return true;
-            default:
-                return true;
-        }
+        $response = $this->quba->get_question_attempt($slot)->get_response_summary();
+        return $response !== null && $response !== '';
     }
 
     /**
@@ -344,12 +331,17 @@ class jazzquiz_attempt
     public function get_response_data($slot)
     {
         $question_attempt = $this->quba->get_question_attempt($slot);
-        $question_type = $question_attempt->get_question()->get_type_name();
         $response = $question_attempt->get_response_summary();
+        if ($response === null || $response === '') {
+            return [];
+        }
+        $question_type = $question_attempt->get_question()->get_type_name();
         switch ($question_type) {
             case 'stack':
-                $response = str_replace('[valid]', '', $response);
-                $response = str_replace('[score]', '', $response);
+                // TODO: Figure out a better way to get rid of the input name.
+                $response = str_replace('ans1: ', '', $response);
+                $response = str_replace(' [valid]', '', $response);
+                $response = str_replace(' [score]', '', $response);
                 return [$response];
             case 'multichoice':
                 return explode("\n; ", trim($response, "\n"));

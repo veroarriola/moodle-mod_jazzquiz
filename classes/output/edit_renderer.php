@@ -21,7 +21,9 @@ namespace mod_jazzquiz\output;
  * Renderer outputting the quiz editing UI.
  *
  * @package mod_jazzquiz
- * @copyright 2016 John Hoopes <john.z.hoopes@gmail.com>
+ * @author    Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
+ * @copyright 2016 University of Wisconsin - Madison
+ * @copyright 2018 NTNU
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

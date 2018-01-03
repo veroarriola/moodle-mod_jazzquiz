@@ -19,8 +19,9 @@
  * The view page where you can start or participate in a session.
  *
  * @package   mod_jazzquiz
- * @author    John Hoopes <moodle@madisoncreativeweb.com>
+ * @author    Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
  * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2018 NTNU
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

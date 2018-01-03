@@ -15,8 +15,9 @@
 
 /**
  * @package   mod_jazzquiz
- * @author    John Hoopes <moodle@madisoncreativeweb.com>
+ * @author    Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
  * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2018 NTNU
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -76,6 +77,7 @@ jazzquiz.change_quiz_state = function(state, data) {
                 'toggleresponses',
                 'showfullscreenresults'
             ]);
+            this.quiz.question.question_time = data.question_time;
             if (this.quiz.question.is_running) {
                 // Check if the question has already ended.
                 if (data.delay < -data.question_time) {
@@ -490,11 +492,12 @@ jazzquiz.show_question_list_setup = function(name, action) {
             let $question_button = jQuery('<button class="btn">' + questions[i].name + '</button>');
             $question_button.data({
                 time: questions[i].time,
-                'question-id': questions[i].question_id
+                'question-id': questions[i].question_id,
+                'jazzquiz-question-id': questions[i].jazzquiz_question_id
             });
             $question_button.data('test', 1);
             $question_button.on('click', function() {
-                jazzquiz.submit_start_question(jQuery(this).data('question-id'), jQuery(this).data('time'));
+                jazzquiz.jump_question(jQuery(this).data('question-id'), jQuery(this).data('time'), jQuery(this).data('jazzquiz-question-id'));
                 $menu.html('').removeClass('active');
                 $control_button.removeClass('active').data('isclosed', 'yes');
             });
@@ -591,18 +594,27 @@ jazzquiz.get_results = function() {
         jazzquiz.quiz.question.has_votes = data.has_votes;
         jazzquiz.quiz.total_students = parseInt(data.total_students);
         jazzquiz.quiz_info_responses('jazzquiz_responses_container', 'current_responses_wrapper', data.responses, data.question_type, 'results');
-
     }).fail(function() {
         jazzquiz.show_info('There was an error getting current results.');
     });
 };
 
-jazzquiz.submit_start_question = function(question_id, question_time) {
+// TODO: Refactor these start question functions.
+/**
+ * Start a new question in this session.
+ * @param {string} method
+ * @param {number} question_id
+ * @param {number} question_time
+ * @param {number} jazzquiz_question_id
+ */
+jazzquiz.start_question = function(method, question_id, question_time, jazzquiz_question_id) {
     this.hide_info();
     this.post('quizdata.php', {
         action: 'start_question',
+        method: method,
         question_id: question_id,
-        question_time: question_time
+        question_time: question_time,
+        jazzquiz_question_id: jazzquiz_question_id
     }, function(data) {
         jazzquiz.start_question_countdown(data.question_time, data.delay);
     }).fail(function() {
@@ -611,12 +623,16 @@ jazzquiz.submit_start_question = function(question_id, question_time) {
     })
 };
 
+jazzquiz.jump_question = function(question_id, question_time, jazzquiz_question_id) {
+    this.start_question('jump', question_id, question_time, jazzquiz_question_id);
+};
+
 jazzquiz.repoll_question = function() {
-    //this.submit_start_question(this.quiz.questions[this.quiz.current_question_slot].question_id);
+    this.start_question('repoll', 0, 0, 0);
 };
 
 jazzquiz.next_question = function() {
-    //this.submit_start_question(this.quiz.questions[this.quiz.current_question_slot + 1].question_id);
+    this.start_question('next', 0, 0, 0);
 };
 
 jazzquiz.close_session = function() {

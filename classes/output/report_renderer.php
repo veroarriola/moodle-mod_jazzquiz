@@ -17,18 +17,18 @@ namespace mod_jazzquiz\output;
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_jazzquiz\traits\renderer_base;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Renderer outputting the quiz editing UI.
  *
  * @package mod_jazzquiz
  * @copyright 2015 John Hoopes <john.z.hoopes@gmail.com>
+ * @copyright 2018 NTNU
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-use mod_jazzquiz\traits\renderer_base;
-
-defined('MOODLE_INTERNAL') || die();
-
 class report_renderer extends \plugin_renderer_base
 {
     use renderer_base;
@@ -71,19 +71,6 @@ class report_renderer extends \plugin_renderer_base
         $output .= $select_session;
         $output = \html_writer::div($output, 'jazzquizbox');
         echo $output;
-    }
-
-    /**
-     * Renders the session attempts table
-     *
-     * @param \mod_jazzquiz\tableviews\sessionattempts $session_attempts
-     */
-    public function view_session_attempts($session_attempts)
-    {
-        $session_attempts->setup();
-        $session_attempts->show_download_buttons_at([TABLE_P_BOTTOM]);
-        $session_attempts->set_data();
-        $session_attempts->finish_output();
     }
 
 }

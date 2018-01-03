@@ -35,4 +35,4 @@ Delete the module from the **Activities** module list in the admin section.
 The original plugin, Realtime Quiz, was written by Davo Smith: <moodle@davosmith.co.uk>
 
 ActiveQuiz was funded by an educational innovation grant given to the Medical school, the University of Wisconsin - Madison.
-The plugin was rewritten to integrate the core Moodle question engine. John Hoopes: <moodle@madisoncreativeweb.com>
+The plugin was rewritten to integrate the core Moodle question engine. John Hoopes: <john.z.hoopes@gmail.com>

@@ -19,11 +19,10 @@ namespace mod_jazzquiz;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * A JazzQuiz session
- *
  * @package     mod_jazzquiz
- * @author      John Hoopes <moodle@madisoncreativeweb.com>
+ * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
  * @copyright   2014 University of Wisconsin - Madison
+ * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_session
@@ -71,7 +70,7 @@ class jazzquiz_session
     // TODO: Temporary function. Should be removed at a later time.
     public function get_question_type_by_slot($slot) {
         global $DB;
-        $id =  $this->questions[$slot - 1]->questionid;
+        $id =  $this->questions[$slot]->questionid;
         $question = $DB->get_record('question', ['id' => $id], 'qtype');
         return $question->qtype;
     }

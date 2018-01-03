@@ -19,8 +19,9 @@
  * This callback handles saving questions as well as instructor actions
  *
  * @package   mod_jazzquiz
- * @author    John Hoopes <moodle@madisoncreativeweb.com>
+ * @author    Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
  * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2018 NTNU
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -42,6 +43,7 @@ function print_json($array)
 
 /**
  * Sends a list of all the questions tagged for use with improvisation.
+ * @param jazzquiz $jazzquiz
  */
 function show_all_improvise_questions($jazzquiz)
 {
@@ -58,6 +60,7 @@ function show_all_improvise_questions($jazzquiz)
     foreach ($question_records as $question) {
         $questions[] = [
             'question_id' => $question->id,
+            'jazzquiz_question_id' => 0,
             'name' => str_replace('{IMPROV}', '', $question->name),
             'time' => $jazzquiz->data->defaultquestiontime
         ];
@@ -75,7 +78,7 @@ function show_all_improvise_questions($jazzquiz)
 function show_all_jump_questions($jazzquiz)
 {
     global $DB;
-    $sql  = 'SELECT q.id AS id, q.name AS name, jq.questiontime AS time';
+    $sql = 'SELECT q.id AS id, q.name AS name, jq.questiontime AS time, jq.id AS jq_id';
     $sql .= '  FROM {jazzquiz_questions} AS jq';
     $sql .= '  JOIN {question} AS q ON q.id = jq.questionid';
     $sql .= ' WHERE jq.jazzquizid = ?';
@@ -84,6 +87,7 @@ function show_all_jump_questions($jazzquiz)
     foreach ($question_records as $question) {
         $questions[] = [
             'question_id' => $question->id,
+            'jazzquiz_question_id' => $question->jq_id,
             'name' => $question->name,
             'time' => $question->time
         ];
@@ -126,9 +130,50 @@ function get_question_form($jazzquiz, $session)
  */
 function start_question($session)
 {
-    // Moodle question id
-    $question_id = required_param('question_id', PARAM_INT);
-    $question_time = optional_param('question_time', 0, PARAM_INT);
+    $method = required_param('method', PARAM_ALPHA);
+    // $question_id is a Moodle question id
+    switch ($method) {
+        case 'jump':
+            $question_id = required_param('question_id', PARAM_INT);
+            $question_time = optional_param('question_time', 0, PARAM_INT);
+            $jazzquiz_question_id = optional_param('jazzquiz_question_id', 0, PARAM_INT);
+            if ($jazzquiz_question_id !== 0) {
+                $session->data->slot = $session->jazzquiz->get_question_by_id($jazzquiz_question_id)->data->slot;
+            }
+            break;
+        case 'repoll':
+            $last_slot = count($session->questions);
+            if ($last_slot === 0) {
+                print_json([
+                    'status' => 'error',
+                    'message' => 'Nothing to repoll.'
+                ]);
+                return;
+            }
+            $question_id = $session->questions[$last_slot]->questionid;
+            $question_time = $session->data->currentquestiontime;
+            break;
+        case 'next':
+            $last_slot = count($session->jazzquiz->questions);
+            if ($session->data->slot >= $last_slot) {
+                print_json([
+                    'status' => 'error',
+                    'message' => 'No next question.'
+                ]);
+                return;
+            }
+            $session->data->slot++;
+            $jazzquiz_question = $session->jazzquiz->questions[$session->data->slot];
+            $question_id = $jazzquiz_question->question->id;
+            $question_time = $jazzquiz_question->data->questiontime;
+            break;
+        default:
+            print_json([
+                'status' => 'error',
+                'message' => "Invalid method $method"
+            ]);
+            return;
+    }
     list($success, $question_time) = $session->start_question($question_id, $question_time);
     if (!$success) {
         print_json([
