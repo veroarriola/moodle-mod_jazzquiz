@@ -117,13 +117,13 @@ switch ($session->status) {
                 'content_id' => "vote_answer_label_$i"
             ];
             $html .= '<label>';
-            $html .= '<input type="radio" name="vote" value="' . $vote_option->id . '" onclick="jazzquiz.vote_answer = this.value;">';
+            $html .= '<input class="jazzquiz-select-vote" type="radio" name="vote" value="' . $vote_option->id . '">';
             $html .= '<span id="vote_answer_label_' . $i . '">' . $vote_option->attempt . '</span>';
             $html .= '</label><br>';
             $i++;
         }
         $html .= '</div>';
-        $html .= '<button class="btn" onclick="jazzquiz.save_vote(); return false;">Save</button>';
+        $html .= '<button id="jazzquiz_save_vote" class="btn btn-primary">Save</button>';
         print_json([
             'status' => 'voting',
             'html' => $html,

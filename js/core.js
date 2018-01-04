@@ -244,6 +244,15 @@ jazzquiz.quiz_page_loaded = function() {
         event.preventDefault();
         jazzquiz.submit_answer();
     });
+
+    if (!this.is_instructor) {
+        jQuery(document).on('click', '#jazzquiz_save_vote', function() {
+            jazzquiz.save_vote();
+        });
+        jQuery(document).on('click', '.jazzquiz-select-vote', function() {
+            jazzquiz.vote_answer = this.value;
+        });
+    }
 };
 
 jazzquiz.clear_question_box = function() {

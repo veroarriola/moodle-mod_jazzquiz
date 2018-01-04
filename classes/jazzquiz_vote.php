@@ -49,7 +49,7 @@ class jazzquiz_vote
     {
         global $DB;
 
-        $all_votes = $DB->get_records('jazzquiz_votes', [ 'sessionid' => $this->session_id ]);
+        $all_votes = $DB->get_records('jazzquiz_votes', ['sessionid' => $this->session_id]);
         if (!$all_votes) {
             return false;
         }
@@ -79,11 +79,11 @@ class jazzquiz_vote
         if ($this->has_user_voted($user_id)) {
             return false;
         }
-        $exists = $DB->record_exists('jazzquiz_votes', [ 'id' => $vote_id ]);
+        $exists = $DB->record_exists('jazzquiz_votes', ['id' => $vote_id]);
         if (!$exists) {
             return false;
         }
-        $row = $DB->get_record('jazzquiz_votes', [ 'id' => $vote_id ]);
+        $row = $DB->get_record('jazzquiz_votes', ['id' => $vote_id]);
         if (!$row) {
             return false;
         }

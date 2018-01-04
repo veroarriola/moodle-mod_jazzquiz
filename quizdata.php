@@ -280,7 +280,7 @@ function run_voting($jazzquiz, $session)
 function save_vote($session)
 {
     // Get the id for the attempt that was voted on
-    $vote_id = required_param('answer', PARAM_INT);
+    $vote_id = required_param('vote', PARAM_INT);
 
     // Get the user who voted
     $user_id = $session->get_current_userid();
