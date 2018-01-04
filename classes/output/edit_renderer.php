@@ -41,7 +41,7 @@ class edit_renderer extends \plugin_renderer_base
     public function print_header()
     {
         $this->base_header('edit');
-        echo $this->output->box_start('generalbox boxaligncenter jazzquizbox');
+        echo $this->output->box_start('generalbox boxaligncenter jazzquiz-box');
     }
 
     /**
@@ -58,7 +58,6 @@ class edit_renderer extends \plugin_renderer_base
         echo \html_writer::start_div('row', ['id' => 'questionrow']);
         echo \html_writer::start_div('inline-block span6');
         echo \html_writer::tag('h2', get_string('questions', 'jazzquiz'));
-        echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', ['id' => 'editstatus']);
         echo $this->show_questionlist($questions, $url);
         echo \html_writer::end_div();
         echo \html_writer::start_div('inline-block span6');
@@ -115,12 +114,12 @@ class edit_renderer extends \plugin_renderer_base
      * sets up what is displayed for each question on the edit quiz question listing
      *
      * @param \mod_jazzquiz\jazzquiz_question $question
-     * @param int $qnum The question number we're currently on
-     * @param int $qcount The total number of questions
+     * @param int $slot
+     * @param int $question_count
      * @param \moodle_url $url
      * @return string
      */
-    protected function display_question_block($question, $qnum, $qcount, $url)
+    protected function display_question_block($question, $slot, $question_count, $url)
     {
         $return = '';
 
@@ -135,8 +134,8 @@ class edit_renderer extends \plugin_renderer_base
         $spacer_icon = new \pix_icon('spacer', 'space', null, ['class' => 'smallicon space']);
 
         // If we're on a later question than the first one add the move up control
-        if ($qnum > 1) {
-            $alt = get_string('question_move_up', 'mod_jazzquiz', $qnum);
+        if ($slot > 1) {
+            $alt = get_string('question_move_up', 'mod_jazzquiz', $slot);
             $up_icon = new \pix_icon('t/up', $alt);
             $data = 'data-action="up" data-question-id="' . $question->data->id . '"';
             $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($up_icon) . '</a>';
@@ -145,8 +144,8 @@ class edit_renderer extends \plugin_renderer_base
         }
 
         // if we're not on the last question add the move down control
-        if ($qnum < $qcount) {
-            $alt = get_string('question_move_down', 'mod_jazzquiz', $qnum);
+        if ($slot < $question_count) {
+            $alt = get_string('question_move_down', 'mod_jazzquiz', $slot);
             $down_icon = new \pix_icon('t/down', $alt);
             $data = 'data-action="down" data-question-id="' . $question->data->id . '"';
             $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($down_icon) . '</a>';
@@ -158,11 +157,11 @@ class edit_renderer extends \plugin_renderer_base
         $edit_url = clone($url);
         $edit_url->param('action', 'editquestion');
         $edit_url->param('questionid', $question->data->id);
-        $alt = get_string('edit_question', 'jazzquiz', $qnum);
+        $alt = get_string('edit_question', 'jazzquiz', $slot);
         $delete_icon = new \pix_icon('t/edit', $alt);
         $controlHTML .= \html_writer::link($edit_url, $this->output->render($delete_icon));
 
-        $alt = get_string('delete_question', 'mod_jazzquiz', $qnum);
+        $alt = get_string('delete_question', 'mod_jazzquiz', $slot);
         $delete_icon = new \pix_icon('t/delete', $alt);
         $data = 'data-action="delete" data-question-id="' . $question->data->id . '"';
         $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($delete_icon) . '</a>';

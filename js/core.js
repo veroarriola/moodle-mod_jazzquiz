@@ -126,14 +126,14 @@ jazzquiz.text = function(key, from, args) {
  * @param {string} text
  */
 jazzquiz.show_loading = function(text) {
-    jQuery('#loadingbox').removeClass('hidden').children('#loadingtext').html(text);
+    jQuery('#jazzquiz_loading').removeClass('hidden').children('p').html(text);
 };
 
 /**
  * Hide the loading animation.
  */
 jazzquiz.hide_loading = function() {
-    jQuery('#loadingbox').addClass('hidden');
+    jQuery('#jazzquiz_loading').addClass('hidden');
 };
 
 // TODO: This should hide only the info.
@@ -235,16 +235,24 @@ jazzquiz.quiz_page_loaded = function() {
     this.hide_loading();
 
     if (this.is_instructor) {
-        jQuery('#controlbox').removeClass('hidden');
+        jQuery('#jazzquiz_controls_box').removeClass('hidden');
     }
 
     this.request_quiz_info();
+
+    jQuery(document).on('submit', '#jazzquiz_question_form', function(event) {
+        event.preventDefault();
+        jazzquiz.submit_answer();
+    });
 };
 
 jazzquiz.clear_question_box = function() {
     jQuery('#jazzquiz_question_box').html('').addClass('hidden');
 };
 
+/**
+ * Request the current question form.
+ */
 jazzquiz.reload_question_box = function() {
     this.get('quizdata.php', {
         action: 'get_question_form'
@@ -281,7 +289,7 @@ jazzquiz.set_question_timer_text = function(time_left) {
     if (this.is_instructor) {
         $timer.html(time_left + 's left');
     } else {
-        $timer.html(this.text('question_will_end_in') + ' ' + time_left + ' ' + this.text('seconds', 'moodle'));
+        $timer.html(this.text('question_will_end_in_x_seconds', 'jazzquiz', time_left));
     }
     $timer.removeClass('hidden');
 };
@@ -291,13 +299,11 @@ jazzquiz.set_question_timer_text = function(time_left) {
  * @param {number} time_left in seconds.
  */
 jazzquiz.set_countdown_timer_text = function(time_left) {
-    let $info = jQuery('#jazzquiz_info_container');
     if (time_left !== 0) {
-        $info.html(this.text('question_will_start') + ' ' + this.text('in') + ' ' + time_left + ' ' + this.text('seconds', 'moodle'));
+        this.show_info(this.text('question_will_start_in_x_seconds', 'jazzquiz', time_left));
     } else {
-        $info.html(this.text('question_will_start') + ' ' + this.text('now'));
+        this.show_info(this.text('question_will_start_now'));
     }
-    $info.removeClass('hidden');
 };
 
 /**
@@ -305,37 +311,42 @@ jazzquiz.set_countdown_timer_text = function(time_left) {
  */
 jazzquiz.on_question_countdown_tick = function(question_time) {
     this.quiz.question.countdown_time_left--;
-    const time_left = this.quiz.question.countdown_time_left;
-    if (time_left <= 0) {
+    if (this.quiz.question.countdown_time_left <= 0) {
         clearInterval(this.question_countdown_interval);
         this.question_countdown_interval = 0;
         this.start_question_attempt(question_time);
     } else {
-        this.set_countdown_timer_text(time_left);
+        this.set_countdown_timer_text(this.quiz.question.countdown_time_left);
     }
 };
 
 /**
- * Show countdown for the question.
+ * Start a countdown for the question which will eventually start the question attempt.
+ * The question attempt might start before this function return, depending on the arguments.
+ * If a countdown has already been started, this call will return true and the current countdown will continue.
  * @param {number} question_time
- * @param {number} time_left in countdown
+ * @param {number} countdown_time_left
+ * @return {boolean} true if countdown is active
  */
-jazzquiz.start_question_countdown = function(question_time, time_left) {
+jazzquiz.start_question_countdown = function(question_time, countdown_time_left) {
+    if (this.question_countdown_interval !== 0) {
+        return true;
+    }
     question_time = parseInt(question_time);
-    time_left = parseInt(time_left);
-    this.quiz.question.countdown_time_left = time_left;
-    if (time_left < 1) {
+    countdown_time_left = parseInt(countdown_time_left);
+    this.quiz.question.countdown_time_left = countdown_time_left;
+    if (countdown_time_left < 1) {
         // Check if the question has already ended.
-        if (time_left < -question_time) {
+        if (countdown_time_left < -question_time) {
             return false;
         }
         // We want to show some text, as we must also request the question form from the server.
         this.set_countdown_timer_text(0);
         // No need to start the countdown. Just start the question.
-        this.start_question_attempt(question_time + time_left);
+        this.start_question_attempt(question_time + countdown_time_left);
         return true;
     }
-    this.set_countdown_timer_text(time_left);
+    this.set_countdown_timer_text(countdown_time_left);
     this.question_countdown_interval = setInterval(function() {
         jazzquiz.on_question_countdown_tick(question_time);
     }, 1000);
@@ -371,7 +382,6 @@ jazzquiz.on_question_timer_tick = function() {
  * @param {number} question_time
  */
 jazzquiz.start_question_attempt = function(question_time) {
-    this.hide_loading();
     this.hide_info();
     this.reload_question_box();
     // Set this to true so that we don't keep calling this over and over

@@ -69,7 +69,7 @@ class report_renderer extends \plugin_renderer_base
         $select_session .= \html_writer::end_div();
 
         $output .= $select_session;
-        $output = \html_writer::div($output, 'jazzquizbox');
+        $output = \html_writer::div($output, 'jazzquiz-box');
         echo $output;
     }
 

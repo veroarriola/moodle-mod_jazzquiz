@@ -44,7 +44,6 @@ class start_session extends \moodleform
 
     /**
      * Definition of the session start form
-     *
      */
     public function definition()
     {

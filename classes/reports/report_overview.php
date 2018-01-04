@@ -218,7 +218,7 @@ class report_overview
         $quiz_attempt = reset($quiz_attempts);
 
         if (!$quiz_attempt) {
-            echo '<div class="jazzquizbox"><p>No attempt found.</p></div>';
+            echo '<div class="jazzquiz-box"><p>No attempt found.</p></div>';
             return;
         }
 
@@ -240,7 +240,7 @@ class report_overview
         $quizid = required_param('quizid', PARAM_INT);
         $sessionid = required_param('sessionid', PARAM_INT);
 
-        echo '<div id="report_overview_controls" class="jazzquizbox">';
+        echo '<div id="report_overview_controls" class="jazzquiz-box">';
         echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responded').fadeIn();jQuery('#report_overview_responses').fadeOut();\">Attendance</button>";
         echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responses').fadeIn();jQuery('#report_overview_responded').fadeOut();\">Responses</button>";
         $url_params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=report&download&sessionid=$sessionid";
@@ -266,7 +266,7 @@ class report_overview
             $question_name = str_replace('{IMPROV}', '', $question->name);
             $question_type = $quba->get_question_attempt($slot)->get_question()->get_type_name();
 
-            echo '<div class="jazzquizbox" id="' . $wrapper_id . '">'
+            echo '<div class="jazzquiz-box" id="' . $wrapper_id . '">'
                 . "<h2>$question_name</h2>"
                 . '<span class="jazzquiz-latex-wrapper">'
                 . '<span class="filter_mathjaxloader_equation">' . $question->questiontext . '</span>'
@@ -302,7 +302,7 @@ class report_overview
         // Should probably be refactored in the future.
         $not_responded_user_ids = $all_user_ids;
 
-        echo '<div id="report_overview_responded" class="jazzquizbox">';
+        echo '<div id="report_overview_responded" class="jazzquiz-box">';
         echo '<h2>' . get_string('attendance_list', 'jazzquiz') . '</h2>';
         if ($total_responded) {
             $responded_with_count = [];

@@ -29,7 +29,7 @@ jazzquiz.change_quiz_state = function(state, data) {
     this.is_new_state = (this.state !== state);
     this.state = state;
 
-    jQuery('#inquizcontrols_state').html(state);
+    jQuery('#jazzquiz_controls_state').html(state);
     jQuery('#region-main').find('ul.nav.nav-tabs').css('display', 'none');
     jQuery('#region-main-settings-menu').css('display', 'none');
     jQuery('.region_main_settings_menu_proxy').css('display', 'none');
@@ -443,7 +443,7 @@ jazzquiz.start_quiz = function() {
     this.post('quizdata.php', {
         action: 'start_quiz'
     }, function() {
-        jQuery('#inquizcontrols').removeClass('btn-hide');
+        jQuery('#jazzquiz_controls').removeClass('btn-hide');
     });
 };
 
@@ -639,7 +639,7 @@ jazzquiz.close_session = function() {
     this.show_loading(this.text('closing_session'));
     this.clear_question_box();
     this.hide_info();
-    jQuery('#controlbox').addClass('hidden');
+    jQuery('#jazzquiz_controls_box').addClass('hidden');
     this.post('quizdata.php', {
         action: 'close_session'
     }, function() {
@@ -716,7 +716,7 @@ jazzquiz.toggle_responses = function() {
  */
 jazzquiz.enable_controls = function(buttons) {
     // Let's find the direct child nodes.
-    let children = jQuery('#inquizcontrols').find('.quiz-control-buttons').children();
+    let children = jQuery('#jazzquiz_controls').find('.quiz-control-buttons').children();
     // Disable all the buttons that are not present in the "buttons" parameter.
     for (let i = 0; i < children.length; i++) {
         const id = children[i].getAttribute('id');
@@ -725,17 +725,17 @@ jazzquiz.enable_controls = function(buttons) {
 };
 
 jazzquiz.hide_controls = function() {
-    jQuery('#inquizcontrols').find('.quiz-control-buttons').addClass('hidden');
+    jQuery('#jazzquiz_controls').find('.quiz-control-buttons').addClass('hidden');
 };
 
 jazzquiz.show_controls = function() {
-    jQuery('#inquizcontrols').find('.quiz-control-buttons').removeClass('hidden');
+    jQuery('#jazzquiz_controls').find('.quiz-control-buttons').removeClass('hidden');
 };
 
 jazzquiz.show_fullscreen_view = function() {
-    let $quiz_view = jQuery('#quizview');
+    let $jazzquiz = jQuery('#jazzquiz');
     // Are we already in fullscreen mode?
-    if ($quiz_view.hasClass('fullscreen-quizview')) {
+    if ($jazzquiz.hasClass('jazzquiz-fullscreen')) {
         // Yes, let's close it instead.
         this.close_fullscreen_view();
         return;
@@ -743,14 +743,14 @@ jazzquiz.show_fullscreen_view = function() {
     // Hide the scrollbar - remember to always set back to auto when closing.
     document.documentElement.style.overflowY = 'hidden';
     // Sets the quiz view to an absolute position that covers the viewport.
-    $quiz_view.addClass('fullscreen-quizview');
+    $jazzquiz.addClass('jazzquiz-fullscreen');
 };
 
 jazzquiz.close_fullscreen_view = function() {
     // Reset the overflow-y back to auto.
     document.documentElement.style.overflowY = 'auto';
     // Remove the fullscreen view.
-    jQuery('#quizview').removeClass('fullscreen-quizview');
+    jQuery('#jazzquiz').removeClass('jazzquiz-fullscreen');
 };
 
 jazzquiz.execute_control_action = function(action) {

@@ -156,7 +156,7 @@ class renderer extends \plugin_renderer_base
     {
         global $PAGE;
 
-        echo \html_writer::start_div('jazzquizbox');
+        echo \html_writer::start_div('jazzquiz-box');
 
         if ($session_started) {
             // Show relevant instructions
@@ -185,7 +185,7 @@ class renderer extends \plugin_renderer_base
     {
         global $PAGE;
 
-        echo \html_writer::start_div('jazzquizbox');
+        echo \html_writer::start_div('jazzquiz-box');
 
         $course_module_id = $this->jazzquiz->course_module->id;
 
@@ -193,11 +193,11 @@ class renderer extends \plugin_renderer_base
         if ($session->data) {
             // Show the join quiz button
             echo \html_writer::tag('p', get_string('join_quiz_instructions', 'jazzquiz'));
-            echo \html_writer::tag('p', get_string('session_name_text', 'jazzquiz') . $session->data->name);
+            echo \html_writer::tag('p', '<b>' . get_string('session', 'jazzquiz') . ':</b> ' . $session->data->name);
             // See if the user has attempts
             // If so, let them know that continuing will continue them to their attempt
             if ($session->get_open_attempt_for_current_user()) {
-                echo \html_writer::tag('p', get_string('attempt_started', 'jazzquiz'), ['id' => 'quizinfobox']);
+                echo \html_writer::tag('p', get_string('attempt_started', 'jazzquiz'));
             }
             // Add the student join quiz form
             $student_start_form->display();
@@ -215,9 +215,6 @@ class renderer extends \plugin_renderer_base
             // Return early if there are no closed sessions
             return;
         }
-
-        echo \html_writer::start_div('jazzquizbox');
-        echo \html_writer::end_div();
     }
 
     /**
@@ -229,31 +226,31 @@ class renderer extends \plugin_renderer_base
     {
         $this->init_quiz_js($session);
 
-        $output = \html_writer::start_div('', ['id' => 'quizview']);
+        $output = \html_writer::start_div('', ['id' => 'jazzquiz']);
 
         if ($this->jazzquiz->is_instructor()) {
-            $output .= \html_writer::div($this->render_controls(), 'jazzquizbox hidden', ['id' => 'controlbox']);
+            $output .= \html_writer::div($this->render_controls(), 'jazzquiz-box hidden', ['id' => 'jazzquiz_controls_box']);
         }
 
         $loading_icon = $this->output->pix_icon('i/loading', 'loading...');
 
-        $output .= \html_writer::start_div('jazzquizloading', ['id' => 'loadingbox']);
-        $output .= \html_writer::tag('p', get_string('loading', 'jazzquiz'), ['id' => 'loadingtext']);
+        $output .= \html_writer::start_div('', ['id' => 'jazzquiz_loading']);
+        $output .= \html_writer::tag('p', get_string('loading', 'jazzquiz'));
         $output .= $loading_icon;
         $output .= \html_writer::end_div();
 
         if ($this->jazzquiz->is_instructor()) {
-            $output .= \html_writer::div('', 'jazzquizbox padded-box hidden', ['id' => 'jazzquiz_correct_answer_container']);
-            $output .= \html_writer::start_div('jazzquizbox', ['id' => 'jazzquiz_side_container']);
-            $output .= \html_writer::div('', 'jazzquizbox hidden padded-box', ['id' => 'jazzquiz_response_info_container']);
+            $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_correct_answer_container']);
+            $output .= \html_writer::start_div('jazzquiz-box', ['id' => 'jazzquiz_side_container']);
+            $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_response_info_container']);
         }
 
-        $output .= \html_writer::div('', 'jazzquizbox hidden', ['id' => 'jazzquiz_question_timer']);
+        $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_question_timer']);
 
         if ($this->jazzquiz->is_instructor()) {
-            $output .= \html_writer::start_div('jazzquizbox', ['id' => 'jazzquiz_responded_container']);
+            $output .= \html_writer::start_div('jazzquiz-box', ['id' => 'jazzquiz_responded_container']);
             $output .= \html_writer::start_div();
-            $output .= \html_writer::start_div('respondedbox', ['id' => 'respondedbox']);
+            $output .= \html_writer::start_div('', ['id' => 'jazzquiz_responded_box']);
             $output .= \html_writer::tag('h4', '', ['class' => 'inline']);
             $output .= \html_writer::end_div();
             $output .= \html_writer::end_div();
@@ -262,12 +259,12 @@ class renderer extends \plugin_renderer_base
             $output .= \html_writer::end_div();
         }
 
-        $output .= \html_writer::div('', 'jazzquizbox padded-box hidden', ['id' => 'jazzquiz_info_container']);
+        $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_info_container']);
 
         $output .= '<div id="jazzquiz_question_box"></div>';
 
         if ($this->jazzquiz->is_instructor()) {
-            $output .= \html_writer::div('', 'jazzquizbox hidden', ['id' => 'jazzquiz_responses_container']);
+            $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_responses_container']);
         }
 
         $output .= \html_writer::end_div();
@@ -293,7 +290,7 @@ class renderer extends \plugin_renderer_base
         if ($this->jazzquiz->is_instructor()) {
             $is_instructor_class = ' instructor';
         }
-        $output .= \html_writer::start_tag('div', ['class' => 'jazzquizbox' . $is_instructor_class]);
+        $output .= \html_writer::start_tag('div', ['class' => 'jazzquiz-box' . $is_instructor_class]);
 
         $on_submit = '';
         if (!$this->jazzquiz->is_instructor()) {
@@ -322,11 +319,8 @@ class renderer extends \plugin_renderer_base
 
         // Only students need to save their answers.
         if (!$this->jazzquiz->is_instructor()) {
-            $save_button = \html_writer::tag('button', 'Save', [
-                'class' => 'btn btn-primary',
-                'onclick' => 'jazzquiz.submit_answer(); return false;'
-            ]);
-            $save_button = \html_writer::div($save_button, 'question_save');
+            $save_button = \html_writer::tag('button', 'Save', ['class' => 'btn btn-primary']);
+            $save_button = \html_writer::div($save_button, 'jazzquiz-save-question');
             $output .= \html_writer::div($save_button, 'save_row');
         }
 
@@ -378,7 +372,7 @@ class renderer extends \plugin_renderer_base
                 ['square-o', 'responses', 'toggleresponses'],
                 ['square-o', 'answer', 'showcorrectanswer']
             ])
-            . '<p id="inquizcontrols_state"></p>'
+            //. '<p id="jazzquiz_controls_state"></p>'
             . '</div>'
             . '<div id="jazzquiz_improvise_menu" class="start-question-menu"></div>'
             . '<div id="jazzquiz_jump_menu" class="start-question-menu"></div>'
@@ -389,7 +383,7 @@ class renderer extends \plugin_renderer_base
             . $this->write_control_button('close', 'quit', 'exitquiz')
             . '</div><div id="jazzquiz_control_separator"></div>';
 
-        return \html_writer::div($html, 'btn-hide rtq_inquiz', ['id' => 'inquizcontrols']);
+        return \html_writer::div($html, '', ['id' => 'jazzquiz_controls']);
     }
 
     /**
@@ -438,14 +432,11 @@ class renderer extends \plugin_renderer_base
 
         // Add localization strings
         $this->page->requires->strings_for_js([
-            'question_will_start',
-            'in',
-            'now',
-            'gathering_results',
+            'question_will_start_in_x_seconds',
+            'question_will_Start_now',
             'closing_session',
             'session_closed',
-            'question_will_end_in',
-            'wait_for_reviewing_to_end',
+            'question_will_end_in_x_seconds',
             'answer',
             'responses',
             'responded',
@@ -453,29 +444,6 @@ class renderer extends \plugin_renderer_base
             'instructions_for_student',
             'instructions_for_instructor'
         ], 'jazzquiz');
-
-        $this->page->requires->strings_for_js([
-            'seconds'
-        ], 'moodle');
-    }
-
-    /**
-     * Function to provide a display of how many open attempts have responded
-     *
-     * @param array $not_responded Array of the people who haven't responded
-     * @param int $total
-     *
-     * @return string HTML fragment for the amount responded
-     */
-    public function respondedbox($not_responded, $total)
-    {
-        $responded_count = $total - count($not_responded);
-        $output = \html_writer::start_div();
-        $output .= \html_writer::start_div('respondedbox', ['id' => 'respondedbox']);
-        $output .= \html_writer::tag('h4', "$responded_count / $total students have responded.", ['class' => 'inline']);
-        $output .= \html_writer::end_div();
-        $output .= \html_writer::end_div();
-        return $output;
     }
 
     /**
@@ -485,7 +453,7 @@ class renderer extends \plugin_renderer_base
      */
     public function no_questions($is_instructor)
     {
-        echo $this->output->box_start('generalbox boxaligncenter jazzquizbox');
+        echo $this->output->box_start('generalbox boxaligncenter jazzquiz-box');
         echo \html_writer::tag('p', get_string('no_questions', 'jazzquiz'));
 
         if ($is_instructor) {

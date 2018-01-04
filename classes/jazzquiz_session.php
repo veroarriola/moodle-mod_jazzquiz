@@ -265,28 +265,6 @@ class jazzquiz_session
     }
 
     /**
-     * Builds the content for a quiz box for who hasn't responded.
-     *
-     * @return string
-     */
-    public function get_not_responded()
-    {
-        global $DB;
-        $attempts = $this->get_all_attempts(false, 'open');
-        $not_responded = [];
-        foreach ($attempts as $attempt) {
-            if ($attempt->data->responded == 0) {
-                $user = $DB->get_record('user', ['id' => $attempt->data->userid]);
-                if ($user) {
-                    $not_responded[] = fullname($user);
-                }
-            }
-        }
-        $not_responded_box = $this->jazzquiz->renderer->respondedbox($not_responded, count($attempts));
-        return $not_responded_box;
-    }
-
-    /**
      * @return string
      */
     public function get_question_right_response()

@@ -61,7 +61,7 @@ class attempt_started extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventattemptstarted', 'mod_jazzquiz');
+        return get_string('event_attempt_started', 'mod_jazzquiz');
     }
 
     /**
