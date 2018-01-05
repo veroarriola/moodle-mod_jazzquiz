@@ -48,7 +48,6 @@ class attempt_ended extends \core\event\base {
 
     /**
      * Returns description of what happened.
-     *
      * @return string
      */
     public function get_description() {
@@ -58,7 +57,6 @@ class attempt_ended extends \core\event\base {
 
     /**
      * Returns localised general event name.
-     *
      * @return string
      */
     public static function get_name() {
@@ -67,7 +65,6 @@ class attempt_ended extends \core\event\base {
 
     /**
      * Returns relevant URL.
-     *
      * @return \moodle_url
      */
     public function get_url() {
@@ -76,16 +73,12 @@ class attempt_ended extends \core\event\base {
 
     /**
      * Custom validation.
-     *
      * @throws \coding_exception
-     * @return void
      */
     protected function validate_data() {
         parent::validate_data();
-
         if (!isset($this->relateduserid)) {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
-
     }
 }

@@ -27,8 +27,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_attempt
-{
+class jazzquiz_attempt {
     /** Constants for the status of the attempt */
     const NOTSTARTED = 0;
     const INPROGRESS = 10;
@@ -54,8 +53,7 @@ class jazzquiz_attempt
      * @param \stdClass $data
      * @param \context_module $context
      */
-    public function __construct($jazzquiz, $data = null, $context = null)
-    {
+    public function __construct($jazzquiz, $data = null, $context = null) {
         $this->jazzquiz = $jazzquiz;
         $this->context = $context;
         if (empty($data)) {
@@ -75,8 +73,7 @@ class jazzquiz_attempt
      * @param jazzquiz_session $session
      * @return bool false if invalid question id
      */
-    public function create_missing_attempts($session)
-    {
+    public function create_missing_attempts($session) {
         foreach ($session->questions as $slot => $question) {
             if ($this->quba->next_slot_number() > $slot) {
                 continue;
@@ -99,8 +96,7 @@ class jazzquiz_attempt
      * Fetches user from database and returns the full name.
      * @return string
      */
-    public function get_user_full_name()
-    {
+    public function get_user_full_name() {
         global $DB;
         $user = $DB->get_record('user', ['id' => $this->data->userid]);
         return fullname($user);
@@ -110,8 +106,7 @@ class jazzquiz_attempt
      * Returns a string representation of the "number" status that is actually stored
      * @return string
      */
-    public function get_status()
-    {
+    public function get_status() {
         switch ($this->data->status) {
             case self::NOTSTARTED:
                 return 'notstarted';
@@ -131,8 +126,7 @@ class jazzquiz_attempt
      * @param string $status
      * @return bool
      */
-    public function set_status($status)
-    {
+    public function set_status($status) {
         switch ($status) {
             case 'notstarted':
                 $this->data->status = self::NOTSTARTED;
@@ -160,8 +154,7 @@ class jazzquiz_attempt
      * @param string|\stdClass $review_options Can be string for overall actions like "edit" or an object of review options
      * @return string the HTML fragment for the question
      */
-    public function render_question($slot, $review = false, $review_options = '')
-    {
+    public function render_question($slot, $review = false, $review_options = '') {
         $display_options = $this->get_display_options($review, $review_options);
         return $this->quba->render_question($slot, $display_options, $slot);
     }
@@ -172,8 +165,7 @@ class jazzquiz_attempt
      * @param string $review_options
      * @return \question_display_options
      */
-    protected function get_display_options($review = false, $review_options = '')
-    {
+    protected function get_display_options($review = false, $review_options = '') {
         $options = new \question_display_options();
         $options->flags = \question_display_options::HIDDEN;
         $options->context = $this->context;
@@ -223,8 +215,7 @@ class jazzquiz_attempt
      * Initialize the head contributions from the question engine
      * @return string
      */
-    public function get_html_head_contributions()
-    {
+    public function get_html_head_contributions() {
         // Next load the slot head html and initialize question engine js
         $result = '';
         foreach ($this->quba->get_slots() as $slot) {
@@ -239,8 +230,7 @@ class jazzquiz_attempt
      *
      * @return bool
      */
-    public function save()
-    {
+    public function save() {
         global $DB;
 
         // Save the question usage by activity object
@@ -272,8 +262,7 @@ class jazzquiz_attempt
      * Saves a question attempt from the jazzquiz question
      * @param int $slot
      */
-    public function save_question($slot)
-    {
+    public function save_question($slot) {
         global $DB;
         $transaction = $DB->start_delegated_transaction();
         $this->quba->process_all_actions();
@@ -297,8 +286,7 @@ class jazzquiz_attempt
      * @param int $slot The slot for which we want to get feedback
      * @return string HTML fragment of the feedback
      */
-    public function get_question_feedback($slot = -1)
-    {
+    public function get_question_feedback($slot = -1) {
         global $PAGE;
         if ($slot === -1) {
             // Attempt to get it from the slots param sent back from a question processing
@@ -317,8 +305,7 @@ class jazzquiz_attempt
      * @param int $slot
      * @return bool
      */
-    public function has_responded($slot)
-    {
+    public function has_responded($slot) {
         $response = $this->quba->get_question_attempt($slot)->get_response_summary();
         return $response !== null && $response !== '';
     }
@@ -328,8 +315,7 @@ class jazzquiz_attempt
      * @param int $slot
      * @return string[]
      */
-    public function get_response_data($slot)
-    {
+    public function get_response_data($slot) {
         $question_attempt = $this->quba->get_question_attempt($slot);
         $response = $question_attempt->get_response_summary();
         if ($response === null || $response === '') {
@@ -355,8 +341,7 @@ class jazzquiz_attempt
      * @param jazzquiz $jazzquiz
      * @return bool Whether or not it was successful
      */
-    public function close_attempt($jazzquiz)
-    {
+    public function close_attempt($jazzquiz) {
         $this->quba->finish_all_questions(time());
         $this->data->status = self::FINISHED;
         $this->data->timefinish = time();

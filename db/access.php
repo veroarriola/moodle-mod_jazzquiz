@@ -30,79 +30,61 @@
 //
 // For the core capabilities, the variable is $moodle_capabilities.
 
-
-$capabilities = array(
-
+$capabilities = [
     // Can start a quiz and move on to the next question
     // NB: must have 'attempt' as well to be able to see the questions
-    'mod/jazzquiz:control'         => array(
-
+    'mod/jazzquiz:control' => [
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy'       => array(
+        'legacy'       => [
             'teacher'        => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager'        => CAP_ALLOW
-        )
-    ),
+        ]
+    ],
 
     // Can try to answer the quiz
-    'mod/jazzquiz:attempt'         => array(
-
+    'mod/jazzquiz:attempt' => [
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy'       => array(
+        'legacy'       => [
             'student'        => CAP_ALLOW,
             'teacher'        => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager'        => CAP_ALLOW
-        )
-    ),
-
-    // Can view own attempts
-    'mod/jazzquiz:viewownattempts' => array(
-        'captype'      => 'read',
-        'contextlevel' => CONTEXT_MODULE,
-        'legacy'       => array(
-            'student'        => CAP_ALLOW,
-            'teacher'        => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager'        => CAP_ALLOW
-        )
-    ),
+        ]
+    ],
 
     // Can see who gave what answer
-    'mod/jazzquiz:seeresponses'    => array(
-
+    'mod/jazzquiz:seeresponses' => [
         'captype'      => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy'       => array(
+        'legacy'       => [
             'teacher'        => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager'        => CAP_ALLOW
-        )
-    ),
+        ]
+    ],
 
     // Can add / delete / update questions
-    'mod/jazzquiz:editquestions'   => array(
-
+    'mod/jazzquiz:editquestions' => [
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy'       => array(
+        'legacy'       => [
             'editingteacher' => CAP_ALLOW,
             'manager'        => CAP_ALLOW
-        )
-    ),
+        ]
+    ],
 
     // Can add an instance of this module to a course
-    'mod/jazzquiz:addinstance'     => array(
+    'mod/jazzquiz:addinstance' => [
         'captype'      => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'legacy'       => array(
+        'legacy'       => [
             'editingteacher' => CAP_ALLOW,
             'coursecreator'  => CAP_ALLOW,
             'manager'        => CAP_ALLOW
-        )
-    )
-);
+        ]
+    ],
+];
 

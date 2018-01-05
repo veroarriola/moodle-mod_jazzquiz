@@ -29,17 +29,14 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2018 NTNU
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class report_renderer extends \plugin_renderer_base
-{
+class report_renderer extends \plugin_renderer_base {
     use renderer_base;
 
-    public function report_header()
-    {
+    public function report_header() {
         $this->base_header('reports');
     }
 
-    public function report_footer()
-    {
+    public function report_footer() {
         $this->base_footer();
     }
 
@@ -49,8 +46,7 @@ class report_renderer extends \plugin_renderer_base
      * @param \mod_jazzquiz\jazzquiz_session[] $sessions
      * @param string|int $selected_id
      */
-    public function select_session($url, $sessions, $selected_id = '')
-    {
+    public function select_session($url, $sessions, $selected_id = '') {
         $output = '';
 
         $select_session = \html_writer::start_div('');

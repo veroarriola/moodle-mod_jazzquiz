@@ -33,8 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2013 Ray Morris
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_disabled_condition extends condition
-{
+class jazzquiz_disabled_condition extends condition {
     /**
      * @var string $where
      */
@@ -49,8 +48,7 @@ class jazzquiz_disabled_condition extends condition
      * Constructor.
      * @param bool $hide whether to include old "deleted" questions.
      */
-    public function __construct($hide = true)
-    {
+    public function __construct($hide = true) {
         global $DB;
 
         $config = get_config('jazzquiz');
@@ -61,13 +59,11 @@ class jazzquiz_disabled_condition extends condition
         $this->params = $params;
     }
 
-    public function where()
-    {
+    public function where() {
         return $this->where;
     }
 
-    public function params()
-    {
+    public function params() {
         return $this->params;
     }
 }

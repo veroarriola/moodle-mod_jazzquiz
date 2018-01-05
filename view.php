@@ -36,8 +36,7 @@ require_once($CFG->dirroot . '/question/editlib.php');
 /**
  * @param jazzquiz $jazzquiz
  */
-function jazzquiz_view_start_quiz($jazzquiz)
-{
+function jazzquiz_view_start_quiz($jazzquiz) {
     global $PAGE;
     $renderer = $jazzquiz->renderer;
     $url = $PAGE->url;
@@ -73,8 +72,7 @@ function jazzquiz_view_start_quiz($jazzquiz)
 /**
  * @param jazzquiz $jazzquiz
  */
-function jazzquiz_view_default($jazzquiz)
-{
+function jazzquiz_view_default($jazzquiz) {
     global $PAGE, $DB;
     $renderer = $jazzquiz->renderer;
     $url = $PAGE->url;
@@ -154,8 +152,7 @@ function jazzquiz_view_default($jazzquiz)
     }
 }
 
-function jazzquiz_view()
-{
+function jazzquiz_view() {
     global $PAGE;
 
     $course_module_id = optional_param('id', false, PARAM_INT);

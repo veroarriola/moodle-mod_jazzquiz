@@ -28,16 +28,14 @@ require_once($CFG->libdir . '/formslib.php');
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class start_session extends \moodleform
-{
+class start_session extends \moodleform {
     /**
      * Overriding parent function to account for namespace in the class name
      * so that client validation works
      *
      * @return mixed|string
      */
-    protected function get_form_identifier()
-    {
+    protected function get_form_identifier() {
         $class = get_class($this);
         return preg_replace('/[^a-z0-9_]/i', '_', $class);
     }
@@ -45,8 +43,7 @@ class start_session extends \moodleform
     /**
      * Definition of the session start form
      */
-    public function definition()
-    {
+    public function definition() {
         $mform = $this->_form;
         $mform->addElement('text', 'session_name', get_string('session_name', 'jazzquiz'));
         $mform->setType('session_name', PARAM_TEXT);
@@ -62,8 +59,7 @@ class start_session extends \moodleform
      *
      * @return string[] $errors array of errors
      */
-    public function validations($data, $files)
-    {
+    public function validations($data, $files) {
         $errors = [];
         if (empty($data['session_name'])) {
             $errors['session_name'] = get_string('session_name_required', 'jazzquiz');

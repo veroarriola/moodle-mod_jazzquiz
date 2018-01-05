@@ -36,8 +36,7 @@ require_once($CFG->libdir . '/filelib.php');
 require_login();
 require_sesskey();
 
-function print_json($array)
-{
+function print_json($array) {
     echo json_encode($array);
 }
 
@@ -45,8 +44,7 @@ function print_json($array)
  * Sends a list of all the questions tagged for use with improvisation.
  * @param jazzquiz $jazzquiz
  */
-function show_all_improvise_questions($jazzquiz)
-{
+function show_all_improvise_questions($jazzquiz) {
     global $DB;
     $question_records = $DB->get_records_sql('SELECT * FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
     if (!$question_records) {
@@ -75,8 +73,7 @@ function show_all_improvise_questions($jazzquiz)
  * Sends a list of all the questions added to the quiz.
  * @param jazzquiz $jazzquiz
  */
-function show_all_jump_questions($jazzquiz)
-{
+function show_all_jump_questions($jazzquiz) {
     global $DB;
     $sql = 'SELECT q.id AS id, q.name AS name, jq.questiontime AS time, jq.id AS jq_id';
     $sql .= '  FROM {jazzquiz_questions} AS jq';
@@ -102,8 +99,7 @@ function show_all_jump_questions($jazzquiz)
  * @param jazzquiz $jazzquiz
  * @param jazzquiz_session $session
  */
-function get_question_form($jazzquiz, $session)
-{
+function get_question_form($jazzquiz, $session) {
     $slot = optional_param('slot', 0, PARAM_INT);
     if ($slot === 0) {
         $slot = count($session->questions);
@@ -128,8 +124,7 @@ function get_question_form($jazzquiz, $session)
 /**
  * @param jazzquiz_session $session
  */
-function start_question($session)
-{
+function start_question($session) {
     $method = required_param('method', PARAM_ALPHA);
     // $question_id is a Moodle question id
     switch ($method) {
@@ -196,8 +191,7 @@ function start_question($session)
 /**
  * @param jazzquiz_session $session
  */
-function start_quiz($session)
-{
+function start_quiz($session) {
     if ($session->data->status !== 'notrunning') {
         print_json([
             'status' => 'error',
@@ -215,8 +209,7 @@ function start_quiz($session)
 /**
  * @param jazzquiz_session $session
  */
-function save_question($session)
-{
+function save_question($session) {
     // Get the attempt for the question
     $attempt = $session->open_attempt;
 
@@ -247,8 +240,7 @@ function save_question($session)
  * @param jazzquiz $jazzquiz
  * @param jazzquiz_session $session
  */
-function run_voting($jazzquiz, $session)
-{
+function run_voting($jazzquiz, $session) {
     // Decode the questions parameter into an array
     $questions = required_param('questions', PARAM_RAW);
     $questions = json_decode(urldecode($questions), true);
@@ -277,8 +269,7 @@ function run_voting($jazzquiz, $session)
 /**
  * @param jazzquiz_session $session
  */
-function save_vote($session)
-{
+function save_vote($session) {
     // Get the id for the attempt that was voted on
     $vote_id = required_param('vote', PARAM_INT);
 
@@ -302,8 +293,7 @@ function save_vote($session)
 /**
  * @param jazzquiz_session $session
  */
-function get_vote_results($session)
-{
+function get_vote_results($session) {
     $slot = count($session->questions);
     $vote = new jazzquiz_vote($session->data->id, $slot);
     $votes = $vote->get_results();
@@ -316,8 +306,7 @@ function get_vote_results($session)
 /**
  * @param jazzquiz_session $session
  */
-function end_question($session) // or vote
-{
+function end_question($session) {
     $session->data->status = 'reviewing';
     $session->save();
     print_json([
@@ -328,8 +317,7 @@ function end_question($session) // or vote
 /**
  * @param jazzquiz_session $session
  */
-function get_right_response($session)
-{
+function get_right_response($session) {
     print_json([
         'right_answer' => $session->get_question_right_response()
     ]);
@@ -338,8 +326,7 @@ function get_right_response($session)
 /**
  * @param jazzquiz_session $session
  */
-function close_session($session)
-{
+function close_session($session) {
     $session->end_session();
     print_json([
         'status' => 'success'
@@ -349,8 +336,7 @@ function close_session($session)
 /**
  * @param jazzquiz_session $session
  */
-function get_results($session)
-{
+function get_results($session) {
     // Get the results
     $slot = count($session->questions);
     $question_type = $session->get_question_type_by_slot($slot);
@@ -373,8 +359,7 @@ function get_results($session)
  * @param jazzquiz $jazzquiz
  * @param jazzquiz_session $session
  */
-function handle_instructor_request($action, $jazzquiz, $session)
-{
+function handle_instructor_request($action, $jazzquiz, $session) {
     switch ($action) {
         case 'start_quiz':
             start_quiz($session);
@@ -426,8 +411,7 @@ function handle_instructor_request($action, $jazzquiz, $session)
  * @param jazzquiz $jazzquiz
  * @param jazzquiz_session $session
  */
-function handle_student_request($action, $jazzquiz, $session)
-{
+function handle_student_request($action, $jazzquiz, $session) {
     switch ($action) {
         case 'save_question':
             save_question($session);
@@ -447,8 +431,7 @@ function handle_student_request($action, $jazzquiz, $session)
     }
 }
 
-function jazzquiz_quizdata()
-{
+function jazzquiz_quizdata() {
     global $DB;
 
     $course_module_id = required_param('id', PARAM_INT);

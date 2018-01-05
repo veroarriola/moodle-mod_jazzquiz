@@ -25,8 +25,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_session
-{
+class jazzquiz_session {
     /** @var jazzquiz $jazzquiz */
     public $jazzquiz;
 
@@ -46,8 +45,7 @@ class jazzquiz_session
      * @param jazzquiz $jazzquiz
      * @param \stdClass $data
      */
-    public function __construct($jazzquiz, $data = null)
-    {
+    public function __construct($jazzquiz, $data = null) {
         global $DB;
         $this->jazzquiz = $jazzquiz;
         if (!empty($data)) {
@@ -70,7 +68,7 @@ class jazzquiz_session
     // TODO: Temporary function. Should be removed at a later time.
     public function get_question_type_by_slot($slot) {
         global $DB;
-        $id =  $this->questions[$slot]->questionid;
+        $id = $this->questions[$slot]->questionid;
         $question = $DB->get_record('question', ['id' => $id], 'qtype');
         return $question->qtype;
     }
@@ -80,8 +78,7 @@ class jazzquiz_session
      * @param \stdClass $data The data object from moodle form
      * @return bool returns true/false on success or failure
      */
-    public function create_session($data)
-    {
+    public function create_session($data) {
         global $DB;
 
         $new_session = new \stdClass();
@@ -109,8 +106,7 @@ class jazzquiz_session
      * Saves the session object to the database
      * @return bool
      */
-    public function save()
-    {
+    public function save() {
         global $DB;
         // Update if we already have a session, otherwise create it.
         if (isset($this->data->id)) {
@@ -134,8 +130,7 @@ class jazzquiz_session
      * @param int $session_id
      * @return bool
      */
-    public static function delete($session_id)
-    {
+    public static function delete($session_id) {
         global $DB;
         // Delete all attempt quba ids, then all JazzQuiz attempts, and then finally itself
         $quba_condition = new \qubaid_join('{jazzquiz_attempts} jqa', 'jqa.questionengid', 'jqa.sessionid = :sessionid', [
@@ -151,8 +146,7 @@ class jazzquiz_session
      * Ends this session.
      * @return bool Whether or not this was successful
      */
-    public function end_session()
-    {
+    public function end_session() {
         // Clear and reset properties on the session
         $this->data->status = 'notrunning';
         $this->data->sessionopen = 0;
@@ -176,8 +170,7 @@ class jazzquiz_session
      * @param int $question_time in seconds ("<0" => no time, "0" => default)
      * @return mixed[] $success, $question_time (if parameter was 0, this question time will be the default)
      */
-    public function start_question($question_id, $question_time)
-    {
+    public function start_question($question_id, $question_time) {
         global $DB;
 
         $transaction = $DB->start_delegated_transaction();
@@ -213,8 +206,7 @@ class jazzquiz_session
      * @param int $slot
      * @return array
      */
-    public function get_question_results_list($slot)
-    {
+    public function get_question_results_list($slot) {
         $attempts = $this->get_all_attempts(false, 'all');
         $responses = [];
 
@@ -243,8 +235,7 @@ class jazzquiz_session
      * @param bool $open
      * @return int[] of user IDs
      */
-    public function get_responded_list($slot, $open)
-    {
+    public function get_responded_list($slot, $open) {
         $attempts = $this->get_all_attempts(false, $open);
         $responded = [];
         foreach ($attempts as $attempt) {
@@ -259,16 +250,14 @@ class jazzquiz_session
         return $responded;
     }
 
-    public function get_student_count()
-    {
+    public function get_student_count() {
         return count($this->get_all_attempts(false, 'open'));
     }
 
     /**
      * @return string
      */
-    public function get_question_right_response()
-    {
+    public function get_question_right_response() {
         // Just use the instructor's question attempt to re-render the question with the right response
         $attempt = $this->open_attempt;
         $quba = $attempt->quba;
@@ -292,8 +281,7 @@ class jazzquiz_session
      * @param int $preview Whether or not to initialize an attempt as a preview attempt
      * @return bool Returns bool depending on whether or not successful
      */
-    public function init_attempts($preview = 0)
-    {
+    public function init_attempts($preview = 0) {
         if (empty($this->data)) {
             return false;
         }
@@ -338,8 +326,7 @@ class jazzquiz_session
      * With anonymisation on, returns a random, negative user id instead.
      * @return int
      */
-    public function get_current_userid()
-    {
+    public function get_current_userid() {
         global $USER;
         if (!$this->data->fully_anonymize) {
             return $USER->id;
@@ -361,8 +348,7 @@ class jazzquiz_session
      *
      * @return array returns an array of user IDs that have attempted this session
      */
-    public function get_session_users()
-    {
+    public function get_session_users() {
         global $DB;
         if (empty($this->data)) {
             return [];
@@ -376,8 +362,7 @@ class jazzquiz_session
      * @param int $attempt_id
      * @return jazzquiz_attempt
      */
-    public function get_user_attempt($attempt_id)
-    {
+    public function get_user_attempt($attempt_id) {
         global $DB;
         if (empty($this->data)) {
             return null;
@@ -392,8 +377,7 @@ class jazzquiz_session
      *
      * @return jazzquiz_attempt|bool Returns the open attempt or false if there is none
      */
-    public function get_open_attempt_for_current_user()
-    {
+    public function get_open_attempt_for_current_user() {
         // Use the get_all_attempts with the specified options
         // Skip checking for groups since we only want to initialize attempts for the actual current user
         $this->attempts = $this->get_all_attempts(true, 'all', $this->get_current_userid());
@@ -417,8 +401,7 @@ class jazzquiz_session
      *
      * @return jazzquiz_attempt[]
      */
-    public function get_all_attempts($include_previews, $open = 'all', $user_id = null)
-    {
+    public function get_all_attempts($include_previews, $open = 'all', $user_id = null) {
         global $DB;
 
         if (empty($this->data)) {

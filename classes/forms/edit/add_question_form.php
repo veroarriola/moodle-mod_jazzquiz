@@ -29,16 +29,14 @@ require_once($CFG->libdir . '/formslib.php');
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class add_question_form extends \moodleform
-{
+class add_question_form extends \moodleform {
     /**
      * Overriding parent function to account for namespace in the class name
      * so that client validation works
      *
      * @return mixed|string
      */
-    protected function get_form_identifier()
-    {
+    protected function get_form_identifier() {
         $class = get_class($this);
         return preg_replace('/[^a-z0-9_]/i', '_', $class);
     }
@@ -47,8 +45,7 @@ class add_question_form extends \moodleform
      * Adds form fields to the form
      *
      */
-    public function definition()
-    {
+    public function definition() {
         $mform = $this->_form;
         $jazzquiz = $this->_customdata['jazzquiz'];
         $defaultTime = $jazzquiz->data->defaultquestiontime;
@@ -83,8 +80,7 @@ class add_question_form extends \moodleform
      *
      * @return array $errors
      */
-    public function validation($data, $files)
-    {
+    public function validation($data, $files) {
         $errors = [];
         if (!filter_var($data['question_time'], FILTER_VALIDATE_INT) && $data['question_time'] !== 0) {
             $errors['question_time'] = get_string('invalid_question_time', 'jazzquiz');

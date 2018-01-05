@@ -22,62 +22,64 @@
  */
 
 let jazzquiz = {
-
+    jQueryErrors: 0,
     state: '',
-    is_new_state: false,
-    is_instructor: false,
+    isNewState: false,
+    isInstructor: false,
     siteroot: '',
 
-    current_responses: [],
-    total_responses: 0,
-    chosen_question_id: 0,
+    currentResponses: [],
+    totalResponses: 0,
 
-    question_countdown_interval: 0,
-    question_timer_interval: 0,
-
-    jquery_errors: 0,
+    questionCountdownInterval: 0,
+    questionTimerInterval: 0,
 
     quiz: {
-
-        course_module_id: 0,
-        activity_id: 0,
-        session_id: 0,
-        attempt_id: 0,
-        session_key: '',
-        show_votes_upon_review: false,
-        responded_count: 0,
-        total_students: 0,
+        courseModuleId: 0,
+        activityId: 0,
+        sessionId: 0,
+        attemptId: 0,
+        sessionKey: '',
+        showVotesUponReview: false,
+        respondedCount: 0,
+        totalStudents: 0,
 
         question: {
-            is_running: false,
-            is_last: false,
-            is_saving: false,
-            end_time: 0,
-            is_vote_running: false,
-            has_votes: false,
-            countdown_time_left: 0,
-            question_type: undefined,
-            question_time: 0
+            isRunning: false,
+            isLast: false,
+            isSaving: false,
+            endTime: 0,
+            isVoteRunning: false,
+            hasVotes: false,
+            countdownTimeLeft: 0,
+            questionType: undefined,
+            questionTime: 0
         }
-
     },
 
     options: {
-        show_responses: false,
-        is_showing_correct_answer: false
+        showResponses: false,
+        showCorrectAnswer: false
     },
 
     // Student temporary variables
-    vote_answer: undefined
-
+    voteAnswer: undefined
 };
 
+/**
+ * Send a request using AJAX, with method specified.
+ * @param {string} method Which HTTP method to use.
+ * @param {string} url Relative to root of jazzquiz module. Does not start with /.
+ * @param {Object} data Object with parameters as properties. Reserved: id, quizid, sessionid, attemptid, sesskey
+ * @param {function} success Callback function for when the request was completed successfully.
+ * @return {jqXHR} The jQuery XHR object
+ */
 jazzquiz.ajax = function(method, url, data, success) {
-    data.id = this.quiz.course_module_id;
-    data.quizid = this.quiz.activity_id;
-    data.sessionid = this.quiz.session_id;
-    data.attemptid = this.quiz.attempt_id;
-    data.sesskey = this.quiz.session_key;
+    data.id = this.quiz.courseModuleId;
+    data.quizid = this.quiz.activityId;
+    data.sessionid = this.quiz.sessionId;
+    data.attemptid = this.quiz.attemptId;
+    data.sesskey = this.quiz.sessionKey;
     return jQuery.ajax({
         type: method,
         url: url,
@@ -90,31 +92,53 @@ jazzquiz.ajax = function(method, url, data, success) {
     });
 };
 
+/**
+ * Send a GET request using AJAX.
+ * @param {string} url Relative to root of jazzquiz module. Does not start with /.
+ * @param {Object} data Object with parameters as properties. Reserved: id, quizid, sessionid, attemptid, sesskey
+ * @param {function} success Callback function for when the request was completed successfully.
+ * @return {jqXHR} The jQuery XHR object
+ */
 jazzquiz.get = function(url, data, success) {
     return this.ajax('get', url, data, success);
 };
 
+/**
+ * Send a POST request using AJAX.
+ * @param {string} url Relative to root of jazzquiz module. Does not start with /.
+ * @param {Object} data Object with parameters as properties. Reserved: id, quizid, sessionid, attemptid, sesskey
+ * @param {function} success Callback function for when the request was completed successfully.
+ * @return {jqXHR} The jQuery XHR object
+ */
 jazzquiz.post = function(url, data, success) {
     return this.ajax('post', url, data, success);
 };
 
-jazzquiz.request_quiz_info = function() {
+/**
+ * Initiate the chained calls to quizinfo.php
+ */
+jazzquiz.requestQuizInfo = function() {
     jazzquiz.get('quizinfo.php', {}, function(data) {
         // Change the local state
-        jazzquiz.change_quiz_state(data.status, data);
+        jazzquiz.changeQuizState(data.status, data);
         // Schedule next update
         // TODO: Remove this if statement, and rather have a time defined in the specific javascript files.
         // The instructor has a higher update frequency since there is usually only one,
         // but students might be in the hundreds, so we want to limit them to every couple seconds instead.
-        if (jazzquiz.is_instructor) {
-            setTimeout(jazzquiz.request_quiz_info, 500);
+        if (jazzquiz.isInstructor) {
+            setTimeout(jazzquiz.requestQuizInfo, 500);
         } else {
-            setTimeout(jazzquiz.request_quiz_info, 2000);
+            setTimeout(jazzquiz.requestQuizInfo, 2000);
         }
     });
 };
 
-// Note: ES2015 supports default arguments. Update in the future.
+/**
+ * Retrieve a language string that was sent along with the page.
+ * @param {string} key Which string in the language file we want.
+ * @param {string} [from=jazzquiz] Which language file we want the string from. Default is jazzquiz.
+ * @param [args] This is {$a} in the string for the key.
+ */
 jazzquiz.text = function(key, from, args) {
     from = (typeof from !== 'undefined') ? from : 'jazzquiz';
     args = (typeof args !== 'undefined') ? args : [];
@@ -125,21 +149,23 @@ jazzquiz.text = function(key, from, args) {
  * Show the loading animation with some text.
  * @param {string} text
  */
-jazzquiz.show_loading = function(text) {
+jazzquiz.showLoading = function(text) {
     jQuery('#jazzquiz_loading').removeClass('hidden').children('p').html(text);
 };
 
 /**
  * Hide the loading animation.
  */
-jazzquiz.hide_loading = function() {
+jazzquiz.hideLoading = function() {
     jQuery('#jazzquiz_loading').addClass('hidden');
 };
 
-// TODO: This should hide only the info.
-jazzquiz.hide_info = function() {
-    // TODO: Use a class on all the boxes to avoid this if
-    if (this.is_instructor) {
+/**
+ * Hide the quiz state information.
+ * @todo This should hide only the info, and not all the other containers.
+ */
+jazzquiz.hideInfo = function() {
+    if (this.isInstructor) {
         jQuery('#jazzquiz_responded_container').addClass('hidden').find('h4').html('');
         jQuery('#jazzquiz_response_info_container').addClass('hidden').html('');
         jQuery('#jazzquiz_responses_container').addClass('hidden').html('');
@@ -149,67 +175,84 @@ jazzquiz.hide_info = function() {
 };
 
 /**
+ * Show information that is relevant to the current state of the quiz.
  * @param {string} text
  */
-jazzquiz.show_info = function(text) {
+jazzquiz.showInfo = function(text) {
     jQuery('#jazzquiz_info_container').removeClass('hidden').html(text);
 };
 
-jazzquiz.render_all_mathjax = function() {
+/**
+ * Triggers a dynamic content update event, which MathJax listens to.
+ */
+jazzquiz.renderAllMathjax = function() {
     Y.fire(M.core.event.FILTER_CONTENT_UPDATED, {
         nodes: new Y.NodeList(document.getElementsByClassName('jazzquiz-latex-wrapper'))
     });
 };
 
-jazzquiz.add_mathjax_element = function(id, latex) {
-    jQuery('#' + id).html('<span class="jazzquiz-latex-wrapper"><span class="filter_mathjaxloader_equation">' + latex + '</span></span>');
-    this.render_all_mathjax();
+/**
+ * Sets the body of the target, and triggers an event letting MathJax know about the element.
+ * @param {string} targetId
+ * @param {string} latex
+ */
+jazzquiz.addMathjaxElement = function(targetId, latex) {
+    jQuery('#' + targetId).html('<span class="jazzquiz-latex-wrapper"><span class="filter_mathjaxloader_equation">' + latex + '</span></span>');
+    this.renderAllMathjax();
 };
 
-jazzquiz.render_maxima_equation = function(input, target_id) {
-    const target = document.getElementById(target_id);
+/**
+ * Converts the input to LaTeX and renders it to the target with MathJax.
+ * @param {string} input
+ * @param {string} targetId
+ */
+jazzquiz.renderMaximaEquation = function(input, targetId) {
+    const target = document.getElementById(targetId);
     if (target === null) {
-        console.log('Target element #' + target_id + ' not found.');
+        console.log('Target element #' + targetId + ' not found.');
         return;
     }
     this.get('stack.php', {
         input: encodeURIComponent(input)
     }, function(data) {
-        jazzquiz.add_mathjax_element(target_id, data.latex);
+        jazzquiz.addMathjaxElement(targetId, data.latex);
     }).fail(function() {
-        console.log('Failed to get LaTeX for #' + target_id);
+        console.log('Failed to get LaTeX for #' + targetId);
     });
 };
 
-// TODO: Is there a more elegant way to do this?
-jazzquiz.get_question_body_formatted = function() {
+/**
+ * @todo Is there a more elegant way to do this?
+ * @returns {string} The question body HTML with some elements removed.
+ */
+jazzquiz.getQuestionBodyFormatted = function() {
     const $original = jQuery('#jazzquiz_question_box');
     if (!$original.length) {
         return 'Not found';
     }
-    let $question_box = $original.clone();
-    $question_box.find('.info').remove();
-    $question_box.find('.im-controls').remove();
-    $question_box.find('.questiontestslink').remove();
-    $question_box.find('input').remove();
-    $question_box.find('label').remove(); // Some inputs have labels
-    $question_box.find('.ablock.form-inline').remove();
-    $question_box.find('.save_row').remove();
-    return $question_box.html();
+    let $questionBox = $original.clone();
+    $questionBox.find('.info').remove();
+    $questionBox.find('.im-controls').remove();
+    $questionBox.find('.questiontestslink').remove();
+    $questionBox.find('input').remove();
+    $questionBox.find('label').remove(); // Some inputs have labels
+    $questionBox.find('.ablock.form-inline').remove();
+    $questionBox.find('.save_row').remove();
+    return $questionBox.html();
 };
 
 /**
  * Load data such as session key and quiz state.
  */
-jazzquiz.decode_state = function() {
-    for (let prop in jazzquiz_root_state) {
-        if (jazzquiz_root_state.hasOwnProperty(prop)) {
-            this[prop] = jazzquiz_root_state[prop];
+jazzquiz.decodeState = function() {
+    for (let prop in jazzquizRootState) {
+        if (jazzquizRootState.hasOwnProperty(prop)) {
+            this[prop] = jazzquizRootState[prop];
         }
     }
-    for (let prop in jazzquiz_quiz_state) {
-        if (jazzquiz_quiz_state.hasOwnProperty(prop)) {
-            this.quiz[prop] = jazzquiz_quiz_state[prop];
+    for (let prop in jazzquizQuizState) {
+        if (jazzquizQuizState.hasOwnProperty(prop)) {
+            this.quiz[prop] = jazzquizQuizState[prop];
         }
     }
 };
@@ -217,115 +260,110 @@ jazzquiz.decode_state = function() {
 /**
  * Callback for when the quiz page is fully loaded
  */
-jazzquiz.quiz_page_loaded = function() {
+jazzquiz.initialize = function() {
     // Wait for jQuery
     if (!window.jQuery) {
         console.log('Waiting for jQuery... Trying again in 50ms');
-        this.jquery_errors++;
-        if (this.jquery_errors > 50) {
+        this.jQueryErrors++;
+        if (this.jQueryErrors > 50) {
             location.reload(true);
         }
         setTimeout(function() {
-            jazzquiz.quiz_page_loaded();
+            jazzquiz.initialize();
         }, 50);
         return;
     }
 
-    this.decode_state();
-    this.hide_loading();
+    this.hideLoading();
+    this.decodeState();
+    this.requestQuizInfo();
 
-    if (this.is_instructor) {
-        jQuery('#jazzquiz_controls_box').removeClass('hidden');
-    }
-
-    this.request_quiz_info();
-
-    jQuery(document).on('submit', '#jazzquiz_question_form', function(event) {
-        event.preventDefault();
-        jazzquiz.submit_answer();
-    });
-
-    if (!this.is_instructor) {
+    if (!this.isInstructor) {
+        jQuery(document).on('submit', '#jazzquiz_question_form', function(event) {
+            event.preventDefault();
+            jazzquiz.submitAnswer();
+        });
         jQuery(document).on('click', '#jazzquiz_save_vote', function() {
-            jazzquiz.save_vote();
+            jazzquiz.saveVote();
         });
         jQuery(document).on('click', '.jazzquiz-select-vote', function() {
-            jazzquiz.vote_answer = this.value;
+            jazzquiz.voteAnswer = this.value;
         });
     }
 };
 
-jazzquiz.clear_question_box = function() {
+jazzquiz.clearQuestionBox = function() {
     jQuery('#jazzquiz_question_box').html('').addClass('hidden');
 };
 
 /**
  * Request the current question form.
  */
-jazzquiz.reload_question_box = function() {
+jazzquiz.reloadQuestionBox = function() {
     this.get('quizdata.php', {
         action: 'get_question_form'
     }, function(data) {
-        jazzquiz.quiz.question.question_type = data.question_type;
+        jazzquiz.quiz.question.questionType = data.question_type;
         if (data.is_already_submitted) {
-            jazzquiz.show_info(jazzquiz.text('wait_for_instructor'));
+            jazzquiz.showInfo(jazzquiz.text('wait_for_instructor'));
             return;
         }
         jQuery('#jazzquiz_question_box').html(data.html).removeClass('hidden');
         eval(data.js);
     }).fail(function() {
-        this.show_info('Failed to load question.');
+        jazzquiz.showInfo('Failed to load question.');
     });
 };
 
 /**
  * Hide the question "ending in" timer, and clears the interval.
  */
-jazzquiz.hide_question_timer = function() {
+jazzquiz.hideQuestionTimer = function() {
     jQuery('#jazzquiz_question_timer').html('').addClass('hidden');
-    if (this.question_timer_interval !== 0) {
-        clearInterval(this.question_timer_interval);
-        this.question_timer_interval = 0;
+    if (this.questionTimerInterval !== 0) {
+        clearInterval(this.questionTimerInterval);
+        this.questionTimerInterval = 0;
     }
 };
 
 /**
  * Set time remaining for the question.
- * @param {number} time_left in seconds.
+ * @param {number} timeLeft in seconds.
  */
-jazzquiz.set_question_timer_text = function(time_left) {
+jazzquiz.setQuestionTimerText = function(timeLeft) {
     let $timer = jQuery('#jazzquiz_question_timer');
-    if (this.is_instructor) {
-        $timer.html(time_left + 's left');
+    if (this.isInstructor) {
+        $timer.html(this.text('x_seconds_left', 'jazzquiz', timeLeft));
     } else {
-        $timer.html(this.text('question_will_end_in_x_seconds', 'jazzquiz', time_left));
+        $timer.html(this.text('question_will_end_in_x_seconds', 'jazzquiz', timeLeft));
     }
     $timer.removeClass('hidden');
 };
 
 /**
  * Set time remaining until the question starts.
- * @param {number} time_left in seconds.
+ * @param {number} timeLeft in seconds.
  */
-jazzquiz.set_countdown_timer_text = function(time_left) {
-    if (time_left !== 0) {
-        this.show_info(this.text('question_will_start_in_x_seconds', 'jazzquiz', time_left));
+jazzquiz.setCountdownTimerText = function(timeLeft) {
+    if (timeLeft !== 0) {
+        this.showInfo(this.text('question_will_start_in_x_seconds', 'jazzquiz', timeLeft));
     } else {
-        this.show_info(this.text('question_will_start_now'));
+        this.showInfo(this.text('question_will_start_now'));
     }
 };
 
 /**
  * Is called for every second of the question countdown.
+ * @param {number} questionTime in seconds
  */
-jazzquiz.on_question_countdown_tick = function(question_time) {
-    this.quiz.question.countdown_time_left--;
-    if (this.quiz.question.countdown_time_left <= 0) {
-        clearInterval(this.question_countdown_interval);
-        this.question_countdown_interval = 0;
-        this.start_question_attempt(question_time);
+jazzquiz.onQuestionCountdownTick = function(questionTime) {
+    this.quiz.question.countdownTimeLeft--;
+    if (this.quiz.question.countdownTimeLeft <= 0) {
+        clearInterval(this.questionCountdownInterval);
+        this.questionCountdownInterval = 0;
+        this.startQuestionAttempt(questionTime);
     } else {
-        this.set_countdown_timer_text(this.quiz.question.countdown_time_left);
+        this.setCountdownTimerText(this.quiz.question.countdownTimeLeft);
     }
 };
 
@@ -333,31 +371,31 @@ jazzquiz.on_question_countdown_tick = function(question_time) {
  * Start a countdown for the question which will eventually start the question attempt.
  * The question attempt might start before this function return, depending on the arguments.
  * If a countdown has already been started, this call will return true and the current countdown will continue.
- * @param {number} question_time
- * @param {number} countdown_time_left
+ * @param {number} questionTime
+ * @param {number} countdownTimeLeft
  * @return {boolean} true if countdown is active
  */
-jazzquiz.start_question_countdown = function(question_time, countdown_time_left) {
-    if (this.question_countdown_interval !== 0) {
+jazzquiz.startQuestionCountdown = function(questionTime, countdownTimeLeft) {
+    if (this.questionCountdownInterval !== 0) {
         return true;
     }
-    question_time = parseInt(question_time);
-    countdown_time_left = parseInt(countdown_time_left);
-    this.quiz.question.countdown_time_left = countdown_time_left;
-    if (countdown_time_left < 1) {
+    questionTime = parseInt(questionTime);
+    countdownTimeLeft = parseInt(countdownTimeLeft);
+    this.quiz.question.countdownTimeLeft = countdownTimeLeft;
+    if (countdownTimeLeft < 1) {
         // Check if the question has already ended.
-        if (countdown_time_left < -question_time) {
+        if (countdownTimeLeft < -questionTime) {
             return false;
         }
         // We want to show some text, as we must also request the question form from the server.
-        this.set_countdown_timer_text(0);
+        this.setCountdownTimerText(0);
         // No need to start the countdown. Just start the question.
-        this.start_question_attempt(question_time + countdown_time_left);
+        this.startQuestionAttempt(questionTime + countdownTimeLeft);
         return true;
     }
-    this.set_countdown_timer_text(countdown_time_left);
-    this.question_countdown_interval = setInterval(function() {
-        jazzquiz.on_question_countdown_tick(question_time);
+    this.setCountdownTimerText(countdownTimeLeft);
+    this.questionCountdownInterval = setInterval(function() {
+        jazzquiz.onQuestionCountdownTick(questionTime);
     }, 1000);
     return true;
 };
@@ -365,43 +403,43 @@ jazzquiz.start_question_countdown = function(question_time, countdown_time_left)
 /**
  * When the question "ending in" timer reaches 0 seconds, this will be called.
  */
-jazzquiz.on_question_timer_ending = function() {
-    this.quiz.question.is_running = false;
-    if (this.is_instructor) {
-        this.end_question();
+jazzquiz.onQuestionTimerEnding = function() {
+    this.quiz.question.isRunning = false;
+    if (this.isInstructor) {
+        this.endQuestion();
     }
 };
 
 /**
  * Is called for every second of the "ending in" timer.
  */
-jazzquiz.on_question_timer_tick = function() {
-    const current_time = new Date().getTime();
-    if (current_time > this.quiz.question.end_time) {
-        this.hide_question_timer();
-        this.on_question_timer_ending();
+jazzquiz.onQuestionTimerTick = function() {
+    const currentTime = new Date().getTime();
+    if (currentTime > this.quiz.question.endTime) {
+        this.hideQuestionTimer();
+        this.onQuestionTimerEnding();
     } else {
-        const time_left = parseInt((this.quiz.question.end_time - current_time) / 1000);
-        this.set_question_timer_text(time_left);
+        const timeLeft = parseInt((this.quiz.question.endTime - currentTime) / 1000);
+        this.setQuestionTimerText(timeLeft);
     }
 };
 
 /**
  * Request the current question from the server.
- * @param {number} question_time
+ * @param {number} questionTime
  */
-jazzquiz.start_question_attempt = function(question_time) {
-    this.hide_info();
-    this.reload_question_box();
+jazzquiz.startQuestionAttempt = function(questionTime) {
+    this.hideInfo();
+    this.reloadQuestionBox();
     // Set this to true so that we don't keep calling this over and over
-    this.quiz.question.is_running = true;
-    if (question_time === 0) {
+    this.quiz.question.isRunning = true;
+    if (questionTime === 0) {
         // 0 means no timer.
         return;
     }
-    this.set_question_timer_text(question_time);
-    this.quiz.question.end_time = new Date().getTime() + question_time * 1000;
-    this.question_timer_interval = setInterval(function() {
-        jazzquiz.on_question_timer_tick();
+    this.setQuestionTimerText(questionTime);
+    this.quiz.question.endTime = new Date().getTime() + questionTime * 1000;
+    this.questionTimerInterval = setInterval(function() {
+        jazzquiz.onQuestionTimerTick();
     }, 1000);
 };

@@ -47,7 +47,6 @@ class attempt_started extends \core\event\base {
 
     /**
      * Returns description of what happened.
-     *
      * @return string
      */
     public function get_description() {
@@ -57,7 +56,6 @@ class attempt_started extends \core\event\base {
 
     /**
      * Returns localised general event name.
-     *
      * @return string
      */
     public static function get_name() {
@@ -66,18 +64,15 @@ class attempt_started extends \core\event\base {
 
     /**
      * Returns relevant URL.
-     *
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/jazzquiz/view.php', array('action' => 'quizstart'));
+        return new \moodle_url('/mod/jazzquiz/view.php', ['action' => 'quizstart']);
     }
 
     /**
      * Custom validation.
-     *
      * @throws \coding_exception
-     * @return void
      */
     protected function validate_data() {
         parent::validate_data();

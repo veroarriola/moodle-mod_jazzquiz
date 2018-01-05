@@ -27,15 +27,13 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_question_bank_view extends \core_question\bank\view
-{
+class jazzquiz_question_bank_view extends \core_question\bank\view {
     /**
      * Define the columns we want to be displayed on the question bank
      *
      * @return array
      */
-    protected function wanted_columns()
-    {
+    protected function wanted_columns() {
         // Full class names for question bank columns
         $columns = [
             '\\mod_jazzquiz\\bank\\question_bank_add_to_jazzquiz_action_column',
@@ -62,8 +60,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view
      * category      Chooses the category
      * displayoptions Sets display options
      */
-    public function display($tab_name, $page, $per_page, $cat, $recurse, $show_hidden, $show_question_text)
-    {
+    public function display($tab_name, $page, $per_page, $cat, $recurse, $show_hidden, $show_question_text) {
         global $OUTPUT;
 
         if ($this->process_actions_needing_ui()) {
@@ -101,8 +98,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view
      *
      * @return \moodle_url Moodle url to add the question
      */
-    public function get_add_to_jazzquiz_url($question_id)
-    {
+    public function get_add_to_jazzquiz_url($question_id) {
         $params = $this->baseurl->params();
         $params['questionid'] = $question_id;
         $params['action'] = 'addquestion';
@@ -118,8 +114,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view
      * @param $can_add
      * @throws \coding_exception
      */
-    protected function create_new_question_form($category, $can_add)
-    {
+    protected function create_new_question_form($category, $can_add) {
         echo '<div class="createnewquestion">';
         if ($can_add) {
             $this->create_new_question_button($category->id, $this->editquestionurl->params(), get_string('create_new_question', 'jazzquiz'));
@@ -144,8 +139,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view
      * @param string $tooltip a tooltip to add to the button (optional).
      * @param bool $disabled if true, the button will be disabled.
      */
-    private function create_new_question_button($category_id, $params, $caption, $tooltip = '', $disabled = false)
-    {
+    private function create_new_question_button($category_id, $params, $caption, $tooltip = '', $disabled = false) {
         global $OUTPUT;
         static $choice_form_printed = false;
 

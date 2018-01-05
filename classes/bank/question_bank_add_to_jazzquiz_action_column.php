@@ -27,16 +27,13 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2014 University of Wisconsin - Madison
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class question_bank_add_to_jazzquiz_action_column extends \core_question\bank\action_column_base
-{
+class question_bank_add_to_jazzquiz_action_column extends \core_question\bank\action_column_base {
 
-    public function get_name()
-    {
+    public function get_name() {
         return 'addtojazzquizaction';
     }
 
-    protected function display_content($question, $row_classes)
-    {
+    protected function display_content($question, $row_classes) {
         if (!question_has_capability_on($question, 'use')) {
             return;
         }
@@ -44,8 +41,7 @@ class question_bank_add_to_jazzquiz_action_column extends \core_question\bank\ac
         $this->print_icon('t/add', $text, $this->qbank->get_add_to_jazzquiz_url($question->id));
     }
 
-    public function get_required_fields()
-    {
+    public function get_required_fields() {
         return ['q.id'];
     }
 

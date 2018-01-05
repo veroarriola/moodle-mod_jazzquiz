@@ -24,8 +24,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class improviser
-{
+class improviser {
     private static function question_type_exists($name) {
         $question_types = \core_plugin_manager::instance()->get_plugins_of_type('qtype');
         foreach ($question_types as $question_type) {
@@ -36,8 +35,7 @@ class improviser
         return false;
     }
 
-    private static function make_generic_question_definition($question_type, $name)
-    {
+    private static function make_generic_question_definition($question_type, $name) {
         $question = new \stdClass();
         $question->category = 4; // This is the 'System Default' for 222
         $question->parent = 0;
@@ -60,8 +58,7 @@ class improviser
         return $question;
     }
 
-    private static function make_multichoice_options($question_id)
-    {
+    private static function make_multichoice_options($question_id) {
         $options = new \stdClass();
         $options->questionid = $question_id;
         $options->layout = 0;
@@ -78,16 +75,14 @@ class improviser
         return $options;
     }
 
-    private static function make_short_answer_options($question_id)
-    {
+    private static function make_short_answer_options($question_id) {
         $options = new \stdClass();
         $options->questionid = $question_id;
         $options->usecase = 0;
         return $options;
     }
 
-    private static function make_generic_question_answer($question_id, $format, $answer_text)
-    {
+    private static function make_generic_question_answer($question_id, $format, $answer_text) {
         $answer = new \stdClass();
         $answer->question = $question_id;
         $answer->answer = $answer_text;
@@ -98,14 +93,12 @@ class improviser
         return $answer;
     }
 
-    private static function improvised_question_definition_exists($name)
-    {
+    private static function improvised_question_definition_exists($name) {
         global $DB;
         return $DB->record_exists('question', ['name' => '{IMPROV}' . $name]);
     }
 
-    private static function insert_multichoice_question_definition($name, $option_count)
-    {
+    private static function insert_multichoice_question_definition($name, $option_count) {
         global $DB;
 
         // Check if duplicate
@@ -131,8 +124,7 @@ class improviser
         }
     }
 
-    private static function insert_shortanswer_question_definition($name)
-    {
+    private static function insert_shortanswer_question_definition($name) {
         global $DB;
 
         // Check if duplicate
@@ -153,8 +145,7 @@ class improviser
         $DB->insert_record('question_answers', $answer);
     }
 
-    private static function insert_truefalse_question_definition($name)
-    {
+    private static function insert_truefalse_question_definition($name) {
         global $DB;
 
         // Check if duplicate
@@ -180,8 +171,7 @@ class improviser
         $DB->insert_record('question_truefalse', $true_false);
     }
 
-    private static function insert_stack_algebraic_question_definition($name)
-    {
+    private static function insert_stack_algebraic_question_definition($name) {
         global $DB;
 
         if (!self::question_type_exists('stack')) {
@@ -279,8 +269,7 @@ class improviser
         $prt_node->id = $DB->insert_record('qtype_stack_prt_nodes', $prt_node);
     }
 
-    public static function insert_default_improvised_question_definitions()
-    {
+    public static function insert_default_improvised_question_definitions() {
         // Multichoice (3, 4 and  5 options)
         for ($i = 3; $i <= 5; $i++) {
             self::insert_multichoice_question_definition("$i Multichoice Options", $i);

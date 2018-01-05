@@ -26,12 +26,11 @@
 /**
  * @param \mod_jazzquiz\jazzquiz $jazzquiz
  */
-function jazzquiz_view_tab($jazzquiz, $id, &$row, $capability, $name)
-{
+function jazzquiz_view_tab($jazzquiz, $id, &$row, $capability, $name) {
     if (!$jazzquiz->has_capability($capability)) {
         return;
     }
-    $url = new moodle_url("/mod/jazzquiz/$name.php", [ 'id' => $id ]);
+    $url = new moodle_url("/mod/jazzquiz/$name.php", ['id' => $id]);
     $row[] = new tabobject($name, $url, get_string($name, 'jazzquiz'));
 }
 
@@ -39,12 +38,11 @@ function jazzquiz_view_tab($jazzquiz, $id, &$row, $capability, $name)
  * Prints local lib tabs
  *
  * @param \mod_jazzquiz\jazzquiz $jazzquiz
- * @param string                 $current_tab
+ * @param string $current_tab
  *
  * @return string HTML string of the tabs
  */
-function jazzquiz_view_tabs($jazzquiz, $current_tab)
-{
+function jazzquiz_view_tabs($jazzquiz, $current_tab) {
     $tabs = [];
     $row = [];
     $inactive = [];

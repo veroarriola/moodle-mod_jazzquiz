@@ -32,8 +32,7 @@
  * @param \stdClass $jazzquiz An object from the form in mod.html
  * @return int The id of the newly inserted jazzquiz record
  **/
-function jazzquiz_add_instance($jazzquiz)
-{
+function jazzquiz_add_instance($jazzquiz) {
     global $DB;
     $jazzquiz->timemodified = time();
     $jazzquiz->timecreated = time();
@@ -49,8 +48,7 @@ function jazzquiz_add_instance($jazzquiz)
  * @param \stdClass $jazzquiz An object from the form in mod.html
  * @return boolean Success/Fail
  **/
-function jazzquiz_update_instance($jazzquiz)
-{
+function jazzquiz_update_instance($jazzquiz) {
     global $DB;
     $jazzquiz->timemodified = time();
     $jazzquiz->id = $jazzquiz->instance;
@@ -66,8 +64,7 @@ function jazzquiz_update_instance($jazzquiz)
  * @param int $id Id of the module instance
  * @return boolean Success/Failure
  **/
-function jazzquiz_delete_instance($id)
-{
+function jazzquiz_delete_instance($id) {
     global $DB, $CFG;
 
     require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
@@ -99,13 +96,11 @@ function jazzquiz_delete_instance($id)
  * @uses $CFG
  * @return boolean
  **/
-function jazzquiz_cron()
-{
+function jazzquiz_cron() {
     return true;
 }
 
-function jazzquiz_pluginfile($course, $cm, $context, $file_area, $args, $forcedownload, $options = [])
-{
+function jazzquiz_pluginfile($course, $cm, $context, $file_area, $args, $forcedownload, $options = []) {
     global $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -157,8 +152,7 @@ function jazzquiz_pluginfile($course, $cm, $context, $file_area, $args, $forcedo
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - justsend the file
  */
-function mod_jazzquiz_question_pluginfile($course, $context, $component, $filearea, $qubaid, $slot, $args, $forcedownload, $options = [])
-{
+function mod_jazzquiz_question_pluginfile($course, $context, $component, $filearea, $qubaid, $slot, $args, $forcedownload, $options = []) {
     $fs = get_file_storage();
     $relative_path = implode('/', $args);
     $full_path = "/$context->id/$component/$filearea/$relative_path";
@@ -168,8 +162,7 @@ function mod_jazzquiz_question_pluginfile($course, $context, $component, $filear
     send_stored_file($file, 0, 0, $forcedownload, $options);
 }
 
-function jazzquiz_supports($feature)
-{
+function jazzquiz_supports($feature) {
     if (!defined('FEATURE_PLAGIARISM')) {
         define('FEATURE_PLAGIARISM', 'plagiarism');
     }

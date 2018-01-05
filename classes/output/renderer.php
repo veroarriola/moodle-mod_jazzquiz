@@ -33,9 +33,11 @@ require_once($CFG->libdir . '/questionlib.php');
  */
 class page_requirements_diff extends \page_requirements_manager {
     private $before;
+
     public function __construct($manager) {
         $this->before = $manager->jsinitcode;
     }
+
     public function get_js_diff($manager) {
         return array_diff($manager->jsinitcode, $this->before);
     }
@@ -50,8 +52,7 @@ class page_requirements_diff extends \page_requirements_manager {
  * @copyright  2018 NTNU
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class renderer extends \plugin_renderer_base
-{
+class renderer extends \plugin_renderer_base {
     /** @var \mod_jazzquiz\jazzquiz $jazzquiz */
     protected $jazzquiz;
 
@@ -63,8 +64,7 @@ class renderer extends \plugin_renderer_base
     /**
      * @param \mod_jazzquiz\jazzquiz $jazzquiz
      */
-    public function set_jazzquiz($jazzquiz)
-    {
+    public function set_jazzquiz($jazzquiz) {
         $this->jazzquiz = $jazzquiz;
     }
 
@@ -76,9 +76,8 @@ class renderer extends \plugin_renderer_base
      * @param string $type
      * @param string $message
      */
-    public function setMessage($type, $message)
-    {
-        $this->pageMessage = [ $type, $message ];
+    public function setMessage($type, $message) {
+        $this->pageMessage = [$type, $message];
     }
 
     /**
@@ -86,8 +85,7 @@ class renderer extends \plugin_renderer_base
      *
      * @param string $tab the current tab to show as active
      */
-    public function base_header($tab = 'view')
-    {
+    public function base_header($tab = 'view') {
         echo $this->output->header();
         echo jazzquiz_view_tabs($this->jazzquiz, $tab);
         $this->showMessage();
@@ -96,16 +94,14 @@ class renderer extends \plugin_renderer_base
     /**
      * Base footer function to do basic footer rendering
      */
-    public function base_footer()
-    {
+    public function base_footer() {
         echo $this->output->footer();
     }
 
     /**
      * shows a message if there is one
      */
-    protected function showMessage()
-    {
+    protected function showMessage() {
         if (empty($this->pageMessage) || !is_array($this->pageMessage)) {
             return;
         }
@@ -129,8 +125,7 @@ class renderer extends \plugin_renderer_base
      *
      * @param string $message
      */
-    public function render_popup_error($message)
-    {
+    public function render_popup_error($message) {
         $this->setMessage('error', $message);
         echo $this->output->header();
         $this->showMessage();
@@ -142,8 +137,7 @@ class renderer extends \plugin_renderer_base
      *
      * @param bool $rendering_quiz
      */
-    public function view_header($rendering_quiz = false)
-    {
+    public function view_header($rendering_quiz = false) {
         $this->base_header('view');
     }
 
@@ -152,8 +146,7 @@ class renderer extends \plugin_renderer_base
      * @param \moodleform $session_form
      * @param bool $session_started true if there is a session already
      */
-    public function view_inst_home($session_form, $session_started)
-    {
+    public function view_inst_home($session_form, $session_started) {
         global $PAGE;
 
         echo \html_writer::start_div('jazzquiz-box');
@@ -181,8 +174,7 @@ class renderer extends \plugin_renderer_base
      * @param \mod_jazzquiz\forms\view\student_start_form $student_start_form
      * @param \mod_jazzquiz\jazzquiz_session $session
      */
-    public function view_student_home($student_start_form, $session)
-    {
+    public function view_student_home($student_start_form, $session) {
         global $PAGE;
 
         echo \html_writer::start_div('jazzquiz-box');
@@ -222,14 +214,13 @@ class renderer extends \plugin_renderer_base
      *
      * @param \mod_jazzquiz\jazzquiz_session $session
      */
-    public function render_quiz($session)
-    {
+    public function render_quiz($session) {
         $this->init_quiz_js($session);
 
         $output = \html_writer::start_div('', ['id' => 'jazzquiz']);
 
         if ($this->jazzquiz->is_instructor()) {
-            $output .= \html_writer::div($this->render_controls(), 'jazzquiz-box hidden', ['id' => 'jazzquiz_controls_box']);
+            $output .= \html_writer::div($this->render_controls(), 'jazzquiz-box', ['id' => 'jazzquiz_controls_box']);
         }
 
         $loading_icon = $this->output->pix_icon('i/loading', 'loading...');
@@ -280,8 +271,7 @@ class renderer extends \plugin_renderer_base
      *
      * @return string[] html, javascript
      */
-    public function render_question_form($slot, $attempt)
-    {
+    public function render_question_form($slot, $attempt) {
         global $PAGE;
 
         $output = '';
@@ -292,19 +282,13 @@ class renderer extends \plugin_renderer_base
         }
         $output .= \html_writer::start_tag('div', ['class' => 'jazzquiz-box' . $is_instructor_class]);
 
-        $on_submit = '';
-        if (!$this->jazzquiz->is_instructor()) {
-            $on_submit .= 'jazzquiz.save_question();';
-        }
-        $on_submit .= 'return false;';
-
         $output .= \html_writer::start_tag('form', [
             'id' => 'jazzquiz_question_form',
             'action' => '',
             'method' => 'post',
             'enctype' => 'multipart/form-data',
             'accept-charset' => 'utf-8',
-            'onsubmit' => $on_submit
+            'onsubmit' => 'return false;'
         ]);
 
         $differ = new page_requirements_diff($PAGE->requires);
@@ -327,21 +311,19 @@ class renderer extends \plugin_renderer_base
         $output .= \html_writer::end_tag('form');
         $output .= \html_writer::end_tag('div');
 
-        return [ $output, $js ];
+        return [$output, $js];
     }
 
-    private function write_control_button($icon, $text, $id)
-    {
+    private function write_control_button($icon, $text, $id) {
         $text = get_string($text, 'jazzquiz');
         return \html_writer::tag('button', '<i class="fa fa-' . $icon . '"></i> ' . $text, [
             'class' => 'btn',
             'id' => $id,
-            'onclick' => "jazzquiz.execute_control_action('$id');"
+            'onclick' => "jazzquiz.executeControlAction('$id');"
         ]);
     }
 
-    private function write_control_buttons($buttons)
-    {
+    private function write_control_buttons($buttons) {
         $html = '';
         foreach ($buttons as $button) {
             if (count($button) < 3) {
@@ -357,8 +339,7 @@ class renderer extends \plugin_renderer_base
      *
      * @return string HTML fragment
      */
-    public function render_controls()
-    {
+    public function render_controls() {
         $html = '<div class="quiz-list-buttons quiz-control-buttons hidden">'
             . $this->write_control_buttons([
                 ['repeat', 'repoll', 'repollquestion'],
@@ -379,7 +360,7 @@ class renderer extends \plugin_renderer_base
 
             . '<div class="quiz-list-buttons">'
             . $this->write_control_button('start', 'startquiz', 'startquiz')
-            . '<h4 class="inline">No students have joined.</h4>'
+            . '<h4 class="inline"></h4>'
             . $this->write_control_button('close', 'quit', 'exitquiz')
             . '</div><div id="jazzquiz_control_separator"></div>';
 
@@ -392,8 +373,7 @@ class renderer extends \plugin_renderer_base
      *
      * @param \mod_jazzquiz\jazzquiz_session $session
      */
-    public function init_quiz_js($session)
-    {
+    public function init_quiz_js($session) {
         global $CFG;
 
         $this->page->requires->js('/question/qengine.js');
@@ -407,27 +387,27 @@ class renderer extends \plugin_renderer_base
         // Add window.onload script manually to handle removing the loading mask
         // TODO: Remove this inline JavaScript.
         echo \html_writer::start_tag('script');
-        echo "(function preLoad(){window.addEventListener('load', function(){jazzquiz.quiz_page_loaded();}, false);}());";
+        echo "(function preLoad(){window.addEventListener('load', function(){jazzquiz.initialize();}, false);}());";
         echo \html_writer::end_tag('script');
 
         // Root values
         $jazzquiz = new \stdClass();
-        $jazzquiz->is_instructor = $this->jazzquiz->is_instructor();
+        $jazzquiz->isInstructor = $this->jazzquiz->is_instructor();
         $jazzquiz->siteroot = $CFG->wwwroot;
 
         // Quiz
         $quiz = new \stdClass();
-        $quiz->course_module_id = $this->jazzquiz->course_module->id;
-        $quiz->activity_id = $this->jazzquiz->data->id;
-        $quiz->session_id = $session->data->id;
-        $quiz->attempt_id = $session->open_attempt->data->id;
-        $quiz->session_key = sesskey();
-        $quiz->total_students = $session->get_student_count();
+        $quiz->courseModuleId = $this->jazzquiz->course_module->id;
+        $quiz->activityId = $this->jazzquiz->data->id;
+        $quiz->sessionId = $session->data->id;
+        $quiz->attemptId = $session->open_attempt->data->id;
+        $quiz->sessionKey = sesskey();
+        $quiz->totalStudents = $session->get_student_count();
 
         // Print data as JSON
         echo \html_writer::start_tag('script');
-        echo "var jazzquiz_root_state = " . json_encode($jazzquiz) . ';';
-        echo "var jazzquiz_quiz_state = " . json_encode($quiz) . ';';
+        echo "var jazzquizRootState = " . json_encode($jazzquiz) . ';';
+        echo "var jazzquizQuizState = " . json_encode($quiz) . ';';
         echo \html_writer::end_tag('script');
 
         // Add localization strings
@@ -442,7 +422,24 @@ class renderer extends \plugin_renderer_base
             'responded',
             'wait_for_instructor',
             'instructions_for_student',
-            'instructions_for_instructor'
+            'instructions_for_instructor',
+            'no_students_have_joined',
+            'one_student_has_joined',
+            'x_students_have_joined',
+            'click_to_show_original_results',
+            'click_to_show_vote_results',
+            'showing_vote_results',
+            'showing_original_results',
+            'failed_to_end_question',
+            'error_getting_vote_results',
+            'a_out_of_b_voted',
+            'a_out_of_b_responded',
+            'error_starting_vote',
+            'error_getting_current_results',
+            'error_with_request',
+            'x_seconds_left',
+            'error_saving_vote',
+            'you_already_voted',
         ], 'jazzquiz');
     }
 
@@ -451,8 +448,7 @@ class renderer extends \plugin_renderer_base
      *
      * @param bool $is_instructor
      */
-    public function no_questions($is_instructor)
-    {
+    public function no_questions($is_instructor) {
         echo $this->output->box_start('generalbox boxaligncenter jazzquiz-box');
         echo \html_writer::tag('p', get_string('no_questions', 'jazzquiz'));
 
@@ -471,8 +467,7 @@ class renderer extends \plugin_renderer_base
     /**
      * Basic footer for the view page
      */
-    public function view_footer()
-    {
+    public function view_footer() {
         $this->base_footer();
     }
 

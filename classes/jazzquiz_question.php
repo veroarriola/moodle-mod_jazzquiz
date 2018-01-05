@@ -24,8 +24,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_question
-{
+class jazzquiz_question {
     /** @var \stdClass $data */
     public $data;
 
@@ -35,8 +34,7 @@ class jazzquiz_question
     /**
      * @param \stdClass $data (jazzquiz_question)
      */
-    public function __construct($data)
-    {
+    public function __construct($data) {
         global $DB;
         $this->data = $data;
         $this->question = $DB->get_record('question', ['id' => $data->questionid], '*', MUST_EXIST);

@@ -31,15 +31,13 @@ use mod_jazzquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
-class edit_renderer extends \plugin_renderer_base
-{
+class edit_renderer extends \plugin_renderer_base {
     use renderer_base;
 
     /**
      * Prints edit page header
      */
-    public function print_header()
-    {
+    public function print_header() {
         $this->base_header('edit');
         echo $this->output->box_start('generalbox boxaligncenter jazzquiz-box');
     }
@@ -51,8 +49,7 @@ class edit_renderer extends \plugin_renderer_base
      * @param string $question_bank_view HTML for the question bank view
      * @param \moodle_url $url
      */
-    public function listquestions($questions, $question_bank_view, $url)
-    {
+    public function listquestions($questions, $question_bank_view, $url) {
         global $CFG;
 
         echo \html_writer::start_div('row', ['id' => 'questionrow']);
@@ -95,8 +92,7 @@ class edit_renderer extends \plugin_renderer_base
      * @param \moodle_url $url
      * @return string
      */
-    protected function show_questionlist($questions, $url)
-    {
+    protected function show_questionlist($questions, $url) {
         $return = '<ol class="questionlist">';
         $question_count = count($questions);
         $question_number = 1;
@@ -119,8 +115,7 @@ class edit_renderer extends \plugin_renderer_base
      * @param \moodle_url $url
      * @return string
      */
-    protected function display_question_block($question, $slot, $question_count, $url)
-    {
+    protected function display_question_block($question, $slot, $question_count, $url) {
         $return = '';
 
         $drag_icon = new \pix_icon('i/dragdrop', 'dragdrop');
@@ -169,16 +164,14 @@ class edit_renderer extends \plugin_renderer_base
         return $return;
     }
 
-    public function opensession()
-    {
+    public function opensession() {
         echo \html_writer::tag('h3', get_string('edit_page_open_session_error', 'jazzquiz'));
     }
 
     /**
      * Ends the edit page with the footer of Moodle
      */
-    public function footer()
-    {
+    public function footer() {
         echo $this->output->box_end();
         $this->base_footer();
     }

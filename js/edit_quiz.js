@@ -23,18 +23,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function submit_question_order(order) {
+/**
+ * Submit the question order to the server. An empty array will delete all questions.
+ * @param {Array.<number>} order
+ */
+function submitQuestionOrder(order) {
     jQuery.post('edit.php', {
-        id: jazzquiz.quiz.course_module_id,
+        id: jazzquiz.quiz.courseModuleId,
         action: 'order',
         order: JSON.stringify(order)
-    }, function () {
+    }, function() {
         // TODO: Correct locally instead, but for now just refresh.
         location.reload();
     });
 }
 
-function get_question_order() {
+/**
+ * @returns {Array} The current question order.
+ */
+function getQuestionOrder() {
     let order = [];
     jQuery('.questionlist li').each(function() {
         order.push(jQuery(this).data('question-id'));
@@ -42,16 +49,22 @@ function get_question_order() {
     return order;
 }
 
-function offset_question(question_id, offset) {
-    let order = get_question_order();
-    let original_index = order.indexOf(question_id);
-    if (original_index === -1) {
+/**
+ * Move a question up or down by a specified offset.
+ * @param {number} questionId
+ * @param {number} offset Negative to move down, positive to move up
+ * @returns {Array}
+ */
+function offsetQuestion(questionId, offset) {
+    let order = getQuestionOrder();
+    let originalIndex = order.indexOf(questionId);
+    if (originalIndex === -1) {
         return order;
     }
     for (let i = 0; i < order.length; i++) {
-        if (i + offset === original_index) {
-            order[original_index] = order[i];
-            order[i] = question_id;
+        if (i + offset === originalIndex) {
+            order[originalIndex] = order[i];
+            order[i] = questionId;
             break;
         }
     }
@@ -59,7 +72,7 @@ function offset_question(question_id, offset) {
 }
 
 window.addEventListener('load', function() {
-    jazzquiz.decode_state();
+    jazzquiz.decodeState();
 
     // TODO: Timeout because jQuery is not loaded yet when this runs. Modules should be used later on.
     setTimeout(function() {
@@ -69,13 +82,13 @@ window.addEventListener('load', function() {
             let order = [];
             switch (action) {
                 case 'up':
-                    order = offset_question(question_id, 1);
+                    order = offsetQuestion(question_id, 1);
                     break;
                 case 'down':
-                    order = offset_question(question_id, -1);
+                    order = offsetQuestion(question_id, -1);
                     break;
                 case 'delete':
-                    order = get_question_order();
+                    order = getQuestionOrder();
                     const index = order.indexOf(question_id);
                     if (index !== -1) {
                         order.splice(index, 1);
@@ -84,16 +97,16 @@ window.addEventListener('load', function() {
                 default:
                     return;
             }
-            submit_question_order(order);
+            submitQuestionOrder(order);
         });
     }, 500);
 
-    let questionlist = document.getElementsByClassName('questionlist')[0];
-    Sortable.create(questionlist, {
+    let questionList = document.getElementsByClassName('questionlist')[0];
+    Sortable.create(questionList, {
         handle: '.dragquestion',
-        onSort: function () {
-            const order = get_question_order();
-            submit_question_order(order);
+        onSort: function() {
+            const order = getQuestionOrder();
+            submitQuestionOrder(order);
         }
     });
 });

@@ -21,55 +21,55 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-jazzquiz.change_quiz_state = function(state, data) {
+jazzquiz.changeQuizState = function(state, data) {
 
-    this.is_new_state = (this.state !== state);
+    this.isNewState = (this.state !== state);
     this.state = state;
 
     switch (state) {
 
         case 'notrunning':
-            this.show_info(this.text('instructions_for_student'));
+            this.showInfo(this.text('instructions_for_student'));
             break;
 
         case 'preparing':
-            this.show_info(this.text('wait_for_instructor'));
+            this.showInfo(this.text('wait_for_instructor'));
             break;
 
         case 'running':
-            if (this.quiz.question.is_running) {
+            if (this.quiz.question.isRunning) {
                 break;
             }
-            const started = this.start_question_countdown(data.question_time, data.delay);
+            const started = this.startQuestionCountdown(data.question_time, data.delay);
             if (!started) {
-                this.show_info(this.text('wait_for_instructor'));
+                this.showInfo(this.text('wait_for_instructor'));
             }
             break;
 
         case 'reviewing':
-            this.quiz.question.is_vote_running = false;
-            this.quiz.question.is_running = false;
-            this.hide_question_timer();
-            this.show_info(this.text('wait_for_instructor'));
+            this.quiz.question.isVoteRunning = false;
+            this.quiz.question.isRunning = false;
+            this.hideQuestionTimer();
+            this.showInfo(this.text('wait_for_instructor'));
             break;
 
         case 'sessionclosed':
-            this.show_info(this.text('session_closed'));
+            this.showInfo(this.text('session_closed'));
             break;
 
         case 'voting':
-            if (this.quiz.question.is_vote_running) {
+            if (this.quiz.question.isVoteRunning) {
                 break;
             }
-            this.show_info(data.html);
+            this.showInfo(data.html);
             const options = data.options;
             for (let i = 0; i < options.length; i++) {
-                this.add_mathjax_element(options[i].content_id, options[i].text);
+                this.addMathjaxElement(options[i].content_id, options[i].text);
                 if (options[i].question_type === 'stack') {
-                    this.render_maxima_equation(options[i].text, options[i].content_id);
+                    this.renderMaximaEquation(options[i].text, options[i].content_id);
                 }
             }
-            this.quiz.question.is_vote_running = true;
+            this.quiz.question.isVoteRunning = true;
             break;
 
         default:
@@ -80,13 +80,13 @@ jazzquiz.change_quiz_state = function(state, data) {
 /**
  * Submit answer for the current question.
  */
-jazzquiz.submit_answer = function() {
-    this.hide_question_timer();
-    if (this.quiz.question.is_saving) {
+jazzquiz.submitAnswer = function() {
+    this.hideQuestionTimer();
+    if (this.quiz.question.isSaving) {
         // Don't save twice
         return;
     }
-    this.quiz.question.is_saving = true;
+    this.quiz.question.isSaving = true;
     if (typeof tinyMCE !== 'undefined') {
         tinyMCE.triggerSave();
     }
@@ -101,35 +101,35 @@ jazzquiz.submit_answer = function() {
     }
     this.post('quizdata.php', data, function(data) {
         if (data.feedback.length > 0) {
-            jazzquiz.show_info(data.feedback);
+            jazzquiz.showInfo(data.feedback);
         } else {
-            jazzquiz.show_info(jazzquiz.text('wait_for_instructor'));
+            jazzquiz.showInfo(jazzquiz.text('wait_for_instructor'));
         }
-        jazzquiz.quiz.question.is_saving = false;
-        if (!jazzquiz.quiz.question.is_running) {
+        jazzquiz.quiz.question.isSaving = false;
+        if (!jazzquiz.quiz.question.isRunning) {
             return;
         }
-        if (jazzquiz.quiz.question.is_vote_running) {
+        if (jazzquiz.quiz.question.isVoteRunning) {
             return;
         }
-        jazzquiz.clear_question_box();
+        jazzquiz.clearQuestionBox();
     }).fail(function() {
-        jazzquiz.quiz.question.is_saving = false;
-        jazzquiz.show_info('There was an error with your request');
+        jazzquiz.quiz.question.isSaving = false;
+        jazzquiz.showInfo(jazzquiz.text('error_with_request'));
     });
 };
 
-jazzquiz.save_vote = function() {
+jazzquiz.saveVote = function() {
     this.post('quizdata.php', {
         action: 'save_vote',
-        vote: this.vote_answer
+        vote: this.voteAnswer
     }, function(data) {
         if (data.status === 'success') {
-            jazzquiz.show_info(jazzquiz.text('wait_for_instructor'));
+            jazzquiz.showInfo(jazzquiz.text('wait_for_instructor'));
         } else {
-            jazzquiz.show_info('Sorry, but you have already voted. ' + jazzquiz.text('wait_for_instructor'));
+            jazzquiz.showInfo(jazzquiz.text('you_already_voted') + ' ' + jazzquiz.text('wait_for_instructor'));
         }
     }).fail(function() {
-        jazzquiz.show_info('There was an error saving the vote.');
+        jazzquiz.showInfo(jazzquiz.text('error_saving_vote'));
     });
 };

@@ -34,8 +34,7 @@ require_once($CFG->dirroot . '/question/editlib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
-function jazzquiz_reports()
-{
+function jazzquiz_reports() {
     global $PAGE;
 
     $course_module_id = optional_param('id', false, PARAM_INT);

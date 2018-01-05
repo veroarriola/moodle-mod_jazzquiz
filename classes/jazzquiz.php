@@ -25,19 +25,18 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz
-{
+class jazzquiz {
     /**
      * @var array $review fields Static review fields to add as options
      */
     public static $review_fields = [
-        'attempt'          => [ 'theattempt', 'jazzquiz' ],
-        'correctness'      => [ 'whethercorrect', 'question' ],
-        'marks'            => [ 'marks', 'jazzquiz' ],
-        'specificfeedback' => [ 'specificfeedback', 'question' ],
-        'generalfeedback'  => [ 'generalfeedback', 'question' ],
-        'rightanswer'      => [ 'rightanswer', 'question' ],
-        'manualcomment'    => [ 'manualcomment', 'jazzquiz' ]
+        'attempt' => ['theattempt', 'jazzquiz'],
+        'correctness' => ['whethercorrect', 'question'],
+        'marks' => ['marks', 'jazzquiz'],
+        'specificfeedback' => ['specificfeedback', 'question'],
+        'generalfeedback' => ['generalfeedback', 'question'],
+        'rightanswer' => ['rightanswer', 'question'],
+        'manualcomment' => ['manualcomment', 'jazzquiz']
     ];
 
     /** @var \stdClass $course_module */
@@ -65,8 +64,7 @@ class jazzquiz
      * @param int $course_module_id The course module ID
      * @param string $renderer_subtype Renderer sub-type to load if requested
      */
-    public function __construct($course_module_id, $renderer_subtype = null)
-    {
+    public function __construct($course_module_id, $renderer_subtype = null) {
         global $PAGE, $DB;
 
         $this->course_module = get_coursemodule_from_id('jazzquiz', $course_module_id, 0, false, MUST_EXIST);
@@ -78,8 +76,8 @@ class jazzquiz
         $PAGE->set_context($this->context);
         $this->renderer = $PAGE->get_renderer('mod_jazzquiz', $renderer_subtype);
 
-        $this->course = $DB->get_record('course', [ 'id' => $this->course_module->course ], '*', MUST_EXIST);
-        $this->data = $DB->get_record('jazzquiz', [ 'id' => $this->course_module->instance ], '*', MUST_EXIST);
+        $this->course = $DB->get_record('course', ['id' => $this->course_module->course], '*', MUST_EXIST);
+        $this->data = $DB->get_record('jazzquiz', ['id' => $this->course_module->instance], '*', MUST_EXIST);
         $this->renderer->set_jazzquiz($this);
         $this->refresh_questions();
     }
@@ -88,8 +86,7 @@ class jazzquiz
      * Saves the JazzQuiz instance to the database
      * @return bool
      */
-    public function save()
-    {
+    public function save() {
         global $DB;
         return $DB->update_record('jazzquiz', $this->data);
     }
@@ -102,8 +99,7 @@ class jazzquiz
      *
      * @param int $question_id The question bank's question id
      */
-    public function add_question($question_id)
-    {
+    public function add_question($question_id) {
         global $DB;
 
         $question = new \stdClass();
@@ -123,8 +119,7 @@ class jazzquiz
      *
      * @param int[] $order
      */
-    public function set_question_order($order)
-    {
+    public function set_question_order($order) {
         global $DB;
         $order = array_unique($order);
         $questions = $DB->get_records('jazzquiz_questions', ['jazzquizid' => $this->data->id], 'slot');
@@ -143,8 +138,7 @@ class jazzquiz
     /**
      * @return int[] of jazzquiz_question id
      */
-    public function get_question_order()
-    {
+    public function get_question_order() {
         $order = [];
         foreach ($this->questions as $question) {
             $order[] = $question->data->id;
@@ -157,8 +151,7 @@ class jazzquiz
      *
      * @param int $question_id the JazzQuiz question id
      */
-    public function edit_question($question_id)
-    {
+    public function edit_question($question_id) {
         global $DB;
         $url = new \moodle_url('/mod/jazzquiz/edit.php', ['id' => $this->course_module->id]);
         $action_url = clone($url);
@@ -205,8 +198,7 @@ class jazzquiz
     /**
      * Loads the quiz questions from the database, ordered by slot.
      */
-    public function refresh_questions()
-    {
+    public function refresh_questions() {
         global $DB;
         $this->questions = [];
         $questions = $DB->get_records('jazzquiz_questions', ['jazzquizid' => $this->data->id], 'slot');
@@ -232,8 +224,7 @@ class jazzquiz
      * Wraps require_capability with the context
      * @param string $capability
      */
-    public function require_capability($capability)
-    {
+    public function require_capability($capability) {
         // Throws exception on error
         require_capability($capability, $this->context);
     }
@@ -246,8 +237,7 @@ class jazzquiz
      *
      * @return bool Whether or not the current user has the capability
      */
-    public function has_capability($capability, $user_id = 0)
-    {
+    public function has_capability($capability, $user_id = 0) {
         if ($user_id !== 0) {
             // Pass in userid if there is one
             return has_capability($capability, $this->context, $user_id);
@@ -261,8 +251,7 @@ class jazzquiz
      * Quick function for whether or not the current user is the instructor/can control the quiz
      * @return bool
      */
-    public function is_instructor()
-    {
+    public function is_instructor() {
         if (is_null($this->is_instructor)) {
             $this->is_instructor = $this->has_capability('mod/jazzquiz:control');
         }
@@ -274,8 +263,7 @@ class jazzquiz
      * @param int $session_id
      * @return jazzquiz_session
      */
-    public function get_session($session_id)
-    {
+    public function get_session($session_id) {
         global $DB;
         $session = $DB->get_record('jazzquiz_sessions', [
             'id' => $session_id
@@ -289,10 +277,9 @@ class jazzquiz
      * @param array $conditions
      * @return jazzquiz_session[]
      */
-    public function get_sessions($conditions = [])
-    {
+    public function get_sessions($conditions = []) {
         global $DB;
-        $conditions = array_merge([ 'jazzquizid' => $this->data->id ], $conditions);
+        $conditions = array_merge(['jazzquizid' => $this->data->id], $conditions);
         $session_records = $DB->get_records('jazzquiz_sessions', $conditions);
         $sessions = [];
         foreach ($session_records as $session_record) {
@@ -306,9 +293,8 @@ class jazzquiz
      *
      * @return array
      */
-    public function get_closed_sessions()
-    {
-        return $this->get_sessions([ 'sessionopen' => 0 ]);
+    public function get_closed_sessions() {
+        return $this->get_sessions(['sessionopen' => 0]);
     }
 
 }

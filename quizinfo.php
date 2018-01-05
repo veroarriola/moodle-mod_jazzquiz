@@ -32,8 +32,9 @@ define('AJAX_SCRIPT', true);
 require_once('../../config.php');
 require_sesskey();
 
-function print_json($array)
-{
+// TODO: This file should be merged with quizdata.php
+
+function print_json($array) {
     echo json_encode($array);
 }
 
@@ -41,7 +42,7 @@ function print_json($array)
 $session_id = required_param('sessionid', PARAM_INT);
 
 // First determine if we get a session.
-$session = $DB->get_record('jazzquiz_sessions', [ 'id' => $session_id ]);
+$session = $DB->get_record('jazzquiz_sessions', ['id' => $session_id]);
 if (!$session) {
     print_json([
         'status' => 'error',
@@ -51,7 +52,7 @@ if (!$session) {
 }
 
 // Next we need to get the JazzQuiz object and course module object to make sure a student can log in for the session asked for
-$jazzquiz = $DB->get_record('jazzquiz', [ 'id' => $session->jazzquizid ]);
+$jazzquiz = $DB->get_record('jazzquiz', ['id' => $session->jazzquizid]);
 if (!$jazzquiz) {
     print_json([
         'status' => 'error',
@@ -61,7 +62,7 @@ if (!$jazzquiz) {
 }
 
 try {
-    $course = $DB->get_record('course', [ 'id' => $jazzquiz->course ], '*', MUST_EXIST);
+    $course = $DB->get_record('course', ['id' => $jazzquiz->course], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('jazzquiz', $jazzquiz->id, $course->id, false, MUST_EXIST);
     require_login($course->id, false, $cm, false, true);
 } catch (\Exception $e) {
@@ -95,7 +96,7 @@ switch ($session->status) {
             ]);
             exit;
         }
-        // fall-through
+    // fall-through
     case 'preparing':
     case 'reviewing':
         print_json([

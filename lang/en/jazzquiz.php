@@ -30,8 +30,9 @@ $string['modulename_help'] = '
     The JazzQuiz activity enables an instructor to create and administer quizzes in real-time. All regular quiz question types can be used in the JazzQuiz.
 </p>
 <p>
-    Questions can be set to allow multiple attempts. A time limit may be set to automatically end the question, or the instructor can manually end the question and move on to the next one.
-    The instructor also has the ability to jump to different questions while  running the session. Instructors can monitor the responses live.
+    The instructor has the ability to jump to different questions while running a session.
+    Responses are shown live in a bar graph, optimized for projectors. Fullscreen mode is also available.
+    A time limit may be set to automatically end the question, or the instructor can manually end the question and move on to the next one.
 </p>';
 
 $string['modulenameplural'] = 'JazzQuizzes';
@@ -45,7 +46,6 @@ $string['jazzquiz:attempt'] = 'Attempt an JazzQuiz';
 $string['jazzquiz:control'] = 'Control an JazzQuiz. (Usually for instructors only)';
 $string['jazzquiz:editquestions'] = 'Edit questions for an JazzQuiz.';
 $string['jazzquiz:seeresponses'] = 'View other student responses to grade them';
-$string['jazzquiz:viewownattempts'] = 'Allows students to see their own attempts at a quiz';
 
 // Tabs
 $string['view'] = 'View';
@@ -107,6 +107,23 @@ $string['goto_session'] = 'Go to session in progress';
 $string['no_session'] = 'There is no open session';
 $string['join_quiz'] = 'Join Quiz';
 $string['attempt_started'] = 'An attempt has already been started by you, please click below to continue to your open attempt';
+$string['no_students_have_joined'] = 'No students have joined.';
+$string['one_student_has_joined'] = '1 student has joined.';
+$string['x_students_have_joined'] = '{$a} students have joined.';
+$string['click_to_show_original_results'] = 'Click to show original results';
+$string['click_to_show_vote_results'] = 'Click to show vote results';
+$string['showing_vote_results'] = 'Showing vote results';
+$string['showing_original_results'] = 'Showing original results';
+$string['failed_to_end_question'] = 'Failed to end the question.';
+$string['error_getting_vote_results'] = 'There was an error getting the vote results.';
+$string['a_out_of_b_voted'] = '{$a->a} / {$a->b} voted';
+$string['a_out_of_b_responded'] = '{$a->a} / {$a->b} responded';
+$string['error_starting_vote'] = 'There was an error starting the vote.';
+$string['error_getting_current_results'] = 'There was an error getting current results.';
+$string['error_with_request'] = 'There was an error with the request.';
+$string['x_seconds_left'] = '{$a}s left';
+$string['error_saving_vote'] = 'There was an error saving your vote.';
+$string['you_already_voted'] = 'Sorry, but you have already voted.';
 
 // Instructor Controls
 $string['startquiz'] = 'Start quiz';
@@ -150,8 +167,8 @@ $string['instructions_for_instructor'] = '
             <td>
                  Let the students vote on their answers.
                  The instructor can click on an answer to toggle whether it should be included in the vote or not.
-                 Clicking on the bar to the right of the answer will start a merge from that answer.
-                 Note that the bar you click on is the bar that will be merged into the bar you click on next.
+                 Clicking on the bar of the answer will start a merge from that answer.
+                 Note that this bar will consume the bar you click on next.
             </td>
         </tr>
         <tr>

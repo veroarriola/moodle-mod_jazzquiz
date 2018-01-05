@@ -8,8 +8,7 @@ namespace mod_jazzquiz\reports;
  * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class report_overview
-{
+class report_overview {
     /**
      * @var \mod_jazzquiz\jazzquiz $jazzquiz
      */
@@ -23,8 +22,7 @@ class report_overview
     /**
      * @param \mod_jazzquiz\jazzquiz $jazzquiz
      */
-    public function __construct($jazzquiz)
-    {
+    public function __construct($jazzquiz) {
         global $PAGE;
         $this->renderer = $PAGE->get_renderer('mod_jazzquiz', 'report');
         $this->renderer->set_jazzquiz($jazzquiz);
@@ -36,8 +34,7 @@ class report_overview
      * @param string $text
      * @return string
      */
-    private function csv_escape($text)
-    {
+    private function csv_escape($text) {
         $text = str_replace("\r", '', $text);
         $text = str_replace("\n", '', $text);
         $text = str_replace(',', "\,", $text);
@@ -48,8 +45,7 @@ class report_overview
      * @param \mod_jazzquiz\jazzquiz_session $session
      * @param \mod_jazzquiz\jazzquiz_attempt[] $quiz_attempts
      */
-    private function output_csv_report($session, $quiz_attempts)
-    {
+    private function output_csv_report($session, $quiz_attempts) {
         $session_data = $session->data;
         $name = $session_data->id . '_' . $session_data->name;
         header('Content-Disposition: attachment; filename=session_' . $name . '.csv');
@@ -89,8 +85,7 @@ class report_overview
      * @param \mod_jazzquiz\jazzquiz_session $session
      * @param \mod_jazzquiz\jazzquiz_attempt $quiz_attempt
      */
-    private function output_csv_response($session, $quiz_attempt)
-    {
+    private function output_csv_response($session, $quiz_attempt) {
         $slot = required_param('slot', PARAM_INT);
         $quba = $quiz_attempt->quba;
         $question_attempt = $quba->get_question_attempt($slot);
@@ -109,8 +104,7 @@ class report_overview
      * @param \mod_jazzquiz\jazzquiz_session $session
      * @param \mod_jazzquiz\jazzquiz_attempt $quiz_attempt
      */
-    private function output_csv_attendance($session, $quiz_attempt)
-    {
+    private function output_csv_attendance($session, $quiz_attempt) {
         global $DB;
 
         $all_user_ids = $session->get_session_users();
@@ -165,8 +159,7 @@ class report_overview
         }
     }
 
-    private function output_csv()
-    {
+    private function output_csv() {
         $session_id = required_param('sessionid', PARAM_INT);
         $session = $this->jazzquiz->get_session($session_id);
         $quiz_attempts = $session->get_all_attempts(false);
@@ -194,8 +187,7 @@ class report_overview
     /**
      * @param \moodle_url $page_url
      */
-    private function view_session($page_url)
-    {
+    private function view_session($page_url) {
         global $DB, $PAGE;
 
         $session_id = required_param('sessionid', PARAM_INT);
@@ -365,8 +357,7 @@ class report_overview
      * @param string $action
      * @param \moodle_url $url
      */
-    public function handle_request($action, $url)
-    {
+    public function handle_request($action, $url) {
         switch ($action) {
             case 'viewsession':
                 $this->view_session($url);

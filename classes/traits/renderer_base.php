@@ -2,8 +2,7 @@
 
 namespace mod_jazzquiz\traits;
 
-trait renderer_base
-{
+trait renderer_base {
     /** @var array $pagevars Includes other page information needed for rendering functions */
     protected $pagevars;
 
@@ -31,8 +30,7 @@ trait renderer_base
      *
      * @param string $tab the current tab to show as active
      */
-    public function base_header($tab = 'view')
-    {
+    public function base_header($tab = 'view') {
         echo $this->output->header();
         echo jazzquiz_view_tabs($this->jazzquiz, $tab);
         //$this->showMessage(); // shows a message if there is one
@@ -42,8 +40,7 @@ trait renderer_base
      * Base footer function to do basic footer rendering
      *
      */
-    public function base_footer()
-    {
+    public function base_footer() {
         echo $this->output->footer();
     }
 
@@ -80,8 +77,7 @@ trait renderer_base
      *
      * @param string $message
      */
-    public function render_popup_error($message)
-    {
+    public function render_popup_error($message) {
         //$this->setMessage('error', $message);
         echo $this->output->header();
         //$this->showMessage();
@@ -95,8 +91,7 @@ trait renderer_base
      * @param \moodle_url $pageurl Always require the page url
      * @param array $pagevars (optional)
      */
-    public function init($jazzquiz, $pageurl, $pagevars = [])
-    {
+    public function init($jazzquiz, $pageurl, $pagevars = []) {
         $this->pagevars = $pagevars;
         $this->pageurl = $pageurl;
         $this->jazzquiz = $jazzquiz;
@@ -105,8 +100,7 @@ trait renderer_base
     /**
      * @param jazzquiz $jazzquiz
      */
-    public function set_jazzquiz($jazzquiz)
-    {
+    public function set_jazzquiz($jazzquiz) {
         $this->jazzquiz = $jazzquiz;
     }
 

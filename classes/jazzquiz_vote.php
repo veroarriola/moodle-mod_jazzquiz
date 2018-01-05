@@ -24,19 +24,16 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_vote
-{
+class jazzquiz_vote {
     public $session_id;
     public $slot;
 
-    public function __construct($session_id, $slot = 0)
-    {
+    public function __construct($session_id, $slot = 0) {
         $this->session_id = $session_id;
         $this->slot = $slot;
     }
 
-    public function get_results()
-    {
+    public function get_results() {
         global $DB;
         $votes = $DB->get_records('jazzquiz_votes', [
             'sessionid' => $this->session_id,
@@ -45,8 +42,7 @@ class jazzquiz_vote
         return $votes;
     }
 
-    public function has_user_voted($user_id)
-    {
+    public function has_user_voted($user_id) {
         global $DB;
 
         $all_votes = $DB->get_records('jazzquiz_votes', ['sessionid' => $this->session_id]);
@@ -73,8 +69,7 @@ class jazzquiz_vote
         return false;
     }
 
-    public function save_vote($vote_id, $user_id)
-    {
+    public function save_vote($vote_id, $user_id) {
         global $DB;
         if ($this->has_user_voted($user_id)) {
             return false;
@@ -97,8 +92,7 @@ class jazzquiz_vote
         return true;
     }
 
-    public function prepare_options($jazzquiz_id, $question_type, $options, $slot)
-    {
+    public function prepare_options($jazzquiz_id, $question_type, $options, $slot) {
         global $DB;
 
         // Delete previous voting options for this session

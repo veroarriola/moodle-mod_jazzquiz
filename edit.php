@@ -31,8 +31,7 @@ require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 
-function print_json($array)
-{
+function print_json($array) {
     echo json_encode($array);
 }
 
@@ -41,8 +40,7 @@ function print_json($array)
  * @param int $jazzquiz_id
  * @return bool
  */
-function jazzquiz_session_open($jazzquiz_id)
-{
+function jazzquiz_session_open($jazzquiz_id) {
     global $DB;
     $sessions = $DB->get_records('jazzquiz_sessions', [
         'jazzquizid' => $jazzquiz_id,
@@ -59,8 +57,7 @@ function jazzquiz_session_open($jazzquiz_id)
  * @param $page_vars
  * @return string
  */
-function get_question_bank_view($contexts, $jazzquiz, $url, $page_vars)
-{
+function get_question_bank_view($contexts, $jazzquiz, $url, $page_vars) {
     $questions_per_page = optional_param('qperpage', 10, PARAM_INT);
     $question_page = optional_param('qpage', 0, PARAM_INT);
     // Capture question bank display in buffer to have the renderer render output.
@@ -77,8 +74,7 @@ function get_question_bank_view($contexts, $jazzquiz, $url, $page_vars)
  * @param \moodle_url $url
  * @param array $page_vars
  */
-function list_questions($contexts, $jazzquiz, $url, $page_vars)
-{
+function list_questions($contexts, $jazzquiz, $url, $page_vars) {
     $question_bank_view = get_question_bank_view($contexts, $jazzquiz, $url, $page_vars);
     $questions = $jazzquiz->questions;
     $jazzquiz->renderer->listquestions($questions, $question_bank_view, $url);
@@ -87,8 +83,7 @@ function list_questions($contexts, $jazzquiz, $url, $page_vars)
 /**
  * @param jazzquiz $jazzquiz
  */
-function jazzquiz_edit_order($jazzquiz)
-{
+function jazzquiz_edit_order($jazzquiz) {
     $order = required_param('order', PARAM_RAW);
     $order = json_decode($order);
     $jazzquiz->set_question_order($order);
@@ -98,8 +93,7 @@ function jazzquiz_edit_order($jazzquiz)
  * @param jazzquiz $jazzquiz
  * @param \moodle_url $url
  */
-function jazzquiz_edit_add_question($jazzquiz, $url)
-{
+function jazzquiz_edit_add_question($jazzquiz, $url) {
     $question_id = required_param('questionid', PARAM_INT);
     $jazzquiz->add_question($question_id);
     // Ensure there is no action or questionid in the base url
@@ -110,8 +104,7 @@ function jazzquiz_edit_add_question($jazzquiz, $url)
 /**
  * @param jazzquiz $jazzquiz
  */
-function jazzquiz_edit_edit_question($jazzquiz)
-{
+function jazzquiz_edit_edit_question($jazzquiz) {
     $question_id = required_param('questionid', PARAM_INT);
     $jazzquiz->edit_question($question_id);
 }
@@ -122,15 +115,13 @@ function jazzquiz_edit_edit_question($jazzquiz)
  * @param \moodle_url $url
  * @param $page_vars
  */
-function jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $page_vars)
-{
+function jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $page_vars) {
     $jazzquiz->renderer->print_header();
     list_questions($contexts, $jazzquiz, $url, $page_vars);
     $jazzquiz->renderer->footer();
 }
 
-function jazzquiz_edit()
-{
+function jazzquiz_edit() {
     global $PAGE;
 
     $action = optional_param('action', 'listquestions', PARAM_ALPHA);
