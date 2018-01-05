@@ -278,7 +278,7 @@ class report_overview {
                 . 'jazzquiz.options.show_responses = true;'
                 . 'jazzquiz.state = "reviewing";'
 
-                . 'jazzquiz.quiz_info_responses("'
+                . 'jazzquiz.setResponses("'
                 . $wrapper_id . '", "' . $table_id . '", jazzquiz_responses[' . $slot . '], "' . $question_type . '", "report_' . $slot . '"'
                 . ');'
                 . '}, 1000);'
