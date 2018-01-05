@@ -138,6 +138,8 @@ class jazzquiz_session {
         ]);
         \question_engine::delete_questions_usage_by_activities($quba_condition);
         $DB->delete_records('jazzquiz_attempts', ['sessionid' => $session_id]);
+        $DB->delete_records('jazzquiz_session_questions', ['sessionid' => $session_id]);
+        $DB->delete_records('jazzquiz_votes', ['sessionid' => $session_id]);
         $DB->delete_records('jazzquiz_sessions', ['id' => $session_id]);
         return true;
     }
