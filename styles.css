@@ -39,7 +39,9 @@
     width: 30%
 }
 
-#jazzquiz_responses_container, #jazzquiz_responded_container, #jazzquiz_info_container {
+#jazzquiz_responses_container,
+#jazzquiz_responded_container,
+#jazzquiz_info_container {
     background: #fff;
     border: 1px solid #eee;
     border-radius: 0;
@@ -124,7 +126,7 @@
 }
 
 .jazzquiz-responses-overview tr td.bar div {
-    background: #2299ff;
+    background: #29f;
     border-radius: 1.5rem;
     text-align: right;
 }
@@ -220,8 +222,9 @@
     padding: 0.6vw 1.2vw;
 }
 
-#jazzquiz_controls .btn:hover, #jazzquiz_controls .btn.active {
-    background: #2299ff;
+#jazzquiz_controls .btn:hover,
+#jazzquiz_controls .btn.active {
+    background: #29f;
     color: white;
 }
 
@@ -253,7 +256,9 @@
     width: 100%;
 }
 
-#closesession, #toggleresponses, #showcorrectanswer {
+#closesession,
+#toggleresponses,
+#showcorrectanswer {
     float: right;
 }
 
@@ -288,7 +293,8 @@
     opacity: 1;
 }
 
-.jazzquiz_question .que .formulation, #jazzquiz_correct_answer_container .que .formulation {
+.jazzquiz_question .que .formulation,
+#jazzquiz_correct_answer_container .que .formulation {
     border: none;
     background: #fafafa;
 }
@@ -364,7 +370,7 @@
 #jazzquiz_controls .quiz-list-buttons #exitquiz:hover,
 #report_overview_controls .btn.btn-primary:hover,
 #jazzquiz_response_info_container .btn.btn-primary:hover {
-    background: #2299ff;
+    background: #29f;
     color: #fff;
 }
 
@@ -416,11 +422,11 @@
 }
 
 .jazzquiz-box .questionlist li a:hover i.icon {
-    color: #2299ff;
+    color: #29f;
 }
 
 .iconcol a:hover .icon {
-    color: #2299ff;
+    color: #29f;
 }
 
 #categoryquestions thead {

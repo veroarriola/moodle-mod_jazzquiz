@@ -37,41 +37,44 @@ require_once($CFG->libdir . '/tablelib.php');
 function jazzquiz_reports() {
     global $PAGE;
 
-    $course_module_id = optional_param('id', false, PARAM_INT);
-    if (!$course_module_id) {
+    $cmid = optional_param('id', false, PARAM_INT);
+    if (!$cmid) {
         // Probably a login redirect that doesn't include any ID.
         // Go back to the main Moodle page, because we have no info.
         header('Location: /');
         exit;
     }
 
-    $jazzquiz = new jazzquiz($course_module_id, 'report');
+    $jazzquiz = new jazzquiz($cmid, 'report');
     $jazzquiz->require_capability('mod/jazzquiz:seeresponses');
     $renderer = $jazzquiz->renderer;
 
-    $report_type = optional_param('reporttype', 'overview', PARAM_ALPHA);
+    $reporttype = optional_param('reporttype', 'overview', PARAM_ALPHA);
     $action = optional_param('action', '', PARAM_ALPHANUM);
 
     $url = new \moodle_url('/mod/jazzquiz/reports.php');
-    $url->param('id', $course_module_id);
+    $url->param('id', $cmid);
     $url->param('quizid', $jazzquiz->data->id);
-    $url->param('reporttype', $report_type);
+    $url->param('reporttype', $reporttype);
     $url->param('action', $action);
+
+    $modulename = get_string('modulename', 'jazzquiz');
+    $quizname = format_string($jazzquiz->data->name, true);
 
     $PAGE->set_pagelayout('incourse');
     $PAGE->set_context($jazzquiz->context);
-    $PAGE->set_title(strip_tags($jazzquiz->course->shortname . ': ' . get_string('modulename', 'jazzquiz') . ': ' . format_string($jazzquiz->name, true)));
+    $PAGE->set_title(strip_tags($jazzquiz->course->shortname . ': ' . $modulename . ': ' . $quizname));
     $PAGE->set_heading($jazzquiz->course->fullname);
     $PAGE->set_url($url);
 
-    $report = new reports\report_overview($jazzquiz);
-    $is_download = isset($_GET['download']);
+    $report = new report_overview();
+    $is_download = isset($_GET['download']); // TODO: optional_param.
     if (!$is_download) {
-        $renderer->report_header();
+        $renderer->header($jazzquiz);
     }
-    $report->handle_request($action, $url);
+    $report->handle_request($jazzquiz, $action, $url);
     if (!$is_download) {
-        $renderer->report_footer();
+        $renderer->footer();
     }
 }
 

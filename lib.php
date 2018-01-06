@@ -58,8 +58,7 @@ function jazzquiz_update_instance($jazzquiz) {
 
 /**
  * Given an ID of an instance of this module,
- * this function will permanently delete the instance
- * and any data that depends on it.
+ * this function will permanently delete the instance and any data that depends on it.
  *
  * @param int $id Id of the module instance
  * @return boolean Success/Failure
@@ -100,25 +99,25 @@ function jazzquiz_cron() {
     return true;
 }
 
-function jazzquiz_pluginfile($course, $cm, $context, $file_area, $args, $forcedownload, $options = []) {
+function jazzquiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options = []) {
     global $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
     }
-    if ($file_area != 'question') {
+    if ($filearea != 'question') {
         return false;
     }
 
     require_course_login($course, true, $cm);
 
-    $question_id = (int)array_shift($args);
+    $questionid = (int)array_shift($args);
     $quiz = $DB->get_record('jazzquiz', ['id' => $cm->instance]);
     if (!$quiz) {
         return false;
     }
     $question = $DB->get_record('jazzquiz_question', [
-        'id' => $question_id,
+        'id' => $questionid,
         'quizid' => $cm->instance
     ]);
     if (!$question) {
@@ -126,8 +125,8 @@ function jazzquiz_pluginfile($course, $cm, $context, $file_area, $args, $forcedo
     }
 
     $fs = get_file_storage();
-    $relative_path = implode('/', $args);
-    $full_path = "/$context->id/mod_jazzquiz/$file_area/$question_id/$relative_path";
+    $relative = implode('/', $args);
+    $full_path = "/$context->id/mod_jazzquiz/$filearea/$questionid/$relative";
     if (!$file = $fs->get_file_by_hash(sha1($full_path)) or $file->is_directory()) {
         return false;
     }
@@ -154,9 +153,9 @@ function jazzquiz_pluginfile($course, $cm, $context, $file_area, $args, $forcedo
  */
 function mod_jazzquiz_question_pluginfile($course, $context, $component, $filearea, $qubaid, $slot, $args, $forcedownload, $options = []) {
     $fs = get_file_storage();
-    $relative_path = implode('/', $args);
-    $full_path = "/$context->id/$component/$filearea/$relative_path";
-    if (!$file = $fs->get_file_by_hash(sha1($full_path)) or $file->is_directory()) {
+    $relative = implode('/', $args);
+    $full = "/$context->id/$component/$filearea/$relative";
+    if (!$file = $fs->get_file_by_hash(sha1($full)) or $file->is_directory()) {
         send_file_not_found();
     }
     send_stored_file($file, 0, 0, $forcedownload, $options);

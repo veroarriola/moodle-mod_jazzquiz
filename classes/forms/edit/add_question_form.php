@@ -30,10 +30,10 @@ require_once($CFG->libdir . '/formslib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class add_question_form extends \moodleform {
+
     /**
      * Overriding parent function to account for namespace in the class name
      * so that client validation works
-     *
      * @return mixed|string
      */
     protected function get_form_identifier() {
@@ -43,49 +43,46 @@ class add_question_form extends \moodleform {
 
     /**
      * Adds form fields to the form
-     *
      */
     public function definition() {
         $mform = $this->_form;
         $jazzquiz = $this->_customdata['jazzquiz'];
-        $defaultTime = $jazzquiz->data->defaultquestiontime;
+        $defaulttime = $jazzquiz->data->defaultquestiontime;
 
         $mform->addElement('static', 'questionid', get_string('question', 'jazzquiz'), $this->_customdata['questionname']);
 
-        $mform->addElement('advcheckbox', 'no_time', get_string('no_time_limit', 'jazzquiz'));
-        $mform->setType('no_time', PARAM_INT);
-        $mform->addHelpButton('no_time', 'no_time', 'jazzquiz');
-        $mform->setDefault('no_time', 0);
+        $mform->addElement('advcheckbox', 'notime', get_string('no_time_limit', 'jazzquiz'));
+        $mform->setType('notime', PARAM_INT);
+        $mform->addHelpButton('notime', 'notime', 'jazzquiz');
+        $mform->setDefault('notime', 0);
 
-        $mform->addElement('duration', 'question_time', get_string('question_time', 'jazzquiz'));
-        $mform->disabledIf('question_time', 'no_time', 'checked');
-        $mform->setType('question_time', PARAM_INT);
-        $mform->setDefault('question_time', $defaultTime);
-        $mform->addHelpButton('question_time', 'question_time', 'jazzquiz');
+        $mform->addElement('duration', 'questiontime', get_string('question_time', 'jazzquiz'));
+        $mform->disabledIf('questiontime', 'notime', 'checked');
+        $mform->setType('questiontime', PARAM_INT);
+        $mform->setDefault('questiontime', $defaulttime);
+        $mform->addHelpButton('questiontime', 'questiontime', 'jazzquiz');
 
         if (!empty($this->_customdata['edit'])) {
-            $save_string = get_string('save_question', 'jazzquiz');
+            $savestring = get_string('save_question', 'jazzquiz');
         } else {
-            $save_string = get_string('add_question', 'jazzquiz');
+            $savestring = get_string('add_question', 'jazzquiz');
         }
 
-        $this->add_action_buttons(true, $save_string);
+        $this->add_action_buttons(true, $savestring);
     }
 
     /**
-     * Validate indv question time as int
-     *
+     * Validate question time
      * @param array $data
      * @param array $files
-     *
      * @return array $errors
      */
     public function validation($data, $files) {
         $errors = [];
-        if (!filter_var($data['question_time'], FILTER_VALIDATE_INT) && $data['question_time'] !== 0) {
-            $errors['question_time'] = get_string('invalid_question_time', 'jazzquiz');
-        } else if ($data['question_time'] < 0) {
-            $errors['question_time'] = get_string('invalid_question_time', 'jazzquiz');
+        if (!filter_var($data['questiontime'], FILTER_VALIDATE_INT) && $data['questiontime'] !== 0) {
+            $errors['questiontime'] = get_string('invalid_question_time', 'jazzquiz');
+        } else if ($data['questiontime'] < 0) {
+            $errors['questiontime'] = get_string('invalid_question_time', 'jazzquiz');
         }
         return $errors;
     }

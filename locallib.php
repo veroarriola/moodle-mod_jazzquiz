@@ -25,6 +25,10 @@
 
 /**
  * @param \mod_jazzquiz\jazzquiz $jazzquiz
+ * @param int $id
+ * @param array $row
+ * @param string $capability
+ * @param string $name
  */
 function jazzquiz_view_tab($jazzquiz, $id, &$row, $capability, $name) {
     if (!$jazzquiz->has_capability($capability)) {
@@ -38,28 +42,28 @@ function jazzquiz_view_tab($jazzquiz, $id, &$row, $capability, $name) {
  * Prints local lib tabs
  *
  * @param \mod_jazzquiz\jazzquiz $jazzquiz
- * @param string $current_tab
+ * @param string $tab
  *
  * @return string HTML string of the tabs
  */
-function jazzquiz_view_tabs($jazzquiz, $current_tab) {
+function jazzquiz_view_tabs($jazzquiz, $tab) {
     $tabs = [];
     $row = [];
     $inactive = [];
     $activated = [];
-    $id = $jazzquiz->course_module->id;
+    $id = $jazzquiz->cm->id;
 
     jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:attempt', 'view');
     jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:editquestions', 'edit');
     jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:seeresponses', 'reports');
 
-    if ($current_tab === 'view' && count($row) === 1) {
+    if ($tab === 'view' && count($row) === 1) {
         // No tabs for students
         return '<br>';
     }
     $tabs[] = $row;
-    if ($current_tab === 'reports' || $current_tab === 'edit' || $current_tab === 'view') {
-        $activated[] = $current_tab;
+    if ($tab === 'reports' || $tab === 'edit' || $tab === 'view') {
+        $activated[] = $tab;
     }
-    return print_tabs($tabs, $current_tab, $inactive, $activated, true);
+    return print_tabs($tabs, $tab, $inactive, $activated, true);
 }

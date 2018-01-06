@@ -1,7 +1,4 @@
 <?php
-
-namespace mod_jazzquiz\output;
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -17,39 +14,48 @@ namespace mod_jazzquiz\output;
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Renderer outputting the quiz editing UI.
- *
- * @package mod_jazzquiz
- * @author    Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
- * @copyright 2016 University of Wisconsin - Madison
- * @copyright 2018 NTNU
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-use mod_jazzquiz\traits\renderer_base;
+namespace mod_jazzquiz\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Renderer outputting the quiz editing UI.
+ *
+ * @package   mod_jazzquiz
+ * @author    Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
+ * @copyright 2016 University of Wisconsin - Madison
+ * @copyright 2018 NTNU
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class edit_renderer extends \plugin_renderer_base {
-    use renderer_base;
 
     /**
      * Prints edit page header
+     * @param \mod_jazzquiz\jazzquiz $jazzquiz
      */
-    public function print_header() {
-        $this->base_header('edit');
+    public function header($jazzquiz) {
+        echo $this->output->header();
+        echo jazzquiz_view_tabs($jazzquiz, 'edit');
         echo $this->output->box_start('generalbox boxaligncenter jazzquiz-box');
+    }
+
+    /**
+     * Ends the edit page with the footer of Moodle
+     */
+    public function footer() {
+        echo $this->output->box_end();
+        echo $this->output->footer();
     }
 
     /**
      * Render the list questions view for the edit page
      *
+     * @param \mod_jazzquiz\jazzquiz $jazzquiz
      * @param array $questions Array of questions
-     * @param string $question_bank_view HTML for the question bank view
+     * @param string $questionbankview HTML for the question bank view
      * @param \moodle_url $url
      */
-    public function listquestions($questions, $question_bank_view, $url) {
+    public function listquestions($jazzquiz, $questions, $questionbankview, $url) {
         global $CFG;
 
         echo \html_writer::start_div('row', ['id' => 'questionrow']);
@@ -58,7 +64,7 @@ class edit_renderer extends \plugin_renderer_base {
         echo $this->show_questionlist($questions, $url);
         echo \html_writer::end_div();
         echo \html_writer::start_div('inline-block span6');
-        echo $question_bank_view;
+        echo $questionbankview;
         echo \html_writer::end_div();
         echo \html_writer::end_div();
 
@@ -66,17 +72,17 @@ class edit_renderer extends \plugin_renderer_base {
         $this->page->requires->js('/mod/jazzquiz/js/sortable/sortable.min.js');
         $this->page->requires->js('/mod/jazzquiz/js/edit_quiz.js');
 
-        $jazzquiz = new \stdClass();
-        $jazzquiz->siteroot = $CFG->wwwroot;
+        $jazzquizjson = new \stdClass();
+        $jazzquizjson->siteroot = $CFG->wwwroot;
 
-        $quiz = new \stdClass();
-        $quiz->course_module_id = $this->jazzquiz->course_module->id;
-        $quiz->activity_id = $this->jazzquiz->data->id;
-        $quiz->session_key = sesskey();
+        $quizjson = new \stdClass();
+        $quizjson->courseModuleId = $jazzquiz->cm->id;
+        $quizjson->activityId = $jazzquiz->data->id;
+        $quizjson->sessionKey = sesskey();
 
         echo '<script>';
-        echo 'var jazzquiz_root_state = ' . json_encode($jazzquiz) . ';';
-        echo 'var jazzquiz_quiz_state = ' . json_encode($quiz) . ';';
+        echo 'var jazzquizRootState = ' . json_encode($jazzquizjson) . ';';
+        echo 'var jazzquizQuizState = ' . json_encode($quizjson) . ';';
         echo '</script>';
 
         $this->page->requires->strings_for_js([
@@ -94,13 +100,12 @@ class edit_renderer extends \plugin_renderer_base {
      */
     protected function show_questionlist($questions, $url) {
         $return = '<ol class="questionlist">';
-        $question_count = count($questions);
-        $question_number = 1;
+        $questionnumber = 1;
         foreach ($questions as $question) {
             $return .= '<li data-question-id="' . $question->data->id . '">';
-            $return .= $this->display_question_block($question, $question_number, $question_count, $url);
+            $return .= $this->display_question_block($question, $questionnumber, count($questions), $url);
             $return .= '</li>';
-            $question_number++;
+            $questionnumber++;
         }
         $return .= '</ol>';
         return $return;
@@ -111,69 +116,61 @@ class edit_renderer extends \plugin_renderer_base {
      *
      * @param \mod_jazzquiz\jazzquiz_question $question
      * @param int $slot
-     * @param int $question_count
+     * @param int $questioncount
      * @param \moodle_url $url
      * @return string
      */
-    protected function display_question_block($question, $slot, $question_count, $url) {
+    protected function display_question_block($question, $slot, $questioncount, $url) {
         $return = '';
 
-        $drag_icon = new \pix_icon('i/dragdrop', 'dragdrop');
-        $return .= \html_writer::div($this->output->render($drag_icon), 'dragquestion');
+        $dragicon = new \pix_icon('i/dragdrop', 'dragdrop');
+        $return .= \html_writer::div($this->output->render($dragicon), 'dragquestion');
         $return .= \html_writer::div(print_question_icon($question->question), 'icon');
 
-        $name_html = '<p>' . $question->question->name . '</p>';
-        $return .= \html_writer::div($name_html, 'name');
-        $controlHTML = '';
+        $namehtml = '<p>' . $question->question->name . '</p>';
+        $return .= \html_writer::div($namehtml, 'name');
+        $controlhtml = '';
 
-        $spacer_icon = new \pix_icon('spacer', 'space', null, ['class' => 'smallicon space']);
+        $spacericon = new \pix_icon('spacer', 'space', null, ['class' => 'smallicon space']);
 
         // If we're on a later question than the first one add the move up control
         if ($slot > 1) {
             $alt = get_string('question_move_up', 'mod_jazzquiz', $slot);
-            $up_icon = new \pix_icon('t/up', $alt);
+            $upicon = new \pix_icon('t/up', $alt);
             $data = 'data-action="up" data-question-id="' . $question->data->id . '"';
-            $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($up_icon) . '</a>';
+            $controlhtml .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($upicon) . '</a>';
         } else {
-            $controlHTML .= $this->output->render($spacer_icon);
+            $controlhtml .= $this->output->render($spacericon);
         }
 
         // if we're not on the last question add the move down control
-        if ($slot < $question_count) {
+        if ($slot < $questioncount) {
             $alt = get_string('question_move_down', 'mod_jazzquiz', $slot);
-            $down_icon = new \pix_icon('t/down', $alt);
+            $downicon = new \pix_icon('t/down', $alt);
             $data = 'data-action="down" data-question-id="' . $question->data->id . '"';
-            $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($down_icon) . '</a>';
+            $controlhtml .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($downicon) . '</a>';
         } else {
-            $controlHTML .= $this->output->render($spacer_icon);
+            $controlhtml .= $this->output->render($spacericon);
         }
 
         // Always add edit and delete icons
-        $edit_url = clone($url);
-        $edit_url->param('action', 'editquestion');
-        $edit_url->param('questionid', $question->data->id);
+        $editurl = clone($url);
+        $editurl->param('action', 'editquestion');
+        $editurl->param('questionid', $question->data->id);
         $alt = get_string('edit_question', 'jazzquiz', $slot);
-        $delete_icon = new \pix_icon('t/edit', $alt);
-        $controlHTML .= \html_writer::link($edit_url, $this->output->render($delete_icon));
+        $editicon = new \pix_icon('t/edit', $alt);
+        $controlhtml .= \html_writer::link($editurl, $this->output->render($editicon));
 
         $alt = get_string('delete_question', 'mod_jazzquiz', $slot);
-        $delete_icon = new \pix_icon('t/delete', $alt);
+        $deleteicon = new \pix_icon('t/delete', $alt);
         $data = 'data-action="delete" data-question-id="' . $question->data->id . '"';
-        $controlHTML .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($delete_icon) . '</a>';
-        $return .= \html_writer::div($controlHTML, 'controls');
+        $controlhtml .= '<a class="edit-question-action"' . $data . '>' . $this->output->render($deleteicon) . '</a>';
+        $return .= \html_writer::div($controlhtml, 'controls');
         return $return;
     }
 
-    public function opensession() {
+    public function session_is_open_error() {
         echo \html_writer::tag('h3', get_string('edit_page_open_session_error', 'jazzquiz'));
-    }
-
-    /**
-     * Ends the edit page with the footer of Moodle
-     */
-    public function footer() {
-        echo $this->output->box_end();
-        $this->base_footer();
     }
 
 }

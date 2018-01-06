@@ -30,10 +30,10 @@ if ($ADMIN->fulltree) {
     $choices = [];
     $defaults = [];
 
-    foreach (question_bank::get_creatable_qtypes() as $name => $question_type) {
-        $full_plugin_name = $question_type->plugin_name();
+    foreach (question_bank::get_creatable_qtypes() as $name => $qtype) {
+        $full_plugin_name = $qtype->plugin_name();
         $plugin_name = explode('_', $full_plugin_name)[1];
-        $choices[$plugin_name] = $question_type->menu_name();
+        $choices[$plugin_name] = $qtype->menu_name();
         $defaults[$plugin_name] = 1;
     }
 

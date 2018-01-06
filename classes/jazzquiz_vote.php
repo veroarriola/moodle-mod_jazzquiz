@@ -25,60 +25,82 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_vote {
-    public $session_id;
-    public $slot;
 
-    public function __construct($session_id, $slot = 0) {
-        $this->session_id = $session_id;
+    /** @var int $sessionid */
+    protected $sessionid;
+
+    /** @var int $slot */
+    protected $slot;
+
+    /**
+     * Constructor.
+     * @param int $sessionid
+     * @param int $slot
+     */
+    public function __construct($sessionid, $slot = 0) {
+        $this->sessionid = $sessionid;
         $this->slot = $slot;
     }
 
+    /**
+     * Get the results for the vote.
+     * @return array
+     */
     public function get_results() {
         global $DB;
         $votes = $DB->get_records('jazzquiz_votes', [
-            'sessionid' => $this->session_id,
+            'sessionid' => $this->sessionid,
             'slot' => $this->slot
         ]);
         return $votes;
     }
 
-    public function has_user_voted($user_id) {
+    /**
+     * Check whether a user has voted or not.
+     * @param int $userid
+     * @return bool
+     */
+    public function has_user_voted($userid) {
         global $DB;
-
-        $all_votes = $DB->get_records('jazzquiz_votes', ['sessionid' => $this->session_id]);
-        if (!$all_votes) {
+        $allvotes = $DB->get_records('jazzquiz_votes', ['sessionid' => $this->sessionid]);
+        if (!$allvotes) {
             return false;
         }
-
         // Go through all the existing votes
-        foreach ($all_votes as $vote) {
+        foreach ($allvotes as $vote) {
             // Get all the users who voted for this
-            $users_voted = explode(',', $vote->userlist);
-            if ($users_voted) {
-                // Go through all the users who has voted on this attempt
-                foreach ($users_voted as $user_voted) {
-                    // Is this the user who is currently trying to vote?
-                    if ($user_voted == $user_id) {
-                        // Yes, the user has already voted!
-                        return true;
-                    }
+            $usersvoted = explode(',', $vote->userlist);
+            if (!$usersvoted) {
+                continue;
+            }
+            // Go through all the users who has voted on this attempt
+            foreach ($usersvoted as $uservoted) {
+                // Is this the user who is currently trying to vote?
+                if ($uservoted == $userid) {
+                    // Yes, the user has already voted!
+                    return true;
                 }
             }
         }
-
         return false;
     }
 
-    public function save_vote($vote_id, $user_id) {
+    /**
+     * Save the vote for a user.
+     * @param int $voteid
+     * @param int $userid
+     * @return bool
+     */
+    public function save_vote($voteid, $userid) {
         global $DB;
-        if ($this->has_user_voted($user_id)) {
+        if ($this->has_user_voted($userid)) {
             return false;
         }
-        $exists = $DB->record_exists('jazzquiz_votes', ['id' => $vote_id]);
+        $exists = $DB->record_exists('jazzquiz_votes', ['id' => $voteid]);
         if (!$exists) {
             return false;
         }
-        $row = $DB->get_record('jazzquiz_votes', ['id' => $vote_id]);
+        $row = $DB->get_record('jazzquiz_votes', ['id' => $voteid]);
         if (!$row) {
             return false;
         }
@@ -87,27 +109,34 @@ class jazzquiz_vote {
         if ($row->userlist != '') {
             $row->userlist .= ',';
         }
-        $row->userlist .= $user_id;
+        $row->userlist .= $userid;
         $DB->update_record('jazzquiz_votes', $row);
         return true;
     }
 
-    public function prepare_options($jazzquiz_id, $question_type, $options, $slot) {
+    /**
+     * Insert the options for the vote.
+     * @param int $jazzquizid
+     * @param string $qtype
+     * @param array $options
+     * @param int $slot
+     */
+    public function prepare_options($jazzquizid, $qtype, $options, $slot) {
         global $DB;
 
         // Delete previous voting options for this session
-        $DB->delete_records('jazzquiz_votes', ['sessionid' => $this->session_id]);
+        $DB->delete_records('jazzquiz_votes', ['sessionid' => $this->sessionid]);
 
         // Add to database
         foreach ($options as $option) {
             $vote = new \stdClass();
-            $vote->jazzquizid = $jazzquiz_id;
-            $vote->sessionid = $this->session_id;
+            $vote->jazzquizid = $jazzquizid;
+            $vote->sessionid = $this->sessionid;
             $vote->attempt = $option['text'];
             $vote->initialcount = $option['count'];
             $vote->finalcount = 0;
             $vote->userlist = '';
-            $vote->qtype = $question_type;
+            $vote->qtype = $qtype;
             $vote->slot = $slot;
             $DB->insert_record('jazzquiz_votes', $vote);
         }

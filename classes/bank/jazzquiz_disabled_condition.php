@@ -52,8 +52,8 @@ class jazzquiz_disabled_condition extends condition {
         global $DB;
 
         $config = get_config('jazzquiz');
-        $enabled_types = explode(',', $config->enabledqtypes);
-        list($sql, $params) = $DB->get_in_or_equal($enabled_types, SQL_PARAMS_NAMED, 'aqdc');
+        $enabledqtypes = explode(',', $config->enabledqtypes);
+        list($sql, $params) = $DB->get_in_or_equal($enabledqtypes, SQL_PARAMS_NAMED, 'aqdc');
 
         $this->where = 'q.qtype ' . $sql;
         $this->params = $params;

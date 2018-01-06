@@ -45,19 +45,16 @@ class student_start_form extends \moodleform {
 
     /**
      * Form definition
-     *
      */
-    function definition() {
+    protected function definition() {
         $mform = $this->_form;
         $mform->addElement('submit', 'submitbutton', get_string('join_quiz', 'mod_jazzquiz'));
     }
 
     /**
      * Validate student input
-     *
      * @param array $data
      * @param array $files
-     *
      * @return array $errors
      */
     public function validation($data, $files) {

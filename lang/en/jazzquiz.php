@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// General
+// General.
 $string['modulename'] = 'JazzQuiz';
 $string['modulename_help'] = '
 <p>
@@ -47,13 +47,13 @@ $string['jazzquiz:control'] = 'Control an JazzQuiz. (Usually for instructors onl
 $string['jazzquiz:editquestions'] = 'Edit questions for an JazzQuiz.';
 $string['jazzquiz:seeresponses'] = 'View other student responses to grade them';
 
-// Tabs
+// Tabs.
 $string['view'] = 'View';
 $string['edit'] = 'Edit';
 $string['review'] = 'Review';
 $string['reports'] = 'Reports';
 
-// Info
+// Info.
 $string['question_will_start_now'] = 'The question will start now';
 $string['question_will_start_in_x_seconds'] = 'The question will start in {$a} seconds';
 $string['wait_for_students'] = 'Waiting for students to connect';
@@ -63,17 +63,17 @@ $string['session_closed'] = 'Session is now closed';
 $string['wait_for_instructor'] = 'Please wait for the instructor to start the next question.';
 $string['question_will_end_in_x_seconds'] = 'The question will end in {$a} seconds';
 
-// Event
+// Event.
 $string['event_attempt_started'] = 'Attempt started';
 $string['event_question_answered'] = 'Question answered for attempt';
 
-// Form
+// Form.
 $string['default_question_time'] = 'Default question time';
 $string['default_question_time_help'] = 'The default time to display each question.<br>This can be overridden by individual questions.';
 $string['wait_for_question_time'] = 'Wait for question time';
 $string['wait_for_question_time_help'] = 'The time to wait for a question to start.';
 
-// Edit
+// Edit.
 $string['questions'] = 'Questions';
 $string['add'] = 'Add';
 $string['question'] = 'Question';
@@ -82,9 +82,9 @@ $string['delete_question'] = 'Delete question {$a}';
 $string['question_move_down'] = 'Move question {$a} down';
 $string['question_move_up'] = 'Move question {$a} up';
 $string['question_time'] = 'Question time';
-$string['question_time_help'] = 'Question time in seconds.';
+$string['questiontime_help'] = 'Question time in seconds.';
 $string['no_time_limit'] = 'No time limit';
-$string['no_time_help'] = 'Check this field to have no timer on this question. <p>The instructor will then be required to click the end question button for the question to end</p>';
+$string['notime_help'] = 'Check this field to have no timer on this question. <p>The instructor will then be required to click the end question button for the question to end</p>';
 $string['invalid_question_time'] = 'Question time must be an integer of 0 or above';
 $string['edit_question'] = 'Edit question';
 $string['save_question'] = 'Save question';
@@ -92,10 +92,9 @@ $string['edit_page_open_session_error'] = 'You cannot edit the quiz while a sess
 $string['create_new_question'] = 'Create new question';
 $string['add_to_quiz'] = 'Add to quiz';
 
-// Session
+// Session.
 $string['quiz_not_running'] = '<p>Wait for your teacher to start the quiz.</p><p>Use the reload button to check if it has started.</p>';
 $string['teacher_start_instructions'] = '<p>Start a quiz for the students to take.</p><p>Define a session name below to help when looking through the results at a later date.</p>';
-$string['no_questions'] = 'There are no questions added to this quiz.';
 $string['session_name'] = 'Session name';
 $string['session_name_required'] = 'The session name is required';
 $string['start_session'] = 'Start Session';
@@ -125,7 +124,7 @@ $string['x_seconds_left'] = '{$a}s left';
 $string['error_saving_vote'] = 'There was an error saving your vote.';
 $string['you_already_voted'] = 'Sorry, but you have already voted.';
 
-// Instructor Controls
+// Instructor Controls.
 $string['startquiz'] = 'Start quiz';
 $string['repoll'] = 'Re-poll';
 $string['vote'] = 'Vote';
@@ -138,11 +137,11 @@ $string['quit'] = 'Quit';
 $string['responses'] = 'Responses';
 $string['answer'] = 'Answer';
 
-// Quiz Review
+// Quiz Review.
 $string['select_session'] = 'Select session to review:';
 $string['attendance_list'] = 'Attendance list';
 
-// Admin Settings
+// Admin Settings.
 $string['enabled_question_types'] = 'Enable question types';
 $string['enabled_question_types_info'] = 'Question types that are enabled for use within instances of the JazzQuiz activity.';
 

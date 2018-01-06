@@ -25,14 +25,15 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_question {
+
     /** @var \stdClass $data */
     public $data;
 
-    /** @var \stdClass $question question definition data */
+    /** @var \stdClass $question Question definition data */
     public $question;
 
     /**
-     * @param \stdClass $data (jazzquiz_question)
+     * @param \stdClass $data jazzquiz_question
      */
     public function __construct($data) {
         global $DB;

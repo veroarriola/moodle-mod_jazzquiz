@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -29,11 +28,19 @@ defined('MOODLE_INTERNAL') || die();
  */
 class question_bank_add_to_jazzquiz_action_column extends \core_question\bank\action_column_base {
 
+    /**
+     * Get the name of the column.
+     * @return string
+     */
     public function get_name() {
         return 'addtojazzquizaction';
     }
 
-    protected function display_content($question, $row_classes) {
+    /**
+     * @param object $question
+     * @param string $rowclasses
+     */
+    protected function display_content($question, $rowclasses) {
         if (!question_has_capability_on($question, 'use')) {
             return;
         }
@@ -41,6 +48,10 @@ class question_bank_add_to_jazzquiz_action_column extends \core_question\bank\ac
         $this->print_icon('t/add', $text, $this->qbank->get_add_to_jazzquiz_url($question->id));
     }
 
+    /**
+     * Get the required fields.
+     * @return string[]
+     */
     public function get_required_fields() {
         return ['q.id'];
     }

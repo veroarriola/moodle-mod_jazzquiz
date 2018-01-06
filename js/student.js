@@ -40,7 +40,7 @@ jazzquiz.changeQuizState = function(state, data) {
             if (this.quiz.question.isRunning) {
                 break;
             }
-            const started = this.startQuestionCountdown(data.question_time, data.delay);
+            const started = this.startQuestionCountdown(data.questiontime, data.delay);
             if (!started) {
                 this.showInfo(this.text('wait_for_instructor'));
             }
@@ -50,6 +50,7 @@ jazzquiz.changeQuizState = function(state, data) {
             this.quiz.question.isVoteRunning = false;
             this.quiz.question.isRunning = false;
             this.hideQuestionTimer();
+            this.clearQuestionBox();
             this.showInfo(this.text('wait_for_instructor'));
             break;
 
@@ -131,5 +132,21 @@ jazzquiz.saveVote = function() {
         }
     }).fail(function() {
         jazzquiz.showInfo(jazzquiz.text('error_saving_vote'));
+    });
+};
+
+/**
+ * Add the event handlers.
+ */
+jazzquiz.addEventHandlers = function() {
+    jQuery(document).on('submit', '#jazzquiz_question_form', function(event) {
+        event.preventDefault();
+        jazzquiz.submitAnswer();
+    })
+    .on('click', '#jazzquiz_save_vote', function() {
+        jazzquiz.saveVote();
+    })
+    .on('click', '.jazzquiz-select-vote', function() {
+        jazzquiz.voteAnswer = this.value;
     });
 };

@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_attempt {
+
     /** Constants for the status of the attempt */
     const NOTSTARTED = 0;
     const INPROGRESS = 10;
@@ -37,30 +38,20 @@ class jazzquiz_attempt {
     /** @var \stdClass */
     public $data;
 
-    /** @var jazzquiz */
-    public $jazzquiz;
-
     /** @var \question_usage_by_activity $quba the question usage by activity for this attempt */
     public $quba;
 
-    /** @var \context_module $context The context for this attempt */
-    protected $context;
-
     /**
      * Construct the class. If data is passed in we set it, otherwise initialize empty class
-     *
-     * @param jazzquiz $jazzquiz
-     * @param \stdClass $data
      * @param \context_module $context
+     * @param \stdClass $data
      */
-    public function __construct($jazzquiz, $data = null, $context = null) {
-        $this->jazzquiz = $jazzquiz;
-        $this->context = $context;
+    public function __construct($context, $data = null) {
         if (empty($data)) {
             // Create new attempt
             $this->data = new \stdClass();
             // Create a new quba since we're creating a new attempt
-            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $this->jazzquiz->context);
+            $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $context);
             $this->quba->set_preferred_behaviour('immediatefeedback');
         } else {
             // Load it up in this class instance
@@ -78,11 +69,11 @@ class jazzquiz_attempt {
             if ($this->quba->next_slot_number() > $slot) {
                 continue;
             }
-            $question_definition = reset(question_load_questions([$question->questionid]));
-            if (!$question_definition) {
+            $questiondefinition = reset(question_load_questions([$question->questionid]));
+            if (!$questiondefinition) {
                 return false;
             }
-            $question = \question_bank::make_question($question_definition);
+            $question = \question_bank::make_question($questiondefinition);
             $slot = $this->quba->add_question($question);
             $this->quba->start_question($slot);
             $this->data->responded = 0;
@@ -103,141 +94,17 @@ class jazzquiz_attempt {
     }
 
     /**
-     * Returns a string representation of the "number" status that is actually stored
-     * @return string
-     */
-    public function get_status() {
-        switch ($this->data->status) {
-            case self::NOTSTARTED:
-                return 'notstarted';
-            case self::INPROGRESS:
-                return 'inprogress';
-            case self::ABANDONED:
-                return 'abandoned';
-            case self::FINISHED:
-                return 'finished';
-            default:
-                break;
-        }
-    }
-
-    /**
-     * Set the status of the attempt and then save it
-     * @param string $status
-     * @return bool
-     */
-    public function set_status($status) {
-        switch ($status) {
-            case 'notstarted':
-                $this->data->status = self::NOTSTARTED;
-                break;
-            case 'inprogress':
-                $this->data->status = self::INPROGRESS;
-                break;
-            case 'abandoned':
-                $this->data->status = self::ABANDONED;
-                break;
-            case 'finished':
-                $this->data->status = self::FINISHED;
-                break;
-            default:
-                return false;
-        }
-        return $this->save();
-    }
-
-    /**
-     * Render the question specified by slot
-     *
-     * @param int $slot
-     * @param bool $review Whether or not we're reviewing the attempt
-     * @param string|\stdClass $review_options Can be string for overall actions like "edit" or an object of review options
-     * @return string the HTML fragment for the question
-     */
-    public function render_question($slot, $review = false, $review_options = '') {
-        $display_options = $this->get_display_options($review, $review_options);
-        return $this->quba->render_question($slot, $display_options, $slot);
-    }
-
-    /**
-     * Sets up the display options for the question
-     * @param bool $review
-     * @param string $review_options
-     * @return \question_display_options
-     */
-    protected function get_display_options($review = false, $review_options = '') {
-        $options = new \question_display_options();
-        $options->flags = \question_display_options::HIDDEN;
-        $options->context = $this->context;
-        $options->marks = \question_display_options::HIDDEN;
-
-        if ($review) {
-
-            // Default display options for review
-            $options->readonly = true;
-            $options->hide_all_feedback();
-
-            // Special case for "edit" review options value
-            if ($review_options === 'edit') {
-                $options->correctness = \question_display_options::VISIBLE;
-                $options->marks = \question_display_options::MARK_AND_MAX;
-                $options->feedback = \question_display_options::VISIBLE;
-                $options->numpartscorrect = \question_display_options::VISIBLE;
-                $options->manualcomment = \question_display_options::EDITABLE;
-                $options->generalfeedback = \question_display_options::VISIBLE;
-                $options->rightanswer = \question_display_options::VISIBLE;
-                $options->history = \question_display_options::VISIBLE;
-            } else if ($review_options instanceof \stdClass) {
-                foreach (jazzquiz::$review_fields as $field => $not_used) {
-                    if ($review_options->$field == 1) {
-                        if ($field == 'specificfeedback') {
-                            $field = 'feedback';
-                        }
-                        if ($field == 'marks') {
-                            $options->$field = \question_display_options::MARK_AND_MAX;
-                        } else {
-                            $options->$field = \question_display_options::VISIBLE;
-                        }
-                    }
-                }
-            }
-        } else {
-            // Default options for running quiz
-            $options->rightanswer = \question_display_options::HIDDEN;
-            $options->numpartscorrect = \question_display_options::HIDDEN;
-            $options->manualcomment = \question_display_options::HIDDEN;
-            $options->manualcommentlink = \question_display_options::HIDDEN;
-        }
-        return $options;
-    }
-
-    /**
-     * Initialize the head contributions from the question engine
-     * @return string
-     */
-    public function get_html_head_contributions() {
-        // Next load the slot head html and initialize question engine js
-        $result = '';
-        foreach ($this->quba->get_slots() as $slot) {
-            $result .= $this->quba->render_question_head_html($slot);
-        }
-        $result .= \question_engine::initialise_js();
-        return $result;
-    }
-
-    /**
-     * saves the current attempt class
-     *
+     * Saves the current attempt class
      * @return bool
      */
     public function save() {
         global $DB;
 
-        // Save the question usage by activity object
+        // Save the question usage by activity object.
         \question_engine::save_questions_usage_by_activity($this->quba);
 
-        // Add the quba id as the questionengid
-        // This is here because for new usages there is no id until we save it
+        // Add the quba id as the questionengid.
+        // This is here because for new usages there is no id until we save it.
         $this->data->questionengid = $this->quba->get_id();
         $this->data->timemodified = time();
 
@@ -283,21 +150,22 @@ class jazzquiz_attempt {
      * If no slot is defined, we attempt to get that from the slots param passed
      * back from the form submission
      *
+     * @param jazzquiz $jazzquiz
      * @param int $slot The slot for which we want to get feedback
      * @return string HTML fragment of the feedback
      */
-    public function get_question_feedback($slot = -1) {
+    public function get_question_feedback($jazzquiz, $slot = -1) {
         global $PAGE;
         if ($slot === -1) {
-            // Attempt to get it from the slots param sent back from a question processing
+            // Attempt to get it from the slots param sent back from a question processing.
             $slots = required_param('slots', PARAM_ALPHANUMEXT);
             $slots = explode(',', $slots);
-            $slot = $slots[0]; // always just get the first thing from explode
+            $slot = $slots[0]; // Always just get the first thing from explode.
         }
-        $question_definition = $this->quba->get_question($slot);
-        $question_renderer = $question_definition->get_renderer($PAGE);
-        $display_options = $this->get_display_options();
-        return $question_renderer->feedback($this->quba->get_question_attempt($slot), $display_options);
+        $question = $this->quba->get_question($slot);
+        $renderer = $question->get_renderer($PAGE);
+        $displayoptions = $jazzquiz->get_display_options();
+        return $renderer->feedback($this->quba->get_question_attempt($slot), $displayoptions);
     }
 
     /**
@@ -316,13 +184,13 @@ class jazzquiz_attempt {
      * @return string[]
      */
     public function get_response_data($slot) {
-        $question_attempt = $this->quba->get_question_attempt($slot);
-        $response = $question_attempt->get_response_summary();
+        $questionattempt = $this->quba->get_question_attempt($slot);
+        $response = $questionattempt->get_response_summary();
         if ($response === null || $response === '') {
             return [];
         }
-        $question_type = $question_attempt->get_question()->get_type_name();
-        switch ($question_type) {
+        $qtype = $questionattempt->get_question()->get_type_name();
+        switch ($qtype) {
             case 'stack':
                 // TODO: Figure out a better way to get rid of the input name.
                 $response = str_replace('ans1: ', '', $response);

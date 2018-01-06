@@ -16,7 +16,6 @@
 
 /**
  * Simple callback page to handle the many hits for quiz status when running
- *
  * This is used so the javascript can act accordingly to the instructor's actions
  *
  * @package   mod_jazzquiz
@@ -29,123 +28,123 @@
 namespace mod_jazzquiz;
 
 define('AJAX_SCRIPT', true);
+
 require_once('../../config.php');
+
+require_login();
 require_sesskey();
 
 // TODO: This file should be merged with quizdata.php
 
-function print_json($array) {
-    echo json_encode($array);
-}
+function quiz_info() {
+    global $DB;
 
-// If they've passed the sesskey information grab the session info
-$session_id = required_param('sessionid', PARAM_INT);
+    // If they've passed the sesskey information grab the session info
+    $sessionid = required_param('sessionid', PARAM_INT);
 
-// First determine if we get a session.
-$session = $DB->get_record('jazzquiz_sessions', ['id' => $session_id]);
-if (!$session) {
-    print_json([
-        'status' => 'error',
-        'message' => "Invalid session $session_id"
-    ]);
-    exit;
-}
+    // First determine if we get a session.
+    $session = $DB->get_record('jazzquiz_sessions', ['id' => $sessionid]);
+    if (!$session) {
+        return [
+            'status' => 'error',
+            'message' => "Invalid session $sessionid"
+        ];
+    }
 
-// Next we need to get the JazzQuiz object and course module object to make sure a student can log in for the session asked for
-$jazzquiz = $DB->get_record('jazzquiz', ['id' => $session->jazzquizid]);
-if (!$jazzquiz) {
-    print_json([
-        'status' => 'error',
-        'message' => "Invalid JazzQuiz $session->jazzquizid"
-    ]);
-    exit;
-}
+    // Next we need to get the JazzQuiz object and course module object to make sure a student can log in for the session asked for
+    $jazzquiz = $DB->get_record('jazzquiz', ['id' => $session->jazzquizid]);
+    if (!$jazzquiz) {
+        return [
+            'status' => 'error',
+            'message' => "Invalid JazzQuiz $session->jazzquizid"
+        ];
+    }
 
-try {
-    $course = $DB->get_record('course', ['id' => $jazzquiz->course], '*', MUST_EXIST);
-    $cm = get_coursemodule_from_instance('jazzquiz', $jazzquiz->id, $course->id, false, MUST_EXIST);
-    require_login($course->id, false, $cm, false, true);
-} catch (\Exception $e) {
-    print_json([
-        'status' => 'error',
-        'message' => 'Did not find course ' . $jazzquiz->course
-    ]);
-    exit;
-}
+    try {
+        $course = $DB->get_record('course', ['id' => $jazzquiz->course], '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('jazzquiz', $jazzquiz->id, $course->id, false, MUST_EXIST);
+        require_login($course->id, false, $cm, false, true);
+    } catch (\Exception $e) {
+        return [
+            'status' => 'error',
+            'message' => 'Did not find course ' . $jazzquiz->course
+        ];
+    }
 
-// Check if the session is open
-if ($session->sessionopen == 0) {
-    print_json([
-        'status' => 'sessionclosed',
-        'message' => 'The specified session is closed'
-    ]);
-    exit;
-}
+    // Check if the session is open
+    if ($session->sessionopen == 0) {
+        return [
+            'status' => 'sessionclosed',
+            'message' => 'The specified session is closed'
+        ];
+    }
 
-switch ($session->status) {
+    switch ($session->status) {
 
-    // Just a generic response with the state
-    case 'notrunning':
-        $jazzquiz = new jazzquiz($cm->id);
-        if ($jazzquiz->is_instructor()) {
-            $session = new jazzquiz_session($jazzquiz, $session);
-            $attempts = $session->get_all_attempts(false, 'open');
-            print_json([
-                'status' => $session->data->status,
-                'student_count' => count($attempts)
-            ]);
-            exit;
-        }
-    // fall-through
-    case 'preparing':
-    case 'reviewing':
-        print_json([
-            'status' => $session->status,
-        ]);
-        exit;
-
-    // TODO: Not send options here. Quizdata should probably take care of that.
-    case 'voting':
-        $vote_options = $DB->get_records('jazzquiz_votes', ['sessionid' => $session_id]);
-        $options = [];
-        $html = '<div class="jazzquiz-vote">';
-        $i = 0;
-        foreach ($vote_options as $vote_option) {
-            $options[] = [
-                'text' => $vote_option->attempt,
-                'id' => $vote_option->id,
-                'question_type' => $vote_option->qtype,
-                'content_id' => "vote_answer_label_$i"
+        // Just a generic response with the state
+        case 'notrunning':
+            $jazzquiz = new jazzquiz($cm->id);
+            if ($jazzquiz->is_instructor()) {
+                $session = new jazzquiz_session($jazzquiz, $session->id);
+                $session->load_attempts();
+                return [
+                    'status' => $session->data->status,
+                    'student_count' => $session->get_student_count()
+                ];
+            }
+        // fall-through
+        case 'preparing':
+        case 'reviewing':
+            return [
+                'status' => $session->status,
             ];
-            $html .= '<label>';
-            $html .= '<input class="jazzquiz-select-vote" type="radio" name="vote" value="' . $vote_option->id . '">';
-            $html .= '<span id="vote_answer_label_' . $i . '">' . $vote_option->attempt . '</span>';
-            $html .= '</label><br>';
-            $i++;
-        }
-        $html .= '</div>';
-        $html .= '<button id="jazzquiz_save_vote" class="btn btn-primary">Save</button>';
-        print_json([
-            'status' => 'voting',
-            'html' => $html,
-            'options' => $options
-        ]);
-        exit;
 
-    // Send the currently active question
-    case 'running':
-        print_json([
-            'status' => 'running',
-            'question_time' => $session->currentquestiontime,
-            'delay' => $session->nextstarttime - time()
-        ]);
-        exit;
+        // TODO: Not send options here. Quizdata should probably take care of that.
+        case 'voting':
+            $voteoptions = $DB->get_records('jazzquiz_votes', ['sessionid' => $sessionid]);
+            $options = [];
+            $html = '<div class="jazzquiz-vote">';
+            $i = 0;
+            foreach ($voteoptions as $voteoption) {
+                $options[] = [
+                    'text' => $voteoption->attempt,
+                    'id' => $voteoption->id,
+                    'question_type' => $voteoption->qtype,
+                    'content_id' => "vote_answer_label_$i"
+                ];
+                $html .= '<label>';
+                $html .= '<input class="jazzquiz-select-vote" type="radio" name="vote" value="' . $voteoption->id . '">';
+                $html .= '<span id="vote_answer_label_' . $i . '">' . $voteoption->attempt . '</span>';
+                $html .= '</label><br>';
+                $i++;
+            }
+            $html .= '</div>';
+            $html .= '<button id="jazzquiz_save_vote" class="btn btn-primary">Save</button>';
+            return [
+                'status' => 'voting',
+                'html' => $html,
+                'options' => $options
+            ];
 
-    // This should not be reached, but if it ever is, let's just assume the quiz is not running.
-    default:
-        print_json([
-            'status' => 'notrunning',
-            'message' => 'Unknown error. State: ' . $session->status
-        ]);
-        exit;
+        // Send the currently active question
+        case 'running':
+            return [
+                'status' => 'running',
+                'questiontime' => $session->currentquestiontime,
+                'delay' => $session->nextstarttime - time()
+            ];
+
+        // This should not be reached, but if it ever is, let's just assume the quiz is not running.
+        default:
+            return [
+                'status' => 'notrunning',
+                'message' => 'Unknown error. State: ' . $session->status
+            ];
+    }
 }
+
+$starttime = microtime(true);
+$info = quiz_info();
+$endtime = microtime(true);
+$info['debugmu'] = $endtime - $starttime;
+echo json_encode($info);

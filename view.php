@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -37,50 +36,107 @@ require_once($CFG->dirroot . '/question/editlib.php');
  * @param jazzquiz $jazzquiz
  */
 function jazzquiz_view_start_quiz($jazzquiz) {
-    global $PAGE;
-    $renderer = $jazzquiz->renderer;
-    $url = $PAGE->url;
+    global $PAGE, $USER;
 
-    // Set the quiz view page to the base layout for 1 column layout
+    // Set the quiz view page to the base layout for 1 column layout.
     $PAGE->set_pagelayout('base');
 
-    $session = new jazzquiz_session($jazzquiz);
-    if ($session->data === false) {
-        // Redirect them to the default page with a quick message first
-        $redirect_url = clone($url);
-        $redirect_url->remove_params('action');
-        redirect($redirect_url, get_string('no_session', 'jazzquiz'), 5);
+    $session = $jazzquiz->load_open_session();
+    if (!$session) {
+        jazzquiz_view_default($jazzquiz);
         return;
     }
+    $session->load_attempts();
+    $session->initialize_attempt($USER->id);
+    $session->attempt->data->status = jazzquiz_attempt::INPROGRESS;
+    $session->attempt->save();
 
-    // Initialize the question attempts
-    $attempts_initialized = $session->init_attempts($jazzquiz->is_instructor());
-    if (!$attempts_initialized) {
-        print_error('cantinitattempts', 'jazzquiz');
+    // Initialize JavaScript for the question engine.
+    // TODO: Not certain if this is needed. Should be checked further.
+    \question_engine::initialise_js();
+
+    /** @var output\renderer $renderer */
+    $renderer = $jazzquiz->renderer;
+    $renderer->header($jazzquiz);
+    $renderer->render_quiz($session);
+    $renderer->footer();
+}
+
+/**
+ * @param jazzquiz $jazzquiz
+ */
+function jazzquiz_view_default_instructor($jazzquiz) {
+    global $PAGE, $DB;
+
+    $startsessionform = new forms\view\start_session($PAGE->url);
+    $data = $startsessionform->get_data();
+    if ($data) {
+        $sessions = $DB->get_records('jazzquiz_sessions', [
+            'jazzquizid' => $jazzquiz->data->id,
+            'sessionopen' => 1
+        ]);
+        if (!empty($sessions)) {
+            // There is already an open session.
+            return;
+        }
+
+        // Create the session.
+        $sessionid = $jazzquiz->create_session($data->session_name);
+        if ($sessionid === false) {
+            return;
+        }
+
+        // Redirect to the quiz start.
+        $quizstarturl = clone($PAGE->url);
+        $quizstarturl->param('action', 'quizstart');
+        redirect($quizstarturl, null, 0);
+        return; // Explicit return to avoid confusion.
     }
 
-    // Get the current attempt and initialize the head contributions
-    $session->open_attempt->get_html_head_contributions();
-    $session->open_attempt->set_status('inprogress');
+    /** @var output\renderer $renderer */
+    $renderer = $jazzquiz->renderer;
+    $renderer->header($jazzquiz);
+    if ($jazzquiz->is_session_open()) {
+        $renderer->continue_session_form($jazzquiz);
+    } else {
+        $renderer->start_session_form($startsessionform);
+    }
+    $renderer->footer();
+}
 
-    // Show the quiz start landing page
-    $renderer->view_header(true);
-    $renderer->render_quiz($session);
-    $renderer->view_footer();
+/**
+ * @param jazzquiz $jazzquiz
+ */
+function jazzquiz_view_default_student($jazzquiz) {
+    global $PAGE;
+    $studentstartform = new forms\view\student_start_form($PAGE->url, ['rtq' => $jazzquiz]);
+    $data = $studentstartform->get_data();
+    if ($data) {
+        $quizstarturl = clone($PAGE->url);
+        $quizstarturl->param('action', 'quizstart');
+        redirect($quizstarturl, null, 0);
+        return; // Explicit return to avoid confusion.
+    }
+
+    /** @var output\renderer $renderer */
+    $renderer = $jazzquiz->renderer;
+    $renderer->header($jazzquiz);
+    $session = $jazzquiz->load_open_session();
+    if ($session) {
+        $renderer->join_quiz_form($studentstartform, $session);
+    } else {
+        $renderer->quiz_not_running($jazzquiz->cm->id);
+    }
+    $renderer->footer();
 }
 
 /**
  * @param jazzquiz $jazzquiz
  */
 function jazzquiz_view_default($jazzquiz) {
-    global $PAGE, $DB;
-    $renderer = $jazzquiz->renderer;
-    $url = $PAGE->url;
-    $session = new jazzquiz_session($jazzquiz);
+    global $PAGE;
 
-    // Show view to start quiz (for instructors) or join quiz (for students)
-
-    // Trigger event for course module viewed
+    // Trigger event for course module viewed.
     $event = event\course_module_viewed::create([
         'objectid' => $PAGE->cm->instance,
         'context' => $PAGE->context,
@@ -89,74 +145,21 @@ function jazzquiz_view_default($jazzquiz) {
     $event->add_record_snapshot($PAGE->cm->modname, $jazzquiz->data);
     $event->trigger();
 
-    // Determine home display based on role
+    // Determine home display based on role.
     if ($jazzquiz->is_instructor()) {
-        $start_session_form = new forms\view\start_session($url);
-        $data = $start_session_form->get_data();
-        if ($data) {
-            // Create a new quiz session
-            // First check to see if there are any open sessions
-            // This shouldn't occur, but never hurts to check
-            $sessions = $DB->get_records('jazzquiz_sessions', [
-                'jazzquizid' => $jazzquiz->data->id,
-                'sessionopen' => 1
-            ]);
-
-            if (!empty($sessions)) {
-                // Error out with that there are existing sessions
-                $renderer->setMessage(get_string('already_existing_sessions', 'jazzquiz'), 'error');
-                $renderer->view_header();
-                $renderer->view_inst_home($start_session_form, $session->data->sessionopen);
-                $renderer->view_footer();
-                return;
-            }
-
-            // Create the session
-            $session_created_successfully = $session->create_session($data);
-            if (!$session_created_successfully) {
-                // Error handling
-                $renderer->setMessage(get_string('unable_to_create_session', 'jazzquiz'), 'error');
-                $renderer->view_header();
-                $renderer->view_inst_home($start_session_form, $session->data->sessionopen);
-                $renderer->view_footer();
-                return;
-            }
-
-            // Redirect to the quiz start
-            $quiz_start_url = clone($url);
-            $quiz_start_url->param('action', 'quizstart');
-            redirect($quiz_start_url, null, 0);
-
-        } else {
-            $renderer->view_header();
-            $renderer->view_inst_home($start_session_form, $session->data->sessionopen);
-            $renderer->view_footer();
-        }
+        // Show "Start quiz" form.
+        jazzquiz_view_default_instructor($jazzquiz);
     } else {
-
-        $student_start_form = new forms\view\student_start_form($url, [
-            'rtq' => $jazzquiz
-        ]);
-
-        $data = $student_start_form->get_data();
-        if ($data) {
-            $quiz_start_url = clone($url);
-            $quiz_start_url->param('action', 'quizstart');
-            redirect($quiz_start_url, null, 0);
-        } else {
-            // Form will display only if there is an active session.
-            $renderer->view_header();
-            $renderer->view_student_home($student_start_form, $session);
-            $renderer->view_footer();
-        }
+        // Show "Join quiz" form.
+        jazzquiz_view_default_student($jazzquiz);
     }
 }
 
 function jazzquiz_view() {
     global $PAGE;
 
-    $course_module_id = optional_param('id', false, PARAM_INT);
-    if (!$course_module_id) {
+    $cmid = optional_param('id', false, PARAM_INT);
+    if (!$cmid) {
         // Probably a login redirect that doesn't include any ID.
         // Go back to the main Moodle page, because we have no info.
         header('Location: /');
@@ -164,36 +167,26 @@ function jazzquiz_view() {
     }
 
     $action = optional_param('action', '', PARAM_ALPHANUM);
-    $jazzquiz = new jazzquiz($course_module_id, null);
+    $jazzquiz = new jazzquiz($cmid, null);
     $jazzquiz->require_capability('mod/jazzquiz:attempt');
-    $module_name = get_string('modulename', 'jazzquiz');
-    $quiz_name = format_string($jazzquiz->name, true);
-    $question_count = count($jazzquiz->questions);
+    $modulename = get_string('modulename', 'jazzquiz');
+    $quizname = format_string($jazzquiz->data->name, true);
 
     $url = new \moodle_url('/mod/jazzquiz/view.php');
-    $url->param('id', $course_module_id);
-    $url->param('quizid', $jazzquiz->id);
+    $url->param('id', $cmid);
+    $url->param('quizid', $jazzquiz->data->id);
     $url->param('action', $action);
 
-    $PAGE->set_pagelayout('incourse'); // todo: remove this line?
+    $PAGE->set_pagelayout('incourse');
     $PAGE->set_context($jazzquiz->context);
-    $PAGE->set_cm($jazzquiz->course_module);
-    $PAGE->set_title(strip_tags($jazzquiz->course->shortname . ': ' . $module_name . ': ' . $quiz_name));
+    $PAGE->set_cm($jazzquiz->cm);
+    $PAGE->set_title(strip_tags($jazzquiz->course->shortname . ': ' . $modulename . ': ' . $quizname));
     $PAGE->set_heading($jazzquiz->course->fullname);
     $PAGE->set_url($url);
-
-    $renderer = $jazzquiz->renderer;
 
     if ($jazzquiz->is_instructor()) {
         // TODO: Find a better place to add the question definitions.
         improviser::insert_default_improvised_question_definitions();
-    }
-
-    if ($question_count === 0) {
-        $renderer->view_header();
-        $renderer->no_questions($jazzquiz->is_instructor());
-        $renderer->view_footer();
-        return;
     }
 
     if ($action === 'quizstart') {

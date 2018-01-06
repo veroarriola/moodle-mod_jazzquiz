@@ -273,23 +273,10 @@ jazzquiz.initialize = function() {
         }, 50);
         return;
     }
-
     this.hideLoading();
     this.decodeState();
     this.requestQuizInfo();
-
-    if (!this.isInstructor) {
-        jQuery(document).on('submit', '#jazzquiz_question_form', function(event) {
-            event.preventDefault();
-            jazzquiz.submitAnswer();
-        });
-        jQuery(document).on('click', '#jazzquiz_save_vote', function() {
-            jazzquiz.saveVote();
-        });
-        jQuery(document).on('click', '.jazzquiz-select-vote', function() {
-            jazzquiz.voteAnswer = this.value;
-        });
-    }
+    this.addEventHandlers();
 };
 
 jazzquiz.clearQuestionBox = function() {
@@ -384,13 +371,17 @@ jazzquiz.startQuestionCountdown = function(questionTime, countdownTimeLeft) {
     this.quiz.question.countdownTimeLeft = countdownTimeLeft;
     if (countdownTimeLeft < 1) {
         // Check if the question has already ended.
-        if (countdownTimeLeft < -questionTime) {
+        if (questionTime > 0 && countdownTimeLeft < -questionTime) {
             return false;
         }
         // We want to show some text, as we must also request the question form from the server.
         this.setCountdownTimerText(0);
         // No need to start the countdown. Just start the question.
-        this.startQuestionAttempt(questionTime + countdownTimeLeft);
+        if (questionTime > 1) {
+            this.startQuestionAttempt(questionTime + countdownTimeLeft);
+        } else {
+            this.startQuestionAttempt(0);
+        }
         return true;
     }
     this.setCountdownTimerText(countdownTimeLeft);
@@ -433,6 +424,7 @@ jazzquiz.startQuestionAttempt = function(questionTime) {
     this.reloadQuestionBox();
     // Set this to true so that we don't keep calling this over and over
     this.quiz.question.isRunning = true;
+    questionTime = parseInt(questionTime);
     if (questionTime === 0) {
         // 0 means no timer.
         return;

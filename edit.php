@@ -31,19 +31,15 @@ require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 
-function print_json($array) {
-    echo json_encode($array);
-}
-
 /**
  * Check if this JazzQuiz has an open session.
- * @param int $jazzquiz_id
+ * @param int $jazzquizid
  * @return bool
  */
-function jazzquiz_session_open($jazzquiz_id) {
+function jazzquiz_session_open($jazzquizid) {
     global $DB;
     $sessions = $DB->get_records('jazzquiz_sessions', [
-        'jazzquizid' => $jazzquiz_id,
+        'jazzquizid' => $jazzquizid,
         'sessionopen' => 1
     ]);
     return count($sessions) > 0;
@@ -54,16 +50,16 @@ function jazzquiz_session_open($jazzquiz_id) {
  * @param $contexts
  * @param jazzquiz $jazzquiz
  * @param \moodle_url $url
- * @param $page_vars
+ * @param $pagevars
  * @return string
  */
-function get_question_bank_view($contexts, $jazzquiz, $url, $page_vars) {
-    $questions_per_page = optional_param('qperpage', 10, PARAM_INT);
-    $question_page = optional_param('qpage', 0, PARAM_INT);
+function get_question_bank_view($contexts, $jazzquiz, $url, $pagevars) {
+    $questionsperpage = optional_param('qperpage', 10, PARAM_INT);
+    $questionpage = optional_param('qpage', 0, PARAM_INT);
     // Capture question bank display in buffer to have the renderer render output.
     ob_start();
-    $question_bank = new bank\jazzquiz_question_bank_view($contexts, $url, $jazzquiz->course, $jazzquiz->course_module);
-    $question_bank->display('editq', $question_page, $questions_per_page, $page_vars['cat'], true, true, true);
+    $questionbank = new bank\jazzquiz_question_bank_view($contexts, $url, $jazzquiz->course, $jazzquiz->cm);
+    $questionbank->display('editq', $questionpage, $questionsperpage, $pagevars['cat'], true, true, true);
     return ob_get_clean();
 }
 
@@ -72,12 +68,12 @@ function get_question_bank_view($contexts, $jazzquiz, $url, $page_vars) {
  * @param \context[] $contexts
  * @param jazzquiz $jazzquiz
  * @param \moodle_url $url
- * @param array $page_vars
+ * @param array $pagevars
  */
-function list_questions($contexts, $jazzquiz, $url, $page_vars) {
-    $question_bank_view = get_question_bank_view($contexts, $jazzquiz, $url, $page_vars);
+function list_questions($contexts, $jazzquiz, $url, $pagevars) {
+    $questionbankview = get_question_bank_view($contexts, $jazzquiz, $url, $pagevars);
     $questions = $jazzquiz->questions;
-    $jazzquiz->renderer->listquestions($questions, $question_bank_view, $url);
+    $jazzquiz->renderer->listquestions($jazzquiz, $questions, $questionbankview, $url);
 }
 
 /**
@@ -94,9 +90,9 @@ function jazzquiz_edit_order($jazzquiz) {
  * @param \moodle_url $url
  */
 function jazzquiz_edit_add_question($jazzquiz, $url) {
-    $question_id = required_param('questionid', PARAM_INT);
-    $jazzquiz->add_question($question_id);
-    // Ensure there is no action or questionid in the base url
+    $questionid = required_param('questionid', PARAM_INT);
+    $jazzquiz->add_question($questionid);
+    // Ensure there is no action or questionid in the base url.
     $url->remove_params('action', 'questionid');
     redirect($url, null, 0);
 }
@@ -113,14 +109,17 @@ function jazzquiz_edit_edit_question($jazzquiz) {
  * @param jazzquiz $jazzquiz
  * @param $contexts
  * @param \moodle_url $url
- * @param $page_vars
+ * @param $pagevars
  */
-function jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $page_vars) {
-    $jazzquiz->renderer->print_header();
-    list_questions($contexts, $jazzquiz, $url, $page_vars);
+function jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $pagevars) {
+    $jazzquiz->renderer->header($jazzquiz);
+    list_questions($contexts, $jazzquiz, $url, $pagevars);
     $jazzquiz->renderer->footer();
 }
 
+/**
+ * View edit page.
+ */
 function jazzquiz_edit() {
     global $PAGE;
 
@@ -137,25 +136,25 @@ function jazzquiz_edit() {
     list(
         $url,
         $contexts,
-        $course_module_id,
-        $course_module,
-        $module, // jazzquiz database record
-        $page_vars) = question_edit_setup('editq', '/mod/jazzquiz/edit.php', true);
+        $cmid,
+        $cm,
+        $module, // jazzquiz database record.
+        $pagevars) = question_edit_setup('editq', '/mod/jazzquiz/edit.php', true);
 
-    $jazzquiz = new jazzquiz($course_module_id, 'edit');
+    $jazzquiz = new jazzquiz($cmid, 'edit');
     $renderer = $jazzquiz->renderer;
 
-    $module_name = get_string('modulename', 'jazzquiz');
-    $quiz_name = format_string($jazzquiz->data->name, true);
+    $modulename = get_string('modulename', 'jazzquiz');
+    $quizname = format_string($jazzquiz->data->name, true);
 
     $PAGE->set_url($url);
-    $PAGE->set_title(strip_tags($jazzquiz->course->shortname . ': ' . $module_name . ': ' . $quiz_name));
+    $PAGE->set_title(strip_tags($jazzquiz->course->shortname . ': ' . $modulename . ': ' . $quizname));
     $PAGE->set_heading($jazzquiz->course->fullname);
 
     if (jazzquiz_session_open($jazzquiz->data->id)) {
         // Can't edit during a session.
-        $renderer->print_header();
-        $renderer->opensession();
+        $renderer->header($jazzquiz);
+        $renderer->session_is_open_error();
         $renderer->footer();
         return;
     }
@@ -171,7 +170,7 @@ function jazzquiz_edit() {
             jazzquiz_edit_edit_question($jazzquiz);
             break;
         case 'listquestions':
-            jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $page_vars);
+            jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $pagevars);
             break;
         default:
             break;

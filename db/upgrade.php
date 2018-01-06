@@ -1,42 +1,45 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
 //
-// Capability definitions for the jazzquiz module.
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-// The capabilities are loaded into the database table when the module is
-// installed or updated. Whenever the capability definitions are updated,
-// the module version number should be bumped up.
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-// The system has four possible values for a capability:
-// CAP_ALLOW, CAP_PREVENT, CAP_PROHIBIT, and inherit (not set).
-//
-//
-// CAPABILITY NAMING CONVENTION
-//
-// It is important that capability names are unique. The naming convention
-// for capabilities that are specific to modules and blocks is as follows:
-//   [mod/block]/<component_name>:<capabilityname>
-//
-// component_name should be the same as the directory name of the mod or block.
-//
-// Core moodle capabilities are defined thus:
-//    moodle/<capabilityclass>:<capabilityname>
-//
-// Examples: mod/forum:viewpost
-//           block/recent_activity:view
-//           moodle/site:deleteuser
-//
-// The variable name for the capability definitions array follows the format
-//   $<componenttype>_<component_name>_capabilities
-//
-// For the core capabilities, the variable is $moodle_capabilities.
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 defined('MOODLE_INTERNAL') || die();
 
-function xmldb_jazzquiz_upgrade($old_version)
-{
+function xmldb_jazzquiz_upgrade($oldversion) {
     global $DB;
 
-    $db_manager = $DB->get_manager();
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2018010509) {
+
+        // Define field notime to be dropped from jazzquiz_questions.
+        $table = new xmldb_table('jazzquiz_questions');
+        $field = new xmldb_field('notime');
+
+        // Conditionally launch drop field notime.
+        if ($dbman->field_exists($table, $field)) {
+
+            // Set all questiontime fields to 0 if notime is 1.
+            $DB->execute('UPDATE {jazzquiz_questions} SET questiontime = 0 WHERE notime = 1');
+
+            // Drop the field.
+            $dbman->drop_field($table, $field);
+        }
+
+        // jazzquiz savepoint reached.
+        upgrade_mod_savepoint(true, 2018010509, 'jazzquiz');
+    }
 
     return true;
 }

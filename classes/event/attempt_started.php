@@ -22,7 +22,9 @@
  * @copyright  2015 University of Wisconsin - Madison
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_jazzquiz\event;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -50,8 +52,8 @@ class attempt_started extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->relateduserid' has started the attempt with id '$this->objectid' for the 
-        JazzQuiz with course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->relateduserid' has started the attempt with id '$this->objectid'"
+             . " for the JazzQuiz with course module id '$this->contextinstanceid'.";
     }
 
     /**

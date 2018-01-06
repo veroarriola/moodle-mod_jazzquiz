@@ -68,7 +68,7 @@ class attempt_ended extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/jazzquiz/view.php', array('action' => 'quizstart'));
+        return new \moodle_url('/mod/jazzquiz/view.php', ['action' => 'quizstart']);
     }
 
     /**

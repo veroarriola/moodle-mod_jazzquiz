@@ -79,16 +79,17 @@ jazzquiz.changeQuizState = function(state, data) {
                 'toggleresponses',
                 'showfullscreenresults'
             ]);
-            this.quiz.question.questionTime = data.question_time;
+            this.quiz.question.questionTime = data.questiontime;
             if (this.quiz.question.isRunning) {
                 // Check if the question has already ended.
-                if (data.delay < -data.question_time) {
+                // We need to do this because the state does not update unless an instructor is connected.
+                if (data.questionTime > 0 && data.delay < -data.questiontime) {
                     this.endQuestion();
                 }
                 // Update current responses and responded.
                 this.getResults();
             } else {
-                const started = this.startQuestionCountdown(data.question_time, data.delay);
+                const started = this.startQuestionCountdown(data.questiontime, data.delay);
                 if (started) {
                     this.quiz.question.isRunning = true;
                 }
@@ -546,8 +547,8 @@ jazzquiz.showQuestionListSetup = function(name, action) {
             let $questionButton = jQuery('<button class="btn">' + questions[i].name + '</button>');
             $questionButton.data({
                 time: questions[i].time,
-                'question-id': questions[i].question_id,
-                'jazzquiz-question-id': questions[i].jazzquiz_question_id
+                'question-id': questions[i].questionid,
+                'jazzquiz-question-id': questions[i].jazzquizquestionid
             });
             $questionButton.data('test', 1);
             $questionButton.on('click', function() {
@@ -684,11 +685,11 @@ jazzquiz.startQuestion = function(method, questionId, questionTime, jazzquizQues
     this.post('quizdata.php', {
         action: 'start_question',
         method: method,
-        question_id: questionId,
-        question_time: questionTime,
-        jazzquiz_question_id: jazzquizQuestionId
+        questionid: questionId,
+        questiontime: questionTime,
+        jazzquizquestionid: jazzquizQuestionId
     }, function(data) {
-        jazzquiz.startQuestionCountdown(data.question_time, data.delay);
+        jazzquiz.startQuestionCountdown(data.questiontime, data.delay);
     }).fail(function() {
         jazzquiz.showInfo(jazzquiz.text('error_with_request'));
     })
@@ -849,60 +850,6 @@ jazzquiz.closeFullscreenView = function() {
 };
 
 /**
- * Execute function for a control button.
- * This function is only meant to be used for the buttons that have cases in the switch.
- * @todo This should soon be updated to be done via jQuery.
- * @param action The ID of the button that was clicked.
- */
-jazzquiz.executeControlAction = function(action) {
-    // Prevent duplicate clicks
-    // TODO: Find a better way to check if this is a direct action or not. Perhaps a class?
-    if (action !== 'startimprovisequestion' && action !== 'startjumpquestion') {
-        this.enableControls([]);
-    }
-    // Execute action
-    switch (action) {
-        case 'repollquestion':
-            this.repollQuestion();
-            break;
-        case 'runvoting':
-            this.runVoting();
-            break;
-        case 'startimprovisequestion':
-            this.showImproviseQuestionSetup();
-            break;
-        case 'startjumpquestion':
-            this.showJumpQuestionSetup();
-            break;
-        case 'nextquestion':
-            this.nextQuestion();
-            break;
-        case 'endquestion':
-            this.endQuestion();
-            break;
-        case 'showfullscreenresults':
-            this.showFullscreenView();
-            break;
-        case 'showcorrectanswer':
-            this.showCorrectAnswer();
-            break;
-        case 'toggleresponses':
-            this.toggleResponses();
-            break;
-        case 'exitquiz':
-        case 'closesession':
-            this.closeSession();
-            break;
-        case 'startquiz':
-            this.startQuiz();
-            break;
-        default:
-            console.log('Unknown action ' + action);
-            break;
-    }
-};
-
-/**
  * Close the dropdown menu for choosing a question.
  * @param {Event} event
  * @param {string} name
@@ -917,25 +864,76 @@ jazzquiz.closeQuestionListMenu = function(event, name) {
     }
 };
 
-// TODO: Move the following listeners into function(s):
-
-// Listens for key event to remove the projector view container
-document.addEventListener('keyup', function(event) {
-    // Check if 'Escape' key was pressed
-    if (event.keyCode === 27) {
-        jazzquiz.closeFullscreenView();
-    }
-});
-
-document.addEventListener('click', function(event) {
-    jazzquiz.closeQuestionListMenu(event, 'improvise');
-    jazzquiz.closeQuestionListMenu(event, 'jump');
-    // Clicking a row to merge
-    if (jazzquiz.state === 'reviewing') {
-        if (event.target.classList.contains('bar')) {
-            jazzquiz.startResponseMerge(event.target.id);
-        } else if (event.target.parentNode && event.target.parentNode.classList.contains('bar')) {
-            jazzquiz.startResponseMerge(event.target.parentNode.id);
+/**
+ * Add the event handlers.
+ */
+jazzquiz.addEventHandlers = function() {
+    // Listens for key event to remove the projector view container
+    jQuery(document).on('keyup', function(event) {
+        // Check if 'Escape' key was pressed
+        if (event.keyCode === 27) {
+            jazzquiz.closeFullscreenView();
         }
-    }
-});
+    });
+
+    jQuery(document).on('click', function(event) {
+        jazzquiz.closeQuestionListMenu(event, 'improvise');
+        jazzquiz.closeQuestionListMenu(event, 'jump');
+        // Clicking a row to merge
+        if (jazzquiz.state === 'reviewing') {
+            if (event.target.classList.contains('bar')) {
+                jazzquiz.startResponseMerge(event.target.id);
+            } else if (event.target.parentNode && event.target.parentNode.classList.contains('bar')) {
+                jazzquiz.startResponseMerge(event.target.parentNode.id);
+            }
+        }
+    });
+
+    // Add control button events.
+    jQuery(document).on('click', '#repollquestion', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.repollQuestion();
+    })
+    .on('click', '#runvoting', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.runVoting();
+    })
+    .on('click', '#startimprovisequestion', function() {
+        jazzquiz.showImproviseQuestionSetup();
+    })
+    .on('click', '#startjumpquestion', function() {
+        jazzquiz.showJumpQuestionSetup();
+    })
+    .on('click', '#nextquestion', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.nextQuestion();
+    })
+    .on('click', '#endquestion', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.endQuestion();
+    })
+    .on('click', '#showfullscreenresults', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.showFullscreenView();
+    })
+    .on('click', '#showcorrectanswer', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.showCorrectAnswer();
+    })
+    .on('click', '#toggleresponses', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.toggleResponses();
+    })
+    .on('click', '#exitquiz', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.closeSession();
+    })
+    .on('click', '#closesession', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.closeSession();
+    })
+    .on('click', '#startquiz', function() {
+        jazzquiz.enableControls([]);
+        jazzquiz.startQuiz();
+    });
+};

@@ -28,9 +28,9 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_question_bank_view extends \core_question\bank\view {
+
     /**
      * Define the columns we want to be displayed on the question bank
-     *
      * @return array
      */
     protected function wanted_columns() {
@@ -50,57 +50,52 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
 
     /**
      * Shows the question bank editing interface.
-     *
-     * The function also processes a number of actions:
-     *
-     * Actions affecting the question pool:
-     * move           Moves a question to a different category
-     * deleteselected Deletes the selected questions from the category
-     * Other actions:
-     * category      Chooses the category
-     * displayoptions Sets display options
+     * @param string $tabname
+     * @param int $page
+     * @param int $perpage
+     * @param string $cat
+     * @param bool $recurse
+     * @param bool $showhidden
+     * @param bool $showquestiontext
      */
-    public function display($tab_name, $page, $per_page, $cat, $recurse, $show_hidden, $show_question_text) {
+    public function display($tabname, $page, $perpage, $cat, $recurse, $showhidden, $showquestiontext) {
         global $OUTPUT;
 
         if ($this->process_actions_needing_ui()) {
             return;
         }
-
-        $edit_contexts = $this->contexts->having_one_edit_tab_cap($tab_name);
+        $edit_contexts = $this->contexts->having_one_edit_tab_cap($tabname);
 
         // Category selection form.
         echo $OUTPUT->heading(get_string('questionbank', 'question'), 2);
-        array_unshift($this->searchconditions, new \core_question\bank\search\hidden_condition(!$show_hidden));
+        array_unshift($this->searchconditions, new \core_question\bank\search\hidden_condition(!$showhidden));
         array_unshift($this->searchconditions, new \core_question\bank\search\category_condition($cat, $recurse, $edit_contexts, $this->baseurl, $this->course));
         array_unshift($this->searchconditions, new jazzquiz_disabled_condition());
-        $this->display_options_form($show_question_text, '/mod/jazzquiz/edit.php');
+        $this->display_options_form($showquestiontext, '/mod/jazzquiz/edit.php');
 
         // Continues with list of questions.
         $this->display_question_list(
-            $this->contexts->having_one_edit_tab_cap($tab_name),
+            $this->contexts->having_one_edit_tab_cap($tabname),
             $this->baseurl,
             $cat,
             $this->cm,
             null,
             $page,
-            $per_page,
-            $show_hidden,
-            $show_question_text,
+            $perpage,
+            $showhidden,
+            $showquestiontext,
             $this->contexts->having_cap('moodle/question:add')
         );
     }
 
     /**
      * Generate an "add to quiz" url so that when clicked the question will be added to the quiz
-     *
-     * @param int $question_id
-     *
+     * @param int $questionid
      * @return \moodle_url Moodle url to add the question
      */
-    public function get_add_to_jazzquiz_url($question_id) {
+    public function get_add_to_jazzquiz_url($questionid) {
         $params = $this->baseurl->params();
-        $params['questionid'] = $question_id;
+        $params['questionid'] = $questionid;
         $params['action'] = 'addquestion';
         $params['sesskey'] = sesskey();
         return new \moodle_url('/mod/jazzquiz/edit.php', $params);
@@ -111,13 +106,14 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * create_new_question_button.
      *
      * @param $category
-     * @param $can_add
+     * @param $add
      * @throws \coding_exception
      */
-    protected function create_new_question_form($category, $can_add) {
+    protected function create_new_question_form($category, $add) {
         echo '<div class="createnewquestion">';
-        if ($can_add) {
-            $this->create_new_question_button($category->id, $this->editquestionurl->params(), get_string('create_new_question', 'jazzquiz'));
+        if ($add) {
+            $caption = get_string('create_new_question', 'jazzquiz');
+            $this->create_new_question_button($category->id, $this->editquestionurl->params(), $caption);
         } else {
             print_string('nopermissionadd', 'question');
         }
@@ -132,21 +128,21 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * This has been taken from question/editlib.php and adapted to allow us to use the $allowedqtypes
      * param on print_choose_qtype_to_add_form
      *
-     * @param int $category_id The id of the category that the new question should be added to.
+     * @param int $categoryid The id of the category that the new question should be added to.
      * @param array $params Other parameters to add to the URL. You need either $params['cmid'] or
      *      $params['courseid'], and you should probably set $params['returnurl']
      * @param string $caption the text to display on the button.
      * @param string $tooltip a tooltip to add to the button (optional).
      * @param bool $disabled if true, the button will be disabled.
      */
-    private function create_new_question_button($category_id, $params, $caption, $tooltip = '', $disabled = false) {
+    private function create_new_question_button($categoryid, $params, $caption, $tooltip = '', $disabled = false) {
         global $OUTPUT;
         static $choice_form_printed = false;
 
         $config = get_config('jazzquiz');
-        $enabled_types = explode(',', $config->enabledqtypes);
+        $enabledqtypes = explode(',', $config->enabledqtypes);
 
-        $params['category'] = $category_id;
+        $params['category'] = $categoryid;
         $url = new \moodle_url('/question/addquestion.php', $params);
 
         echo $OUTPUT->single_button($url, $caption, 'get', [
@@ -156,7 +152,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
 
         if (!$choice_form_printed) {
             echo '<div id="qtypechoicecontainer">';
-            echo print_choose_qtype_to_add_form([], $enabled_types);
+            echo print_choose_qtype_to_add_form([], $enabledqtypes);
             echo "</div>\n";
             $choice_form_printed = true;
         }
