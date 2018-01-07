@@ -121,7 +121,7 @@ class jazzquiz_session {
      * That jazzquiz_question is then returned
      * @param int $questionid (from question bank)
      * @param int $questiontime in seconds ("<0" => no time, "0" => default)
-     * @return mixed[] $success, $question_time (if parameter was 0, this question time will be the default)
+     * @return mixed[] $success, $question_time
      */
     public function start_question($questionid, $questiontime) {
         global $DB;
