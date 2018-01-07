@@ -43,6 +43,7 @@ let jazzquiz = {
         showVotesUponReview: false,
         respondedCount: 0,
         totalStudents: 0,
+        totalQuestions: 0,
 
         question: {
             isRunning: false,

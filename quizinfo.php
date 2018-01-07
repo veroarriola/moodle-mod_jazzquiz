@@ -97,6 +97,7 @@ function quiz_info() {
         case 'reviewing':
             return [
                 'status' => $session->status,
+                'slot' => $session->slot // For the preplanned questions.
             ];
 
         // TODO: Not send options here. Quizdata should probably take care of that.

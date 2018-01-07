@@ -354,7 +354,10 @@ class renderer extends \plugin_renderer_base {
         $quizjson->sessionId = $session->data->id;
         $quizjson->attemptId = $session->attempt->data->id;
         $quizjson->sessionKey = sesskey();
-        $quizjson->totalStudents = $session->get_student_count();
+        if ($session->jazzquiz->is_instructor()) {
+            $quizjson->totalStudents = $session->get_student_count();
+            $quizjson->totalQuestions = count($session->jazzquiz->questions);
+        }
 
         // Print data as JSON
         echo \html_writer::start_tag('script');

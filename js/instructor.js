@@ -42,6 +42,8 @@ jazzquiz.changeQuizState = function(state, data) {
     this.showControls();
     $startQuiz.parent().addClass('hidden');
 
+    let enabledButtons = [];
+
     switch (state) {
 
         case 'notrunning':
@@ -63,13 +65,16 @@ jazzquiz.changeQuizState = function(state, data) {
         case 'preparing':
             $sideContainer.addClass('hidden');
             this.showInfo(this.text('instructions_for_instructor'));
-            this.enableControls([
-                'nextquestion',
+            enabledButtons = [
                 'startimprovisequestion',
                 'startjumpquestion',
                 'showfullscreenresults',
                 'closesession'
-            ]);
+            ];
+            if (data.slot < this.quiz.totalQuestions) {
+                enabledButtons.push('nextquestion');
+            }
+            this.enableControls(enabledButtons);
             break;
 
         case 'running':
@@ -98,7 +103,7 @@ jazzquiz.changeQuizState = function(state, data) {
 
         case 'reviewing':
             $sideContainer.removeClass('hidden');
-            let enabledButtons = [
+            enabledButtons = [
                 'showcorrectanswer',
                 'runvoting',
                 'repollquestion',
@@ -107,7 +112,7 @@ jazzquiz.changeQuizState = function(state, data) {
                 'startjumpquestion',
                 'closesession'
             ];
-            if (!this.quiz.question.isLast) {
+            if (data.slot < this.quiz.totalQuestions) {
                 enabledButtons.push('nextquestion');
             }
             this.enableControls(enabledButtons);
