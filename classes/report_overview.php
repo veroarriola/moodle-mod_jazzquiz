@@ -71,10 +71,7 @@ class report_overview {
         }
         echo "\r\n";
         foreach ($attempts as $attempt) {
-            // TODO: Remove this. It's pretty horrendous.
-            // It might cause confusion if multiple teachers are in the same session.
-            // Just want to remove the 'previews' field. There are better ways to handle its use.
-            if ($USER->id == $attempt->data->userid) {
+            if ($attempt->data->status == jazzquiz_attempt::PREVIEW) {
                 continue;
             }
             echo $this->csv_escape($attempt->get_user_full_name()) . ',';
@@ -231,6 +228,11 @@ class report_overview {
 
         $PAGE->requires->js('/mod/jazzquiz/js/core.js');
         $PAGE->requires->js('/mod/jazzquiz/js/instructor.js');
+
+        // Add localization strings
+        $PAGE->requires->strings_for_js([
+            'a_out_of_b_responded'
+        ], 'jazzquiz');
 
         echo '<script> var jazzquizResponses = []; </script>';
 

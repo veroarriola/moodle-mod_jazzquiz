@@ -172,6 +172,7 @@ class jazzquiz {
         $session->jazzquizid = $this->data->id;
         $session->sessionopen = 1;
         $session->status = 'notrunning';
+        $session->slot = 0;
         $session->showfeedback = false;
         $session->created = time();
         try {

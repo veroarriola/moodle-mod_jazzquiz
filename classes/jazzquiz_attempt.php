@@ -32,7 +32,7 @@ class jazzquiz_attempt {
     /** Constants for the status of the attempt */
     const NOTSTARTED = 0;
     const INPROGRESS = 10;
-    const ABANDONED = 20;
+    const PREVIEW = 20;
     const FINISHED = 30;
 
     /** @var \stdClass */
@@ -57,6 +57,20 @@ class jazzquiz_attempt {
             // Load it up in this class instance
             $this->data = $data;
             $this->quba = \question_engine::load_questions_usage_by_activity($this->data->questionengid);
+        }
+    }
+
+    /**
+     * Check if this attempt is currently in progress.
+     * @return bool
+     */
+    public function is_active() {
+        switch ($this->data->status) {
+            case self::INPROGRESS:
+            case self::PREVIEW:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -211,7 +225,10 @@ class jazzquiz_attempt {
      */
     public function close_attempt($jazzquiz) {
         $this->quba->finish_all_questions(time());
-        $this->data->status = self::FINISHED;
+        // We want the instructor to remain in preview mode.
+        if (!$jazzquiz->is_instructor()) {
+            $this->data->status = self::FINISHED;
+        }
         $this->data->timefinish = time();
         $this->save();
         $params = [

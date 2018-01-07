@@ -166,9 +166,7 @@ class jazzquiz_session {
         $this->attempt = new jazzquiz_attempt($this->jazzquiz->context);
         $this->attempt->data->sessionid = $this->data->id;
         $this->attempt->data->userid = $userid;
-        $this->attempt->data->attemptnum = count($this->attempts) + 1;
         $this->attempt->data->status = jazzquiz_attempt::NOTSTARTED;
-        $this->attempt->data->preview = 0;
         $this->attempt->data->timemodified = time();
         $this->attempt->data->timestart = time();
         $this->attempt->data->responded = null;
@@ -236,17 +234,27 @@ class jazzquiz_session {
     public function get_users() {
         $users = [];
         foreach ($this->attempts as $attempt) {
+            // TODO: Eventually remove this status check.
+            if ($attempt->data->status == jazzquiz_attempt::PREVIEW) {
+                continue;
+            }
             $users[] = $attempt->data->userid;
         }
         return $users;
     }
 
     /**
-     * Get the count of open quiz attempts.
+     * Get the count of active quiz attempts.
      * @return int
      */
     public function get_student_count() {
-        return count($this->attempts);
+        $count = 0;
+        foreach ($this->attempts as $attempt) {
+            if ($attempt->data->status == jazzquiz_attempt::INPROGRESS) {
+                $count++;
+            }
+        }
+        return $count;
     }
 
     /**

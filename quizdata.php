@@ -430,7 +430,7 @@ function jazzquiz_quizdata() {
             'message' => 'No attempt found'
         ];
     }
-    if ($session->attempt->data->status != jazzquiz_attempt::INPROGRESS) {
+    if (!$session->attempt->is_active()) {
         return [
             'status' => 'error',
             'message' => 'This attempt is not in progress'

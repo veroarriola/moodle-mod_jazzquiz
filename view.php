@@ -48,7 +48,11 @@ function jazzquiz_view_start_quiz($jazzquiz) {
     }
     $session->load_attempts();
     $session->initialize_attempt($USER->id);
-    $session->attempt->data->status = jazzquiz_attempt::INPROGRESS;
+    if (!$jazzquiz->is_instructor()) {
+        $session->attempt->data->status = jazzquiz_attempt::INPROGRESS;
+    } else {
+        $session->attempt->data->status = jazzquiz_attempt::PREVIEW;
+    }
     $session->attempt->save();
 
     // Initialize JavaScript for the question engine.

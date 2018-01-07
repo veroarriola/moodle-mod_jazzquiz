@@ -72,10 +72,8 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sessionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="attemptnum" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="The attempt number for this user, for this session"/>
         <FIELD NAME="questionengid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The question (engine) usage id"/>
         <FIELD NAME="status" TYPE="int" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="Which state the attempt is in."/>
-        <FIELD NAME="preview" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="If this is a preview attempt or not. Instructors have preview attempts which are read-only."/>
         <FIELD NAME="responded" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not the user responded for the particular session's current question"/>
         <FIELD NAME="responded_count" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Number of times the current question had been responded to for the attempt"/>
         <FIELD NAME="timestart" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp for when the attempt was started"/>

@@ -41,5 +41,33 @@ function xmldb_jazzquiz_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018010509, 'jazzquiz');
     }
 
+    if ($oldversion < 2018010527) {
+
+        // Define field attemptnum to be dropped from jazzquiz_attempts.
+        $table = new xmldb_table('jazzquiz_attempts');
+        $field = new xmldb_field('attemptnum');
+
+        // Conditionally launch drop field attemptnum.
+        if ($dbman->field_exists($table, $field)) {
+
+            // Drop the field.
+            $dbman->drop_field($table, $field);
+        }
+
+        // Define field preview to be dropped from jazzquiz_attempts.
+        $table = new xmldb_table('jazzquiz_attempts');
+        $field = new xmldb_field('preview');
+
+        // Conditionally launch drop field preview.
+        if ($dbman->field_exists($table, $field)) {
+
+            // Drop the field.
+            $dbman->drop_field($table, $field);
+        }
+
+        // jazzquiz savepoint reached.
+        upgrade_mod_savepoint(true, 2018010527, 'jazzquiz');
+    }
+
     return true;
 }

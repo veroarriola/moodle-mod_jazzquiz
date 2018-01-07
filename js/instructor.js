@@ -72,7 +72,7 @@ jazzquiz.changeQuizState = function(state, data) {
                 'quit'
             ];
             if (data.slot < this.quiz.totalQuestions) {
-                enabledButtons.push('nextquestion');
+                enabledButtons.push('next');
             }
             this.enableControls(enabledButtons);
             break;
@@ -113,7 +113,7 @@ jazzquiz.changeQuizState = function(state, data) {
                 'quit'
             ];
             if (data.slot < this.quiz.totalQuestions) {
-                enabledButtons.push('nextquestion');
+                enabledButtons.push('next');
             }
             this.enableControls(enabledButtons);
 
