@@ -63,7 +63,7 @@ let jazzquiz = {
         showCorrectAnswer: false
     },
 
-    // Student temporary variables
+    // Student temporary variables.
     voteAnswer: undefined
 };
 
@@ -120,12 +120,12 @@ jazzquiz.post = function(url, data, success) {
  */
 jazzquiz.requestQuizInfo = function() {
     jazzquiz.get('quizinfo.php', {}, function(data) {
-        // Change the local state
+        // Change the local state.
         jazzquiz.changeQuizState(data.status, data);
-        // Schedule next update
+        // Schedule next update.
         // TODO: Remove this if statement, and rather have a time defined in the specific javascript files.
-        // The instructor has a higher update frequency since there is usually only one,
-        // but students might be in the hundreds, so we want to limit them to every couple seconds instead.
+        /* The instructor has a higher update frequency since there is usually only one,
+           but students might be in the hundreds, so we want to limit them to every couple seconds instead. */
         if (jazzquiz.isInstructor) {
             setTimeout(jazzquiz.requestQuizInfo, 500);
         } else {
@@ -423,7 +423,7 @@ jazzquiz.onQuestionTimerTick = function() {
 jazzquiz.startQuestionAttempt = function(questionTime) {
     this.hideInfo();
     this.reloadQuestionBox();
-    // Set this to true so that we don't keep calling this over and over
+    // Set this to true so that we don't keep calling this over and over.
     this.quiz.question.isRunning = true;
     questionTime = parseInt(questionTime);
     if (questionTime === 0) {

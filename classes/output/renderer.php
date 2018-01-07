@@ -261,10 +261,10 @@ class renderer extends \plugin_renderer_base {
      * Render a control button.
      * @param string $icon
      * @param string $text
-     * @param string $id
      * @return string html
      */
-    private function write_control_button($icon, $text, $id) {
+    private function write_control_button($icon, $text) {
+        $id = "jazzquiz_control_$text";
         $text = get_string($text, 'jazzquiz');
         $contents = '<i class="fa fa-' . $icon . '"></i> ' . $text;
         return \html_writer::tag('button', $contents, [
@@ -275,16 +275,16 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render an array of control buttons.
-     * @param array $buttons [][icon, text, id]
+     * @param array $buttons [][icon, text]
      * @return string html
      */
     private function write_control_buttons($buttons) {
         $html = '';
         foreach ($buttons as $button) {
-            if (count($button) < 3) {
+            if (count($button) < 2) {
                 continue;
             }
-            $html .= $this->write_control_button($button[0], $button[1], $button[2]);
+            $html .= $this->write_control_button($button[0], $button[1]);
         }
         return $html;
     }
@@ -296,16 +296,16 @@ class renderer extends \plugin_renderer_base {
     public function render_controls() {
         $html = '<div class="quiz-list-buttons quiz-control-buttons hidden">'
             . $this->write_control_buttons([
-                ['repeat', 'repoll', 'repollquestion'],
-                ['bar-chart', 'vote', 'runvoting'],
-                ['edit', 'improvise', 'startimprovisequestion'],
-                ['bars', 'jump', 'startjumpquestion'],
-                ['forward', 'next', 'nextquestion'],
-                ['close', 'end', 'endquestion'],
-                ['expand', 'fullscreen', 'showfullscreenresults'],
-                ['window-close', 'quit', 'closesession'],
-                ['square-o', 'responses', 'toggleresponses'],
-                ['square-o', 'answer', 'showcorrectanswer']
+                ['repeat', 'repoll'],
+                ['bar-chart', 'vote'],
+                ['edit', 'improvise'],
+                ['bars', 'jump'],
+                ['forward', 'next'],
+                ['close', 'end'],
+                ['expand', 'fullscreen'],
+                ['window-close', 'quit'],
+                ['square-o', 'responses'],
+                ['square-o', 'answer']
             ])
             //. '<p id="jazzquiz_controls_state"></p>'
             . '</div>'
@@ -313,9 +313,9 @@ class renderer extends \plugin_renderer_base {
             . '<div id="jazzquiz_jump_menu" class="start-question-menu"></div>'
 
             . '<div class="quiz-list-buttons">'
-            . $this->write_control_button('start', 'startquiz', 'startquiz')
+            . $this->write_control_button('start', 'startquiz')
             . '<h4 class="inline"></h4>'
-            . $this->write_control_button('close', 'quit', 'exitquiz')
+            . $this->write_control_button('close', 'exit')
             . '</div><div id="jazzquiz_control_separator"></div>';
 
         return \html_writer::div($html, '', ['id' => 'jazzquiz_controls']);

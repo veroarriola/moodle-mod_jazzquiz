@@ -136,6 +136,7 @@ $string['fullscreen'] = 'Fullscreen';
 $string['quit'] = 'Quit';
 $string['responses'] = 'Responses';
 $string['answer'] = 'Answer';
+$string['exit'] = 'Exit';
 
 // Quiz Review.
 $string['select_session'] = 'Select session to review:';

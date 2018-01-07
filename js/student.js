@@ -84,7 +84,7 @@ jazzquiz.changeQuizState = function(state, data) {
 jazzquiz.submitAnswer = function() {
     this.hideQuestionTimer();
     if (this.quiz.question.isSaving) {
-        // Don't save twice
+        // Don't save twice.
         return;
     }
     this.quiz.question.isSaving = true;
