@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-let jazzquiz = {
+var jazzquiz = {
     jQueryErrors: 0,
     state: '',
     isNewState: false,
