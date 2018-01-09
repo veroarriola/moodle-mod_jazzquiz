@@ -106,6 +106,7 @@
     border-top: 2px solid #eee;
     border-bottom: 2px solid #eee;
     padding: 8px 0;
+    word-break: break-all;
 }
 
 .jazzquiz-responses-overview tr td.bar {
