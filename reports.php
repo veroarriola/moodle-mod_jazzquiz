@@ -34,6 +34,11 @@ require_once($CFG->dirroot . '/question/editlib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->libdir . '/tablelib.php');
 
+require_login();
+
+/**
+ * Entry point for viewing reports.
+ */
 function jazzquiz_reports() {
     global $PAGE;
 
@@ -68,12 +73,12 @@ function jazzquiz_reports() {
     $PAGE->set_url($url);
 
     $report = new report_overview();
-    $is_download = isset($_GET['download']); // TODO: optional_param.
-    if (!$is_download) {
+    $isdownload = optional_param('download', false, PARAM_BOOL);
+    if (!$isdownload) {
         $renderer->header($jazzquiz);
     }
     $report->handle_request($jazzquiz, $action, $url);
-    if (!$is_download) {
+    if (!$isdownload) {
         $renderer->footer();
     }
 }

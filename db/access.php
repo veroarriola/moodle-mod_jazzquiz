@@ -14,38 +14,40 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// Capability definitions for the jazzquiz module.
-//
-// The capabilities are loaded into the database table when the module is
-// installed or updated. Whenever the capability definitions are updated,
-// the module version number should be bumped up.
-//
-// The system has four possible values for a capability:
-// CAP_ALLOW, CAP_PREVENT, CAP_PROHIBIT, and inherit (not set).
-//
-// CAPABILITY NAMING CONVENTION
-//
-// It is important that capability names are unique. The naming convention
-// for capabilities that are specific to modules and blocks is as follows:
-//   [mod/block]/<component_name>:<capabilityname>
-//
-// component_name should be the same as the directory name of the mod or block.
-//
-// Core moodle capabilities are defined thus:
-//    moodle/<capabilityclass>:<capabilityname>
-//
-// Examples: mod/forum:viewpost
-//           block/recent_activity:view
-//           moodle/site:deleteuser
-//
-// The variable name for the capability definitions array follows the format
-//   $<componenttype>_<component_name>_capabilities
-//
-// For the core capabilities, the variable is $moodle_capabilities.
+/* Capability definitions for the jazzquiz module.
+ *
+ * The capabilities are loaded into the database table when the module is
+ * installed or updated. Whenever the capability definitions are updated,
+ * the module version number should be bumped up.
+ *
+ * The system has four possible values for a capability:
+ * CAP_ALLOW, CAP_PREVENT, CAP_PROHIBIT, and inherit (not set).
+ *
+ * CAPABILITY NAMING CONVENTION
+ *
+ * It is important that capability names are unique. The naming convention
+ * Capabilities specific to modules and blocks is as follows:
+ *   [mod/block]/<component_name>:<capabilityname>
+ *
+ * component_name should be the same as the directory name of the mod or block.
+ *
+ * Core moodle capabilities are defined thus:
+ *   moodle/<capabilityclass>:<capabilityname>
+ *
+ * Examples:
+ *   mod/forum:viewpost
+ *   block/recent_activity:view
+ *   moodle/site:deleteuser
+ *
+ * The variable name for the capability definitions array follows the format:
+ *   $<componenttype>_<component_name>_capabilities
+ *
+ * For the core capabilities, the variable is $moodle_capabilities.
+ */
 
 $capabilities = [
-    // Can start a quiz and move on to the next question
-    // NB: must have 'attempt' as well to be able to see the questions
+    // Can start a quiz and move on to the next question.
+    // NB: must have 'attempt' as well to be able to see the questions.
     'mod/jazzquiz:control' => [
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -56,7 +58,7 @@ $capabilities = [
         ]
     ],
 
-    // Can try to answer the quiz
+    // Can try to answer the quiz.
     'mod/jazzquiz:attempt' => [
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -68,7 +70,7 @@ $capabilities = [
         ]
     ],
 
-    // Can see who gave what answer
+    // Can see who gave what answer.
     'mod/jazzquiz:seeresponses' => [
         'captype'      => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -79,7 +81,7 @@ $capabilities = [
         ]
     ],
 
-    // Can add / delete / update questions
+    // Can add / delete / update questions.
     'mod/jazzquiz:editquestions' => [
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -89,7 +91,7 @@ $capabilities = [
         ]
     ],
 
-    // Can add an instance of this module to a course
+    // Can add an instance of this module to a course.
     'mod/jazzquiz:addinstance' => [
         'captype'      => 'write',
         'contextlevel' => CONTEXT_COURSE,

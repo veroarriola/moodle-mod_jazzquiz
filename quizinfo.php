@@ -34,12 +34,12 @@ require_once('../../config.php');
 require_login();
 require_sesskey();
 
-// TODO: This file should be merged with quizdata.php
+// TODO: This file should be merged with quizdata.php.
 
 function quiz_info() {
     global $DB;
 
-    // If they've passed the sesskey information grab the session info
+    // If they've passed the sesskey information grab the session info.
     $sessionid = required_param('sessionid', PARAM_INT);
 
     // First determine if we get a session.
@@ -51,7 +51,8 @@ function quiz_info() {
         ];
     }
 
-    // Next we need to get the JazzQuiz object and course module object to make sure a student can log in for the session asked for
+    /* Next we need to get the JazzQuiz object and course module object to
+       make sure a student can log in for the session asked for. */
     $jazzquiz = $DB->get_record('jazzquiz', ['id' => $session->jazzquizid]);
     if (!$jazzquiz) {
         return [
@@ -71,7 +72,7 @@ function quiz_info() {
         ];
     }
 
-    // Check if the session is open
+    // Check if the session is open.
     if ($session->sessionopen == 0) {
         return [
             'status' => 'sessionclosed',
@@ -81,7 +82,7 @@ function quiz_info() {
 
     switch ($session->status) {
 
-        // Just a generic response with the state
+        // Just a generic response with the state.
         case 'notrunning':
             $jazzquiz = new jazzquiz($cm->id);
             if ($jazzquiz->is_instructor()) {
@@ -92,7 +93,7 @@ function quiz_info() {
                     'student_count' => $session->get_student_count()
                 ];
             }
-        // fall-through
+            // Fall-through.
         case 'preparing':
         case 'reviewing':
             return [
@@ -127,7 +128,7 @@ function quiz_info() {
                 'options' => $options
             ];
 
-        // Send the currently active question
+        // Send the currently active question.
         case 'running':
             return [
                 'status' => 'running',

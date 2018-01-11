@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Defines table column class for adding a question from the question bank to a JazzQuiz.
+ * @package     mod_jazzquiz
+ * @author      John Hoopes <moodle@madisoncreativeweb.com>
+ * @copyright   2014 University of Wisconsin - Madison
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace mod_jazzquiz\bank;
 
 defined('MOODLE_INTERNAL') || die();
@@ -37,6 +45,7 @@ class question_bank_add_to_jazzquiz_action_column extends \core_question\bank\ac
     }
 
     /**
+     * Show the button to add the question.
      * @param object $question
      * @param string $rowclasses
      */

@@ -133,7 +133,7 @@ class edit_renderer extends \plugin_renderer_base {
 
         $spacericon = new \pix_icon('spacer', 'space', null, ['class' => 'smallicon space']);
 
-        // If we're on a later question than the first one add the move up control
+        // If we're on a later question than the first one add the move up control.
         if ($slot > 1) {
             $alt = get_string('question_move_up', 'mod_jazzquiz', $slot);
             $upicon = new \pix_icon('t/up', $alt);
@@ -143,7 +143,7 @@ class edit_renderer extends \plugin_renderer_base {
             $controlhtml .= $this->output->render($spacericon);
         }
 
-        // if we're not on the last question add the move down control
+        // If we're not on the last question add the move down control.
         if ($slot < $questioncount) {
             $alt = get_string('question_move_down', 'mod_jazzquiz', $slot);
             $downicon = new \pix_icon('t/down', $alt);
@@ -153,7 +153,7 @@ class edit_renderer extends \plugin_renderer_base {
             $controlhtml .= $this->output->render($spacericon);
         }
 
-        // Always add edit and delete icons
+        // Always add edit and delete icons.
         $editurl = clone($url);
         $editurl->param('action', 'editquestion');
         $editurl->param('questionid', $question->data->id);

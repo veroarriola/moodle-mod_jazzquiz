@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Defines the jazzquiz_disabled_condition class.
  * @package   mod_jazzquiz
- * @author    Andrew Hancox <andrewdchancox@googlemail.com>
- * @copyright 2015 Synergy Learning
+ * @copyright 2013 Ray Morris
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,12 +28,13 @@ use core_question\bank\search\condition;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * This class controls whether hidden / deleted questions are hidden in the list.
+ * Controls whether hidden or deleted questions are hidden in the list.
  *
  * @copyright 2013 Ray Morris
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_disabled_condition extends condition {
+
     /**
      * @var string $where
      */
@@ -59,10 +60,18 @@ class jazzquiz_disabled_condition extends condition {
         $this->params = $params;
     }
 
+    /**
+     * Return the where part of the SQL.
+     * @return string
+     */
     public function where() {
         return $this->where;
     }
 
+    /**
+     * Return the parameters for the where.
+     * @return array
+     */
     public function params() {
         return $this->params;
     }

@@ -37,7 +37,7 @@ function xmldb_jazzquiz_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        // jazzquiz savepoint reached.
+        // JazzQuiz savepoint reached.
         upgrade_mod_savepoint(true, 2018010509, 'jazzquiz');
     }
 
@@ -65,7 +65,7 @@ function xmldb_jazzquiz_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        // jazzquiz savepoint reached.
+        // JazzQuiz savepoint reached.
         upgrade_mod_savepoint(true, 2018010527, 'jazzquiz');
     }
 

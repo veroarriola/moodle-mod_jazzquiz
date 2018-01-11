@@ -93,10 +93,10 @@ class jazzquiz {
         $options->context = $this->context;
         $options->marks = \question_display_options::HIDDEN;
         if ($review) {
-            // Default display options for review
+            // Default display options for review.
             $options->readonly = true;
             $options->hide_all_feedback();
-            // Special case for "edit" review options value
+            // Special case for "edit" review options value.
             if ($reviewoptions === 'edit') {
                 $options->correctness = \question_display_options::VISIBLE;
                 $options->marks = \question_display_options::MARK_AND_MAX;
@@ -107,7 +107,7 @@ class jazzquiz {
                 $options->rightanswer = \question_display_options::VISIBLE;
                 $options->history = \question_display_options::VISIBLE;
             } else if ($reviewoptions instanceof \stdClass) {
-                foreach (jazzquiz::$reviewfields as $field => $not_used) {
+                foreach (self::$reviewfields as $field => $unused) {
                     if ($reviewoptions->$field == 1) {
                         if ($field == 'specificfeedback') {
                             $field = 'feedback';
@@ -121,7 +121,7 @@ class jazzquiz {
                 }
             }
         } else {
-            // Default options for running quiz
+            // Default options for running quiz.
             $options->rightanswer = \question_display_options::HIDDEN;
             $options->numpartscorrect = \question_display_options::HIDDEN;
             $options->manualcomment = \question_display_options::HIDDEN;
@@ -266,7 +266,7 @@ class jazzquiz {
 
         // Form handling
         if ($mform->is_cancelled()) {
-            // Redirect back to list questions page
+            // Redirect back to list questions page.
             $url->remove_params('action');
             redirect($url, null, 0);
         } else if ($data = $mform->get_data()) {
@@ -280,11 +280,11 @@ class jazzquiz {
                 $question->questiontime = $data->questiontime;
             }
             $DB->update_record('jazzquiz_questions', $question);
-            // Ensure there is no action or question_id in the base url
+            // Ensure there is no action or question_id in the base url.
             $url->remove_params('action', 'questionid');
             redirect($url, null, 0);
         } else {
-            // Display the form
+            // Display the form.
             $mform->set_data([
                 'questiontime' => $jazzquizquestion->questiontime,
                 'notime' => ($jazzquizquestion->questiontime < 1)
@@ -333,14 +333,14 @@ class jazzquiz {
      * Wrapper for the has_capability function to provide the rtq context
      *
      * @param string $capability
-     * @param int $user_id
+     * @param int $userid
      *
      * @return bool Whether or not the current user has the capability
      */
-    public function has_capability($capability, $user_id = 0) {
-        if ($user_id !== 0) {
+    public function has_capability($capability, $userid = 0) {
+        if ($userid !== 0) {
             // Pass in userid if there is one.
-            return has_capability($capability, $this->context, $user_id);
+            return has_capability($capability, $this->context, $userid);
         }
 
         // Just do standard check with current user.

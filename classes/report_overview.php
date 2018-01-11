@@ -16,6 +16,8 @@
 
 namespace mod_jazzquiz;
 
+defined('MOODLE_INTERNAL') || die;
+
 /**
  * @package     mod_jazzquiz
  * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
@@ -52,7 +54,6 @@ class report_overview {
      * @param jazzquiz_attempt[] $attempts
      */
     private function output_csv_report($session, $attempts) {
-        global $USER;
         $name = $session->data->id . '_' . $session->data->name;
         header('Content-Disposition: attachment; filename=session_' . $name . '.csv');
         // Go through the slots on the first attempt to output the header row.
@@ -77,13 +78,13 @@ class report_overview {
             echo $this->csv_escape($attempt->get_user_full_name()) . ',';
             $slots = $attempt->quba->get_slots();
             foreach ($slots as $slot) {
-                $attempt_response = reset($attempt->get_response_data($slot));
-                if (!$attempt_response) {
+                $attemptresponse = reset($attempt->get_response_data($slot));
+                if (!$attemptresponse) {
                     echo ',';
                     continue;
                 }
-                $attempt_response = $this->csv_escape($attempt_response);
-                echo "$attempt_response,";
+                $attemptresponse = $this->csv_escape($attemptresponse);
+                echo "$attemptresponse,";
             }
             echo "\r\n";
         }
@@ -201,7 +202,7 @@ class report_overview {
 
         $sessionid = required_param('sessionid', PARAM_INT);
         if (empty($sessionid)) {
-            // If no session id just go to the home page
+            // If no session id just go to the home page.
             $redirecturl = new \moodle_url('/mod/jazzquiz/reports.php', [
                 'id' => $jazzquiz->cm->id,
                 'quizid' => $jazzquiz->data->id
@@ -229,7 +230,7 @@ class report_overview {
         $PAGE->requires->js('/mod/jazzquiz/js/core.js');
         $PAGE->requires->js('/mod/jazzquiz/js/instructor.js');
 
-        // Add localization strings
+        // Add localization strings.
         $PAGE->requires->strings_for_js([
             'a_out_of_b_responded'
         ], 'jazzquiz');
@@ -242,10 +243,13 @@ class report_overview {
         $quizid = required_param('quizid', PARAM_INT);
 
         echo '<div id="report_overview_controls" class="jazzquiz-box">';
-        echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responded').fadeIn();jQuery('#report_overview_responses').fadeOut();\">Attendance</button>";
-        echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responses').fadeIn();jQuery('#report_overview_responded').fadeOut();\">Responses</button>";
-        $urlparams = "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=report&download&sessionid=$sessionid";
-        echo '<a href="reports.php' . $urlparams . '">Download report</a>';
+        echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responded').fadeIn();";
+        echo "jQuery('#report_overview_responses').fadeOut();\">Attendance</button>";
+        echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responses').fadeIn();";
+        echo "jQuery('#report_overview_responded').fadeOut();\">Responses</button>";
+        echo '<a href="reports.php';
+        echo "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=report&download=yes&sessionid=$sessionid";
+        echo '">Download report</a>';
         echo '</div>';
 
         echo '<div id="report_overview_responses" class="hidden">';
@@ -274,8 +278,9 @@ class report_overview {
                 . '</span>'
                 . '<table id="' . $tableid . '" class="jazzquiz-responses-overview"></table>';
 
-            $url_params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=response&download&sessionid=$sessionid&slot=$slot";
-            echo '<br><a href="reports.php' . $url_params . '">Download responses</a>';
+            $params = "?id=$id&quizid=$quizid&reporttype=overview";
+            $params .= "&action=csv&csvtype=response&download=yes&sessionid=$sessionid&slot=$slot";
+            echo '<br><a href="reports.php' . $params . '">Download responses</a>';
             echo '</div>';
 
             echo '<script>'
@@ -288,7 +293,8 @@ class report_overview {
                 . 'jazzquiz.state = "reviewing";'
 
                 . 'jazzquiz.setResponses("'
-                . $wrapperid . '", "' . $tableid . '", jazzquizResponses[' . $slot . '], "' . $qtype . '", "report_' . $slot . '"'
+                . $wrapperid . '", "' . $tableid . '", jazzquizResponses[' . $slot . '], "'
+                . $qtype . '", "report_' . $slot . '"'
                 . ');'
                 . '}, 1000);'
                 . '</script>';
@@ -349,8 +355,9 @@ class report_overview {
                 echo '<p><b>' . count($alluserids) . '</b> students joined the quiz.</p>';
                 echo '<p><b>' . count($respondedwithcount) . '</b> students answered at least one question.</p>';
                 echo '<br>';
-                $url_params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=attendance&download&sessionid=$sessionid";
-                echo '<a href="reports.php' . $url_params . '">Download attendance list</a>';
+                $params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv";
+                $params .= "&csvtype=attendance&download=yes&sessionid=$sessionid";
+                echo '<a href="reports.php' . $params . '">Download attendance list</a>';
             }
         }
         echo '</div>';

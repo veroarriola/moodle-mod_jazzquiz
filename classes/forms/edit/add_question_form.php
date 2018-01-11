@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Defines form class which instructor uses to add a new question to a quiz.
+ * @package     mod_jazzquiz
+ * @author      John Hoopes <moodle@madisoncreativeweb.com>
+ * @copyright   2014 University of Wisconsin - Madison
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace mod_jazzquiz\forms\edit;
 
 defined('MOODLE_INTERNAL') || die();
@@ -22,7 +30,7 @@ require_once($CFG->libdir . '/formslib.php');
 
 /**
  * Moodle form for confirming question add and get the time for the question
- * to appear on the page
+ * to appear on the page.
  *
  * @package     mod_jazzquiz
  * @author      John Hoopes <moodle@madisoncreativeweb.com>

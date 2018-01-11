@@ -19,6 +19,8 @@ define('AJAX_SCRIPT', true);
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/../../question/engine/lib.php');
 
+require_login();
+
 $input = required_param('input', PARAM_RAW);
 $input = urldecode($input);
 

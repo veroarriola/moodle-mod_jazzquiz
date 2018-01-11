@@ -48,13 +48,13 @@ class jazzquiz_attempt {
      */
     public function __construct($context, $data = null) {
         if (empty($data)) {
-            // Create new attempt
+            // Create new attempt.
             $this->data = new \stdClass();
-            // Create a new quba since we're creating a new attempt
+            // Create a new quba since we're creating a new attempt.
             $this->quba = \question_engine::make_questions_usage_by_activity('mod_jazzquiz', $context);
             $this->quba->set_preferred_behaviour('immediatefeedback');
         } else {
-            // Load it up in this class instance
+            // Load it up in this class instance.
             $this->data = $data;
             $this->quba = \question_engine::load_questions_usage_by_activity($this->data->questionengid);
         }
@@ -126,7 +126,6 @@ class jazzquiz_attempt {
             try {
                 $DB->update_record('jazzquiz_attempts', $this->data);
             } catch (\Exception $e) {
-                error_log($e->getMessage());
                 return false;
             }
         } else {

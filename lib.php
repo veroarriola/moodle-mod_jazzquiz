@@ -23,6 +23,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Given an object containing all the necessary data,
  * (defined by the form in mod.html) this function
@@ -72,14 +74,14 @@ function jazzquiz_delete_instance($id) {
 
     try {
         $jazzquiz = $DB->get_record('jazzquiz', ['id' => $id], '*', MUST_EXIST);
-        // Go through each session and then delete them (also deletes all attempts for them)
+        // Go through each session and then delete them (also deletes all attempts for them).
         $sessions = $DB->get_records('jazzquiz_sessions', ['jazzquizid' => $jazzquiz->id]);
         foreach ($sessions as $session) {
             \mod_jazzquiz\jazzquiz_session::delete($session->id);
         }
-        // Delete all questions for this quiz
+        // Delete all questions for this quiz.
         $DB->delete_records('jazzquiz_questions', ['jazzquizid' => $jazzquiz->id]);
-        // Finally delete the jazzquiz object
+        // Finally delete the jazzquiz object.
         $DB->delete_records('jazzquiz', ['id' => $jazzquiz->id]);
     } catch (Exception $e) {
         return false;
@@ -99,6 +101,16 @@ function jazzquiz_cron() {
     return true;
 }
 
+/**
+ * @param \stdClass|int $course
+ * @param \stdClass $cm
+ * @param \context $context
+ * @param string $filearea
+ * @param array $args
+ * @param mixed $forcedownload
+ * @param array $options
+ * @return bool
+ */
 function jazzquiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options = []) {
     global $DB;
 
@@ -126,8 +138,8 @@ function jazzquiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
 
     $fs = get_file_storage();
     $relative = implode('/', $args);
-    $full_path = "/$context->id/mod_jazzquiz/$filearea/$questionid/$relative";
-    if (!$file = $fs->get_file_by_hash(sha1($full_path)) or $file->is_directory()) {
+    $fullpath = "/$context->id/mod_jazzquiz/$filearea/$questionid/$relative";
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
         return false;
     }
     send_stored_file($file);
@@ -138,7 +150,7 @@ function jazzquiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
  * Called via pluginfile.php -> question_pluginfile to serve files belonging to
  * a question in a question_attempt when that attempt is a quiz attempt.
  *
- * @package  mod_quiz
+ * @package mod_jazzquiz
  * @category files
  * @param stdClass $course course settings object
  * @param stdClass $context context object
@@ -151,7 +163,8 @@ function jazzquiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - justsend the file
  */
-function mod_jazzquiz_question_pluginfile($course, $context, $component, $filearea, $qubaid, $slot, $args, $forcedownload, $options = []) {
+function mod_jazzquiz_question_pluginfile($course, $context, $component, $filearea, $qubaid, $slot,
+                                          $args, $forcedownload, $options = []) {
     $fs = get_file_storage();
     $relative = implode('/', $args);
     $full = "/$context->id/$component/$filearea/$relative";
@@ -161,6 +174,11 @@ function mod_jazzquiz_question_pluginfile($course, $context, $component, $filear
     send_stored_file($file, 0, 0, $forcedownload, $options);
 }
 
+/**
+ * Check whether JazzQuiz supports a certain feature or not.
+ * @param string $feature
+ * @return bool|null
+ */
 function jazzquiz_supports($feature) {
     if (!defined('FEATURE_PLAGIARISM')) {
         define('FEATURE_PLAGIARISM', 'plagiarism');

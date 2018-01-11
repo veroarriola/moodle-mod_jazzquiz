@@ -66,14 +66,14 @@ class jazzquiz_vote {
         if (!$allvotes) {
             return false;
         }
-        // Go through all the existing votes
+        // Go through all the existing votes.
         foreach ($allvotes as $vote) {
-            // Get all the users who voted for this
+            // Get all the users who voted for this.
             $usersvoted = explode(',', $vote->userlist);
             if (!$usersvoted) {
                 continue;
             }
-            // Go through all the users who has voted on this attempt
+            // Go through all the users who has voted on this attempt.
             foreach ($usersvoted as $uservoted) {
                 // Is this the user who is currently trying to vote?
                 if ($uservoted == $userid) {
@@ -124,10 +124,10 @@ class jazzquiz_vote {
     public function prepare_options($jazzquizid, $qtype, $options, $slot) {
         global $DB;
 
-        // Delete previous voting options for this session
+        // Delete previous voting options for this session.
         $DB->delete_records('jazzquiz_votes', ['sessionid' => $this->sessionid]);
 
-        // Add to database
+        // Add to database.
         foreach ($options as $option) {
             $vote = new \stdClass();
             $vote->jazzquizid = $jazzquizid;

@@ -14,9 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Defines the class for rendering the question bank for the edit page.
+ *
+ * @package     mod_jazzquiz
+ * @author      John Hoopes <moodle@madisoncreativeweb.com>
+ * @copyright   2014 University of Wisconsin - Madison
+ * @copyright   2018 NTNU
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace mod_jazzquiz\bank;
 
 defined('MOODLE_INTERNAL') || die();
+
+use \core_question\bank\search\hidden_condition as hidden_condition;
+use \core_question\bank\search\category_condition as category_condition;
 
 /**
  * Subclass of the question bank view class to change the way it works/looks
@@ -34,7 +47,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * @return array
      */
     protected function wanted_columns() {
-        // Full class names for question bank columns
+        // Full class names for question bank columns.
         $columns = [
             '\\mod_jazzquiz\\bank\\question_bank_add_to_jazzquiz_action_column',
             'core_question\\bank\\checkbox_column',
@@ -64,12 +77,12 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
         if ($this->process_actions_needing_ui()) {
             return;
         }
-        $edit_contexts = $this->contexts->having_one_edit_tab_cap($tabname);
+        $contexts = $this->contexts->having_one_edit_tab_cap($tabname);
 
         // Category selection form.
         echo $OUTPUT->heading(get_string('questionbank', 'question'), 2);
-        array_unshift($this->searchconditions, new \core_question\bank\search\hidden_condition(!$showhidden));
-        array_unshift($this->searchconditions, new \core_question\bank\search\category_condition($cat, $recurse, $edit_contexts, $this->baseurl, $this->course));
+        array_unshift($this->searchconditions, new hidden_condition(!$showhidden));
+        array_unshift($this->searchconditions, new category_condition($cat, $recurse, $contexts, $this->baseurl, $this->course));
         array_unshift($this->searchconditions, new jazzquiz_disabled_condition());
         $this->display_options_form($showquestiontext, '/mod/jazzquiz/edit.php');
 
@@ -105,8 +118,8 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * This has been taken from the base class to allow us to call our own version of
      * create_new_question_button.
      *
-     * @param $category
-     * @param $add
+     * @param \stdClass $category
+     * @param bool $add
      * @throws \coding_exception
      */
     protected function create_new_question_form($category, $add) {
@@ -137,7 +150,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      */
     private function create_new_question_button($categoryid, $params, $caption, $tooltip = '', $disabled = false) {
         global $OUTPUT;
-        static $choice_form_printed = false;
+        static $choiceformprinted = false;
 
         $config = get_config('jazzquiz');
         $enabledqtypes = explode(',', $config->enabledqtypes);
@@ -150,14 +163,14 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
             'title' => $tooltip
         ]);
 
-        if (!$choice_form_printed) {
+        if (!$choiceformprinted) {
             echo '<div id="qtypechoicecontainer">';
             echo print_choose_qtype_to_add_form([], $enabledqtypes);
             echo "</div>\n";
-            $choice_form_printed = true;
+            $choiceformprinted = true;
         }
 
-        // Add some top margin to the table (not viable via CSS)
+        // Add some top margin to the table (not viable via CSS).
         echo '<br><br>';
     }
 }

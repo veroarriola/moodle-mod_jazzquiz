@@ -32,7 +32,10 @@ require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 
+require_login();
+
 /**
+ * View the quiz page.
  * @param jazzquiz $jazzquiz
  */
 function jazzquiz_view_start_quiz($jazzquiz) {
@@ -67,6 +70,7 @@ function jazzquiz_view_start_quiz($jazzquiz) {
 }
 
 /**
+ * View the "Continue session" or "Start session" form.
  * @param jazzquiz $jazzquiz
  */
 function jazzquiz_view_default_instructor($jazzquiz) {
@@ -109,6 +113,7 @@ function jazzquiz_view_default_instructor($jazzquiz) {
 }
 
 /**
+ * View the "Join quiz" or "Quiz not running" form.
  * @param jazzquiz $jazzquiz
  */
 function jazzquiz_view_default_student($jazzquiz) {
@@ -135,6 +140,7 @@ function jazzquiz_view_default_student($jazzquiz) {
 }
 
 /**
+ * View appropriate form based on role and session state.
  * @param jazzquiz $jazzquiz
  */
 function jazzquiz_view_default($jazzquiz) {
@@ -159,6 +165,9 @@ function jazzquiz_view_default($jazzquiz) {
     }
 }
 
+/**
+ * Entry point for viewing a quiz.
+ */
 function jazzquiz_view() {
     global $PAGE;
 

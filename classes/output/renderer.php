@@ -152,11 +152,11 @@ class renderer extends \plugin_renderer_base {
             $output .= \html_writer::div($this->render_controls(), 'jazzquiz-box', ['id' => 'jazzquiz_controls_box']);
         }
 
-        $loading_icon = $this->output->pix_icon('i/loading', 'loading...');
+        $loadingicon = $this->output->pix_icon('i/loading', 'loading...');
 
         $output .= \html_writer::start_div('', ['id' => 'jazzquiz_loading']);
         $output .= \html_writer::tag('p', get_string('loading', 'jazzquiz'));
-        $output .= $loading_icon;
+        $output .= $loadingicon;
         $output .= \html_writer::end_div();
 
         if ($session->jazzquiz->is_instructor()) {
@@ -307,7 +307,6 @@ class renderer extends \plugin_renderer_base {
                 ['square-o', 'responses'],
                 ['square-o', 'answer']
             ])
-            //. '<p id="jazzquiz_controls_state"></p>'
             . '</div>'
             . '<div id="jazzquiz_improvise_menu" class="start-question-menu"></div>'
             . '<div id="jazzquiz_jump_menu" class="start-question-menu"></div>'
@@ -336,18 +335,18 @@ class renderer extends \plugin_renderer_base {
             $this->page->requires->js('/mod/jazzquiz/js/student.js');
         }
 
-        // Add window.onload script manually to handle removing the loading mask
+        // Add window.onload script manually to handle removing the loading mask.
         // TODO: Remove this inline JavaScript.
         echo \html_writer::start_tag('script');
         echo "(function preLoad(){window.addEventListener('load', function(){jazzquiz.initialize();}, false);}());";
         echo \html_writer::end_tag('script');
 
-        // Root values
+        // Root values.
         $jazzquizjson = new \stdClass();
         $jazzquizjson->isInstructor = $session->jazzquiz->is_instructor();
         $jazzquizjson->siteroot = $CFG->wwwroot;
 
-        // Quiz
+        // Quiz.
         $quizjson = new \stdClass();
         $quizjson->courseModuleId = $session->jazzquiz->cm->id;
         $quizjson->activityId = $session->jazzquiz->data->id;
@@ -359,13 +358,13 @@ class renderer extends \plugin_renderer_base {
             $quizjson->totalQuestions = count($session->jazzquiz->questions);
         }
 
-        // Print data as JSON
+        // Print data as JSON.
         echo \html_writer::start_tag('script');
         echo "var jazzquizRootState = " . json_encode($jazzquizjson) . ';';
         echo "var jazzquizQuizState = " . json_encode($quizjson) . ';';
         echo \html_writer::end_tag('script');
 
-        // Add localization strings
+        // Add localization strings.
         $this->page->requires->strings_for_js([
             'question_will_start_in_x_seconds',
             'question_will_start_now',

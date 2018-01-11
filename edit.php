@@ -31,6 +31,8 @@ require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/locallib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 
+require_login();
+
 /**
  * Check if this JazzQuiz has an open session.
  * @param int $jazzquizid
@@ -101,8 +103,8 @@ function jazzquiz_edit_add_question($jazzquiz, $url) {
  * @param jazzquiz $jazzquiz
  */
 function jazzquiz_edit_edit_question($jazzquiz) {
-    $question_id = required_param('questionid', PARAM_INT);
-    $jazzquiz->edit_question($question_id);
+    $questionid = required_param('questionid', PARAM_INT);
+    $jazzquiz->edit_question($questionid);
 }
 
 /**
@@ -138,7 +140,7 @@ function jazzquiz_edit() {
         $contexts,
         $cmid,
         $cm,
-        $module, // jazzquiz database record.
+        $module, // JazzQuiz database record.
         $pagevars) = question_edit_setup('editq', '/mod/jazzquiz/edit.php', true);
 
     $jazzquiz = new jazzquiz($cmid, 'edit');

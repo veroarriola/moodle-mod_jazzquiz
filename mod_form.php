@@ -34,13 +34,13 @@ class mod_jazzquiz_mod_form extends moodleform_mod {
         parent::__construct($current, $section, $cm, $course);
     }
 
-    function definition() {
+    public function definition() {
         $mform =& $this->_form;
 
-        /// Adding the "general" field set, where all the common settings are showed
+        // Adding the "general" field set, where all the common settings are showed.
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        /// Adding the standard "name" field
+        // Adding the standard "name" field.
         $mform->addElement('text', 'name', get_string('name'), ['size' => '64']);
 
         $mform->setType('name', PARAM_TEXT);
@@ -59,10 +59,10 @@ class mod_jazzquiz_mod_form extends moodleform_mod {
         $mform->setType('waitforquestiontime', PARAM_INT);
         $mform->addHelpButton('waitforquestiontime', 'wait_for_question_time', 'jazzquiz');
 
-        // Add standard elements, common to all modules
+        // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
 
-        // Add standard buttons, common to all modules
+        // Add standard buttons, common to all modules.
         $this->add_action_buttons();
     }
 

@@ -37,7 +37,7 @@ require_login();
 require_sesskey();
 
 /**
- * Sends a list of all the questions tagged for use with improvisation.
+ * Send a list of all the questions tagged for use with improvisation.
  * @param jazzquiz $jazzquiz
  * @return mixed[]
  */
@@ -66,15 +66,15 @@ function show_all_improvise_questions($jazzquiz) {
 }
 
 /**
- * Sends a list of all the questions added to the quiz.
+ * Send a list of all the questions added to the quiz.
  * @param jazzquiz $jazzquiz
  * @return mixed[]
  */
 function show_all_jump_questions($jazzquiz) {
     global $DB;
     $sql = 'SELECT q.id AS id, q.name AS name, jq.questiontime AS time, jq.id AS jqid';
-    $sql .= '  FROM {jazzquiz_questions} AS jq';
-    $sql .= '  JOIN {question} AS q ON q.id = jq.questionid';
+    $sql .= '  FROM {jazzquiz_questions} jq';
+    $sql .= '  JOIN {question} q ON q.id = jq.questionid';
     $sql .= ' WHERE jq.jazzquizid = ?';
     $sql .= ' ORDER BY jq.slot ASC';
     $questionrecords = $DB->get_records_sql($sql, [$jazzquiz->data->id]);
@@ -94,6 +94,7 @@ function show_all_jump_questions($jazzquiz) {
 }
 
 /**
+ * Get the form for the current question.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
@@ -107,9 +108,11 @@ function get_question_form($session) {
     $js = '';
     $isalreadysubmitted = true;
     if (!$session->attempt->has_responded($slot)) {
+        $jazzquiz = $session->jazzquiz;
         /** @var output\renderer $renderer */
-        $renderer = $session->jazzquiz->renderer;
-        list($html, $js) = $renderer->render_question_form($slot, $session->attempt, $session->jazzquiz, $session->jazzquiz->is_instructor());
+        $renderer = $jazzquiz->renderer;
+        $isinstructor = $jazzquiz->is_instructor();
+        list($html, $js) = $renderer->render_question_form($slot, $session->attempt, $jazzquiz, $isinstructor);
         $isalreadysubmitted = false;
     }
     return [
@@ -121,6 +124,7 @@ function get_question_form($session) {
 }
 
 /**
+ * Start a new question.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
@@ -128,7 +132,7 @@ function start_question($session) {
     $session->load_session_questions();
     $session->load_attempts();
     $method = required_param('method', PARAM_ALPHA);
-    // $questionid is a Moodle question id.
+    // Variable $questionid is a Moodle question id.
     switch ($method) {
         case 'jump':
             $questionid = required_param('questionid', PARAM_INT);
@@ -187,6 +191,7 @@ function start_question($session) {
 }
 
 /**
+ * Start the quiz.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
@@ -203,12 +208,13 @@ function start_quiz($session) {
 }
 
 /**
+ * Submit a response for the current question.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
 function save_question($session) {
     global $USER;
-    // Get the attempt for the question
+    // Get the attempt for the question.
     $attempt = $session->attempt;
 
     // Does it belong to this user?
@@ -222,7 +228,7 @@ function save_question($session) {
     $session->load_session_questions();
     $attempt->save_question(count($session->questions));
 
-    // Only give feedback if specified in session
+    // Only give feedback if specified in session.
     $feedback = '';
     if ($session->data->showfeedback) {
         $feedback = $attempt->get_question_feedback($session->jazzquiz);
@@ -235,11 +241,12 @@ function save_question($session) {
 }
 
 /**
+ * Start a vote.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
 function run_voting($session) {
-    // Decode the questions parameter into an array
+    // Decode the questions parameter into an array.
     $questions = required_param('questions', PARAM_RAW);
     $questions = json_decode(urldecode($questions), true);
     if (!$questions) {
@@ -250,7 +257,7 @@ function run_voting($session) {
     }
     $qtype = optional_param('question_type', '', PARAM_ALPHANUM);
 
-    // Initialize the votes
+    // Initialize the votes.
     $session->load_session_questions();
     $vote = new jazzquiz_vote($session->data->id);
     $slot = count($session->questions);
@@ -263,14 +270,15 @@ function run_voting($session) {
 }
 
 /**
+ * Save a vote.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
 function save_vote($session) {
     global $USER;
-    // Get the id for the attempt that was voted on
+    // Get the id for the attempt that was voted on.
     $voteid = required_param('vote', PARAM_INT);
-    // Save the vote
+    // Save the vote.
     $vote = new jazzquiz_vote($session->data->id);
     $status = $vote->save_vote($voteid, $USER->id);
     if (!$status) {
@@ -280,6 +288,7 @@ function save_vote($session) {
 }
 
 /**
+ * Get the vote results.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
@@ -295,6 +304,7 @@ function get_vote_results($session) {
 }
 
 /**
+ * End the current question.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
@@ -305,6 +315,7 @@ function end_question($session) {
 }
 
 /**
+ * Get the correct answer for the current question.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
@@ -314,6 +325,7 @@ function get_right_response($session) {
 }
 
 /**
+ * Close a session.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
@@ -324,23 +336,24 @@ function close_session($session) {
 }
 
 /**
+ * Get the results for a session.
  * @param jazzquiz_session $session
  * @return mixed[]
  */
 function get_results($session) {
-    // Get the results
+    // Get the results.
     $session->load_session_questions();
     $session->load_attempts();
     $slot = count($session->questions);
     $qtype = $session->get_question_type_by_slot($slot);
     $responses = $session->get_question_results_list($slot);
 
-    // Check if this has been voted on before
+    // Check if this has been voted on before.
     $vote = new jazzquiz_vote($session->data->id, $slot);
-    $has_votes = count($vote->get_results()) > 0;
+    $hasvotes = count($vote->get_results()) > 0;
 
     return [
-        'has_votes' => $has_votes,
+        'has_votes' => $hasvotes,
         'question_type' => $qtype,
         'responses' => $responses['responses'],
         'total_students' => $responses['student_count']
@@ -348,6 +361,7 @@ function get_results($session) {
 }
 
 /**
+ * Handle an instructor request.
  * @param string $action
  * @param jazzquiz_session $session
  * @return mixed[]
@@ -387,6 +401,7 @@ function handle_instructor_request($action, $session) {
 }
 
 /**
+ * Handle a student request.
  * @param string $action
  * @param jazzquiz_session $session
  * @return mixed[]
@@ -408,6 +423,7 @@ function handle_student_request($action, $session) {
 }
 
 /**
+ * The entry point to handle instructor and student actions.
  * @return mixed[]
  */
 function jazzquiz_quizdata() {

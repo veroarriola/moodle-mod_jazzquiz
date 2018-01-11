@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Contains all the language strings for JazzQuiz.
  * @package   mod_jazzquiz
  * @author    Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
  * @author    John Hoopes <moodle@madisoncreativeweb.com>

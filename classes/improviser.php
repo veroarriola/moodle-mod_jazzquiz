@@ -43,13 +43,13 @@ class improviser {
 
     /**
      * Create a question database object.
-     * @param string $question_type What question type to create
+     * @param string $qtype What question type to create
      * @param string $name The name of the question to create
      * @return \stdClass
      */
-    private static function make_generic_question_definition($question_type, $name) {
+    private static function make_generic_question_definition($qtype, $name) {
         $question = new \stdClass();
-        $question->category = 4; // This is the 'System Default' for 222
+        $question->category = 4; // This is the 'System Default' for 222.
         $question->parent = 0;
         $question->name = '{IMPROV}' . $name;
         $question->questiontext = '&nbsp;';
@@ -58,7 +58,7 @@ class improviser {
         $question->generalfeedbackformat = 1;
         $question->defaultmark = 1;
         $question->penalty = 0;
-        $question->qtype = $question_type;
+        $question->qtype = $qtype;
         $question->length = 1;
         $question->stamp = '';
         $question->version = '';
@@ -248,7 +248,7 @@ class improviser {
         $options->questionnote = '';
         $options->questionsimplify = 1;
         $options->assumepositive = 0;
-        $options->prtcorrect = ''; // No feedback
+        $options->prtcorrect = ''; // No feedback.
         $options->prtcorrectformat = 1;
         $options->prtpartiallycorrect = '';
         $options->prtpartiallycorrectformat = 1;
@@ -325,18 +325,11 @@ class improviser {
      * Every question will have a prefix of {IMPROV}
      */
     public static function insert_default_improvised_question_definitions() {
-        // Multichoice (3, 4 and  5 options).
         for ($i = 3; $i <= 5; $i++) {
             self::insert_multichoice_question_definition("$i Multichoice Options", $i);
         }
-
-        // Short answer.
         self::insert_shortanswer_question_definition('Short answer');
-
-        // True or False.
         self::insert_truefalse_question_definition('True / False');
-
-        // STACK Algebraic.
         self::insert_stack_algebraic_question_definition('Algebraic');
     }
 
