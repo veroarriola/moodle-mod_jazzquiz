@@ -76,6 +76,7 @@ function show_all_jump_questions($jazzquiz) {
     $sql .= '  FROM {jazzquiz_questions} AS jq';
     $sql .= '  JOIN {question} AS q ON q.id = jq.questionid';
     $sql .= ' WHERE jq.jazzquizid = ?';
+    $sql .= ' ORDER BY jq.slot ASC';
     $questionrecords = $DB->get_records_sql($sql, [$jazzquiz->data->id]);
     $questions = [];
     foreach ($questionrecords as $question) {
