@@ -27,7 +27,6 @@
  * @param {Object} data Quiz state data that was sent from the server
  */
 jazzquiz.changeQuizState = function(state, data) {
-
     this.isNewState = (this.state !== state);
     this.state = state;
 
@@ -45,7 +44,6 @@ jazzquiz.changeQuizState = function(state, data) {
     let enabledButtons = [];
 
     switch (state) {
-
         case 'notrunning':
             $sideContainer.addClass('hidden');
             this.showInfo(this.text('instructions_for_instructor'));
@@ -206,7 +204,7 @@ jazzquiz.startResponseMerge = function(fromRowBarId) {
         const $intoRow = jQuery('.merge-into');
         this.currentResponses[$intoRow.data('response_i')].count += parseInt($row.data('count'));
         this.currentResponses.splice($row.data('response_i'), 1);
-        this.setResponses('jazzquiz_responses_container', 'current_responses_wrapper', this.currentResponses, this.quiz.question.questionType, 'results');
+        this.setResponses('jazzquiz_responses_container', 'current_responses_wrapper', this.currentResponses, undefined, this.quiz.question.questionType, 'results');
         this.endResponseMerge();
         return;
     }
@@ -294,7 +292,6 @@ jazzquiz.createResponseBarGraph = function(responses, name, targetId, graphId) {
 
     // Add rows.
     for (let i = 0; i < responses.length; i++) {
-
         const percent = (parseInt(responses[i].count) / total) * 100;
 
         // Check if row with same response already exists.
@@ -385,10 +382,11 @@ jazzquiz.sortResponseBarGraph = function(targetId) {
  * @param {string} wrapperId
  * @param {string} tableId
  * @param {Array.<Object>} responses
+ * @param {number|undefined} responded How many students responded to the question
  * @param {string} questionType
  * @param {string} graphId
  */
-jazzquiz.setResponses = function(wrapperId, tableId, responses, questionType, graphId) {
+jazzquiz.setResponses = function(wrapperId, tableId, responses, responded, questionType, graphId) {
     if (responses === undefined) {
         console.log('Responses is undefined.');
         return;
@@ -456,10 +454,10 @@ jazzquiz.setResponses = function(wrapperId, tableId, responses, questionType, gr
     }
 
     // Update responded container.
-    if ($responded.length !== 0) {
+    if ($responded.length !== 0 && responded !== undefined) {
         $responded.removeClass('hidden');
         $responded.find('h4').html(this.text('a_out_of_b_responded', 'jazzquiz', {
-            a: this.quiz.respondedCount,
+            a: responded,
             b: this.quiz.totalStudents
         }));
     }
@@ -672,7 +670,7 @@ jazzquiz.getResults = function() {
     }, function(data) {
         jazzquiz.quiz.question.hasVotes = data.has_votes;
         jazzquiz.quiz.totalStudents = parseInt(data.total_students);
-        jazzquiz.setResponses('jazzquiz_responses_container', 'current_responses_wrapper', data.responses, data.question_type, 'results');
+        jazzquiz.setResponses('jazzquiz_responses_container', 'current_responses_wrapper', data.responses, data.responded, data.question_type, 'results');
     }).fail(function() {
         jazzquiz.showInfo(jazzquiz.text('error_getting_current_results'));
     });

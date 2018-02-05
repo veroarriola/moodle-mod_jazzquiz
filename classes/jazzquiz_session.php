@@ -291,19 +291,21 @@ class jazzquiz_session {
      */
     public function get_question_results_list($slot) {
         $responses = [];
+        $responded = 0;
         foreach ($this->attempts as $attempt) {
             if ($attempt->data->responded != 1) {
                 continue;
             }
             $attemptresponses = $attempt->get_response_data($slot);
             $responses = array_merge($responses, $attemptresponses);
+            $responded++;
         }
-        // TODO: Remove this and update the JavaScript instead. The 'response' key is kinda useless.
         foreach ($responses as &$response) {
             $response = ['response' => $response];
         }
         return [
             'responses' => $responses,
+            'responded' => $responded,
             'student_count' => $this->get_student_count()
         ];
     }

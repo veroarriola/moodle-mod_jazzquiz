@@ -356,6 +356,7 @@ function get_results($session) {
         'has_votes' => $hasvotes,
         'question_type' => $qtype,
         'responses' => $responses['responses'],
+        'responded' => $responses['responded'],
         'total_students' => $responses['student_count']
     ];
 }
