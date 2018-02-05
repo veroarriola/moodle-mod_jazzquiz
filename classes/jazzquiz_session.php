@@ -138,6 +138,7 @@ class jazzquiz_session {
 
         foreach ($this->attempts as &$attempt) {
             $attempt->create_missing_attempts($this);
+            $attempt->save();
         }
 
         $this->data->currentquestiontime = $questiontime;
@@ -155,10 +156,11 @@ class jazzquiz_session {
      */
     public function initialize_attempt($userid) {
         // Check if this user has already joined the quiz.
-        foreach ($this->attempts as $attempt) {
+        foreach ($this->attempts as &$attempt) {
             if ($attempt->data->userid == $userid) {
+                $attempt->create_missing_attempts($this);
+                $attempt->save();
                 $this->attempt = $attempt;
-                $this->attempt->create_missing_attempts($this);
                 return;
             }
         }
@@ -172,7 +174,9 @@ class jazzquiz_session {
         $this->attempt->data->responded = null;
         $this->attempt->data->responded_count = 0;
         $this->attempt->data->timefinish = null;
+        $this->attempt->create_missing_attempts($this);
         $this->attempt->save();
+
         $event = event\attempt_started::create([
             'objectid' => $this->attempt->data->id,
             'relateduserid' => $this->attempt->data->userid,
@@ -182,7 +186,6 @@ class jazzquiz_session {
         $event->add_record_snapshot('jazzquiz', $this->jazzquiz->data);
         $event->add_record_snapshot('jazzquiz_attempts', $this->attempt->data);
         $event->trigger();
-        $this->attempt->create_missing_attempts($this);
     }
 
     /**

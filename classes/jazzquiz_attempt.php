@@ -92,7 +92,6 @@ class jazzquiz_attempt {
             $this->quba->start_question($slot);
             $this->data->responded = 0;
             $this->data->responded_count = 0;
-            $this->save();
         }
         return true;
     }
@@ -121,19 +120,14 @@ class jazzquiz_attempt {
         // This is here because for new usages there is no id until we save it.
         $this->data->questionengid = $this->quba->get_id();
         $this->data->timemodified = time();
-
-        if (isset($this->data->id)) {
-            try {
+        try {
+            if (isset($this->data->id)) {
                 $DB->update_record('jazzquiz_attempts', $this->data);
-            } catch (\Exception $e) {
-                return false;
-            }
-        } else {
-            try {
+            } else {
                 $this->data->id = $DB->insert_record('jazzquiz_attempts', $this->data);
-            } catch (\Exception $e) {
-                return false;
             }
+        } catch (\Exception $e) {
+            return false;
         }
         return true;
     }

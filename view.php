@@ -49,12 +49,14 @@ function jazzquiz_view_start_quiz($jazzquiz) {
         jazzquiz_view_default($jazzquiz);
         return;
     }
+    $session->load_session_questions();
     $session->load_attempts();
+
     $session->initialize_attempt($USER->id);
-    if (!$jazzquiz->is_instructor()) {
-        $session->attempt->data->status = jazzquiz_attempt::INPROGRESS;
-    } else {
+    if ($jazzquiz->is_instructor()) {
         $session->attempt->data->status = jazzquiz_attempt::PREVIEW;
+    } else {
+        $session->attempt->data->status = jazzquiz_attempt::INPROGRESS;
     }
     $session->attempt->save();
 
