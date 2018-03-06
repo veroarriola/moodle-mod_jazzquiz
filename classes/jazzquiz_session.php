@@ -117,6 +117,67 @@ class jazzquiz_session {
     }
 
     /**
+     * Merge responses with 'from' to 'into'
+     * @param int $slot Session question slot
+     * @param string $from Original response text
+     * @param string $into Merged response text
+     */
+    public function merge_responses($slot, $from, $into) {
+        global $DB;
+        $merge = new \stdClass();
+        $merge->sessionid = $this->data->id;
+        $merge->slot = $slot;
+        $merge->ordernum = count($DB->get_records('jazzquiz_merges', [
+            'sessionid' => $this->data->id,
+            'slot' => $slot
+        ]));
+        $merge->original = $from;
+        $merge->merged = $into;
+        $DB->insert_record('jazzquiz_merges', $merge);
+    }
+
+    /**
+     * Undo the last merge of the specified question.
+     * @param int $slot Session question slot
+     */
+    public function undo_merge($slot) {
+        global $DB;
+        $merge = $DB->get_records('jazzquiz_merges', [
+            'sessionid' => $this->data->id,
+            'slot' => $slot
+        ], 'ordernum desc', '*', 0, 1);
+        if (count($merge) === 0) {
+            return;
+        }
+        $merge = reset($merge);
+        $DB->delete_records('jazzquiz_merges', ['id' => $merge->id]);
+    }
+
+    /**
+     * Get the merged responses.
+     * @param int $slot Session question slot
+     * @param string[]['response'] $responses Original responses
+     * @return string[]['response'], int Merged responses and count of merges.
+     */
+    public function get_merged_responses($slot, $responses) {
+        global $DB;
+        $merges = $DB->get_records('jazzquiz_merges', [
+            'sessionid' => $this->data->id,
+            'slot' => $slot
+        ]);
+        $count = 0;
+        foreach ($merges as $merge) {
+            foreach ($responses as &$response) {
+                if ($merge->original === $response['response']) {
+                    $response['response'] = $merge->merged;
+                    $count++;
+                }
+            }
+        }
+        return [$responses, $count];
+    }
+
+    /**
      * Tells the session to go to the specified question number
      * That jazzquiz_question is then returned
      * @param int $questionid (from question bank)

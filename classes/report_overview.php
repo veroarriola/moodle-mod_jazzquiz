@@ -257,8 +257,9 @@ class report_overview {
         foreach ($slots as $slot) {
             $questionattempt = $quba->get_question_attempt($slot);
             $question = $questionattempt->get_question();
-            $responses = $session->get_question_results_list($slot);
-            $responses = $responses['responses'];
+            $results = $session->get_question_results_list($slot);
+            list($results['responses'], $mergecount) = $session->get_merged_responses($slot, $results['responses']);
+            $responses = $results['responses'];
 
             $responded = $session->get_responded_list($slot);
             if ($responded) {
@@ -294,7 +295,7 @@ class report_overview {
 
                 . 'jazzquiz.setResponses("'
                 . $wrapperid . '", "' . $tableid . '", jazzquizResponses[' . $slot . '], "'
-                . $qtype . '", "report_' . $slot . '"'
+                . $qtype . '", "report_' . $slot . '", false'
                 . ');'
                 . '}, 1000);'
                 . '</script>';

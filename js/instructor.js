@@ -89,8 +89,12 @@ jazzquiz.changeQuizState = function(state, data) {
                 if (data.questionTime > 0 && data.delay < -data.questiontime) {
                     this.endQuestion();
                 }
-                // Update current responses and responded.
-                this.getResults();
+                // Only rebuild results if we are not merging.
+                if (jQuery('.merge-from').length === 0) {
+                    this.getResults(true);
+                } else {
+                    this.getResults(false);
+                }
             } else {
                 const started = this.startQuestionCountdown(data.questiontime, data.delay);
                 if (started) {
@@ -127,7 +131,7 @@ jazzquiz.changeQuizState = function(state, data) {
                     this.getAndShowVoteResults();
                     this.quiz.showVotesUponReview = false;
                 } else {
-                    this.getResults();
+                    this.getResults(false);
                 }
             }
             // No longer in question.
@@ -190,30 +194,54 @@ jazzquiz.endResponseMerge = function() {
 };
 
 /**
+ * Undo the last response merge.
+ */
+jazzquiz.undoResponseMerge = function() {
+    this.post('quizdata.php', {
+        action: 'undo_merge'
+    }, function() {
+        jazzquiz.getResults(true);
+    });
+};
+
+/**
+ * Merges responses based on response string.
+ * @param {string} from
+ * @param {string} into
+ */
+jazzquiz.mergeResponses = function(from, into) {
+    this.post('quizdata.php', {
+        action: 'merge_responses',
+        from: from,
+        into: into
+    }, function() {
+        jazzquiz.getResults(false);
+    });
+};
+
+/**
  * Start a merge between two responses.
  * @param {string} fromRowBarId
  */
 jazzquiz.startResponseMerge = function(fromRowBarId) {
     const $barCell = jQuery('#' + fromRowBarId);
     let $row = $barCell.parent();
-    if ($row.hasClass('merge-into')) {
-        this.endResponseMerge();
-        return;
-    }
     if ($row.hasClass('merge-from')) {
-        const $intoRow = jQuery('.merge-into');
-        this.currentResponses[$intoRow.data('response_i')].count += parseInt($row.data('count'));
-        this.currentResponses.splice($row.data('response_i'), 1);
-        this.setResponses('jazzquiz_responses_container', 'current_responses_wrapper', this.currentResponses, undefined, this.quiz.question.questionType, 'results');
         this.endResponseMerge();
         return;
     }
-    $row.addClass('merge-into');
+    if ($row.hasClass('merge-into')) {
+        const $fromRow = jQuery('.merge-from');
+        this.mergeResponses($fromRow.data('response'), $row.data('response'));
+        this.endResponseMerge();
+        return;
+    }
+    $row.addClass('merge-from');
     let $table = $row.parent().parent();
     $table.find('tr').each(function() {
         const $cells = jQuery(this).find('td');
         if ($cells[1].id !== $barCell.attr('id')) {
-            jQuery(this).addClass('merge-from');
+            jQuery(this).addClass('merge-into');
         }
     });
 };
@@ -237,7 +265,7 @@ jazzquiz.createResponseControls = function(name) {
             if ($showNormalResult.length === 0) {
                 const buttonText = this.text('click_to_show_original_results');
                 $responseInfo.html('<h4 class="inline">' + this.text('showing_vote_results') + '</h4>');
-                $responseInfo.append('<button id="review_show_normal_results" onclick="jazzquiz.getResults();" class="btn btn-primary">' + buttonText + '</button><br>');
+                $responseInfo.append('<button id="review_show_normal_results" onclick="jazzquiz.getResults(false);" class="btn btn-primary">' + buttonText + '</button><br>');
                 $showVoteResult.remove();
             }
         } else if (name === 'current_response') {
@@ -257,8 +285,9 @@ jazzquiz.createResponseControls = function(name) {
  * @param {string} name
  * @param {string} targetId
  * @param {string} graphId
+ * @param {boolean} rebuild If the table should be completely rebuilt or not
  */
-jazzquiz.createResponseBarGraph = function(responses, name, targetId, graphId) {
+jazzquiz.createResponseBarGraph = function(responses, name, targetId, graphId, rebuild) {
     let target = document.getElementById(targetId);
     if (target === null) {
         return;
@@ -269,6 +298,11 @@ jazzquiz.createResponseBarGraph = function(responses, name, targetId, graphId) {
     }
     if (total === 0) {
         total = 1;
+    }
+
+    // Remove the rows if it should be rebuilt.
+    if (rebuild) {
+        target.innerHTML = '';
     }
 
     // Prune rows.
@@ -323,17 +357,17 @@ jazzquiz.createResponseBarGraph = function(responses, name, targetId, graphId) {
                 jQuery(this).parent().toggleClass('selected-vote-option');
             };
 
-            let bar_cell = row.insertCell(1);
-            bar_cell.classList.add('bar');
-            bar_cell.id = name + '_bar_' + rowIndex;
-            bar_cell.innerHTML = '<div style="width:' + percent + '%;">' + countHtml + '</div>';
+            let barCell = row.insertCell(1);
+            barCell.classList.add('bar');
+            barCell.id = name + '_bar_' + rowIndex;
+            barCell.innerHTML = '<div style="width:' + percent + '%;">' + countHtml + '</div>';
 
-            const latex_id = name + '_latex_' + rowIndex;
-            responseCell.innerHTML = '<span id="' + latex_id + '"></span>';
-            this.addMathjaxElement(latex_id, responses[i].response);
+            const latexId = name + '_latex_' + rowIndex;
+            responseCell.innerHTML = '<span id="' + latexId + '"></span>';
+            this.addMathjaxElement(latexId, responses[i].response);
 
             if (responses[i].qtype === 'stack') {
-                this.renderMaximaEquation(responses[i].response, latex_id);
+                this.renderMaximaEquation(responses[i].response, latexId);
             }
 
         } else {
@@ -385,8 +419,9 @@ jazzquiz.sortResponseBarGraph = function(targetId) {
  * @param {number|undefined} responded How many students responded to the question
  * @param {string} questionType
  * @param {string} graphId
+ * @param {boolean} rebuild If the graph should be rebuilt or not.
  */
-jazzquiz.setResponses = function(wrapperId, tableId, responses, responded, questionType, graphId) {
+jazzquiz.setResponses = function(wrapperId, tableId, responses, responded, questionType, graphId, rebuild) {
     if (responses === undefined) {
         console.log('Responses is undefined.');
         return;
@@ -426,7 +461,6 @@ jazzquiz.setResponses = function(wrapperId, tableId, responses, responded, quest
     this.totalResponses = responses.length;
     this.quiz.respondedCount = 0;
     for (let i = 0; i < responses.length; i++) {
-
         let exists = false;
         let count = 1;
         if (responses[i].count !== undefined) {
@@ -481,7 +515,7 @@ jazzquiz.setResponses = function(wrapperId, tableId, responses, responded, quest
     }
 
     // Update HTML.
-    this.createResponseBarGraph(this.currentResponses, 'current_response', tableId, graphId);
+    this.createResponseBarGraph(this.currentResponses, 'current_response', tableId, graphId, rebuild);
     this.sortResponseBarGraph(tableId);
 };
 
@@ -638,7 +672,7 @@ jazzquiz.getAndShowVoteResults = function() {
             }
         }
 
-        jazzquiz.createResponseBarGraph(responses, 'vote_response', targetId, 'vote');
+        jazzquiz.createResponseBarGraph(responses, 'vote_response', targetId, 'vote', false);
         jazzquiz.sortResponseBarGraph(targetId);
     }).fail(function() {
         jazzquiz.showInfo(jazzquiz.text('error_getting_vote_results'));
@@ -663,14 +697,23 @@ jazzquiz.runVoting = function() {
 
 /**
  * Fetch and show results for the ongoing or previous question.
+ * @param {boolean} rebuild If the response graph should be rebuilt or not.
  */
-jazzquiz.getResults = function() {
+jazzquiz.getResults = function(rebuild) {
     this.get('quizdata.php', {
         action: 'get_results'
     }, function(data) {
         jazzquiz.quiz.question.hasVotes = data.has_votes;
         jazzquiz.quiz.totalStudents = parseInt(data.total_students);
-        jazzquiz.setResponses('jazzquiz_responses_container', 'current_responses_wrapper', data.responses, data.responded, data.question_type, 'results');
+
+        jazzquiz.setResponses('jazzquiz_responses_container', 'current_responses_wrapper',
+            data.responses, data.responded, data.question_type, 'results', rebuild);
+
+        if (data.merge_count > 0) {
+            jQuery('#jazzquiz_undo_merge').removeClass('hidden');
+        } else {
+            jQuery('#jazzquiz_undo_merge').addClass('hidden');
+        }
     }).fail(function() {
         jazzquiz.showInfo(jazzquiz.text('error_getting_current_results'));
     });
@@ -696,7 +739,7 @@ jazzquiz.startQuestion = function(method, questionId, questionTime, jazzquizQues
         jazzquiz.startQuestionCountdown(data.questiontime, data.delay);
     }).fail(function() {
         jazzquiz.showInfo(jazzquiz.text('error_with_request'));
-    })
+    });
 };
 
 /**
@@ -784,7 +827,7 @@ jazzquiz.hideResponses = function() {
 jazzquiz.showResponses = function() {
     this.options.showResponses = true;
     jQuery('#jazzquiz_control_responses').html('<i class="fa fa-check-square-o"></i> ' + this.text('responses'));
-    this.getResults();
+    this.getResults(false);
 };
 
 /**
@@ -884,12 +927,10 @@ jazzquiz.addEventHandlers = function() {
         jazzquiz.closeQuestionListMenu(event, 'improvise');
         jazzquiz.closeQuestionListMenu(event, 'jump');
         // Clicking a row to merge.
-        if (jazzquiz.state === 'reviewing') {
-            if (event.target.classList.contains('bar')) {
-                jazzquiz.startResponseMerge(event.target.id);
-            } else if (event.target.parentNode && event.target.parentNode.classList.contains('bar')) {
-                jazzquiz.startResponseMerge(event.target.parentNode.id);
-            }
+        if (event.target.classList.contains('bar')) {
+            jazzquiz.startResponseMerge(event.target.id);
+        } else if (event.target.parentNode && event.target.parentNode.classList.contains('bar')) {
+            jazzquiz.startResponseMerge(event.target.parentNode.id);
         }
     });
 
@@ -939,5 +980,8 @@ jazzquiz.addEventHandlers = function() {
     .on('click', '#jazzquiz_control_startquiz', function() {
         jazzquiz.enableControls([]);
         jazzquiz.startQuiz();
+    })
+    .on('click', '#jazzquiz_undo_merge', function() {
+        jazzquiz.undoResponseMerge();
     });
 };

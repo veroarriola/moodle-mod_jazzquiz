@@ -346,7 +346,8 @@ function get_results($session) {
     $session->load_attempts();
     $slot = count($session->questions);
     $qtype = $session->get_question_type_by_slot($slot);
-    $responses = $session->get_question_results_list($slot);
+    $results = $session->get_question_results_list($slot);
+    list($results['responses'], $mergecount) = $session->get_merged_responses($slot, $results['responses']);
 
     // Check if this has been voted on before.
     $vote = new jazzquiz_vote($session->data->id, $slot);
@@ -355,10 +356,43 @@ function get_results($session) {
     return [
         'has_votes' => $hasvotes,
         'question_type' => $qtype,
-        'responses' => $responses['responses'],
-        'responded' => $responses['responded'],
-        'total_students' => $responses['student_count']
+        'responses' => $results['responses'],
+        'responded' => $results['responded'],
+        'total_students' => $results['student_count'],
+        'merge_count' => $mergecount
     ];
+}
+
+/**
+ * Merge a response into another.
+ * @param jazzquiz_session $session
+ * @return mixed[]
+ */
+function merge_responses($session) {
+    $session->load_session_questions();
+    $slot = optional_param('slot', count($session->questions), PARAM_INT);
+    if (!isset($session->questions[$slot])) {
+        return ['status' => 'error'];
+    }
+    $from = required_param('from', PARAM_TEXT);
+    $into = required_param('into', PARAM_TEXT);
+    $session->merge_responses($slot, $from, $into);
+    return ['status' => 'success'];
+}
+
+/**
+ * Undo the last merge.
+ * @param jazzquiz_session $session
+ * @return mixed[]
+ */
+function undo_merge($session) {
+    $session->load_session_questions();
+    $slot = optional_param('slot', count($session->questions), PARAM_INT);
+    if (!isset($session->questions[$slot])) {
+        return ['status' => 'error'];
+    }
+    $session->undo_merge($slot);
+    return ['status' => 'success'];
 }
 
 /**
@@ -391,6 +425,10 @@ function handle_instructor_request($action, $session) {
             return end_question($session);
         case 'get_right_response':
             return get_right_response($session);
+        case 'merge_responses':
+            return merge_responses($session);
+        case 'undo_merge':
+            return undo_merge($session);
         case 'close_session':
             return close_session($session);
         default:

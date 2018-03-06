@@ -69,5 +69,31 @@ function xmldb_jazzquiz_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018010527, 'jazzquiz');
     }
 
+    if ($oldversion < 2018020535) {
+
+        // Define field preview to be dropped from jazzquiz_merges.
+        $table = new xmldb_table('jazzquiz_merges');
+
+        // Adding fields to table jazzquiz_merges.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('slot', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('ordernum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('original', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL);
+        $table->add_field('merged', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL);
+
+        // Adding keys to table jazzquiz_merges.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('sessionid', XMLDB_KEY_FOREIGN, ['sessionid']);
+
+        // Conditionally launch create table for jazzquiz_merges.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // JazzQuiz savepoint reached.
+        upgrade_mod_savepoint(true, 2018020535, 'jazzquiz');
+    }
+
     return true;
 }

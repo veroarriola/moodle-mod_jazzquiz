@@ -255,12 +255,12 @@
     float: right;
 }
 
-.merge-into {
+.merge-from {
     background: #eee;
     cursor: pointer;
 }
 
-.merge-from {
+.merge-into {
     cursor: pointer;
 }
 
@@ -268,7 +268,7 @@
     transition: 0.6s ease padding-left;
 }
 
-.jazzquiz-responses-overview .merge-from .bar {
+.jazzquiz-responses-overview .merge-into .bar {
     padding-left: 64px;
     transition: 0.3s ease padding-left;
 }
@@ -277,11 +277,11 @@
     transition: 1s ease width;
 }
 
-.merge-from .bar div {
+.merge-into .bar div {
     opacity: 0.7;
 }
 
-.merge-from:hover .bar div {
+.merge-into:hover .bar div {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
     opacity: 1;
 }
@@ -420,6 +420,7 @@
 
 #jazzquiz_response_info_container .btn.btn-primary,
 #report_overview_controls .btn.btn-primary,
+#jazzquiz_undo_merge,
 #jazzquiz_control_startquiz,
 #jazzquiz_control_exit {
     background: #eee;
@@ -437,6 +438,7 @@
 
 #jazzquiz_control_startquiz:hover,
 #jazzquiz_control_exit:hover,
+#jazzquiz_undo_merge:hover,
 #report_overview_controls .btn.btn-primary:hover,
 #jazzquiz_response_info_container .btn.btn-primary:hover {
     background: #29f;

@@ -105,5 +105,19 @@
         <KEY NAME="sessionid" TYPE="foreign" FIELDS="sessionid" REFTABLE="jazzquiz_sessions" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
+    <TABLE NAME="jazzquiz_merges" COMMENT="Response merges for a question">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="slot" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The session question slot this vote was created for"/>
+        <FIELD NAME="ordernum" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The number of merges that happened before this one for this slot."/>
+        <FIELD NAME="original" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The original response"/>
+        <FIELD NAME="merged" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The merged response"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="sessionid" TYPE="foreign" FIELDS="sessionid" REFTABLE="jazzquiz_sessions" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
   </TABLES>
 </XMLDB>

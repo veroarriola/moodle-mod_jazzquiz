@@ -182,6 +182,7 @@ class renderer extends \plugin_renderer_base {
         $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_info_container']);
         $output .= '<div id="jazzquiz_question_box"></div>';
         if ($session->jazzquiz->is_instructor()) {
+            $output .= '<div><button id="jazzquiz_undo_merge" class="btn btn-primary hidden"><i class="fa fa-undo"></i></button></div>';
             $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_responses_container']);
         }
 
