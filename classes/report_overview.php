@@ -78,7 +78,8 @@ class report_overview {
             echo $this->csv_escape($attempt->get_user_full_name()) . ',';
             $slots = $attempt->quba->get_slots();
             foreach ($slots as $slot) {
-                $attemptresponse = reset($attempt->get_response_data($slot));
+                $responsedata = $attempt->get_response_data($slot);
+                $attemptresponse = reset($responsedata);
                 if (!$attemptresponse) {
                     echo ',';
                     continue;
