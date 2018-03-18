@@ -107,14 +107,19 @@ class jazzquiz_attempt {
     }
 
     /**
-     * Saves the current attempt class
+     * Saves the current attempt.
      * @return bool
      */
     public function save() {
         global $DB;
 
         // Save the question usage by activity object.
-        \question_engine::save_questions_usage_by_activity($this->quba);
+        if ($this->quba->question_count() > 0) {
+            \question_engine::save_questions_usage_by_activity($this->quba);
+        } else {
+            // TODO: Don't suppress the error if it becomes possible to save QUBAs without slots.
+            @\question_engine::save_questions_usage_by_activity($this->quba);
+        }
 
         // Add the quba id as the questionengid.
         // This is here because for new usages there is no id until we save it.
