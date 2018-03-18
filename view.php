@@ -85,14 +85,15 @@ function jazzquiz_view_default_instructor($jazzquiz) {
             'jazzquizid' => $jazzquiz->data->id,
             'sessionopen' => 1
         ]);
-        if (!empty($sessions)) {
-            // There is already an open session.
-            return;
-        }
 
-        // Create the session.
-        $sessionid = $jazzquiz->create_session($data->session_name);
-        if ($sessionid === false) {
+        // Only create session if none is open already.
+        if (empty($sessions)) {
+            $sessionid = $jazzquiz->create_session($data->session_name);
+            if ($sessionid === false) {
+                return;
+            }
+        } else {
+            redirect($PAGE->url, 'A session is already open.', 0);
             return;
         }
 
