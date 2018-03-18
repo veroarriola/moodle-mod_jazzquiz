@@ -63,8 +63,11 @@ var jazzquiz = {
         showCorrectAnswer: false
     },
 
+    latexCache: [],
+
     // Student temporary variables.
     voteAnswer: undefined
+    
 };
 
 /**
@@ -134,6 +137,24 @@ jazzquiz.requestQuizInfo = function() {
             setTimeout(jazzquiz.requestQuizInfo, 2000);
         }
     });
+};
+
+/**
+ * Cache a string to a latex output.
+ * @param {string} input
+ * @param {string} output
+ */
+jazzquiz.setLatex = function(input, output) {
+    jazzquiz.latexCache[input] = output;
+};
+
+/**
+ * Get the cached latex for a string.
+ * @param {string} input
+ * @returns {*}
+ */
+jazzquiz.getLatex = function(input) {
+    return jazzquiz.latexCache[input];
 };
 
 /**
@@ -215,9 +236,15 @@ jazzquiz.renderMaximaEquation = function(input, targetId) {
         console.log('Target element #' + targetId + ' not found.');
         return;
     }
+    const cachedLatex = this.getLatex(input);
+    if (cachedLatex !== undefined) {
+        jazzquiz.addMathjaxElement(targetId, cachedLatex);
+        return;
+    }
     this.get('stack', {
         input: encodeURIComponent(input)
     }, function(data) {
+        jazzquiz.setLatex(data.original, data.latex);
         jazzquiz.addMathjaxElement(targetId, data.latex);
     }).fail(function() {
         console.log('Failed to get LaTeX for #' + targetId);
