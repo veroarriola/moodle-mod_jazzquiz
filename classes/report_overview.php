@@ -284,18 +284,17 @@ class report_overview {
             echo '<br><a href="reports.php' . $params . '">Download responses</a>';
             echo '</div>';
 
+            // TODO: This is kind of a hack... Should refactor the JavaScript.
             echo '<script>'
                 . "jazzquizResponses[$slot] = " . json_encode($responses) . ';'
                 . 'setTimeout(function() {'
-                . 'jazzquiz.quiz.attemptId = ' . $row->id . ';'
-
-                // TODO: This is kind of a hack... Should refactor the JavaScript.
+                . 'jazzquiz.quiz.sessionKey = "' . sesskey() . '";'
                 . 'jazzquiz.options.showResponses = true;'
                 . 'jazzquiz.state = "reviewing";'
 
                 . 'jazzquiz.setResponses("'
-                . $wrapperid . '", "' . $tableid . '", jazzquizResponses[' . $slot . '], "'
-                . $qtype . '", "report_' . $slot . '", false'
+                . $wrapperid . '", "' . $tableid . '", jazzquizResponses[' . $slot . '], '
+                . 'undefined, "' . $qtype . '", "report_' . $slot . '", false'
                 . ');'
                 . '}, 1000);'
                 . '</script>';

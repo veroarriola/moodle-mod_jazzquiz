@@ -32,6 +32,7 @@ define('AJAX_SCRIPT', true);
 require_once('../../config.php');
 require_once($CFG->dirroot . '/mod/jazzquiz/lib.php');
 require_once($CFG->libdir . '/filelib.php');
+require_once($CFG->dirroot . '/question/engine/lib.php');
 
 require_login();
 require_sesskey();
@@ -396,6 +397,104 @@ function undo_merge($session) {
 }
 
 /**
+ * Convert STACK (Maxima) string to LaTeX format.
+ * @return mixed[]
+ */
+function stack_to_latex() {
+    global $DB;
+    $input = required_param('input', PARAM_RAW);
+    $input = urldecode($input);
+    $question = $DB->get_record_sql('SELECT id FROM {question} WHERE qtype = ? AND name LIKE ?', ['stack', '{IMPROV}%']);
+    if (!$question) {
+        return [
+            'message' => 'STACK question not found.',
+            'latex' => $input,
+            'original' => $input
+        ];
+    }
+
+    /** @var \qtype_stack_question $question */
+    $question = \question_bank::load_question($question->id);
+    $question->initialise_question_from_seed();
+    $state = $question->get_input_state('ans1', ['ans1' => $input]);
+    $latex = $state->contentsdisplayed;
+
+    return [
+        'latex' => $latex,
+        'original' => $input
+    ];
+}
+
+/**
+ * Retrieve the current state of the session.
+ * @param jazzquiz_session $session
+ * @return mixed[]
+ */
+function session_info($session) {
+    global $DB;
+    switch ($session->data->status) {
+        // Just a generic response with the state.
+        case 'notrunning':
+            if ($session->jazzquiz->is_instructor()) {
+                $session = new jazzquiz_session($session->jazzquiz, $session->data->id);
+                $session->load_attempts();
+                return [
+                    'status' => $session->data->status,
+                    'student_count' => $session->get_student_count()
+                ];
+            }
+        // Fall-through.
+        case 'preparing':
+        case 'reviewing':
+            return [
+                'status' => $session->data->status,
+                'slot' => $session->data->slot // For the preplanned questions.
+            ];
+
+        case 'voting':
+            $voteoptions = $DB->get_records('jazzquiz_votes', ['sessionid' => $session->data->id]);
+            $options = [];
+            $html = '<div class="jazzquiz-vote">';
+            $i = 0;
+            foreach ($voteoptions as $voteoption) {
+                $options[] = [
+                    'text' => $voteoption->attempt,
+                    'id' => $voteoption->id,
+                    'question_type' => $voteoption->qtype,
+                    'content_id' => "vote_answer_label_$i"
+                ];
+                $html .= '<label>';
+                $html .= '<input class="jazzquiz-select-vote" type="radio" name="vote" value="' . $voteoption->id . '">';
+                $html .= '<span id="vote_answer_label_' . $i . '">' . $voteoption->attempt . '</span>';
+                $html .= '</label><br>';
+                $i++;
+            }
+            $html .= '</div>';
+            $html .= '<button id="jazzquiz_save_vote" class="btn btn-primary">Save</button>';
+            return [
+                'status' => 'voting',
+                'html' => $html,
+                'options' => $options
+            ];
+
+        // Send the currently active question.
+        case 'running':
+            return [
+                'status' => 'running',
+                'questiontime' => $session->data->currentquestiontime,
+                'delay' => $session->data->nextstarttime - time()
+            ];
+
+        // This should not be reached, but if it ever is, let's just assume the quiz is not running.
+        default:
+            return [
+                'status' => 'notrunning',
+                'message' => 'Unknown error. State: ' . $session->data->status
+            ];
+    }
+}
+
+/**
  * Handle an instructor request.
  * @param string $action
  * @param jazzquiz_session $session
@@ -431,6 +530,8 @@ function handle_instructor_request($action, $session) {
             return undo_merge($session);
         case 'close_session':
             return close_session($session);
+        case 'info':
+            return session_info($session);
         default:
             return [
                 'status' => 'error',
@@ -453,6 +554,8 @@ function handle_student_request($action, $session) {
             return save_vote($session);
         case 'get_question_form':
             return get_question_form($session);
+        case 'info':
+            return session_info($session);
         default:
             return [
                 'status' => 'error',
@@ -465,10 +568,16 @@ function handle_student_request($action, $session) {
  * The entry point to handle instructor and student actions.
  * @return mixed[]
  */
-function jazzquiz_quizdata() {
+function jazzquiz_ajax() {
+    $action = required_param('action', PARAM_ALPHANUMEXT);
+
+    // TODO: Better solution if more non-session actions are added.
+    if ($action === 'stack') {
+        return stack_to_latex();
+    }
+
     $cmid = required_param('id', PARAM_INT);
     $sessionid = required_param('sessionid', PARAM_INT);
-    $action = required_param('action', PARAM_ALPHANUMEXT);
 
     $jazzquiz = new jazzquiz($cmid, null);
     $session = new jazzquiz_session($jazzquiz, $sessionid);
@@ -500,5 +609,8 @@ function jazzquiz_quizdata() {
     }
 }
 
-$data = jazzquiz_quizdata();
+$starttime = microtime(true);
+$data = jazzquiz_ajax();
+$endtime = microtime(true);
+$data['debugmu'] = $endtime - $starttime;
 echo json_encode($data);

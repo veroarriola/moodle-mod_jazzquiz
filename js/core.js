@@ -95,31 +95,33 @@ jazzquiz.ajax = function(method, url, data, success) {
 
 /**
  * Send a GET request using AJAX.
- * @param {string} url Relative to root of jazzquiz module. Does not start with /.
+ * @param {string} action Which action to query.
  * @param {Object} data Object with parameters as properties. Reserved: id, quizid, sessionid, attemptid, sesskey
  * @param {function} success Callback function for when the request was completed successfully.
  * @return {jqXHR} The jQuery XHR object
  */
-jazzquiz.get = function(url, data, success) {
-    return this.ajax('get', url, data, success);
+jazzquiz.get = function(action, data, success) {
+    data.action = action;
+    return this.ajax('get', 'ajax.php', data, success);
 };
 
 /**
  * Send a POST request using AJAX.
- * @param {string} url Relative to root of jazzquiz module. Does not start with /.
+ * @param {string} action Which action to query.
  * @param {Object} data Object with parameters as properties. Reserved: id, quizid, sessionid, attemptid, sesskey
  * @param {function} success Callback function for when the request was completed successfully.
  * @return {jqXHR} The jQuery XHR object
  */
-jazzquiz.post = function(url, data, success) {
-    return this.ajax('post', url, data, success);
+jazzquiz.post = function(action, data, success) {
+    data.action = action;
+    return this.ajax('post', 'ajax.php', data, success);
 };
 
 /**
- * Initiate the chained calls to quizinfo.php
+ * Initiate the chained session info calls to ajax.php
  */
 jazzquiz.requestQuizInfo = function() {
-    jazzquiz.get('quizinfo.php', {}, function(data) {
+    jazzquiz.get('info', {}, function(data) {
         // Change the local state.
         jazzquiz.changeQuizState(data.status, data);
         // Schedule next update.
@@ -213,7 +215,7 @@ jazzquiz.renderMaximaEquation = function(input, targetId) {
         console.log('Target element #' + targetId + ' not found.');
         return;
     }
-    this.get('stack.php', {
+    this.get('stack', {
         input: encodeURIComponent(input)
     }, function(data) {
         jazzquiz.addMathjaxElement(targetId, data.latex);
@@ -288,9 +290,7 @@ jazzquiz.clearQuestionBox = function() {
  * Request the current question form.
  */
 jazzquiz.reloadQuestionBox = function() {
-    this.get('quizdata.php', {
-        action: 'get_question_form'
-    }, function(data) {
+    this.get('get_question_form', {}, function(data) {
         jazzquiz.quiz.question.questionType = data.question_type;
         if (data.is_already_submitted) {
             jazzquiz.showInfo(jazzquiz.text('wait_for_instructor'));

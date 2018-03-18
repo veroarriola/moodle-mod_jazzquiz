@@ -92,15 +92,13 @@ jazzquiz.submitAnswer = function() {
         tinyMCE.triggerSave();
     }
     const serialized = jQuery('#jazzquiz_question_form').serializeArray();
-    let data = {
-        action: 'save_question'
-    };
+    let data = {};
     for (let name in serialized) {
         if (serialized.hasOwnProperty(name)) {
             data[serialized[name].name] = serialized[name].value;
         }
     }
-    this.post('quizdata.php', data, function(data) {
+    this.post('save_question', data, function(data) {
         if (data.feedback.length > 0) {
             jazzquiz.showInfo(data.feedback);
         } else {
@@ -121,8 +119,7 @@ jazzquiz.submitAnswer = function() {
 };
 
 jazzquiz.saveVote = function() {
-    this.post('quizdata.php', {
-        action: 'save_vote',
+    this.post('save_vote', {
         vote: this.voteAnswer
     }, function(data) {
         if (data.status === 'success') {
