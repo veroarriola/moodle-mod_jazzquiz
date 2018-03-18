@@ -374,7 +374,6 @@ class renderer extends \plugin_renderer_base {
             'question_will_end_in_x_seconds',
             'answer',
             'responses',
-            'responded',
             'wait_for_instructor',
             'instructions_for_student',
             'instructions_for_instructor',

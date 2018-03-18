@@ -61,14 +61,14 @@ class add_question_form extends \moodleform {
 
         $mform->addElement('advcheckbox', 'notime', get_string('no_time_limit', 'jazzquiz'));
         $mform->setType('notime', PARAM_INT);
-        $mform->addHelpButton('notime', 'notime', 'jazzquiz');
+        $mform->addHelpButton('notime', 'no_time_limit', 'jazzquiz');
         $mform->setDefault('notime', 0);
 
         $mform->addElement('duration', 'questiontime', get_string('question_time', 'jazzquiz'));
         $mform->disabledIf('questiontime', 'notime', 'checked');
         $mform->setType('questiontime', PARAM_INT);
         $mform->setDefault('questiontime', $defaulttime);
-        $mform->addHelpButton('questiontime', 'questiontime', 'jazzquiz');
+        $mform->addHelpButton('questiontime', 'question_time', 'jazzquiz');
 
         if (!empty($this->_customdata['edit'])) {
             $savestring = get_string('save_question', 'jazzquiz');
