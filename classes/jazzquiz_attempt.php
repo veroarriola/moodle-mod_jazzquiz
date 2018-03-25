@@ -83,7 +83,8 @@ class jazzquiz_attempt {
             if ($this->quba->next_slot_number() > $slot) {
                 continue;
             }
-            $questiondefinition = reset(question_load_questions([$question->questionid]));
+            $questiondefinitions = question_load_questions([$question->questionid]);
+            $questiondefinition = reset($questiondefinitions);
             if (!$questiondefinition) {
                 return false;
             }
