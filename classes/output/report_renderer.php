@@ -60,6 +60,9 @@ class report_renderer extends \plugin_renderer_base {
         $sessionselecturl = clone($url);
         $sessionselecturl->param('action', 'viewsession');
 
+        usort($sessions, function($a, $b) {
+            return strcmp(strtolower($a->name), strtolower($b->name));
+        });
         $sessionoptions = [];
         foreach ($sessions as $session) {
             $sessionoptions[$session->id] = $session->name;
