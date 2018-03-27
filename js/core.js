@@ -91,7 +91,7 @@ jazzquiz.ajax = function(method, url, data, success) {
         dataType: 'json',
         success: success,
         error: function(xhr, status, error) {
-            console.log('XHR Error: ' + error + '. Status: ' + status);
+            //console.log('XHR Error: ' + error + '. Status: ' + status);
         }
     });
 };
@@ -233,7 +233,7 @@ jazzquiz.addMathjaxElement = function(targetId, latex) {
 jazzquiz.renderMaximaEquation = function(input, targetId) {
     const target = document.getElementById(targetId);
     if (target === null) {
-        console.log('Target element #' + targetId + ' not found.');
+        //console.log('Target element #' + targetId + ' not found.');
         return;
     }
     const cachedLatex = this.getLatex(input);
@@ -246,8 +246,6 @@ jazzquiz.renderMaximaEquation = function(input, targetId) {
     }, function(data) {
         jazzquiz.setLatex(data.original, data.latex);
         jazzquiz.addMathjaxElement(targetId, data.latex);
-    }).fail(function() {
-        console.log('Failed to get LaTeX for #' + targetId);
     });
 };
 
@@ -293,7 +291,6 @@ jazzquiz.decodeState = function() {
 jazzquiz.initialize = function() {
     // Wait for jQuery
     if (!window.jQuery) {
-        console.log('Waiting for jQuery... Trying again in 50ms');
         this.jQueryErrors++;
         if (this.jQueryErrors > 50) {
             location.reload(true);

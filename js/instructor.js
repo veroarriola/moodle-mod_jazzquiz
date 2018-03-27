@@ -417,7 +417,6 @@ jazzquiz.sortResponseBarGraph = function(targetId) {
  */
 jazzquiz.setResponses = function(wrapperId, tableId, responses, responded, questionType, graphId, rebuild) {
     if (responses === undefined) {
-        console.log('Responses is undefined.');
         return;
     }
 
