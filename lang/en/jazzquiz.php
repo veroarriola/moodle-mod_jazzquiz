@@ -146,6 +146,8 @@ $string['attendance_list'] = 'Attendance list';
 // Admin Settings.
 $string['enabled_question_types'] = 'Enable question types';
 $string['enabled_question_types_info'] = 'Question types that are enabled for use within instances of the JazzQuiz activity.';
+$string['improv_enabled_questions'] = 'Default improvisation questions';
+$string['improv_enabled_questions_info'] = 'Questions added by JazzQuiz which can be used for improvisation during a session.';
 
 // Instructions.
 $string['instructions_for_student'] = '<p>Please wait for the instructor to start the quiz.</p>';

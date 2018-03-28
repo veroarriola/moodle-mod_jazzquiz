@@ -42,6 +42,117 @@ class improviser {
     }
 
     /**
+     * Check whether or not the question is enabled in the config.
+     * @param string $name of question
+     * @return bool
+     */
+    private static function is_question_enabled($name) {
+        $config = get_config('mod_jazzquiz');
+        if (!isset($config->improvenabled)) {
+            $config->improvenabled = '';
+            return false;
+        }
+        $enabled = explode(',', $config->improvenabled);
+        return in_array($name, $enabled);
+    }
+
+    /**
+     * Check whether or not the question was added to database by checking the config.
+     * @param string $name of question
+     * @return bool
+     */
+    private static function is_question_added($name) {
+        $config = get_config('mod_jazzquiz');
+        if (!isset($config->improvadded)) {
+            $config->improvadded = '';
+            return false;
+        }
+        $added = explode(',', $config->improvadded);
+        return in_array($name, $added);
+    }
+
+    /**
+     * Store that we have added the question to the database.
+     * @param string $name
+     */
+    private static function set_question_added($name) {
+        $config = get_config('mod_jazzquiz');
+        $improvadded = [];
+        if (isset($config->improvadded)) {
+            $improvadded = explode(',', $config->improvadded);
+        }
+        $enabled = in_array($name, $improvadded);
+        if ($enabled) {
+            return;
+        }
+        $improvadded[] = $name;
+        $improvadded = implode(',', $improvadded);
+        set_config('improvadded', $improvadded, 'mod_jazzquiz');
+    }
+
+    /**
+     * Remove the 'enable' and 'added' config for this question
+     * @param string $name of question
+     */
+    private static function disable_question($name) {
+        $config = get_config('mod_jazzquiz');
+        if (isset($config->improvenabled)) {
+            $enabled = explode(',', $config->improvenabled);
+            $key = array_search($name, $enabled);
+            if ($key !== false) {
+                unset($enabled[$key]);
+                $enabled = implode(',', $enabled);
+                set_config('improvenabled', $enabled, 'mod_jazzquiz');
+            }
+        }
+        if (isset($config->improvadded)) {
+            $added = explode(',', $config->improvadded);
+            $key = array_search($name, $added);
+            if ($key !== false) {
+                unset($added[$key]);
+                $added = implode(',', $added);
+                set_config('improvadded', $added, 'mod_jazzquiz');
+            }
+        }
+    }
+
+    /**
+     * Deletes the question definition if it exists, but should be disabled.
+     * @param string $name of question
+     * @return bool true if deleted or already deleted
+     */
+    private static function delete_if_disabled($name) {
+        $enabled = self::is_question_enabled($name);
+        $added = self::is_question_added($name);
+        $question = self::get_improvised_question_definition($name);
+        if ($enabled && !$question) {
+            // The question is enabled, but does not exist in database.
+            if ($added) {
+                // This question was originally added, but something (other than JazzQuiz) has deleted it.
+                // Remove 'added' and 'enabled' for this question
+                self::disable_question($name);
+                // Tell the caller to not add the question.
+                return true;
+            }
+            // The question is enabled, but the question has not been added.
+            // Tell the caller to add the question.
+            return false;
+        }
+        if (!$enabled && $question) {
+            // The question is disabled, but it exists in the question bank.
+            // We must delete it here.
+            question_delete_question($question->id);
+            // Remove it from config too.
+            if ($added) {
+                self::disable_question($name);
+            }
+        }
+        // The question is disabled, and we have made sure the question is deleted.
+        // Tell the caller to not add the question.
+        return true;
+    }
+
+    /**
      * Create a question database object.
      * @param string $qtype What question type to create
      * @param string $name The name of the question to create
@@ -123,13 +234,13 @@ class improviser {
     }
 
     /**
-     * Check if the specified question name is an improvisational question.
+     * Get the specified question name is an improvisational question.
      * @param string $name The name of the improvised question without the prefix.
-     * @return bool
+     * @return \stdClass|false
      */
-    private static function improvised_question_definition_exists($name) {
+    private static function get_improvised_question_definition($name) {
         global $DB;
-        return $DB->record_exists('question', ['name' => '{IMPROV}' . $name]);
+        return $DB->get_record('question', ['name' => '{IMPROV}' . $name]);
     }
 
     /**
@@ -139,9 +250,7 @@ class improviser {
      */
     private static function insert_multichoice_question_definition($name, $optioncount) {
         global $DB;
-
-        // Check if duplicate.
-        if (self::improvised_question_definition_exists($name)) {
+        if (self::delete_if_disabled($name)) {
             return;
         }
 
@@ -161,6 +270,8 @@ class improviser {
             $answer = self::make_generic_question_answer($question->id, 1, $letter);
             $DB->insert_record('question_answers', $answer);
         }
+
+        self::set_question_added($name);
     }
 
     /**
@@ -169,9 +280,7 @@ class improviser {
      */
     private static function insert_shortanswer_question_definition($name) {
         global $DB;
-
-        // Check if duplicate.
-        if (self::improvised_question_definition_exists($name)) {
+        if (self::delete_if_disabled($name)) {
             return;
         }
 
@@ -186,6 +295,8 @@ class improviser {
         // Add answer.
         $answer = self::make_generic_question_answer($question->id, 0, '*');
         $DB->insert_record('question_answers', $answer);
+
+        self::set_question_added($name);
     }
 
     /**
@@ -194,9 +305,7 @@ class improviser {
      */
     private static function insert_truefalse_question_definition($name) {
         global $DB;
-
-        // Check if duplicate.
-        if (self::improvised_question_definition_exists($name)) {
+        if (self::delete_if_disabled($name)) {
             return;
         }
 
@@ -216,6 +325,8 @@ class improviser {
         $truefalse->trueanswer = $trueanswer->id;
         $truefalse->falseanswer = $falseanswer->id;
         $DB->insert_record('question_truefalse', $truefalse);
+
+        self::set_question_added($name);
     }
 
     /**
@@ -224,13 +335,10 @@ class improviser {
      */
     private static function insert_stack_algebraic_question_definition($name) {
         global $DB;
-
         if (!self::question_type_exists('stack')) {
             return;
         }
-
-        // Check if duplicate.
-        if (self::improvised_question_definition_exists($name)) {
+        if (self::delete_if_disabled($name)) {
             return;
         }
 
@@ -318,8 +426,25 @@ class improviser {
         $prtnode->falsefeedback = '';
         $prtnode->falsefeedbackformat = 1;
         $prtnode->id = $DB->insert_record('qtype_stack_prt_nodes', $prtnode);
+
+        self::set_question_added($name);
     }
 
+    /**
+     * Get the default improvisation questions.
+     * @return string[] of question names
+     */
+    public static function get_default_improvised_questions() {
+        return [
+            '3 Multichoice Options',
+            '4 Multichoice Options',
+            '5 Multichoice Options',
+            'Short answer',
+            'True / False',
+            'Algebraic'
+        ];
+    }
+    
     /**
      * Insert all the improvised question definitions to the question bank.
      * Every question will have a prefix of {IMPROV}
