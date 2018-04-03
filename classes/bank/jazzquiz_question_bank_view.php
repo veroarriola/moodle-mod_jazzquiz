@@ -152,7 +152,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
         global $OUTPUT;
         static $choiceformprinted = false;
 
-        $config = get_config('jazzquiz');
+        $config = get_config('mod_jazzquiz');
         $enabledqtypes = explode(',', $config->enabledqtypes);
 
         $params['category'] = $categoryid;

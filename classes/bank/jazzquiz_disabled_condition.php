@@ -52,7 +52,7 @@ class jazzquiz_disabled_condition extends condition {
     public function __construct($hide = true) {
         global $DB;
 
-        $config = get_config('jazzquiz');
+        $config = get_config('mod_jazzquiz');
         $enabledqtypes = explode(',', $config->enabledqtypes);
         list($sql, $params) = $DB->get_in_or_equal($enabledqtypes, SQL_PARAMS_NAMED, 'aqdc');
 
