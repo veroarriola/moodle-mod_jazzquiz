@@ -220,7 +220,9 @@ class report_overview {
 
         $quizattempt = reset($session->attempts);
         if (!$quizattempt) {
-            echo '<div class="jazzquiz-box"><p>No attempts found.</p></div>';
+            echo '<div class="jazzquiz-box"><p>';
+            echo get_string('no_attempts_found', 'jazzquiz');
+            echo '</p></div>';
             return;
         }
 
@@ -243,14 +245,19 @@ class report_overview {
         $id = required_param('id', PARAM_INT);
         $quizid = required_param('quizid', PARAM_INT);
 
+        $strdownloadreport = get_string('download_report', 'jazzquiz');
+        $strattendance = get_string('attendance', 'jazzquiz');
+        $strresponses = get_string('responses', 'jazzquiz');
+        $strdownloadresponses = get_string('download_responses', 'jazzquiz');
+
         echo '<div id="report_overview_controls" class="jazzquiz-box">';
         echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responded').fadeIn();";
-        echo "jQuery('#report_overview_responses').fadeOut();\">Attendance</button>";
+        echo "jQuery('#report_overview_responses').fadeOut();\">$strattendance</button>";
         echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responses').fadeIn();";
-        echo "jQuery('#report_overview_responded').fadeOut();\">Responses</button>";
+        echo "jQuery('#report_overview_responded').fadeOut();\">$strresponses</button>";
         echo '<a href="reports.php';
         echo "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=report&download=yes&sessionid=$sessionid";
-        echo '">Download report</a>';
+        echo "\">$strdownloadreport</a>";
         echo '</div>';
 
         echo '<div id="report_overview_responses" class="hidden">';
@@ -282,7 +289,7 @@ class report_overview {
 
             $params = "?id=$id&quizid=$quizid&reporttype=overview";
             $params .= "&action=csv&csvtype=response&download=yes&sessionid=$sessionid&slot=$slot";
-            echo '<br><a href="reports.php' . $params . '">Download responses</a>';
+            echo '<br><a href="reports.php' . $params . '">' . $strdownloadresponses . '</a>';
             echo '</div>';
 
             // TODO: This is kind of a hack... Should refactor the JavaScript.
@@ -330,14 +337,17 @@ class report_overview {
             if ($respondedwithcount) {
                 $attendancelistcsv = '';
                 echo '<table>';
-                echo '<tr><th>Student</th><th>Responses</th></tr>';
+                echo '<tr>';
+                echo '<th>' . get_string('student', 'jazzquiz') . '</th>';
+                echo '<th>' . $strresponses . '</th>';
+                echo '</tr>';
                 // TODO: Refactor
                 foreach ($respondedwithcount as $respondeduserid => $respondedcount) {
                     $user = $DB->get_record('user', ['id' => $respondeduserid]);
                     $userfullname = fullname($user);
                     echo '<tr>';
                     echo '<td>' . $userfullname . '</td>';
-                    echo '<td>' . $respondedcount . ' responses</td>';
+                    echo '<td>' . get_string('a_responses', 'jazzquiz', $respondedcount) . '</td>';
                     echo '</tr>';
                     $attendancelistcsv .= $userfullname . ',' . $respondedcount . '<br>';
                 }
@@ -346,19 +356,21 @@ class report_overview {
                     $userfullname = fullname($user);
                     echo '<tr>';
                     echo '<td>' . $userfullname . '</td>';
-                    echo '<td>0 responses</td>';
+                    echo '<td>' . get_string('a_responses', 'jazzquiz', 0) . '</td>';
                     echo '</tr>';
                     $attendancelistcsv .= $userfullname . ',0<br>';
                 }
-
+                $strjoined = get_string('a_students_joined_quiz', 'jazzquiz', count($alluserids));
+                $stranswers = get_string('a_students_answered', 'jazzquiz', count($respondedwithcount));
                 echo '</table>';
                 echo '<br>';
-                echo '<p><b>' . count($alluserids) . '</b> students joined the quiz.</p>';
-                echo '<p><b>' . count($respondedwithcount) . '</b> students answered at least one question.</p>';
+                echo '<p>' . $strjoined . '</p>';
+                echo '<p>' . $stranswers . '</p>';
                 echo '<br>';
                 $params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv";
                 $params .= "&csvtype=attendance&download=yes&sessionid=$sessionid";
-                echo '<a href="reports.php' . $params . '">Download attendance list</a>';
+                $strdownloadattendancelist = get_string('download_attendance_list', 'jazzquiz');
+                echo '<a href="reports.php' . $params . '">' . $strdownloadattendancelist . '</a>';
             }
         }
         echo '</div>';

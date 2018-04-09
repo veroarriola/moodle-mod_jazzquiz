@@ -135,13 +135,22 @@ $string['next'] = 'Next';
 $string['end'] = 'End';
 $string['fullscreen'] = 'Fullscreen';
 $string['quit'] = 'Quit';
-$string['responses'] = 'Responses';
+$string['responses'] = 'Responses'; // Also for review tab.
 $string['answer'] = 'Answer';
 $string['exit'] = 'Exit';
+$string['a_responses'] = '{$a} responses';
+$string['a_students_joined_quiz'] = '<b>{$a}</b> students joined the quiz.';
 
 // Quiz Review.
+$string['attendance'] = 'Attendance';
+$string['a_students_answered'] = '<b>{$a}</b> students answered at least one question.';
+$string['no_attempts_found'] = 'No attempts found.';
+$string['student'] = 'Student';
 $string['select_session'] = 'Select session to review:';
 $string['attendance_list'] = 'Attendance list';
+$string['download_report'] = 'Download report';
+$string['download_attendance_list'] = 'Download attendance list';
+$string['download_responses'] = 'Download responses';
 
 // Admin Settings.
 $string['enabled_question_types'] = 'Enable question types';
