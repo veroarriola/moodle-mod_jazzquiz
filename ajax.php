@@ -120,6 +120,7 @@ function get_question_form($session) {
         'html' => $html,
         'js' => $js,
         'question_type' => $session->get_question_type_by_slot($slot),
+        'use_mathex' => $session->questions[$slot]->usemathex ? true : false,
         'is_already_submitted' => $isalreadysubmitted
     ];
 }
@@ -139,8 +140,11 @@ function start_question($session) {
             $questionid = required_param('questionid', PARAM_INT);
             $questiontime = optional_param('questiontime', 0, PARAM_INT);
             $jazzquizquestionid = optional_param('jazzquizquestionid', 0, PARAM_INT);
+            $usemathex = optional_param('usemathex', 0, PARAM_INT);
             if ($jazzquizquestionid !== 0) {
-                $session->data->slot = $session->jazzquiz->get_question_by_id($jazzquizquestionid)->data->slot;
+                $jazzquizquestion = $session->jazzquiz->get_question_by_id($jazzquizquestionid);
+                $session->data->slot = $jazzquizquestion->data->slot;
+                $usemathex = $jazzquizquestion->data->usemathex;
             }
             break;
         case 'repoll':
@@ -153,6 +157,7 @@ function start_question($session) {
             }
             $questionid = $session->questions[$lastslot]->questionid;
             $questiontime = $session->data->currentquestiontime;
+            $usemathex = $session->questions[$lastslot]->usemathex;
             break;
         case 'next':
             $lastslot = count($session->jazzquiz->questions);
@@ -166,6 +171,7 @@ function start_question($session) {
             $jazzquizquestion = $session->jazzquiz->questions[$session->data->slot];
             $questionid = $jazzquizquestion->question->id;
             $questiontime = $jazzquizquestion->data->questiontime;
+            $usemathex = $jazzquizquestion->usemathex;
             break;
         default:
             return [
@@ -173,7 +179,7 @@ function start_question($session) {
                 'message' => "Invalid method $method"
             ];
     }
-    list($success, $questiontime) = $session->start_question($questionid, $questiontime);
+    list($success, $questiontime) = $session->start_question($questionid, $questiontime, $usemathex);
     if (!$success) {
         return [
             'status' => 'error',
@@ -187,6 +193,7 @@ function start_question($session) {
     return [
         'status' => 'success',
         'questiontime' => $questiontime,
+        'use_mathex' => $usemathex,
         'delay' => $session->data->nextstarttime - time()
     ];
 }
@@ -300,7 +307,8 @@ function get_vote_results($session) {
     $votes = $vote->get_results();
     return [
         'answers' => $votes,
-        'total_students' => $session->get_student_count()
+        'total_students' => $session->get_student_count(),
+        'mathex' => $session->questions[$slot]->usemathex
     ];
 }
 
@@ -360,7 +368,8 @@ function get_results($session) {
         'responses' => $results['responses'],
         'responded' => $results['responded'],
         'total_students' => $results['student_count'],
-        'merge_count' => $mergecount
+        'merge_count' => $mergecount,
+        'mathex' => $session->questions[$slot]->usemathex
     ];
 }
 

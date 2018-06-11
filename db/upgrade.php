@@ -17,5 +17,23 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_jazzquiz_upgrade($oldversion) {
+    global $DB;
+
+    $dbman = $DB->get_manager();
+
+    // Added math inputs, so we need a field to check if a question uses this or not.
+    if ($oldversion < 2018060803) {
+        $table = new xmldb_table('jazzquiz_questions');
+        $field = new xmldb_field('usemathex', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, '0');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $table = new xmldb_table('jazzquiz_session_questions');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_mod_savepoint(true, 2018060803, 'jazzquiz');
+    }
+
     return true;
 }

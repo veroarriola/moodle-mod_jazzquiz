@@ -70,6 +70,11 @@ class add_question_form extends \moodleform {
         $mform->setDefault('questiontime', $defaulttime);
         $mform->addHelpButton('questiontime', 'question_time', 'jazzquiz');
 
+        $mform->addElement('advcheckbox', 'usemathex', get_string('use_mathex', 'jazzquiz'));
+        $mform->setType('usemathex', PARAM_INT);
+        $mform->addHelpButton('usemathex', 'use_mathex', 'jazzquiz');
+        $mform->setDefault('usemathex', 0);
+
         if (!empty($this->_customdata['edit'])) {
             $savestring = get_string('save_question', 'jazzquiz');
         } else {

@@ -336,6 +336,9 @@ class renderer extends \plugin_renderer_base {
             $this->page->requires->js('/mod/jazzquiz/js/student.js');
         }
 
+        $this->page->requires->js_call_amd('filter_mathex/mathquill', 'initialize');
+        $this->page->requires->js_call_amd('filter_mathex/mathex', 'initialize');
+
         // Add window.onload script manually to handle removing the loading mask.
         // TODO: Remove this inline JavaScript.
         echo \html_writer::start_tag('script');

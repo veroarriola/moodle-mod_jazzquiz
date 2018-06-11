@@ -322,6 +322,11 @@ jazzquiz.reloadQuestionBox = function() {
         }
         jQuery('#jazzquiz_question_box').html(data.html).removeClass('hidden');
         eval(data.js);
+        if (data.use_mathex) {
+            require(['filter_mathex/mathex'], function(Mathex) {
+                Mathex.input();
+            });
+        }
     }).fail(function() {
         jazzquiz.showInfo('Failed to load question.');
     });
