@@ -171,7 +171,7 @@ function start_question($session) {
             $jazzquizquestion = $session->jazzquiz->questions[$session->data->slot];
             $questionid = $jazzquizquestion->question->id;
             $questiontime = $jazzquizquestion->data->questiontime;
-            $usemathex = $jazzquizquestion->usemathex;
+            $usemathex = $jazzquizquestion->data->usemathex;
             break;
         default:
             return [
