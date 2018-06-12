@@ -1,0 +1,10 @@
+<div class="jazzquiz-box">
+    <p>{{# str }} join_quiz_instructions, jazzquiz {{/ str }}</p>
+    <p>
+        <b>{{# str }} session, jazzquiz {{/ str }}:</b> {{ name }}
+    </p>
+    {{# started }}
+    <p>{{# str }} attempt_started, jazzquiz {{/ str }}</p>
+    {{/ started }}
+    {{{ form }}}
+</div>

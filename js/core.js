@@ -170,21 +170,6 @@ jazzquiz.text = function(key, from, args) {
 };
 
 /**
- * Show the loading animation with some text.
- * @param {string} text
- */
-jazzquiz.showLoading = function(text) {
-    jQuery('#jazzquiz_loading').removeClass('hidden').children('p').html(text);
-};
-
-/**
- * Hide the loading animation.
- */
-jazzquiz.hideLoading = function() {
-    jQuery('#jazzquiz_loading').addClass('hidden');
-};
-
-/**
  * Hide the quiz state information.
  * @todo This should hide only the info, and not all the other containers.
  */
@@ -300,7 +285,6 @@ jazzquiz.initialize = function() {
         }, 50);
         return;
     }
-    this.hideLoading();
     this.decodeState();
     this.requestQuizInfo();
     this.addEventHandlers();

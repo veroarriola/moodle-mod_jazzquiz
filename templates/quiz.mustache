@@ -1,0 +1,52 @@
+<div id="jazzquiz">
+    {{# instructor }}
+    <div id="jazzquiz_controls_box" class="jazzquiz-box">
+        <div id="jazzquiz_controls">
+            <div class="quiz-list-buttons quiz-control-buttons hidden">
+                {{# buttons }}
+                <button id="jazzquiz_control_{{ id }}" class="btn">
+                    <i class="fa fa-{{ icon }}"></i> {{ text }}
+                </button>
+                {{/ buttons }}
+            </div>
+            <div id="jazzquiz_improvise_menu" class="start-question-menu"></div>
+            <div id="jazzquiz_jump_menu" class="start-question-menu"></div>
+            <div class="quiz-list-buttons">
+                <button id="jazzquiz_control_startquiz" class="btn">
+                    <i class="fa fa-start"></i> {{# str }} startquiz, jazzquiz {{/ str }}
+                </button>
+                <h4 class="inline"></h4>
+                <button id="jazzquiz_control_exit" class="btn">
+                    <i class="fa fa-close"></i> {{# str }} exit, jazzquiz {{/ str }}
+                </button>
+            </div>
+            <div id="jazzquiz_control_separator"></div>
+        </div>
+    </div>
+    <div id="jazzquiz_correct_answer_container" class="jazzquiz-box hidden"></div>
+    <div id="jazzquiz_side_container" class="jazzquiz-box">
+        <div id="jazzquiz_response_info_container" class="jazzquiz-box hidden"></div>
+        <div id="jazzquiz_question_timer" class="jazzquiz-box hidden"></div>
+        <div id="jazzquiz_responded_container" class="jazzquiz-box">
+            <div>
+                <div id="jazzquiz_responded_box">
+                    <h4 class="inline"></h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/ instructor }}
+    {{^ instructor }}
+    <div id="jazzquiz_question_timer" class="jazzquiz-box hidden"></div>
+    {{/ instructor }}
+    <div id="jazzquiz_info_container" class="jazzquiz-box hidden"></div>
+    <div id="jazzquiz_question_box"></div>
+    {{# instructor }}
+    <div>
+        <button id="jazzquiz_undo_merge" class="btn btn-primary hidden">
+            <i class="fa fa-undo"></i>
+        </button>
+    </div>
+    <div id="jazzquiz_responses_container" class="jazzquiz-box hidden"></div>
+    {{/ instructor }}
+</div>

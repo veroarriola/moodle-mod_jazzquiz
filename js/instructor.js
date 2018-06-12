@@ -751,15 +751,12 @@ jazzquiz.nextQuestion = function() {
  * Close the current session.
  */
 jazzquiz.closeSession = function() {
-    this.showLoading(this.text('closing_session'));
     this.clearQuestionBox();
-    this.hideInfo();
+    this.showInfo(this.text('closing_session'));
     jQuery('#jazzquiz_controls_box').addClass('hidden');
     this.post('close_session', {}, function() {
-        jazzquiz.hideLoading();
         jazzquiz.showInfo(jazzquiz.text('session_closed'));
     }).fail(function() {
-        jazzquiz.hideLoading();
         jazzquiz.showInfo(jazzquiz.text('error_with_request'));
     });
 };

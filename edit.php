@@ -75,7 +75,7 @@ function get_question_bank_view($contexts, $jazzquiz, $url, $pagevars) {
 function list_questions($contexts, $jazzquiz, $url, $pagevars) {
     $questionbankview = get_question_bank_view($contexts, $jazzquiz, $url, $pagevars);
     $questions = $jazzquiz->questions;
-    $jazzquiz->renderer->listquestions($jazzquiz, $questions, $questionbankview, $url);
+    $jazzquiz->renderer->list_questions($jazzquiz, $questions, $questionbankview, $url);
 }
 
 /**

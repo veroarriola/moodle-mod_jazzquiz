@@ -353,7 +353,7 @@
 }
 
 .jazzquiz-box .questionlist .name {
-    width: 55%;
+    width: calc(100% - 256px);
     vertical-align: middle;
 }
 
@@ -362,9 +362,8 @@
 }
 
 .jazzquiz-box .questionlist .controls {
-    width: 30%;
+    width: 100%;
     vertical-align: middle;
-    text-align: right;
 }
 
 .jazzquiz-box .questionlist li {

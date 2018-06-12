@@ -88,11 +88,9 @@ class renderer extends \plugin_renderer_base {
      * @param \moodleform $sessionform
      */
     public function start_session_form($sessionform) {
-        echo \html_writer::start_div('jazzquiz-box');
-        echo \html_writer::tag('p', get_string('teacher_start_instructions', 'jazzquiz'));
-        echo \html_writer::empty_tag('br');
-        $sessionform->display();
-        echo \html_writer::end_div();
+        echo $this->render_from_template('jazzquiz/start_session', [
+            'form' => $sessionform->render()
+        ]);
     }
 
     /**
@@ -101,13 +99,11 @@ class renderer extends \plugin_renderer_base {
      */
     public function continue_session_form($jazzquiz) {
         global $PAGE;
-        echo \html_writer::start_div('jazzquiz-box');
-        echo \html_writer::tag('p', get_string('instructor_sessions_going', 'jazzquiz'));
-        // Output the link for continuing session.
-        $path = $PAGE->url->get_path() . '?id=' . $jazzquiz->cm->id . '&quizid=' . $jazzquiz->data->id . '&action=quizstart';
-        $gotosession = get_string('goto_session', 'jazzquiz');
-        echo '<p><a href="' . $path . '" class="btn btn-secondary">' . $gotosession . '</a></p>';
-        echo \html_writer::end_div();
+        $cmid = $jazzquiz->cm->id;
+        $id = $jazzquiz->data->id;
+        echo $this->render_from_template('jazzquiz/continue_session', [
+            'path' => $PAGE->url->get_path() . "?id=$cmid&quizid=$id&action=quizstart"
+        ]);
     }
 
     /**
@@ -116,14 +112,11 @@ class renderer extends \plugin_renderer_base {
      * @param \mod_jazzquiz\jazzquiz_session $session
      */
     public function join_quiz_form($studentstartform, $session) {
-        echo \html_writer::start_div('jazzquiz-box');
-        echo \html_writer::tag('p', get_string('join_quiz_instructions', 'jazzquiz'));
-        echo \html_writer::tag('p', '<b>' . get_string('session', 'jazzquiz') . ':</b> ' . $session->data->name);
-        if ($session->attempt) {
-            echo \html_writer::tag('p', get_string('attempt_started', 'jazzquiz'));
-        }
-        $studentstartform->display();
-        echo \html_writer::end_div();
+        echo $this->render_from_template('jazzquiz/join_session', [
+            'name' => $session->data->name,
+            'started' => ($session->attempt !== false),
+            'form' => $studentstartform->render()
+        ]);
     }
 
     /**
@@ -132,11 +125,9 @@ class renderer extends \plugin_renderer_base {
      */
     public function quiz_not_running($cmid) {
         global $PAGE;
-        echo \html_writer::start_div('jazzquiz-box');
-        echo \html_writer::tag('p', get_string('quiz_not_running', 'jazzquiz'));
-        $reloadurl = $PAGE->url->get_path() . '?id=' . $cmid;
-        echo '<p><a href="' . $reloadurl . '" class="btn btn-secondary">' . get_string('reload') . '</a></p>';
-        echo \html_writer::end_div();
+        echo $this->render_from_template('jazzquiz/no_session', [
+            'reload' => $PAGE->url->get_path() . '?id=' . $cmid
+        ]);
     }
 
     /**
@@ -145,49 +136,32 @@ class renderer extends \plugin_renderer_base {
      */
     public function render_quiz($session) {
         $this->init_quiz_js($session);
-
-        $output = \html_writer::start_div('', ['id' => 'jazzquiz']);
-
-        if ($session->jazzquiz->is_instructor()) {
-            $output .= \html_writer::div($this->render_controls(), 'jazzquiz-box', ['id' => 'jazzquiz_controls_box']);
-        }
-
-        $loadingicon = $this->output->pix_icon('i/loading', 'loading...');
-
-        $output .= \html_writer::start_div('', ['id' => 'jazzquiz_loading']);
-        $output .= \html_writer::tag('p', get_string('loading', 'jazzquiz'));
-        $output .= $loadingicon;
-        $output .= \html_writer::end_div();
-
-        if ($session->jazzquiz->is_instructor()) {
-            $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_correct_answer_container']);
-            $output .= \html_writer::start_div('jazzquiz-box', ['id' => 'jazzquiz_side_container']);
-            $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_response_info_container']);
-        }
-
-        $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_question_timer']);
-
-        if ($session->jazzquiz->is_instructor()) {
-            $output .= \html_writer::start_div('jazzquiz-box', ['id' => 'jazzquiz_responded_container']);
-            $output .= \html_writer::start_div();
-            $output .= \html_writer::start_div('', ['id' => 'jazzquiz_responded_box']);
-            $output .= \html_writer::tag('h4', '', ['class' => 'inline']);
-            $output .= \html_writer::end_div();
-            $output .= \html_writer::end_div();
-            $output .= \html_writer::end_div();
-
-            $output .= \html_writer::end_div();
-        }
-
-        $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_info_container']);
-        $output .= '<div id="jazzquiz_question_box"></div>';
-        if ($session->jazzquiz->is_instructor()) {
-            $output .= '<div><button id="jazzquiz_undo_merge" class="btn btn-primary hidden"><i class="fa fa-undo"></i></button></div>';
-            $output .= \html_writer::div('', 'jazzquiz-box hidden', ['id' => 'jazzquiz_responses_container']);
-        }
-
-        $output .= \html_writer::end_div();
-        echo $output;
+        $buttons = function($buttons) {
+            $result = [];
+            foreach ($buttons as $button) {
+                $result[] = [
+                    'icon' => $button[0],
+                    'id' => $button[1],
+                    'text' => get_string($button[1], 'jazzquiz')
+                ];
+            }
+            return $result;
+        };
+        echo $this->render_from_template('jazzquiz/quiz', [
+            'buttons' => $buttons([
+                ['repeat', 'repoll'],
+                ['bar-chart', 'vote'],
+                ['edit', 'improvise'],
+                ['bars', 'jump'],
+                ['forward', 'next'],
+                ['close', 'end'],
+                ['expand', 'fullscreen'],
+                ['window-close', 'quit'],
+                ['square-o', 'responses'],
+                ['square-o', 'answer']
+            ]),
+            'instructor' => $session->jazzquiz->is_instructor()
+        ]);
     }
 
     /**
@@ -217,108 +191,15 @@ class renderer extends \plugin_renderer_base {
      */
     public function render_question_form($slot, $attempt, $jazzquiz, $isinstructor) {
         global $PAGE;
-
-        $output = '';
-
-        $isinstructorclass = '';
-        if ($isinstructor) {
-            $isinstructorclass = ' instructor';
-        }
-        $output .= \html_writer::start_tag('div', ['class' => 'jazzquiz-box' . $isinstructorclass]);
-
-        $output .= \html_writer::start_tag('form', [
-            'id' => 'jazzquiz_question_form',
-            'action' => '',
-            'method' => 'post',
-            'enctype' => 'multipart/form-data',
-            'accept-charset' => 'utf-8',
-            'onsubmit' => 'return false;'
-        ]);
-
         $differ = new page_requirements_diff($PAGE->requires);
-        $output .= $this->render_question($jazzquiz, $attempt->quba, $slot);
+        $questionhtml = $this->render_question($jazzquiz, $attempt->quba, $slot);
         $js = implode("\n", $differ->get_js_diff($PAGE->requires)) . "\n";
-
-        $output .= \html_writer::empty_tag('input', [
-            'type' => 'hidden',
-            'name' => 'slot',
-            'value' => $slot
+        $output = $this->render_from_template('jazzquiz/question', [
+            'instructor' => $isinstructor,
+            'question' => $questionhtml,
+            'slot' => $slot
         ]);
-
-        // Only students need to save their answers.
-        if (!$isinstructor) {
-            $savebutton = \html_writer::tag('button', 'Save', ['class' => 'btn btn-primary']);
-            $savebutton = \html_writer::div($savebutton, 'jazzquiz-save-question');
-            $output .= \html_writer::div($savebutton, 'save_row');
-        }
-
-        $output .= \html_writer::end_tag('form');
-        $output .= \html_writer::end_tag('div');
-
         return [$output, $js];
-    }
-
-    /**
-     * Render a control button.
-     * @param string $icon
-     * @param string $text
-     * @return string html
-     */
-    private function write_control_button($icon, $text) {
-        $id = "jazzquiz_control_$text";
-        $text = get_string($text, 'jazzquiz');
-        $contents = '<i class="fa fa-' . $icon . '"></i> ' . $text;
-        return \html_writer::tag('button', $contents, [
-            'class' => 'btn',
-            'id' => $id
-        ]);
-    }
-
-    /**
-     * Render an array of control buttons.
-     * @param array $buttons [][icon, text]
-     * @return string html
-     */
-    private function write_control_buttons($buttons) {
-        $html = '';
-        foreach ($buttons as $button) {
-            if (count($button) < 2) {
-                continue;
-            }
-            $html .= $this->write_control_button($button[0], $button[1]);
-        }
-        return $html;
-    }
-
-    /**
-     * Renders the controls for the quiz for the instructor.
-     * @return string html
-     */
-    public function render_controls() {
-        $html = '<div class="quiz-list-buttons quiz-control-buttons hidden">'
-            . $this->write_control_buttons([
-                ['repeat', 'repoll'],
-                ['bar-chart', 'vote'],
-                ['edit', 'improvise'],
-                ['bars', 'jump'],
-                ['forward', 'next'],
-                ['close', 'end'],
-                ['expand', 'fullscreen'],
-                ['window-close', 'quit'],
-                ['square-o', 'responses'],
-                ['square-o', 'answer']
-            ])
-            . '</div>'
-            . '<div id="jazzquiz_improvise_menu" class="start-question-menu"></div>'
-            . '<div id="jazzquiz_jump_menu" class="start-question-menu"></div>'
-
-            . '<div class="quiz-list-buttons">'
-            . $this->write_control_button('start', 'startquiz')
-            . '<h4 class="inline"></h4>'
-            . $this->write_control_button('close', 'exit')
-            . '</div><div id="jazzquiz_control_separator"></div>';
-
-        return \html_writer::div($html, '', ['id' => 'jazzquiz_controls']);
     }
 
     /**
