@@ -216,8 +216,6 @@ class report_overview {
         $pageurl->param('sessionid', $sessionid);
 
         $sessions = $jazzquiz->get_sessions();
-        $this->renderer->select_session($pageurl, $sessions, $sessionid);
-
         $quizattempt = reset($session->attempts);
         if (!$quizattempt) {
             echo '<div class="jazzquiz-box"><p>';
@@ -226,154 +224,86 @@ class report_overview {
             return;
         }
 
-        $row = $quizattempt->data;
-        $slots = $quizattempt->quba->get_slots();
-        $quba = $quizattempt->quba;
-
         $PAGE->requires->js('/mod/jazzquiz/js/core.js');
         $PAGE->requires->js('/mod/jazzquiz/js/instructor.js');
+        $PAGE->requires->strings_for_js(['a_out_of_b_responded'], 'jazzquiz');
 
-        // Add localization strings.
-        $PAGE->requires->strings_for_js([
-            'a_out_of_b_responded'
-        ], 'jazzquiz');
+        // TODO: Remove this inline JavaScript.
+        echo '<script>';
+        echo "(function preLoad(){window.addEventListener('load', function(){jazzquiz.addReportEventHandlers();}, false);}());";
+        echo '</script>';
 
-        echo '<script> var jazzquizResponses = []; </script>';
+        $slots = [];
+        $students = [];
 
+        $quba = $quizattempt->quba;
+        $qubaslots = $quba->get_slots();
         $totalresponded = [];
 
-        $id = required_param('id', PARAM_INT);
-        $quizid = required_param('quizid', PARAM_INT);
-
-        $strdownloadreport = get_string('download_report', 'jazzquiz');
-        $strattendance = get_string('attendance', 'jazzquiz');
-        $strresponses = get_string('responses', 'jazzquiz');
-        $strdownloadresponses = get_string('download_responses', 'jazzquiz');
-
-        echo '<div id="report_overview_controls" class="jazzquiz-box">';
-        echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responded').fadeIn();";
-        echo "jQuery('#report_overview_responses').fadeOut();\">$strattendance</button>";
-        echo "<button class=\"btn btn-primary\" onclick=\"jQuery('#report_overview_responses').fadeIn();";
-        echo "jQuery('#report_overview_responded').fadeOut();\">$strresponses</button>";
-        echo '<a href="reports.php';
-        echo "?id=$id&quizid=$quizid&reporttype=overview&action=csv&csvtype=report&download=yes&sessionid=$sessionid";
-        echo "\">$strdownloadreport</a>";
-        echo '</div>';
-
-        echo '<div id="report_overview_responses" class="hidden">';
-
-        foreach ($slots as $slot) {
-            $questionattempt = $quba->get_question_attempt($slot);
+        foreach ($qubaslots as $qubaslot) {
+            $questionattempt = $quba->get_question_attempt($qubaslot);
             $question = $questionattempt->get_question();
-            $results = $session->get_question_results_list($slot);
-            list($results['responses'], $mergecount) = $session->get_merged_responses($slot, $results['responses']);
+            $results = $session->get_question_results_list($qubaslot);
+            list($results['responses'], $mergecount) = $session->get_merged_responses($qubaslot, $results['responses']);
             $responses = $results['responses'];
 
-            $responded = $session->get_responded_list($slot);
+            $responded = $session->get_responded_list($qubaslot);
             if ($responded) {
                 $totalresponded = array_merge($totalresponded, $responded);
             }
 
-            $wrapperid = 'jazzquiz_wrapper_responses_' . intval($slot);
-            $tableid = 'responses_wrapper_table_' . intval($slot);
-
-            $questionname = str_replace('{IMPROV}', '', $question->name);
-            $qtype = $quba->get_question_attempt($slot)->get_question()->get_type_name();
-
-            echo '<div class="jazzquiz-box" id="' . $wrapperid . '">'
-                . "<h2>$questionname</h2>"
-                . '<span class="jazzquiz-latex-wrapper">'
-                . '<span class="filter_mathjaxloader_equation">' . $question->questiontext . '</span>'
-                . '</span>'
-                . '<table id="' . $tableid . '" class="jazzquiz-responses-overview"></table>';
-
-            $params = "?id=$id&quizid=$quizid&reporttype=overview";
-            $params .= "&action=csv&csvtype=response&download=yes&sessionid=$sessionid&slot=$slot";
-            echo '<br><a href="reports.php' . $params . '">' . $strdownloadresponses . '</a>';
-            echo '</div>';
-
-            // TODO: This is kind of a hack... Should refactor the JavaScript.
-            echo '<script>'
-                . "jazzquizResponses[$slot] = " . json_encode($responses) . ';'
-                . 'setTimeout(function() {'
-                . 'jazzquiz.quiz.sessionKey = "' . sesskey() . '";'
-                . 'jazzquiz.options.showResponses = true;'
-                . 'jazzquiz.state = "reviewing";'
-
-                . 'jazzquiz.setResponses("'
-                . $wrapperid . '", "' . $tableid . '", jazzquizResponses[' . $slot . '], '
-                . 'undefined, "' . $qtype . '", "report_' . $slot . '", false'
-                . ');'
-                . '}, 1000);'
-                . '</script>';
-
+            $slots[] = [
+                'num' => $qubaslot,
+                'name' => str_replace('{IMPROV}', '', $question->name),
+                'type' => $quba->get_question_attempt($qubaslot)->get_question()->get_type_name(),
+                'description' => $question->questiontext,
+                'responses' => json_encode($responses)
+            ];
         }
 
-        echo '</div>';
-
-        $alluserids = $session->get_users();
-
-        // This starts with all the ids, but is filtered below.
-        // Should probably be refactored in the future.
-        $notrespondeduserids = $alluserids;
-
-        echo '<div id="report_overview_responded" class="jazzquiz-box">';
-        echo '<h2>' . get_string('attendance_list', 'jazzquiz') . '</h2>';
-        if ($totalresponded) {
-            $respondedwithcount = [];
-            foreach ($totalresponded as $respondeduserid) {
-                foreach ($notrespondeduserids as $notrespondedindex => $notrespondeduserid) {
-                    if ($notrespondeduserid === $respondeduserid) {
-                        unset($notrespondeduserids[$notrespondedindex]);
-                        break;
-                    }
-                }
-                if (!isset($respondedwithcount[$respondeduserid])) {
-                    $respondedwithcount[$respondeduserid] = 1;
-                } else {
-                    $respondedwithcount[$respondeduserid]++;
+        $notrespondeduserids = $session->get_users();
+        $respondedwithcount = [];
+        foreach ($totalresponded as $respondeduserid) {
+            foreach ($notrespondeduserids as $notrespondedindex => $notrespondeduserid) {
+                if ($notrespondeduserid === $respondeduserid) {
+                    unset($notrespondeduserids[$notrespondedindex]);
+                    break;
                 }
             }
-            if ($respondedwithcount) {
-                $attendancelistcsv = '';
-                echo '<table>';
-                echo '<tr>';
-                echo '<th>' . get_string('student', 'jazzquiz') . '</th>';
-                echo '<th>' . $strresponses . '</th>';
-                echo '</tr>';
-                // TODO: Refactor
-                foreach ($respondedwithcount as $respondeduserid => $respondedcount) {
-                    $user = $DB->get_record('user', ['id' => $respondeduserid]);
-                    $userfullname = fullname($user);
-                    echo '<tr>';
-                    echo '<td>' . $userfullname . '</td>';
-                    echo '<td>' . get_string('a_responses', 'jazzquiz', $respondedcount) . '</td>';
-                    echo '</tr>';
-                    $attendancelistcsv .= $userfullname . ',' . $respondedcount . '<br>';
-                }
-                foreach ($notrespondeduserids as $notrespondeduserid) {
-                    $user = $DB->get_record('user', ['id' => $notrespondeduserid]);
-                    $userfullname = fullname($user);
-                    echo '<tr>';
-                    echo '<td>' . $userfullname . '</td>';
-                    echo '<td>' . get_string('a_responses', 'jazzquiz', 0) . '</td>';
-                    echo '</tr>';
-                    $attendancelistcsv .= $userfullname . ',0<br>';
-                }
-                $strjoined = get_string('a_students_joined_quiz', 'jazzquiz', count($alluserids));
-                $stranswers = get_string('a_students_answered', 'jazzquiz', count($respondedwithcount));
-                echo '</table>';
-                echo '<br>';
-                echo '<p>' . $strjoined . '</p>';
-                echo '<p>' . $stranswers . '</p>';
-                echo '<br>';
-                $params = "?id=$id&quizid=$quizid&reporttype=overview&action=csv";
-                $params .= "&csvtype=attendance&download=yes&sessionid=$sessionid";
-                $strdownloadattendancelist = get_string('download_attendance_list', 'jazzquiz');
-                echo '<a href="reports.php' . $params . '">' . $strdownloadattendancelist . '</a>';
+            if (!isset($respondedwithcount[$respondeduserid])) {
+                $respondedwithcount[$respondeduserid] = 1;
+            } else {
+                $respondedwithcount[$respondeduserid]++;
             }
         }
-        echo '</div>';
+        foreach ($respondedwithcount as $respondeduserid => $respondedcount) {
+            $user = $DB->get_record('user', ['id' => $respondeduserid]);
+            $students[] = [
+                'name' => fullname($user),
+                'count' => $respondedcount
+            ];
+        }
+        foreach ($notrespondeduserids as $notrespondeduserid) {
+            $user = $DB->get_record('user', ['id' => $notrespondeduserid]);
+            $students[] = [
+                'name' => fullname($user),
+                'count' => 0
+            ];
+        }
+
+        echo $this->renderer->render_from_template('jazzquiz/report', [
+            'select_session' => $this->renderer->get_select_session_context($pageurl, $sessions, $sessionid),
+            'session' => [
+                'slots' => $slots,
+                'students' => $students,
+                'count_total' => count($students),
+                'count_answered' => count($students) - count($notrespondeduserids),
+                'cmid' => $jazzquiz->cm->id,
+                'quizid' => $jazzquiz->data->id,
+                'id' => $sessionid,
+                'sesskey' => sesskey()
+            ]
+        ]);
     }
 
     /**
@@ -393,7 +323,9 @@ class report_overview {
                 break;
             default:
                 $sessions = $jazzquiz->get_sessions();
-                $this->renderer->select_session($url, $sessions);
+                echo $this->renderer->render_from_template('jazzquiz/report', [
+                    'select_session' => $this->renderer->get_select_session_context($url, $sessions, 0)
+                ]);
                 break;
         }
     }

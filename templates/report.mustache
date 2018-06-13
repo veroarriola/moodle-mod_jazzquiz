@@ -1,11 +1,75 @@
 <div class="jazzquiz-box">
+    {{# select_session }}
     <div>
         <h3>{{# str }} select_session, jazzquiz {{/ str }}</h3>
         <br>
         <div class="inline-block">
-            {{# select_session }}
-                {{> core/single_select }}
-            {{/ select_session }}
+            {{> core/single_select }}
         </div>
     </div>
+    {{/ select_session }}
+    {{# session }}
+        <div id="report_overview_controls" class="jazzquiz-box">
+            <button data-action="attendance" class="btn btn-primary">
+                {{# str }} attendance, jazzquiz {{/str}}
+            </button>
+            <button data-action="responses" class="btn btn-primary">
+                {{# str }} responses, jazzquiz {{/str}}
+            </button>
+            <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&reporttype=overview&action=csv&csvtype=report&download=yes&sessionid={{ id }}">
+                {{# str }} download_report, jazzquiz {{/str}}
+            </a>
+        </div>
+        <script>
+            let jazzquizResponses = [];
+        </script>
+        <div id="report_overview_responses" class="hidden">
+            {{# slots }}
+                <div class="jazzquiz-box">
+                    <h2>{{{ name }}}</h2>
+                    <span class="jazzquiz-latex-wrapper">
+                    <span class="filter_mathjaxloader_equation">
+                        {{{ description }}}
+                    </span>
+                </span>
+                    <table id="responses_wrapper_table_{{ num }}" class="jazzquiz-responses-overview"></table>
+                    <br>
+                    <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&reporttype=overview&action=csv&csvtype=response&download=yes&sessionid={{ id }}&slot={{ num }}">
+                        {{# str }} download_responses, jazzquiz {{/ str }}
+                    </a>
+                </div>
+                <script>
+                    jazzquizResponses[{{ num }}] = {{{ responses }}};
+                    setTimeout(function() {
+                        jazzquiz.quiz.sessionKey = '{{ sesskey }}';
+                        jazzquiz.options.showResponses = true;
+                        jazzquiz.state = 'reviewing';
+                        jazzquiz.setResponses('jazzquiz_wrapper_responses_{{ num }}', 'responses_wrapper_table_{{ num }}', jazzquizResponses[{{ num }}], undefined, '{{ type }}', 'report_{{ num }}', false);
+                    }, 1000);
+                </script>
+            {{/ slots }}
+        </div>
+        <div id="report_overview_responded" class="jazzquiz-box">
+            <h2>{{# str }} attendance_list, jazzquiz {{/str}}</h2>
+            <table>
+                <tr>
+                    <th>{{# str }} student, jazzquiz {{/str}}</th>
+                    <th>{{# str }} responses, jazzquiz {{/ str }}</th>
+                </tr>
+                {{# students }}
+                    <tr>
+                        <td>{{ name }}</td>
+                        <td>{{# str }} a_responses, jazzquiz, {{ count }} {{/ str }}</td>
+                    </tr>
+                {{/ students }}
+            </table>
+            <br>
+            <p>{{# str }} a_students_joined_quiz, jazzquiz, {{ count_total }} {{/ str }}</p>
+            <p>{{# str }} a_students_answered, jazzquiz, {{ count_answered }} {{/ str }}</p>
+            <br>
+            <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&reporttype=overview&action=csv&csvtype=attendance&download=yes&sessionid={{ id }}">
+                {{# str }} download_attendance_list, jazzquiz {{/ str }}
+            </a>
+        </div>
+    {{/ session }}
 </div>

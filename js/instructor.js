@@ -959,3 +959,18 @@ jazzquiz.addEventHandlers = function() {
         jazzquiz.undoResponseMerge();
     });
 };
+
+jazzquiz.addReportEventHandlers = function() {
+    require(['jquery'], function($) {
+        $(document).on('click', '#report_overview_controls button', function () {
+            const action = $(this).data('action');
+            if (action === 'attendance') {
+                $('#report_overview_responded').fadeIn();
+                $('#report_overview_responses').fadeOut();
+            } else if (action === 'responses') {
+                $('#report_overview_responses').fadeIn();
+                $('#report_overview_responded').fadeOut();
+            }
+        });
+    });
+};

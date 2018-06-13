@@ -49,37 +49,35 @@ class report_renderer extends \plugin_renderer_base {
      * Renders and echos the home page for the responses section
      * @param \moodle_url $url
      * @param \stdClass[] $sessions
-     * @param string|int $selectedid
+     * @param int $selectedid
      */
-    public function select_session($url, $sessions, $selectedid = '') {
+    public function get_select_session_context($url, $sessions, $selectedid) {
         $selecturl = clone($url);
         $selecturl->param('action', 'viewsession');
         usort($sessions, function ($a, $b) {
             return strcmp(strtolower($a->name), strtolower($b->name));
         });
-        echo $this->render_from_template('jazzquiz/report', [
-            'select_session' => [
-                'method' => 'get',
-                'action' => $selecturl->out_omit_querystring(),
-                'formid' => 'jazzquiz_select_session_form',
-                'id' => 'jazzquiz_select_session',
-                'name' => 'sessionid',
-                'options' => array_map(function($session) use ($selectedid) {
-                    return [
-                        'name' => $session->name,
-                        'value' => $session->id,
-                        'selected' => intval($selectedid) === intval($session->id),
-                        'optgroup' => false
-                    ];
-                }, $sessions),
-                'params' => array_map(function($key, $value) {
-                    return [
-                        'name' => $key,
-                        'value' => $value
-                    ];
-                }, array_keys($selecturl->params()), $selecturl->params()),
-            ]
-        ]);
+        return [
+            'method' => 'get',
+            'action' => $selecturl->out_omit_querystring(),
+            'formid' => 'jazzquiz_select_session_form',
+            'id' => 'jazzquiz_select_session',
+            'name' => 'sessionid',
+            'options' => array_map(function ($session) use ($selectedid) {
+                return [
+                    'name' => $session->name,
+                    'value' => $session->id,
+                    'selected' => intval($selectedid) === intval($session->id),
+                    'optgroup' => false
+                ];
+            }, $sessions),
+            'params' => array_map(function ($key, $value) {
+                return [
+                    'name' => $key,
+                    'value' => $value
+                ];
+            }, array_keys($selecturl->params()), $selecturl->params()),
+        ];
     }
 
 }
