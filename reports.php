@@ -50,9 +50,8 @@ function jazzquiz_reports() {
         exit;
     }
 
-    $jazzquiz = new jazzquiz($cmid, 'report');
+    $jazzquiz = new jazzquiz($cmid);
     $jazzquiz->require_capability('mod/jazzquiz:seeresponses');
-    $renderer = $jazzquiz->renderer;
 
     $reporttype = optional_param('reporttype', 'overview', PARAM_ALPHA);
     $action = optional_param('action', '', PARAM_ALPHANUM);
@@ -75,11 +74,11 @@ function jazzquiz_reports() {
     $report = new report_overview();
     $isdownload = optional_param('download', false, PARAM_BOOL);
     if (!$isdownload) {
-        $renderer->header($jazzquiz);
+        $jazzquiz->renderer->header($jazzquiz, 'reports');
     }
     $report->handle_request($jazzquiz, $action, $url);
     if (!$isdownload) {
-        $renderer->footer();
+        $jazzquiz->renderer->footer();
     }
 }
 

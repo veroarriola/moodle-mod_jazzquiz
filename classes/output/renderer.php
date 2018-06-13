@@ -71,7 +71,7 @@ class renderer extends \plugin_renderer_base {
      * @param \mod_jazzquiz\jazzquiz $jazzquiz
      * @param string $tab The active tab on the page
      */
-    public function header($jazzquiz, $tab = 'view') {
+    public function header($jazzquiz, $tab) {
         echo $this->output->header();
         echo jazzquiz_view_tabs($jazzquiz, $tab);
     }
@@ -200,6 +200,102 @@ class renderer extends \plugin_renderer_base {
             'slot' => $slot
         ]);
         return [$output, $js];
+    }
+
+    /**
+     * Renders and echos the home page for the responses section
+     * @param \moodle_url $url
+     * @param \stdClass[] $sessions
+     * @param int $selectedid
+     */
+    public function get_select_session_context($url, $sessions, $selectedid) {
+        $selecturl = clone($url);
+        $selecturl->param('action', 'viewsession');
+        usort($sessions, function ($a, $b) {
+            return strcmp(strtolower($a->name), strtolower($b->name));
+        });
+        return [
+            'method' => 'get',
+            'action' => $selecturl->out_omit_querystring(),
+            'formid' => 'jazzquiz_select_session_form',
+            'id' => 'jazzquiz_select_session',
+            'name' => 'sessionid',
+            'options' => array_map(function ($session) use ($selectedid) {
+                return [
+                    'name' => $session->name,
+                    'value' => $session->id,
+                    'selected' => intval($selectedid) === intval($session->id),
+                    'optgroup' => false
+                ];
+            }, $sessions),
+            'params' => array_map(function ($key, $value) {
+                return [
+                    'name' => $key,
+                    'value' => $value
+                ];
+            }, array_keys($selecturl->params()), $selecturl->params()),
+        ];
+    }
+
+    /**
+     * Render the list questions view for the edit page
+     *
+     * @param \mod_jazzquiz\jazzquiz $jazzquiz
+     * @param array $questions Array of questions
+     * @param string $questionbankview HTML for the question bank view
+     * @param \moodle_url $url
+     */
+    public function list_questions($jazzquiz, $questions, $questionbankview, $url) {
+        global $CFG;
+
+        $slot = 1;
+        $list = [];
+        foreach ($questions as $question) {
+            $editurl = clone($url);
+            $editurl->param('action', 'editquestion');
+            $editurl->param('questionid', $question->data->id);
+            $list[] = [
+                'id' => $question->data->id,
+                'name' => $question->question->name,
+                'first' => $slot === 1,
+                'last' => $slot === count($questions),
+                'slot' => $slot,
+                'editurl' => $editurl,
+                'icon' => print_question_icon($question->question)
+            ];
+            $slot++;
+        }
+
+        echo $this->render_from_template('jazzquiz/edit_question_list', [
+            'questions' => $list,
+            'qbank' => $questionbankview
+        ]);
+
+        $this->page->requires->js('/mod/jazzquiz/js/core.js');
+        $this->page->requires->js('/mod/jazzquiz/js/sortable/sortable.min.js');
+        $this->page->requires->js('/mod/jazzquiz/js/edit_quiz.js');
+
+        $jazzquizjson = new \stdClass();
+        $jazzquizjson->siteroot = $CFG->wwwroot;
+
+        $quizjson = new \stdClass();
+        $quizjson->courseModuleId = $jazzquiz->cm->id;
+        $quizjson->activityId = $jazzquiz->data->id;
+        $quizjson->sessionKey = sesskey();
+
+        echo '<script>';
+        echo 'var jazzquizRootState = ' . json_encode($jazzquizjson) . ';';
+        echo 'var jazzquizQuizState = ' . json_encode($quizjson) . ';';
+        echo '</script>';
+
+        $this->page->requires->strings_for_js([
+            'success',
+            'error'
+        ], 'core');
+    }
+
+    public function session_is_open_error() {
+        echo \html_writer::tag('h3', get_string('edit_page_open_session_error', 'jazzquiz'));
     }
 
     /**

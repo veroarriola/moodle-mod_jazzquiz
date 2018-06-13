@@ -114,7 +114,7 @@ function jazzquiz_edit_edit_question($jazzquiz) {
  * @param $pagevars
  */
 function jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $pagevars) {
-    $jazzquiz->renderer->header($jazzquiz);
+    $jazzquiz->renderer->header($jazzquiz, 'edit');
     list_questions($contexts, $jazzquiz, $url, $pagevars);
     $jazzquiz->renderer->footer();
 }
@@ -143,7 +143,7 @@ function jazzquiz_edit() {
         $module, // JazzQuiz database record.
         $pagevars) = question_edit_setup('editq', '/mod/jazzquiz/edit.php', true);
 
-    $jazzquiz = new jazzquiz($cmid, 'edit');
+    $jazzquiz = new jazzquiz($cmid);
     $renderer = $jazzquiz->renderer;
 
     $modulename = get_string('modulename', 'jazzquiz');
@@ -155,7 +155,7 @@ function jazzquiz_edit() {
 
     if (jazzquiz_session_open($jazzquiz->data->id)) {
         // Can't edit during a session.
-        $renderer->header($jazzquiz);
+        $renderer->header($jazzquiz, 'edit');
         $renderer->session_is_open_error();
         $renderer->footer();
         return;

@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die;
  */
 class report_overview {
 
-    /** @var output\report_renderer $renderer */
+    /** @var output\renderer $renderer */
     protected $renderer;
 
     /**
@@ -34,7 +34,7 @@ class report_overview {
      */
     public function __construct() {
         global $PAGE;
-        $this->renderer = $PAGE->get_renderer('mod_jazzquiz', 'report');
+        $this->renderer = $PAGE->get_renderer('mod_jazzquiz');
     }
 
     /**

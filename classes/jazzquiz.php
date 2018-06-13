@@ -48,7 +48,7 @@ class jazzquiz {
     /** @var \context_module $context */
     public $context;
 
-    /** @var \plugin_renderer_base|output\edit_renderer $renderer */
+    /** @var \plugin_renderer_base|output\renderer $renderer */
     public $renderer;
 
     /** @var \stdClass $data The jazzquiz database table row */
@@ -64,7 +64,7 @@ class jazzquiz {
      * @param int $cmid The course module ID
      * @param string $renderersubtype Renderer sub-type to load if requested
      */
-    public function __construct($cmid, $renderersubtype = null) {
+    public function __construct($cmid) {
         global $PAGE, $DB;
 
         $this->cm = get_coursemodule_from_id('jazzquiz', $cmid, 0, false, MUST_EXIST);
@@ -74,7 +74,7 @@ class jazzquiz {
 
         $this->context = \context_module::instance($cmid);
         $PAGE->set_context($this->context);
-        $this->renderer = $PAGE->get_renderer('mod_jazzquiz', $renderersubtype);
+        $this->renderer = $PAGE->get_renderer('mod_jazzquiz');
 
         $this->course = $DB->get_record('course', ['id' => $this->cm->course], '*', MUST_EXIST);
         $this->data = $DB->get_record('jazzquiz', ['id' => $this->cm->instance], '*', MUST_EXIST);
@@ -291,8 +291,10 @@ class jazzquiz {
                 'notime' => ($jazzquizquestion->questiontime < 1),
                 'usemathex' => $jazzquizquestion->usemathex
             ]);
-            $this->renderer->header($this);
+            $this->renderer->header($this, 'edit');
+            echo '<div class="generalbox boxaligncenter jazzquiz-box">';
             $mform->display();
+            echo '</div>';
             $this->renderer->footer();
         }
     }

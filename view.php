@@ -66,7 +66,7 @@ function jazzquiz_view_start_quiz($jazzquiz) {
 
     /** @var output\renderer $renderer */
     $renderer = $jazzquiz->renderer;
-    $renderer->header($jazzquiz);
+    $renderer->header($jazzquiz, 'view');
     $renderer->render_quiz($session);
     $renderer->footer();
 }
@@ -106,7 +106,7 @@ function jazzquiz_view_default_instructor($jazzquiz) {
 
     /** @var output\renderer $renderer */
     $renderer = $jazzquiz->renderer;
-    $renderer->header($jazzquiz);
+    $renderer->header($jazzquiz, 'view');
     if ($jazzquiz->is_session_open()) {
         $renderer->continue_session_form($jazzquiz);
     } else {
@@ -132,7 +132,7 @@ function jazzquiz_view_default_student($jazzquiz) {
 
     /** @var output\renderer $renderer */
     $renderer = $jazzquiz->renderer;
-    $renderer->header($jazzquiz);
+    $renderer->header($jazzquiz, 'view');
     $session = $jazzquiz->load_open_session();
     if ($session) {
         $renderer->join_quiz_form($studentstartform, $session);
@@ -183,7 +183,7 @@ function jazzquiz_view() {
     }
 
     $action = optional_param('action', '', PARAM_ALPHANUM);
-    $jazzquiz = new jazzquiz($cmid, null);
+    $jazzquiz = new jazzquiz($cmid);
     $jazzquiz->require_capability('mod/jazzquiz:attempt');
     $modulename = get_string('modulename', 'jazzquiz');
     $quizname = format_string($jazzquiz->data->name, true);
