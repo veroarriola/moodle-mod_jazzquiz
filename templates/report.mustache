@@ -16,7 +16,7 @@
             <button data-action="responses" class="btn btn-primary">
                 {{# str }} responses, jazzquiz {{/str}}
             </button>
-            <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&reporttype=overview&action=csv&csvtype=report&download=yes&sessionid={{ id }}">
+            <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&sessionid={{ id }}&action=export&what=report&download=yes">
                 {{# str }} download_report, jazzquiz {{/str}}
             </a>
         </div>
@@ -34,7 +34,7 @@
                 </span>
                     <table id="responses_wrapper_table_{{ num }}" class="jazzquiz-responses-overview"></table>
                     <br>
-                    <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&reporttype=overview&action=csv&csvtype=response&download=yes&sessionid={{ id }}&slot={{ num }}">
+                    <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&sessionid={{ id }}&slot={{ num }}&action=export&what=question&download=yes">
                         {{# str }} download_responses, jazzquiz {{/ str }}
                     </a>
                 </div>
@@ -67,7 +67,7 @@
             <p>{{# str }} a_students_joined_quiz, jazzquiz, {{ count_total }} {{/ str }}</p>
             <p>{{# str }} a_students_answered, jazzquiz, {{ count_answered }} {{/ str }}</p>
             <br>
-            <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&reporttype=overview&action=csv&csvtype=attendance&download=yes&sessionid={{ id }}">
+            <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&sessionid={{ id }}&action=export&what=attendance&download=yes">
                 {{# str }} download_attendance_list, jazzquiz {{/ str }}
             </a>
         </div>
