@@ -588,11 +588,11 @@ function jazzquiz_ajax() {
     $cmid = required_param('id', PARAM_INT);
     $sessionid = required_param('sessionid', PARAM_INT);
 
-    $jazzquiz = new jazzquiz($cmid, null);
+    $jazzquiz = new jazzquiz($cmid);
     $session = new jazzquiz_session($jazzquiz, $sessionid);
     if (!$session->data->sessionopen) {
         return [
-            'status' => 'error',
+            'status' => 'sessionclosed',
             'message' => 'Session is closed'
         ];
     }

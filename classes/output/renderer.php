@@ -135,7 +135,7 @@ class renderer extends \plugin_renderer_base {
      * @param \mod_jazzquiz\jazzquiz_session $session
      */
     public function render_quiz($session) {
-        $this->init_quiz_js($session);
+        $this->require_quiz($session);
         $buttons = function($buttons) {
             $result = [];
             foreach ($buttons as $button) {
@@ -246,8 +246,6 @@ class renderer extends \plugin_renderer_base {
      * @param \moodle_url $url
      */
     public function list_questions($jazzquiz, $questions, $questionbankview, $url) {
-        global $CFG;
-
         $slot = 1;
         $list = [];
         foreach ($questions as $question) {
@@ -271,27 +269,7 @@ class renderer extends \plugin_renderer_base {
             'qbank' => $questionbankview
         ]);
 
-        $this->page->requires->js('/mod/jazzquiz/js/core.js');
-        $this->page->requires->js('/mod/jazzquiz/js/sortable/sortable.min.js');
-        $this->page->requires->js('/mod/jazzquiz/js/edit_quiz.js');
-
-        $jazzquizjson = new \stdClass();
-        $jazzquizjson->siteroot = $CFG->wwwroot;
-
-        $quizjson = new \stdClass();
-        $quizjson->courseModuleId = $jazzquiz->cm->id;
-        $quizjson->activityId = $jazzquiz->data->id;
-        $quizjson->sessionKey = sesskey();
-
-        echo '<script>';
-        echo 'var jazzquizRootState = ' . json_encode($jazzquizjson) . ';';
-        echo 'var jazzquizQuizState = ' . json_encode($quizjson) . ';';
-        echo '</script>';
-
-        $this->page->requires->strings_for_js([
-            'success',
-            'error'
-        ], 'core');
+        $this->require_edit($jazzquiz->cm->id);
     }
 
     public function session_is_open_error() {
@@ -303,18 +281,7 @@ class renderer extends \plugin_renderer_base {
      * @param \moodle_url $url
      */
     public function view_session_report($session, $url) {
-        global $DB, $PAGE;
-
-        $jazzquiz = $session->jazzquiz;
-
-        $PAGE->requires->js('/mod/jazzquiz/js/core.js');
-        $PAGE->requires->js('/mod/jazzquiz/js/instructor.js');
-        $PAGE->requires->strings_for_js(['a_out_of_b_responded'], 'jazzquiz');
-
-        // TODO: Remove this inline JavaScript.
-        echo '<script>';
-        echo "(function preLoad(){window.addEventListener('load', function(){jazzquiz.addReportEventHandlers();}, false);}());";
-        echo '</script>';
+        global $DB;
 
         $slots = [];
         $students = [];
@@ -347,9 +314,11 @@ class renderer extends \plugin_renderer_base {
                 'name' => str_replace('{IMPROV}', '', $question->name),
                 'type' => $quba->get_question_attempt($qubaslot)->get_question()->get_type_name(),
                 'description' => $question->questiontext,
-                'responses' => json_encode($responses)
+                'responses' => $responses
             ];
         }
+
+        $this->require_review($session, $slots);
 
         $notrespondeduserids = $session->get_users();
         $respondedwithcount = [];
@@ -380,6 +349,8 @@ class renderer extends \plugin_renderer_base {
                 'count' => 0
             ];
         }
+
+        $jazzquiz = $session->jazzquiz;
         $sessions = $jazzquiz->get_sessions();
         return [
             'select_session' => $jazzquiz->renderer->get_select_session_context($url, $sessions, $session->data->id),
@@ -390,89 +361,56 @@ class renderer extends \plugin_renderer_base {
                 'count_answered' => count($students) - count($notrespondeduserids),
                 'cmid' => $jazzquiz->cm->id,
                 'quizid' => $jazzquiz->data->id,
-                'id' => $session->data->id,
-                'sesskey' => sesskey()
+                'id' => $session->data->id
             ]
         ];
     }
 
     /**
-     * Initializes JavaScript state and strings for the view page.
      * @param \mod_jazzquiz\jazzquiz_session $session
      */
-    public function init_quiz_js($session) {
-        global $CFG;
+    public function require_core($session) {
+        $this->page->requires->js_call_amd('mod_jazzquiz/core', 'initialize', [
+            $session->jazzquiz->cm->id,
+            $session->jazzquiz->data->id,
+            $session->data->id,
+            $session->attempt->data->id,
+            sesskey()
+        ]);
+    }
 
+    /**
+     * @param \mod_jazzquiz\jazzquiz_session $session
+     */
+    public function require_quiz($session) {
+        $this->require_core($session);
         $this->page->requires->js('/question/qengine.js');
-        $this->page->requires->js('/mod/jazzquiz/js/core.js');
-        if ($session->jazzquiz->is_instructor()) {
-            $this->page->requires->js('/mod/jazzquiz/js/instructor.js');
-        } else {
-            $this->page->requires->js('/mod/jazzquiz/js/student.js');
-        }
-
         $this->page->requires->js_call_amd('filter_mathex/mathquill', 'initialize');
         $this->page->requires->js_call_amd('filter_mathex/mathex', 'initialize');
-
-        // Add window.onload script manually to handle removing the loading mask.
-        // TODO: Remove this inline JavaScript.
-        echo \html_writer::start_tag('script');
-        echo "(function preLoad(){window.addEventListener('load', function(){jazzquiz.initialize();}, false);}());";
-        echo \html_writer::end_tag('script');
-
-        // Root values.
-        $jazzquizjson = new \stdClass();
-        $jazzquizjson->isInstructor = $session->jazzquiz->is_instructor();
-        $jazzquizjson->siteroot = $CFG->wwwroot;
-
-        // Quiz.
-        $quizjson = new \stdClass();
-        $quizjson->courseModuleId = $session->jazzquiz->cm->id;
-        $quizjson->activityId = $session->jazzquiz->data->id;
-        $quizjson->sessionId = $session->data->id;
-        $quizjson->attemptId = $session->attempt->data->id;
-        $quizjson->sessionKey = sesskey();
         if ($session->jazzquiz->is_instructor()) {
-            $quizjson->totalStudents = $session->get_student_count();
-            $quizjson->totalQuestions = count($session->jazzquiz->questions);
+            $count = count($session->jazzquiz->questions);
+            $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', [$count]);
+        } else {
+            $this->page->requires->js_call_amd('mod_jazzquiz/student', 'initialize');
         }
+    }
 
-        // Print data as JSON.
-        echo \html_writer::start_tag('script');
-        echo "var jazzquizRootState = " . json_encode($jazzquizjson) . ';';
-        echo "var jazzquizQuizState = " . json_encode($quizjson) . ';';
-        echo \html_writer::end_tag('script');
+    /**
+     * @param int $cmid
+     */
+    public function require_edit($cmid) {
+        $this->page->requires->js('/mod/jazzquiz/js/sortable.min.js');
+        $this->page->requires->js_call_amd('mod_jazzquiz/edit', 'initialize', [$cmid]);
+    }
 
-        // Add localization strings.
-        $this->page->requires->strings_for_js([
-            'question_will_start_in_x_seconds',
-            'question_will_start_now',
-            'closing_session',
-            'session_closed',
-            'question_will_end_in_x_seconds',
-            'answer',
-            'responses',
-            'wait_for_instructor',
-            'instructions_for_student',
-            'instructions_for_instructor',
-            'no_students_have_joined',
-            'one_student_has_joined',
-            'x_students_have_joined',
-            'click_to_show_original_results',
-            'click_to_show_vote_results',
-            'showing_vote_results',
-            'showing_original_results',
-            'failed_to_end_question',
-            'error_getting_vote_results',
-            'a_out_of_b_voted',
-            'a_out_of_b_responded',
-            'error_starting_vote',
-            'error_getting_current_results',
-            'error_with_request',
-            'x_seconds_left',
-            'error_saving_vote',
-            'you_already_voted',
-        ], 'jazzquiz');
+    /**
+     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param array $slots
+     */
+    public function require_review($session, $slots) {
+        $this->require_core($session);
+        $count = count($session->jazzquiz->questions);
+        $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', [$count, true, $slots]);
     }
 
 }

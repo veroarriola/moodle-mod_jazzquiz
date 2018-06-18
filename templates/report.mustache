@@ -20,9 +20,6 @@
                 {{# str }} download_report, jazzquiz {{/str}}
             </a>
         </div>
-        <script>
-            let jazzquizResponses = [];
-        </script>
         <div id="report_overview_responses" class="hidden">
             {{# slots }}
                 <div class="jazzquiz-box">
@@ -38,15 +35,6 @@
                         {{# str }} download_responses, jazzquiz {{/ str }}
                     </a>
                 </div>
-                <script>
-                    jazzquizResponses[{{ num }}] = {{{ responses }}};
-                    setTimeout(function() {
-                        jazzquiz.quiz.sessionKey = '{{ sesskey }}';
-                        jazzquiz.options.showResponses = true;
-                        jazzquiz.state = 'reviewing';
-                        jazzquiz.setResponses('jazzquiz_wrapper_responses_{{ num }}', 'responses_wrapper_table_{{ num }}', jazzquizResponses[{{ num }}], undefined, '{{ type }}', 'report_{{ num }}', false);
-                    }, 1000);
-                </script>
             {{/ slots }}
         </div>
         <div id="report_overview_responded" class="jazzquiz-box">

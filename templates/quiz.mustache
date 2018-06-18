@@ -3,11 +3,10 @@
     <div id="jazzquiz_controls_box" class="jazzquiz-box">
         <div id="jazzquiz_controls">
             <div class="quiz-list-buttons quiz-control-buttons hidden">
-                {{# buttons }}
-                <button id="jazzquiz_control_{{ id }}" class="btn">
+                {{# buttons }}<button id="jazzquiz_control_{{ id }}" class="btn">
                     <i class="fa fa-{{ icon }}"></i> {{ text }}
-                </button>
-                {{/ buttons }}
+                </button>{{/ buttons }}
+                <div style="clear:both;"></div>
             </div>
             <div id="jazzquiz_improvise_menu" class="start-question-menu"></div>
             <div id="jazzquiz_jump_menu" class="start-question-menu"></div>
