@@ -279,7 +279,6 @@ class jazzquiz {
             } else {
                 $question->questiontime = $data->questiontime;
             }
-            $question->usemathex = ($data->usemathex ? 1 : 0);
             $DB->update_record('jazzquiz_questions', $question);
             // Ensure there is no action or question_id in the base url.
             $url->remove_params('action', 'questionid');
@@ -288,8 +287,7 @@ class jazzquiz {
             // Display the form.
             $mform->set_data([
                 'questiontime' => $jazzquizquestion->questiontime,
-                'notime' => ($jazzquizquestion->questiontime < 1),
-                'usemathex' => $jazzquizquestion->usemathex
+                'notime' => ($jazzquizquestion->questiontime < 1)
             ]);
             $this->renderer->header($this, 'edit');
             echo '<div class="generalbox boxaligncenter jazzquiz-box">';

@@ -182,10 +182,9 @@ class jazzquiz_session {
      * That jazzquiz_question is then returned
      * @param int $questionid (from question bank)
      * @param int $questiontime in seconds ("<0" => no time, "0" => default)
-     * @param bool $usemathex If we want to use a math input or not
      * @return mixed[] $success, $question_time
      */
-    public function start_question($questionid, $questiontime, $usemathex = false) {
+    public function start_question($questionid, $questiontime) {
         global $DB;
 
         $transaction = $DB->start_delegated_transaction();
@@ -195,7 +194,6 @@ class jazzquiz_session {
         $sessionquestion->questionid = $questionid;
         $sessionquestion->questiontime = $questiontime;
         $sessionquestion->slot = count($DB->get_records('jazzquiz_session_questions', ['sessionid' => $this->data->id])) + 1;
-        $sessionquestion->usemathex = $usemathex;
         $sessionquestion->id = $DB->insert_record('jazzquiz_session_questions', $sessionquestion);
         $this->questions[$sessionquestion->slot] = $sessionquestion;
 
@@ -344,7 +342,10 @@ class jazzquiz_session {
         $reviewoptions->generalfeedback = 1;
         /** @var output\renderer $renderer */
         $renderer = $this->jazzquiz->renderer;
-        return $renderer->render_question($this->jazzquiz, $this->attempt->quba, $slot, true, $reviewoptions);
+        ob_start();
+        $html = $renderer->render_question($this->jazzquiz, $this->attempt->quba, $slot, true, $reviewoptions);
+        $htmlechoed = ob_get_clean();
+        return $html . $htmlechoed;
     }
 
     /**

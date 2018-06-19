@@ -131,11 +131,6 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
                 }
                 Quiz.show(Question.box.html(data.html));
                 eval(data.js);
-                if (data.use_mathex) {
-                    require(['filter_mathex/mathex'], function (Mathex) {
-                        Mathex.input();
-                    });
-                }
             }).fail(function () {
                 setText(Quiz.info, 'error_with_request');
             });

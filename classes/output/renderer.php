@@ -33,15 +33,19 @@ require_once($CFG->libdir . '/questionlib.php');
  */
 class page_requirements_diff extends \page_requirements_manager {
 
-    /** @var array $before */
-    private $before;
+    /** @var array $beforeinitjs */
+    private $beforeinitjs;
+
+    /** @var array $beforeamdjs */
+    private $beforeamdjs;
 
     /**
      * Constructor.
      * @param \page_requirements_manager $manager
      */
     public function __construct($manager) {
-        $this->before = $manager->jsinitcode;
+        $this->beforeinitjs = $manager->jsinitcode;
+        $this->beforeamdjs = $manager->amdjscode;
     }
 
     /**
@@ -51,7 +55,9 @@ class page_requirements_diff extends \page_requirements_manager {
      * @return array the JavaScript that was added in-between constructor and this call.
      */
     public function get_js_diff($manager) {
-        return array_diff($manager->jsinitcode, $this->before);
+        $jsinitcode = array_diff($manager->jsinitcode, $this->beforeinitjs);
+        $amdjscode = array_diff($manager->amdjscode, $this->beforeamdjs);
+        return array_merge($jsinitcode, $amdjscode);
     }
 }
 
@@ -192,11 +198,13 @@ class renderer extends \plugin_renderer_base {
     public function render_question_form($slot, $attempt, $jazzquiz, $isinstructor) {
         global $PAGE;
         $differ = new page_requirements_diff($PAGE->requires);
+        ob_start();
         $questionhtml = $this->render_question($jazzquiz, $attempt->quba, $slot);
+        $questionhtmlechoed = ob_get_clean();
         $js = implode("\n", $differ->get_js_diff($PAGE->requires)) . "\n";
         $output = $this->render_from_template('jazzquiz/question', [
             'instructor' => $isinstructor,
-            'question' => $questionhtml,
+            'question' => $questionhtml . $questionhtmlechoed,
             'slot' => $slot
         ]);
         return [$output, $js];
@@ -385,8 +393,6 @@ class renderer extends \plugin_renderer_base {
     public function require_quiz($session) {
         $this->require_core($session);
         $this->page->requires->js('/question/qengine.js');
-        $this->page->requires->js_call_amd('filter_mathex/mathquill', 'initialize');
-        $this->page->requires->js_call_amd('filter_mathex/mathex', 'initialize');
         if ($session->jazzquiz->is_instructor()) {
             $count = count($session->jazzquiz->questions);
             $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', [$count]);

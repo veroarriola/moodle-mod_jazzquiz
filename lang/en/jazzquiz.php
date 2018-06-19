@@ -92,8 +92,6 @@ $string['save_question'] = 'Save question';
 $string['edit_page_open_session_error'] = 'You cannot edit the quiz while a session is open.';
 $string['create_new_question'] = 'Create new question';
 $string['add_to_quiz'] = 'Add to quiz';
-$string['use_mathex'] = 'Let students answer with math input.';
-$string['use_mathex_help'] = 'Students can visually edit math expressions using MathQuill.<br><b>Important: </b>The answer will be in LaTeX.';
 
 // Session.
 $string['quiz_not_running'] = '<p>Wait for your teacher to start the quiz.</p><p>Use the reload button to check if it has started.</p>';
