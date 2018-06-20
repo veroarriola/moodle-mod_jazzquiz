@@ -63,7 +63,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          */
         hide() {
             this.showResponses = false;
-            Instructor.control('responses').children('.fa').removeClass('fa-check-square-o').addClass('fa-square-o');
+            Quiz.uncheck(Instructor.control('responses'));
             Quiz.hide(Quiz.responses);
             Quiz.hide(Quiz.responseInfo);
         }
@@ -73,7 +73,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          */
         show() {
             this.showResponses = true;
-            Instructor.control('responses').children('.fa').removeClass('fa-square-o').addClass('fa-check-square-o');
+            Quiz.check(Instructor.control('responses'));
             Quiz.show(Quiz.responses);
             Quiz.show(Quiz.responseInfo);
             if (this.showVotesUponReview) {
@@ -107,7 +107,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * Undo the last response merge.
          */
         undoMerge() {
-            Ajax.post('undo_merge', {}, this.refresh.bind(this, true));
+            Ajax.post('undo_merge', {}, () => this.refresh(true));
         }
 
         /**
@@ -116,7 +116,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * @param {string} into
          */
         merge(from, into) {
-            Ajax.post('merge_responses', {from: from, into: into}, this.refresh.bind(this, false));
+            Ajax.post('merge_responses', {from: from, into: into}, () => this.refresh(false));
         }
 
         /**
@@ -358,7 +358,6 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                     count = parseInt(responses[i].count);
                 }
                 this.respondedCount += count;
-
                 // Check if response is a duplicate.
                 for (let j = 0; j < this.currentResponses.length; j++) {
                     if (this.currentResponses[j].response === responses[i].response) {
@@ -367,7 +366,6 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                         break;
                     }
                 }
-
                 // Add element if not a duplicate.
                 if (!exists) {
                     this.currentResponses.push({
@@ -394,20 +392,10 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 return;
             }
 
-            // Make sure quiz info has the wrapper for the responses.
-            let wrapperCurrentResponses = document.getElementById(tableId);
-            if (wrapperCurrentResponses === null) {
-                let $wrapper = $('#' + wrapperId);
-                Quiz.show($wrapper);
-                $wrapper.html('<table id="' + tableId + '" class="jazzquiz-responses-overview"></table>');
-                wrapperCurrentResponses = document.getElementById(tableId);
-                // This should not happen, but check just in case quiz_info fails to set the html.
-                if (wrapperCurrentResponses === null) {
-                    return;
-                }
+            if (document.getElementById(tableId) === null) {
+                const html = '<table id="' + tableId + '" class="jazzquiz-responses-overview"></table>';
+                Quiz.show($('#' + wrapperId).html(html));
             }
-
-            // Update HTML.
             this.createBarGraph(this.currentResponses, 'current_response', tableId, graphId, rebuild);
             ResponseView.sortBarGraph(tableId);
         }
@@ -417,12 +405,11 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * @param {boolean} rebuild If the response graph should be rebuilt or not.
          */
         refresh(rebuild) {
-            let self = this;
-            Ajax.get('get_results', {}, function (data) {
-                self.quiz.question.hasVotes = data.has_votes;
-                self.totalStudents = parseInt(data.total_students);
+            Ajax.get('get_results', {}, data => {
+                this.quiz.question.hasVotes = data.has_votes;
+                this.totalStudents = parseInt(data.total_students);
 
-                self.set('jazzquiz_responses_container', 'current_responses_wrapper',
+                this.set('jazzquiz_responses_container', 'current_responses_wrapper',
                     data.responses, data.responded, data.question_type, 'results', rebuild);
 
                 if (data.merge_count > 0) {
@@ -430,8 +417,6 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 } else {
                     Quiz.hide($('#jazzquiz_undo_merge'));
                 }
-            }).fail(function () {
-                setText(Quiz.info, 'error_getting_current_results');
             });
         }
 
@@ -445,14 +430,13 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 Quiz.hide(Quiz.responses);
                 return;
             }
-            let self = this;
-            Ajax.get('get_vote_results', {}, function (data) {
+            Ajax.get('get_vote_results', {}, data => {
                 const answers = data.answers;
                 const targetId = 'wrapper_vote_responses';
                 let responses = [];
 
-                self.respondedCount = 0;
-                self.totalStudents = parseInt(data.total_students);
+                this.respondedCount = 0;
+                this.totalStudents = parseInt(data.total_students);
 
                 for (let i in answers) {
                     if (!answers.hasOwnProperty(i)) {
@@ -464,29 +448,21 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                         qtype: answers[i].qtype,
                         slot: answers[i].slot
                     });
-                    self.respondedCount += parseInt(answers[i].finalcount);
+                    this.respondedCount += parseInt(answers[i].finalcount);
                 }
 
                 setText(Quiz.responded.find('h4'), 'a_out_of_b_voted', 'jazzquiz', {
-                    a: self.respondedCount,
-                    b: self.totalStudents
+                    a: this.respondedCount,
+                    b: this.totalStudents
                 });
 
-                let target = document.getElementById(targetId);
-                if (target === null) {
-                    Quiz.show(Quiz.responses);
-                    Quiz.responses.html('<table id="' + targetId + '" class="jazzquiz-responses-overview"></table>');
-                    target = document.getElementById(targetId);
-                    // This should not happen, but check just in case quiz_info fails to set the html.
-                    if (target === null) {
-                        return;
-                    }
+                if (document.getElementById(targetId) === null) {
+                    const html = '<table id="' + targetId + '" class="jazzquiz-responses-overview"></table>';
+                    Quiz.show(Quiz.responses.html(html));
                 }
 
-                self.createBarGraph(responses, 'vote_response', targetId, 'vote', false);
+                this.createBarGraph(responses, 'vote_response', targetId, 'vote', false);
                 ResponseView.sortBarGraph(targetId);
-            }).fail(function () {
-                setText(Quiz.info, 'error_getting_vote_results');
             });
         }
 
@@ -503,67 +479,63 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             this.isShowingCorrectAnswer = false;
             this.totalQuestions = 0;
 
-            // Listens for key event to remove the fullscreen view container.
-            $(document).on('keyup', function (event) {
-                // Check if 'Escape' key was pressed.
-                if (event.keyCode === 27) {
+            $(document).on('keyup', event => {
+                if (event.keyCode === 27) { // Escape key.
                     Instructor.closeFullscreenView();
                 }
             });
 
-            $(document).on('click', function (event) {
+            $(document).on('click', event => {
                 Instructor.closeQuestionListMenu(event, 'improvise');
                 Instructor.closeQuestionListMenu(event, 'jump');
             });
 
-            let self = this;
-
             Instructor.addEvents({
-                repoll: function () {
+                repoll: () => {
                     Instructor.enableControls([]);
-                    self.repollQuestion();
+                    this.repollQuestion();
                 },
-                vote: function () {
+                vote: () => {
                     Instructor.enableControls([]);
-                    self.runVoting();
+                    this.runVoting();
                 },
-                improvise: function () {
-                    self.showImproviseQuestionSetup();
+                improvise: () => {
+                    this.showImproviseQuestionSetup();
                 },
-                jump: function () {
-                    self.showJumpQuestionSetup();
+                jump: () => {
+                    this.showJumpQuestionSetup();
                 },
-                next: function () {
+                next: () => {
                     Instructor.enableControls([]);
-                    self.nextQuestion();
+                    this.nextQuestion();
                 },
-                end: function () {
+                end: () => {
                     Instructor.enableControls([]);
-                    self.endQuestion();
+                    this.endQuestion();
                 },
-                fullscreen: function () {
+                fullscreen: () => {
                     Instructor.enableControls([]);
                     Instructor.showFullscreenView();
                 },
-                answer: function () {
+                answer: () => {
                     Instructor.enableControls([]);
-                    self.showCorrectAnswer();
+                    this.showCorrectAnswer();
                 },
-                responses: function () {
+                responses: () => {
                     Instructor.enableControls([]);
-                    self.responses.toggle();
+                    this.responses.toggle();
                 },
-                exit: function () {
+                exit: () => {
                     Instructor.enableControls([]);
-                    self.closeSession();
+                    this.closeSession();
                 },
-                quit: function () {
+                quit: () => {
                     Instructor.enableControls([]);
-                    self.closeSession();
+                    this.closeSession();
                 },
-                startquiz: function () {
+                startquiz: () => {
                     Instructor.enableControls([]);
-                    self.startQuiz();
+                    this.startQuiz();
                 }
             });
         }
@@ -699,9 +671,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          */
         startQuiz() {
             Quiz.hide(Instructor.control('startquiz').parent());
-            Ajax.post('start_quiz', {}, function () {
-                $('#jazzquiz_controls').removeClass('btn-hide');
-            });
+            Ajax.post('start_quiz', {}, () => $('#jazzquiz_controls').removeClass('btn-hide'));
         }
 
         /**
@@ -709,16 +679,13 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          */
         endQuestion() {
             this.quiz.question.hideTimer();
-            let self = this;
-            Ajax.post('end_question', {}, function () {
-                if (self.quiz.state === 'voting') {
-                    self.responses.showVotesUponReview = true;
+            Ajax.post('end_question', {}, () => {
+                if (this.quiz.state === 'voting') {
+                    this.responses.showVotesUponReview = true;
                 } else {
-                    self.quiz.question.isRunning = false;
+                    this.quiz.question.isRunning = false;
                     Instructor.enableControls([]);
                 }
-            }).fail(function () {
-                setText(Quiz.info, 'failed_to_end_question');
             });
         }
 
@@ -742,8 +709,8 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 return;
             }
 
-            let self = this;
-            Ajax.get(action, {}, function (data) {
+            Ajax.get(action, {}, (data) => {
+                let self = this;
                 let $menu = $('#jazzquiz_' + name + '_menu');
                 const menuMargin = $controlButton.offset().left - $controlButton.parent().offset().left;
                 $menu.html('').addClass('active').css('margin-left', menuMargin + 'px');
@@ -787,7 +754,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          */
         static getSelectedAnswersForVote() {
             let result = [];
-            $('.selected-vote-option').each(function (i, option) {
+            $('.selected-vote-option').each((i, option) => {
                 result.push({
                     text: option.dataset.response,
                     count: option.dataset.count
@@ -801,17 +768,10 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          */
         runVoting() {
             const options = Instructor.getSelectedAnswersForVote();
-            const questions = encodeURIComponent(JSON.stringify(options));
-            Ajax.post('run_voting', {
-                questions: questions
-            }, function () {
-
-            }).fail(function () {
-                setText(Quiz.info, 'error_starting_vote');
-            });
+            const data = {questions: encodeURIComponent(JSON.stringify(options))};
+            Ajax.post('run_voting', data, () => {});
         }
 
-        // TODO: Refactor these start question functions.
         /**
          * Start a new question in this session.
          * @param {string} method
@@ -821,17 +781,12 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          */
         startQuestion(method, questionId, questionTime, jazzquizQuestionId) {
             Quiz.hide(Quiz.info);
-            let self = this;
             Ajax.post('start_question', {
                 method: method,
                 questionid: questionId,
                 questiontime: questionTime,
                 jazzquizquestionid: jazzquizQuestionId
-            }, function (data) {
-                self.quiz.question.startCountdown(data.questiontime, data.delay);
-            }).fail(function () {
-                setText(Quiz.info, 'error_with_request');
-            });
+            }, (data) => this.quiz.question.startCountdown(data.questiontime, data.delay));
         }
 
         /**
@@ -865,11 +820,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             Quiz.hide(Question.box);
             Quiz.hide(Instructor.controls);
             setText(Quiz.info, 'closing_session');
-            Ajax.post('close_session', {}, function () {
-                setText(Quiz.info, 'session_closed');
-            }).fail(function () {
-                setText(Quiz.info, 'error_with_request');
-            });
+            Ajax.post('close_session', {}, () => setText(Quiz.info, 'session_closed'));
         }
 
         /**
@@ -878,19 +829,16 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
         showCorrectAnswer() {
             if (this.isShowingCorrectAnswer) {
                 Quiz.hide(Instructor.correctAnswer);
-                Instructor.control('answer').children('.fa').removeClass('fa-check-square-o').addClass('fa-square-o');
+                Quiz.uncheck(Instructor.control('answer'));
                 this.isShowingCorrectAnswer = false;
                 return;
             }
-            let self = this;
-            Ajax.get('get_right_response', {}, function (data) {
+            Ajax.get('get_right_response', {}, (data) => {
                 const answer = '<span class="jazzquiz-latex-wrapper">' + data.right_answer + '</span>';
                 Quiz.show(Instructor.correctAnswer.html(answer));
                 Quiz.renderAllMathjax();
-                Instructor.control('answer').children('.fa').removeClass('fa-square-o').addClass('fa-check-square-o');
-                self.isShowingCorrectAnswer = true;
-            }).fail(function () {
-                setText(Quiz.info, 'error_with_request');
+                Quiz.check(Instructor.control('answer'));
+                this.isShowingCorrectAnswer = true;
             });
         }
 
@@ -899,9 +847,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * @param {Array.<string>} buttons The unique part of the IDs of the buttons to be enabled.
          */
         static enableControls(buttons) {
-            // Let's find the direct child nodes.
             let children = Instructor.controlButtons.children('button');
-            // Disable all the buttons that are not present in the "buttons" parameter.
             for (let i = 0; i < children.length; i++) {
                 const id = children[i].getAttribute('id').replace('jazzquiz_control_', '');
                 children[i].disabled = (buttons.indexOf(id) === -1);
@@ -912,7 +858,6 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * Enter fullscreen mode for better use with projectors.
          */
         static showFullscreenView() {
-            // Close if already fullscreen.
             if (Quiz.main.hasClass('jazzquiz-fullscreen')) {
                 Instructor.closeFullscreenView();
                 return;
@@ -927,9 +872,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * Exit the fullscreen mode.
          */
         static closeFullscreenView() {
-            // Reset the overflow-y back to auto.
             document.documentElement.style.overflowY = 'auto';
-            // Remove the fullscreen view.
             Quiz.main.removeClass('jazzquiz-fullscreen');
         }
 
