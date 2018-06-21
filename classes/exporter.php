@@ -76,12 +76,7 @@ class exporter {
             $qubaslots = $quizattempt->quba->get_slots();
             $users[$fullname] = [];
             foreach ($qubaslots as $slot) {
-                $responsedata = $quizattempt->get_response_data($slot);
-                $response = reset($responsedata);
-                if (!$response) {
-                    $response = '';
-                }
-                $users[$fullname][$slot] = $response;
+                $users[$fullname][$slot] = $quizattempt->get_response_data($slot);
             }
         }
         $name = 'session_' . $session->data->id . '_' . $session->data->name;
@@ -105,11 +100,11 @@ class exporter {
         }
         echo "\r\n";
         // Response rows
-        foreach ($users as $user => $responses) {
+        foreach ($users as $user => $slots) {
             $user = self::escape_csv($user);
             echo "$user\t";
-            foreach ($responses as $response) {
-                $response = self::escape_csv($response);
+            foreach ($slots as $slot) {
+                $response = self::escape_csv(implode(', ', $slot));
                 echo "$response\t";
             }
             echo "\r\n";
