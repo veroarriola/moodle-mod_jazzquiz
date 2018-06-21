@@ -59,10 +59,17 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
         }
 
         /**
+         * Clear, but not hide responses.
+         */
+        clear() {
+            Quiz.responses.html('');
+            Quiz.responseInfo.html('');
+        }
+
+        /**
          * Hides the responses
          */
         hide() {
-            this.showResponses = false;
             Quiz.uncheck(Instructor.control('responses'));
             Quiz.hide(Quiz.responses);
             Quiz.hide(Quiz.responseInfo);
@@ -72,7 +79,6 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * Shows the responses
          */
         show() {
-            this.showResponses = true;
             Quiz.check(Instructor.control('responses'));
             Quiz.show(Quiz.responses);
             Quiz.show(Quiz.responseInfo);
@@ -88,10 +94,11 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * Toggle whether to show or hide the responses
          */
         toggle() {
+            this.showResponses = !this.showResponses;
             if (this.showResponses) {
-                this.hide();
-            } else {
                 this.show();
+            } else {
+                this.hide();
             }
         }
 
@@ -568,6 +575,10 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             return $('#jazzquiz_correct_answer_container');
         }
 
+        static get isMerging() {
+            return $('.merge-from').length !== 0;
+        }
+
         onNotRunning(data) {
             this.responses.totalStudents = data.student_count;
             Quiz.hide(Instructor.side);
@@ -596,6 +607,9 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
         }
 
         onRunning(data) {
+            if (!this.responses.showResponses) {
+                this.responses.hide();
+            }
             Quiz.show(Instructor.side);
             Instructor.enableControls(['end', 'responses', 'fullscreen']);
             this.quiz.question.questionTime = data.questiontime;
@@ -606,8 +620,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                     this.endQuestion();
                 }
                 // Only rebuild results if we are not merging.
-                const merging = ($('.merge-from').length !== 0);
-                this.responses.refresh(!merging);
+                this.responses.refresh(!Instructor.isMerging);
             } else {
                 const started = this.quiz.question.startCountdown(data.questiontime, data.delay);
                 if (started) {
@@ -645,6 +658,9 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
         }
 
         onVoting(data) {
+            if (!this.responses.showResponses) {
+                this.responses.hide();
+            }
             Quiz.show(Instructor.side);
             Instructor.enableControls(['quit', 'fullscreen', 'answer', 'responses', 'end']);
             this.responses.refreshVotes();
@@ -709,7 +725,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 return;
             }
 
-            Ajax.get(action, {}, (data) => {
+            Ajax.get(action, {}, data => {
                 let self = this;
                 let $menu = $('#jazzquiz_' + name + '_menu');
                 const menuMargin = $controlButton.offset().left - $controlButton.parent().offset().left;
@@ -781,12 +797,13 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          */
         startQuestion(method, questionId, questionTime, jazzquizQuestionId) {
             Quiz.hide(Quiz.info);
+            this.responses.clear();
             Ajax.post('start_question', {
                 method: method,
                 questionid: questionId,
                 questiontime: questionTime,
                 jazzquizquestionid: jazzquizQuestionId
-            }, (data) => this.quiz.question.startCountdown(data.questiontime, data.delay));
+            }, data => this.quiz.question.startCountdown(data.questiontime, data.delay));
         }
 
         /**
@@ -833,7 +850,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 this.isShowingCorrectAnswer = false;
                 return;
             }
-            Ajax.get('get_right_response', {}, (data) => {
+            Ajax.get('get_right_response', {}, data => {
                 const answer = '<span class="jazzquiz-latex-wrapper">' + data.right_answer + '</span>';
                 Quiz.show(Instructor.correctAnswer.html(answer));
                 Quiz.renderAllMathjax();
@@ -848,9 +865,9 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          */
         static enableControls(buttons) {
             let children = Instructor.controlButtons.children('button');
-            for (let i = 0; i < children.length; i++) {
-                const id = children[i].getAttribute('id').replace('jazzquiz_control_', '');
-                children[i].disabled = (buttons.indexOf(id) === -1);
+            for (let child of children) {
+                const id = child.getAttribute('id').replace('jazzquiz_control_', '');
+                child.disabled = (buttons.indexOf(id) === -1);
             }
         }
 
