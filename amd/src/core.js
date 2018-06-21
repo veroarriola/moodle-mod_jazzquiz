@@ -229,25 +229,6 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
             this.timerInterval = setInterval(() => this.onTimerTick(), 1000);
         }
 
-        /**
-         * @todo Is there a more elegant way to do this?
-         * @returns {string} The question body HTML with some elements removed.
-         */
-        static formattedBody() {
-            if (!Question.box.length) {
-                return 'Not found';
-            }
-            let $questionBox = Question.box.clone();
-            $questionBox.find('.info').remove();
-            $questionBox.find('.im-controls').remove();
-            $questionBox.find('.questiontestslink').remove();
-            $questionBox.find('input').remove();
-            $questionBox.find('label').remove(); // Some inputs have labels
-            $questionBox.find('.ablock.form-inline').remove();
-            $questionBox.find('.save_row').remove();
-            return $questionBox.html();
-        }
-
         static isLoaded() {
             return Question.box.html() !== '';
         }
