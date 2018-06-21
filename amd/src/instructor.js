@@ -268,7 +268,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
 
                     const latexId = name + '_latex_' + rowIndex;
                     responseCell.innerHTML = '<span id="' + latexId + '"></span>';
-                    Quiz.addMathjaxElement(latexId, responses[i].response);
+                    Quiz.addMathjaxElement($('#' + latexId), responses[i].response);
                     if (responses[i].qtype === 'stack') {
                         Quiz.renderMaximaEquation(responses[i].response, latexId);
                     }
@@ -736,7 +736,8 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                     if (!questions.hasOwnProperty(i)) {
                         continue;
                     }
-                    let $questionButton = $('<button class="btn">' + questions[i].name + '</button>');
+                    let $questionButton = $('<button class="btn"></button>');
+                    Quiz.addMathjaxElement($questionButton, questions[i].name);
                     $questionButton.data({
                         'time': questions[i].time,
                         'question-id': questions[i].questionid,

@@ -84,7 +84,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             Quiz.info.html(data.html);
             const options = data.options;
             for (let i = 0; i < options.length; i++) {
-                Quiz.addMathjaxElement(options[i].content_id, options[i].text);
+                Quiz.addMathjaxElement($('#' + options[i].content_id), options[i].text);
                 if (options[i].question_type === 'stack') {
                     Quiz.renderMaximaEquation(options[i].text, options[i].content_id);
                 }

@@ -202,10 +202,6 @@
     font-style: italic;
 }
 
-#jazzquiz_controls_state:first-letter {
-    text-transform: capitalize;
-}
-
 #jazzquiz_controls .btn {
     text-align: left;
     border: none;
@@ -448,4 +444,10 @@
     float: right;
     margin: 16px;
     font-size: 1.2rem;
+}
+
+.start-question-menu .MathJax_Display,
+.questionlist li .controls .name .MathJax_Display {
+    text-align: left !important;
+    margin: 0 !important;
 }

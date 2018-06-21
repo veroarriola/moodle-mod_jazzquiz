@@ -23,12 +23,18 @@
         <div id="report_overview_responses" class="hidden">
             {{# slots }}
                 <div class="jazzquiz-box">
-                    <h2>{{{ name }}}</h2>
+                    <h2>
+                        <span class="jazzquiz-latex-wrapper">
+                            <span class="filter_mathjaxloader_equation">
+                                {{{ name }}}
+                            </span>
+                        </span>
+                    </h2>
                     <span class="jazzquiz-latex-wrapper">
-                    <span class="filter_mathjaxloader_equation">
-                        {{{ description }}}
+                        <span class="filter_mathjaxloader_equation">
+                            {{{ description }}}
+                        </span>
                     </span>
-                </span>
                     <table id="responses_wrapper_table_{{ num }}" class="jazzquiz-responses-overview"></table>
                     <br>
                     <a href="reports.php?id={{ cmid }}&quizid={{ quizid }}&sessionid={{ id }}&slot={{ num }}&action=export&what=question&download=yes">

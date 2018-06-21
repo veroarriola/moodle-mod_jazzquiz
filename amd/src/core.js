@@ -318,11 +318,11 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
 
         /**
          * Sets the body of the target, and triggers an event letting MathJax know about the element.
-         * @param {string} targetId
+         * @param {*} target
          * @param {string} latex
          */
-        static addMathjaxElement(targetId, latex) {
-            $('#' + targetId).html('<span class="jazzquiz-latex-wrapper"><span class="filter_mathjaxloader_equation">' + latex + '</span></span>');
+        static addMathjaxElement($target, latex) {
+            $target.html('<span class="jazzquiz-latex-wrapper"><span class="filter_mathjaxloader_equation">' + latex + '</span></span>');
             Quiz.renderAllMathjax();
         }
 
@@ -338,12 +338,12 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
                 return;
             }
             if (cache[input] !== undefined) {
-                Quiz.addMathjaxElement(targetId, cache[input]);
+                Quiz.addMathjaxElement($('#' + targetId), cache[input]);
                 return;
             }
             Ajax.get('stack', {input: encodeURIComponent(input)}, data => {
                 cache[data.original] = data.latex;
-                Quiz.addMathjaxElement(targetId, data.latex);
+                Quiz.addMathjaxElement($('#' + targetId), data.latex);
             });
         }
 
