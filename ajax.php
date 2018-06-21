@@ -248,7 +248,6 @@ function save_question($session) {
  * @return mixed[]
  */
 function run_voting($session) {
-    // Decode the questions parameter into an array.
     $questions = required_param('questions', PARAM_RAW);
     $questions = json_decode(urldecode($questions), true);
     if (!$questions) {
@@ -259,7 +258,6 @@ function run_voting($session) {
     }
     $qtype = optional_param('question_type', '', PARAM_ALPHANUM);
 
-    // Initialize the votes.
     $session->load_session_questions();
     $vote = new jazzquiz_vote($session->data->id);
     $slot = count($session->questions);
@@ -267,7 +265,6 @@ function run_voting($session) {
 
     $session->data->status = 'voting';
     $session->save();
-
     return ['status' => 'success'];
 }
 
@@ -278,15 +275,10 @@ function run_voting($session) {
  */
 function save_vote($session) {
     global $USER;
-    // Get the id for the attempt that was voted on.
     $voteid = required_param('vote', PARAM_INT);
-    // Save the vote.
     $vote = new jazzquiz_vote($session->data->id);
     $status = $vote->save_vote($voteid, $USER->id);
-    if (!$status) {
-        return ['status' => 'error'];
-    }
-    return ['status' => 'success'];
+    return ['status' => ($status ? 'success' : 'error')];
 }
 
 /**
@@ -343,7 +335,6 @@ function close_session($session) {
  * @return mixed[]
  */
 function get_results($session) {
-    // Get the results.
     $session->load_session_questions();
     $session->load_attempts();
     $slot = count($session->questions);
