@@ -120,7 +120,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
          * Request the current question form.
          */
         refresh() {
-            Ajax.get('get_question_form', {}, (data) => {
+            Ajax.get('get_question_form', {}, data => {
                 if (data.is_already_submitted) {
                     setText(Quiz.info, 'wait_for_instructor');
                     return;
