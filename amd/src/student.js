@@ -124,46 +124,39 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                     data[serialized[name].name] = serialized[name].value;
                 }
             }
-            let self = this;
-            Ajax.post('save_question', data, function(data) {
+            Ajax.post('save_question', data, data => {
                 if (data.feedback.length > 0) {
                     Quiz.show(Quiz.info.html(data.feedback));
                 } else {
                     setText(Quiz.info, 'wait_for_instructor');
                 }
-                self.quiz.question.isSaving = false;
-                if (!self.quiz.question.isRunning) {
+                this.quiz.question.isSaving = false;
+                if (!this.quiz.question.isRunning) {
                     return;
                 }
-                if (self.quiz.question.isVoteRunning) {
+                if (this.quiz.question.isVoteRunning) {
                     return;
                 }
                 Quiz.hide(Question.box);
-            }).fail(function() {
-                self.quiz.question.isSaving = false;
-                setText(Quiz.info, 'error_with_request');
+            }).fail(() => {
+                this.quiz.question.isSaving = false;
             });
         }
 
         saveVote() {
-            Ajax.post('save_vote', {
-                vote: this.voteAnswer
-            }, function(data) {
+            Ajax.post('save_vote', {vote: this.voteAnswer}, data => {
                 if (data.status === 'success') {
                     setText(Quiz.info, 'wait_for_instructor');
                 } else {
                     setText(Quiz.info, 'you_already_voted');
-                    // TODO: 'wait_for_instructor' should be appended too
                 }
-            }).fail(function() {
-                setText(Quiz.info, 'error_saving_vote');
             });
         }
 
     }
 
     return {
-        initialize: function () {
+        initialize: () => {
             let quiz = new Quiz(Student);
             quiz.poll(2000);
         }

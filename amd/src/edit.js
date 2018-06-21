@@ -33,10 +33,7 @@ define(['jquery'], function ($) {
             id: courseModuleId,
             action: 'order',
             order: JSON.stringify(order)
-        }, function () {
-            // TODO: Correct locally instead, but for now just refresh.
-            location.reload();
-        });
+        }, () => location.reload()); // TODO: Correct locally instead, but for now just refresh.
     }
 
     /**
@@ -73,7 +70,7 @@ define(['jquery'], function ($) {
     }
 
     return {
-        initialize: function (courseModuleId) {
+        initialize: courseModuleId => {
             $('.edit-question-action').on('click', function () {
                 const action = $(this).data('action');
                 const questionId = $(this).data('question-id');
@@ -100,10 +97,7 @@ define(['jquery'], function ($) {
             let questionList = document.getElementsByClassName('questionlist')[0];
             Sortable.create(questionList, {
                 handle: '.dragquestion',
-                onSort: function () {
-                    const order = getQuestionOrder();
-                    submitQuestionOrder(order, courseModuleId);
-                }
+                onSort: () => submitQuestionOrder(getQuestionOrder(), courseModuleId)
             });
         }
     };

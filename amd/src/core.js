@@ -60,7 +60,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
                 error: function (xhr, status, error) {
                     //console.error('XHR Error: ' + error + '. Status: ' + status);
                 }
-            });
+            }).fail(() => setText(Quiz.info, 'error_with_request'));
         }
 
         /**
@@ -94,13 +94,11 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
         constructor(quiz) {
             this.quiz = quiz;
             this.isRunning = false;
-            this.isLast = false;
             this.isSaving = false;
             this.endTime = 0;
             this.isVoteRunning = false;
             this.hasVotes = false;
             this.countdownTimeLeft = 0;
-            this.questionType = undefined;
             this.questionTime = 0;
             this.countdownInterval = 0;
             this.timerInterval = 0;
@@ -122,17 +120,13 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
          * Request the current question form.
          */
         refresh() {
-            let self = this;
-            Ajax.get('get_question_form', {}, function (data) {
-                self.questionType = data.question_type;
+            Ajax.get('get_question_form', {}, (data) => {
                 if (data.is_already_submitted) {
                     setText(Quiz.info, 'wait_for_instructor');
                     return;
                 }
                 Quiz.show(Question.box.html(data.html));
                 eval(data.js);
-            }).fail(function () {
-                setText(Quiz.info, 'error_with_request');
             });
         }
 
@@ -190,10 +184,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
                 }
                 return true;
             }
-            let self = this;
-            this.countdownInterval = setInterval(function () {
-                self.onCountdownTick(questionTime);
-            }, 1000);
+            this.countdownInterval = setInterval(() => this.onCountdownTick(questionTime), 1000);
             return true;
         }
 
@@ -235,10 +226,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
             }
             this.quiz.role.onTimerTick(questionTime); // TODO: Is it worth having this line?
             this.endTime = new Date().getTime() + questionTime * 1000;
-            let self = this;
-            this.timerInterval = setInterval(function () {
-                self.onTimerTick();
-            }, 1000);
+            this.timerInterval = setInterval(() => this.onTimerTick(), 1000);
         }
 
         /**
@@ -296,10 +284,9 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
          * @param {number} ms interval in milliseconds
          */
         poll(ms) {
-            let self = this;
-            Ajax.get('info', {}, function (data) {
-                self.changeQuizState(data.status, data);
-                setTimeout(self.poll.bind(self, ms), ms);
+            Ajax.get('info', {}, data => {
+                this.changeQuizState(data.status, data);
+                setTimeout(() => this.poll(ms), ms);
             });
         }
 
@@ -329,6 +316,14 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
 
         static show($element) {
             $element.removeClass('hidden');
+        }
+
+        static uncheck($element) {
+            $element.children('.fa').removeClass('fa-check-square-o').addClass('fa-square-o');
+        }
+
+        static check($element) {
+            $element.children('.fa').removeClass('fa-square-o').addClass('fa-check-square-o');
         }
 
         /**
@@ -365,9 +360,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
                 Quiz.addMathjaxElement(targetId, cache[input]);
                 return;
             }
-            Ajax.get('stack', {
-                input: encodeURIComponent(input)
-            }, function (data) {
+            Ajax.get('stack', {input: encodeURIComponent(input)}, data => {
                 cache[data.original] = data.latex;
                 Quiz.addMathjaxElement(targetId, data.latex);
             });
@@ -385,14 +378,11 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
     function setText($element, key, from, args) {
         from = (from !== undefined) ? from : 'jazzquiz';
         args = (args !== undefined) ? args : [];
-        $.when(mString.get_string(key, from, args)).done(function (text) {
-            $element.html(text);
-            Quiz.show($element);
-        });
+        $.when(mString.get_string(key, from, args)).done(text => Quiz.show($element.html(text)));
     }
 
     return {
-        initialize: function (courseModuleId, activityId, sessionId, attemptId, sessionKey) {
+        initialize: (courseModuleId, activityId, sessionId, attemptId, sessionKey) => {
             session.courseModuleId = courseModuleId;
             session.activityId = activityId;
             session.sessionId = sessionId;
