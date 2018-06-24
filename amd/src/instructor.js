@@ -498,59 +498,70 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             });
 
             Instructor.addEvents({
-                repoll: () => {
-                    Instructor.enableControls([]);
-                    this.repollQuestion();
-                },
-                vote: () => {
-                    Instructor.enableControls([]);
-                    this.runVoting();
-                },
-                improvise: () => {
-                    this.showImproviseQuestionSetup();
-                },
-                jump: () => {
-                    this.showJumpQuestionSetup();
-                },
-                next: () => {
-                    Instructor.enableControls([]);
-                    this.nextQuestion();
-                },
-                end: () => {
-                    Instructor.enableControls([]);
-                    this.endQuestion();
-                },
-                fullscreen: () => {
-                    Instructor.enableControls([]);
-                    Instructor.showFullscreenView();
-                },
-                answer: () => {
-                    Instructor.enableControls([]);
-                    this.showCorrectAnswer();
-                },
-                responses: () => {
-                    Instructor.enableControls([]);
-                    this.responses.toggle();
-                },
-                exit: () => {
-                    Instructor.enableControls([]);
-                    this.closeSession();
-                },
-                quit: () => {
-                    Instructor.enableControls([]);
-                    this.closeSession();
-                },
-                startquiz: () => {
-                    Instructor.enableControls([]);
-                    this.startQuiz();
-                }
+                'repoll': () => this.repollQuestion(),
+                'vote': () => this.runVoting(),
+                'improvise': () => this.showQuestionListSetup('improvise'),
+                'jump': () => this.showQuestionListSetup('jump'),
+                'next': () => this.nextQuestion(),
+                'end': () => this.endQuestion(),
+                'fullscreen': () => Instructor.showFullscreenView(),
+                'answer': () => this.showCorrectAnswer(),
+                'responses': () => this.responses.toggle(),
+                'exit': () => this.closeSession(),
+                'quit': () => this.closeSession(),
+                'startquiz': () => this.startQuiz()
             });
+
+            Instructor.addHotkeys({
+                't': 'responses',
+                'r': 'repoll',
+                'a': 'answer',
+                'e': 'end',
+                'j': 'jump',
+                'i': 'improvise',
+                'v': 'vote',
+                'n': 'next',
+                'f': 'fullscreen'
+            });
+        }
+
+        static addHotkeys(keys) {
+            for (let key in keys) {
+                if (keys.hasOwnProperty(key)) {
+                    keys[key] = {
+                        action: keys[key],
+                        repeat: false // TODO: Maybe event.repeat becomes more standard?
+                    };
+                    $(document).on('keydown', event => {
+                        if (keys[key].repeat || event.ctrlKey) {
+                            return;
+                        }
+                        if (String.fromCharCode(event.which).toLowerCase() !== key) {
+                            return;
+                        }
+                        event.preventDefault();
+                        keys[key].repeat = true;
+                        let $control = Instructor.control(keys[key].action);
+                        if ($control.length && !$control.prop('disabled')) {
+                            $control.click();
+                        }
+                    });
+                    $(document).on('keyup', event => {
+                        if (String.fromCharCode(event.which).toLowerCase() === key) {
+                            keys[key].repeat = false;
+                        }
+                    });
+                }
+            }
         }
 
         static addEvents(events) {
             for (let key in events) {
                 if (events.hasOwnProperty(key)) {
-                    $(document).on('click', '#jazzquiz_control_' + key, events[key]);
+                    $(document).on('click', '#jazzquiz_control_' + key, () => {
+                        Instructor.enableControls([]);
+                        events[key]();
+                    });
                 }
             }
         }
@@ -708,9 +719,8 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
         /**
          * Show a question list dropdown.
          * @param {string} name
-         * @param {string} action The action for ajax.php
          */
-        showQuestionListSetup(name, action) {
+        showQuestionListSetup(name) {
             let $controlButton = Instructor.control(name);
             if ($controlButton.hasClass('active')) {
                 // It's already open. Let's not send another request.
@@ -725,7 +735,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 return;
             }
 
-            Ajax.get(action, {}, data => {
+            Ajax.get('list_' + name + '_questions', {}, data => {
                 let self = this;
                 let $menu = $('#jazzquiz_' + name + '_menu');
                 const menuMargin = $controlButton.offset().left - $controlButton.parent().offset().left;
@@ -755,14 +765,6 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                     $menu.append($questionButton);
                 }
             });
-        }
-
-        showImproviseQuestionSetup() {
-            this.showQuestionListSetup('improvise', 'list_improvise_questions');
-        };
-
-        showJumpQuestionSetup() {
-            this.showQuestionListSetup('jump', 'list_jump_questions');
         }
 
         /**
