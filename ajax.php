@@ -116,11 +116,15 @@ function get_question_form($session) {
         list($html, $js) = $renderer->render_question_form($slot, $session->attempt, $jazzquiz, $isinstructor);
         $isalreadysubmitted = false;
     }
+    $qtype = $session->get_question_type_by_slot($slot);
+    $config = get_config('mod_jazzquiz');
+    $enabledqtypes = explode(',', $config->enabledqtypes);
     return [
         'html' => $html,
         'js' => $js,
-        'question_type' => $session->get_question_type_by_slot($slot),
-        'is_already_submitted' => $isalreadysubmitted
+        'question_type' => $qtype,
+        'is_already_submitted' => $isalreadysubmitted,
+        'voteable' => in_array($qtype, $enabledqtypes)
     ];
 }
 

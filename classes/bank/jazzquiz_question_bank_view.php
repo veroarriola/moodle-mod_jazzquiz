@@ -83,7 +83,6 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
         echo $OUTPUT->heading(get_string('questionbank', 'question'), 2);
         array_unshift($this->searchconditions, new hidden_condition(!$showhidden));
         array_unshift($this->searchconditions, new category_condition($cat, $recurse, $contexts, $this->baseurl, $this->course));
-        array_unshift($this->searchconditions, new jazzquiz_disabled_condition());
         $this->display_options_form($showquestiontext, '/mod/jazzquiz/edit.php');
 
         // Continues with list of questions.
@@ -150,10 +149,6 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      */
     private function create_new_question_button($categoryid, $params, $caption, $tooltip = '', $disabled = false) {
         global $OUTPUT;
-        static $choiceformprinted = false;
-
-        $config = get_config('mod_jazzquiz');
-        $enabledqtypes = explode(',', $config->enabledqtypes);
 
         $params['category'] = $categoryid;
         $url = new \moodle_url('/question/addquestion.php', $params);
@@ -163,9 +158,10 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
             'title' => $tooltip
         ]);
 
+        static $choiceformprinted = false;
         if (!$choiceformprinted) {
             echo '<div id="qtypechoicecontainer">';
-            echo print_choose_qtype_to_add_form([], $enabledqtypes);
+            echo print_choose_qtype_to_add_form([]);
             echo "</div>\n";
             $choiceformprinted = true;
         }

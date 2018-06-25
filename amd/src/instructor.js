@@ -40,22 +40,17 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             this.respondedCount = 0;
             this.showResponses = false;
             this.totalStudents = 0;
-            $(document).on('click', '#jazzquiz_undo_merge', this.undoMerge.bind(this));
-            let self = this;
-            $(document).on('click', function (event) {
+            $(document).on('click', '#jazzquiz_undo_merge', () => this.undoMerge());
+            $(document).on('click', event => {
                 // Clicking a row to merge.
                 if (event.target.classList.contains('bar')) {
-                    self.startMerge(event.target.id);
+                    this.startMerge(event.target.id);
                 } else if (event.target.parentNode && event.target.parentNode.classList.contains('bar')) {
-                    self.startMerge(event.target.parentNode.id);
+                    this.startMerge(event.target.parentNode.id);
                 }
             });
-            $(document).on('click', '#review_show_normal_results', function () {
-                self.refresh(false);
-            });
-            $(document).on('click', '#review_show_vote_results', function () {
-                self.refreshVotes();
-            });
+            $(document).on('click', '#review_show_normal_results', () => this.refresh(false));
+            $(document).on('click', '#review_show_vote_results', () => this.refreshVotes());
         }
 
         /**
@@ -485,6 +480,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             this.responses = new ResponseView(quiz);
             this.isShowingCorrectAnswer = false;
             this.totalQuestions = 0;
+            this.allowVote = false;
 
             $(document).on('keyup', event => {
                 if (event.keyCode === 27) { // Escape key.
@@ -642,7 +638,10 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
 
         onReviewing(data) {
             Quiz.show(Instructor.side);
-            let enabledButtons = ['answer', 'vote', 'repoll', 'fullscreen', 'improvise', 'jump', 'quit'];
+            let enabledButtons = ['answer', 'repoll', 'fullscreen', 'improvise', 'jump', 'quit'];
+            if (this.allowVote) {
+                enabledButtons.push('vote');
+            }
             if (data.slot < this.totalQuestions) {
                 enabledButtons.push('next');
             }
@@ -683,6 +682,10 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             $('.region_main_settings_menu_proxy').css('display', 'none');
             Quiz.show(Instructor.controlButtons);
             Quiz.hide(Instructor.control('startquiz').parent());
+        }
+
+        onQuestionRefreshed(data) {
+            this.allowVote = data.voteable;
         }
 
         onTimerEnding() {

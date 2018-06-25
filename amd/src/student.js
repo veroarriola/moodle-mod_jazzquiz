@@ -104,6 +104,10 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             setText(Question.timer, 'question_will_end_in_x_seconds', 'jazzquiz', timeLeft);
         }
 
+        onQuestionRefreshed(data) {
+
+        }
+
         /**
          * Submit answer for the current question.
          */

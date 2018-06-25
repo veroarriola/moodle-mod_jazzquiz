@@ -153,8 +153,8 @@ $string['download_attendance_list'] = 'Download attendance list';
 $string['download_responses'] = 'Download responses';
 
 // Admin Settings.
-$string['enabled_question_types'] = 'Enable question types';
-$string['enabled_question_types_info'] = 'Question types that are enabled for use within instances of the JazzQuiz activity.';
+$string['enabled_vote_question_types'] = 'Select voteable question types';
+$string['enabled_vote_question_types_info'] = 'Select the question types which should have a <b>Vote</b> option.';
 $string['improv_enabled_questions'] = 'Default improvisation questions';
 $string['improv_enabled_questions_info'] = 'Questions added by JazzQuiz which can be used for improvisation during a session.';
 
