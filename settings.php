@@ -33,13 +33,13 @@ if ($ADMIN->fulltree) {
         $fullpluginname = $qtype->plugin_name();
         $pluginname = explode('_', $fullpluginname)[1];
         $choices[$pluginname] = $qtype->menu_name();
-        $defaults[$pluginname] = 1;
+        $defaults[$pluginname] = !in_array($pluginname, ['multichoice', 'truefalse']);
     }
     $settings->add(
         new admin_setting_configmulticheckbox(
             'mod_jazzquiz/enabledqtypes',
-            get_string('enabled_question_types', 'jazzquiz'),
-            get_string('enabled_question_types_info', 'jazzquiz'),
+            get_string('enabled_vote_question_types', 'jazzquiz'),
+            get_string('enabled_vote_question_types_info', 'jazzquiz'),
             $defaults,
             $choices
         )

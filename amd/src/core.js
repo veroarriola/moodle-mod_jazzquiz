@@ -127,6 +127,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
                 }
                 Quiz.show(Question.box.html(data.html));
                 eval(data.js);
+                this.quiz.role.onQuestionRefreshed(data);
             });
         }
 
