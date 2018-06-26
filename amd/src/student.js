@@ -112,7 +112,6 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * Submit answer for the current question.
          */
         submitAnswer() {
-            this.quiz.question.hideTimer();
             if (this.quiz.question.isSaving) {
                 // Don't save twice.
                 return;
@@ -142,6 +141,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                     return;
                 }
                 Quiz.hide(Question.box);
+                this.quiz.question.hideTimer();
             }).fail(() => {
                 this.quiz.question.isSaving = false;
             });

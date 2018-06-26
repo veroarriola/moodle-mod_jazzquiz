@@ -535,6 +535,13 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                         if (String.fromCharCode(event.which).toLowerCase() !== key) {
                             return;
                         }
+                        let focusedTag = $(':focus').prop('tagName');
+                        if (focusedTag !== undefined) {
+                            focusedTag = focusedTag.toLowerCase();
+                            if (focusedTag === 'input' || focusedTag === 'textarea') {
+                                return;
+                            }
+                        }
                         event.preventDefault();
                         keys[key].repeat = true;
                         let $control = Instructor.control(keys[key].action);
@@ -664,6 +671,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
         onSessionClosed(data) {
             Quiz.hide(Instructor.side);
             Instructor.enableControls([]);
+            this.responses.clear();
             this.quiz.question.isRunning = false;
         }
 
