@@ -670,6 +670,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
 
         onSessionClosed(data) {
             Quiz.hide(Instructor.side);
+            Quiz.hide(Instructor.correctAnswer);
             Instructor.enableControls([]);
             this.responses.clear();
             this.quiz.question.isRunning = false;
@@ -848,6 +849,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * Close the current session.
          */
         closeSession() {
+            Quiz.hide($('#jazzquiz_undo_merge'));
             Quiz.hide(Question.box);
             Quiz.hide(Instructor.controls);
             setText(Quiz.info, 'closing_session');
