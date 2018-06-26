@@ -219,6 +219,7 @@
 #jazzquiz_controls .btn.active {
     background: #29f;
     color: white;
+    transition: none;
 }
 
 @media all and (min-width: 1152px) {
@@ -378,11 +379,11 @@
     background: #ddd;
 }
 
-.jazzquiz-box .questionlist li a:hover i.icon {
-    color: #29f;
+.jazzquiz-box .questionlist li a {
+    color: black;
 }
 
-.iconcol a:hover .icon {
+.jazzquiz-box .questionlist li a:hover i.icon {
     color: #29f;
 }
 
