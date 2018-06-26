@@ -162,11 +162,18 @@ $string['improv_enabled_questions_info'] = 'Questions added by JazzQuiz which ca
 $string['instructions_for_student'] = '<p>Please wait for the instructor to start the quiz.</p>';
 $string['instructions_for_instructor'] = '
     <h3>Please make sure to read the instructions:</h3>
+    <p>There are hotkeys available, which can be used when an input field is not focused.</p>
     <table>
+        <tr>
+               <th>Control</th>
+               <th>Hotkey</th>
+               <th>Description</th>
+        </tr>
         <tr>
             <td>
                 <i class="fa fa-repeat"></i> Re-poll
             </td>
+            <td>r</td>
             <td>
                 Allows the instructor to re-poll the question that was just asked.
                 This is the same as starting a question from the <i class="fa fa-bars"></i> Jump dropdown list.
@@ -176,6 +183,7 @@ $string['instructions_for_instructor'] = '
             <td>
                 <i class="fa fa-bar-chart"></i> Vote
             </td>
+            <td>v</td>
             <td>
                  Let the students vote on their answers.
                  The instructor can click on an answer to toggle whether it should be included in the vote or not.
@@ -187,6 +195,7 @@ $string['instructions_for_instructor'] = '
             <td>
                 <i class="fa fa-edit"></i> Improvise
             </td>
+            <td>i</td>
             <td>
                 Shows a list of questions made for improvising. Write the question on the blackboard and ask for input with these questions.
             </td>
@@ -195,6 +204,7 @@ $string['instructions_for_instructor'] = '
             <td>
                 <i class="fa fa-bars"></i> Jump
             </td>
+            <td>j</td>
             <td>
                 Shows a list of all the questions planned for the quiz.
             </td>
@@ -203,6 +213,7 @@ $string['instructions_for_instructor'] = '
             <td>
                 <i class="fa fa-forward"></i> Next
             </td>
+            <td>n</td>
             <td>
                 Continue on to the next question in the list of planned questions.
             </td>
@@ -211,6 +222,7 @@ $string['instructions_for_instructor'] = '
             <td>
                 <i class="fa fa-close"></i> End
             </td>
+            <td>e</td>
             <td>
                 End the current question.
             </td>
@@ -219,6 +231,7 @@ $string['instructions_for_instructor'] = '
             <td>
                 <i class="fa fa-expand"></i> Fullscreen
             </td>
+            <td>f</td>
             <td>
                 Show the results in fullscreen. The answers will not appear during a question, so you can keep this up throughout the session.
             </td>
@@ -227,6 +240,7 @@ $string['instructions_for_instructor'] = '
             <td>
                 <i class="fa fa-square-o"></i> / <i class="fa fa-check-square-o"></i> Answer
             </td>
+            <td>a</td>
             <td>
                 Gives the instructor a view of the question with the correct response selected.
             </td>
@@ -235,6 +249,7 @@ $string['instructions_for_instructor'] = '
             <td>
                 <i class="fa fa-square-o"></i> / <i class="fa fa-check-square-o"></i> Responses
             </td>
+            <td>t (toggle)</td>
             <td>
                 Hide or show the students\' answers.
             </td>
@@ -243,6 +258,7 @@ $string['instructions_for_instructor'] = '
             <td>
                 <i class="fa fa-window-close"></i> Quit
             </td>
+            <td></td>
             <td>
                 Exit the current quiz session.
             </td>
