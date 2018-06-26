@@ -439,6 +439,7 @@
 #jazzquiz_response_info_container .btn.btn-primary:hover {
     background: #29f;
     color: #fff;
+    transition: none;
 }
 
 #jazzquiz_control_exit {
