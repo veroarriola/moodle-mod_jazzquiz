@@ -70,8 +70,9 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * @param bool $recurse
      * @param bool $showhidden
      * @param bool $showquestiontext
+     * @param array $tagids
      */
-    public function display($tabname, $page, $perpage, $cat, $recurse, $showhidden, $showquestiontext) {
+    public function display($tabname, $page, $perpage, $cat, $recurse, $showhidden, $showquestiontext, $tagids = []) {
         global $OUTPUT;
 
         if ($this->process_actions_needing_ui()) {
