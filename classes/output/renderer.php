@@ -382,7 +382,7 @@ class renderer extends \plugin_renderer_base {
             $session->jazzquiz->cm->id,
             $session->jazzquiz->data->id,
             $session->data->id,
-            $session->attempt->data->id,
+            $session->attempt ? $session->attempt->data->id : 0,
             sesskey()
         ]);
     }

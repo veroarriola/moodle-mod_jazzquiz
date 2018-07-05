@@ -240,7 +240,11 @@ class improviser {
      */
     private static function get_improvised_question_definition($name) {
         global $DB;
-        return $DB->get_record('question', ['name' => '{IMPROV}' . $name]);
+        $questions = $DB->get_records('question', ['name' => '{IMPROV}' . $name]);
+        if (!$questions) {
+            return false;
+        }
+        return reset($questions);
     }
 
     /**

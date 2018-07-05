@@ -203,7 +203,7 @@ function jazzquiz_supports($feature) {
         case FEATURE_RATE:
             return false;
         case FEATURE_BACKUP_MOODLE2:
-            return false;
+            return true;
         case FEATURE_SHOW_DESCRIPTION:
             return true;
         case FEATURE_PLAGIARISM:
