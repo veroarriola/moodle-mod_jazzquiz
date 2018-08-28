@@ -308,17 +308,11 @@ class jazzquiz_session {
     }
 
     /**
-     * Get the count of active quiz attempts.
+     * Get the total number of students participating in the quiz.
      * @return int
      */
     public function get_student_count() {
-        $count = 0;
-        foreach ($this->attempts as $attempt) {
-            if ($attempt->data->status == jazzquiz_attempt::INPROGRESS) {
-                $count++;
-            }
-        }
-        return $count;
+        return count($this->attempts);
     }
 
     /**

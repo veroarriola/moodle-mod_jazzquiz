@@ -292,6 +292,7 @@ function save_vote($session) {
  */
 function get_vote_results($session) {
     $session->load_session_questions();
+    $session->load_attempts();
     $slot = count($session->questions);
     $vote = new jazzquiz_vote($session->data->id, $slot);
     $votes = $vote->get_results();
