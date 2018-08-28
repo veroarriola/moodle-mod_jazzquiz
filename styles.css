@@ -159,6 +159,12 @@
     width: 48px;
 }
 
+.jazzquiz-responses-overview tr.outside .bar div span {
+    margin-right: -2.5rem;
+    color: #444;
+    text-shadow: 0 0 10px #999;
+}
+
 .jazzquiz-vote label {
     display: block;
     padding: 10px;

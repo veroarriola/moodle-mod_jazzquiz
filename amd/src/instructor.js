@@ -194,8 +194,14 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 return;
             }
             let total = 0;
+            let highestResponseCount = 0;
             for (let i = 0; i < responses.length; i++) {
-                total += parseInt(responses[i].count); // In case count is a string.
+                let count = parseInt(responses[i].count); // In case count is a string.
+                total += count;
+                if (count > highestResponseCount) {
+                    highestResponseCount = count;
+                }
+
             }
             if (total === 0) {
                 total = 1;
@@ -227,7 +233,8 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
 
             // Add rows.
             for (let i = 0; i < responses.length; i++) {
-                const percent = (parseInt(responses[i].count) / total) * 100;
+                //const percent = (parseInt(responses[i].count) / total) * 100;
+                const percent = (parseInt(responses[i].count) / highestResponseCount) * 100;
 
                 // Check if row with same response already exists.
                 let rowIndex = -1;
@@ -249,6 +256,9 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                     row.dataset.row_i = rowIndex;
                     row.dataset.count = responses[i].count;
                     row.classList.add('selected-vote-option');
+                    if (percent < 15) {
+                        row.classList.add('outside');
+                    }
 
                     const countHtml = '<span id="' + name + '_count_' + rowIndex + '">' + responses[i].count + '</span>';
                     let responseCell = row.insertCell(0);
@@ -268,10 +278,17 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                         Quiz.renderMaximaEquation(responses[i].response, latexId);
                     }
                 } else {
-                    target.rows[currentRowIndex].dataset.row_i = rowIndex;
-                    target.rows[currentRowIndex].dataset.response_i = i;
-                    target.rows[currentRowIndex].dataset.percent = percent;
-                    target.rows[currentRowIndex].dataset.count = responses[i].count;
+                    let currentRow = target.rows[currentRowIndex];
+                    currentRow.dataset.row_i = rowIndex;
+                    currentRow.dataset.response_i = i;
+                    currentRow.dataset.percent = percent;
+                    currentRow.dataset.count = responses[i].count;
+                    const containsOutside = currentRow.classList.contains('outside');
+                    if (percent > 15 && containsOutside) {
+                        currentRow.classList.remove('outside');
+                    } else if (percent < 15 && !containsOutside) {
+                        currentRow.classList.add('outside');
+                    }
                     let countElement = document.getElementById(name + '_count_' + rowIndex);
                     if (countElement !== null) {
                         countElement.innerHTML = responses[i].count;

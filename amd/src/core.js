@@ -319,7 +319,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
 
         /**
          * Sets the body of the target, and triggers an event letting MathJax know about the element.
-         * @param {*} target
+         * @param {*} $target
          * @param {string} latex
          */
         static addMathjaxElement($target, latex) {
