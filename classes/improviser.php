@@ -26,12 +26,22 @@ defined('MOODLE_INTERNAL') || die();
  */
 class improviser {
 
+    /** @var jazzquiz $jazzquiz */
+    private $jazzquiz;
+
+    /**
+     * @param jazzquiz $jazzquiz
+     */
+    public function __construct($jazzquiz) {
+        $this->jazzquiz = $jazzquiz;
+    }
+
     /**
      * Check whether a question type exists or not.
      * @param string $name Name of the question type
      * @return bool
      */
-    private static function question_type_exists($name) {
+    private function question_type_exists($name) {
         $qtypes = \core_plugin_manager::instance()->get_plugins_of_type('qtype');
         foreach ($qtypes as $qtype) {
             if ($qtype->name === $name) {
@@ -46,7 +56,7 @@ class improviser {
      * @param string $name of question
      * @return bool
      */
-    private static function is_question_enabled($name) {
+    private function is_question_enabled($name) {
         $config = get_config('mod_jazzquiz');
         if (!isset($config->improvenabled)) {
             $config->improvenabled = '';
@@ -61,7 +71,7 @@ class improviser {
      * @param string $name of question
      * @return bool
      */
-    private static function is_question_added($name) {
+    private function is_question_added($name) {
         $config = get_config('mod_jazzquiz');
         if (!isset($config->improvadded)) {
             $config->improvadded = '';
@@ -75,7 +85,7 @@ class improviser {
      * Store that we have added the question to the database.
      * @param string $name
      */
-    private static function set_question_added($name) {
+    private function set_question_added($name) {
         $config = get_config('mod_jazzquiz');
         $improvadded = [];
         if (isset($config->improvadded)) {
@@ -94,7 +104,7 @@ class improviser {
      * Remove the 'enable' and 'added' config for this question
      * @param string $name of question
      */
-    private static function disable_question($name) {
+    private function disable_question($name) {
         $config = get_config('mod_jazzquiz');
         if (isset($config->improvenabled)) {
             $enabled = explode(',', $config->improvenabled);
@@ -121,16 +131,16 @@ class improviser {
      * @param string $name of question
      * @return bool true if deleted or already deleted
      */
-    private static function delete_if_disabled($name) {
-        $enabled = self::is_question_enabled($name);
-        $added = self::is_question_added($name);
-        $question = self::get_improvised_question_definition($name);
+    private function delete_if_disabled($name) {
+        $enabled = $this->is_question_enabled($name);
+        $added = $this->is_question_added($name);
+        $question = $this->get_improvised_question_definition($name);
         if ($enabled && !$question) {
             // The question is enabled, but does not exist in database.
             if ($added) {
                 // This question was originally added, but something (other than JazzQuiz) has deleted it.
                 // Remove 'added' and 'enabled' for this question
-                self::disable_question($name);
+                $this->disable_question($name);
                 // Tell the caller to not add the question.
                 return true;
             }
@@ -144,7 +154,7 @@ class improviser {
             question_delete_question($question->id);
             // Remove it from config too.
             if ($added) {
-                self::disable_question($name);
+                $this->disable_question($name);
             }
         }
         // The question is disabled, and we have made sure the question is deleted.
@@ -156,11 +166,16 @@ class improviser {
      * Create a question database object.
      * @param string $qtype What question type to create
      * @param string $name The name of the question to create
-     * @return \stdClass
+     * @return \stdClass | null
      */
-    private static function make_generic_question_definition($qtype, $name) {
+    private function make_generic_question_definition($qtype, $name) {
+        $context = \context_module::instance($this->jazzquiz->cm->id);
+        $category = question_get_default_category($context->id);
+        if (!$category) {
+            return null;
+        }
         $question = new \stdClass();
-        $question->category = 4; // This is the 'System Default' for 222.
+        $question->category = $category->id;
         $question->parent = 0;
         $question->name = '{IMPROV}' . $name;
         $question->questiontext = '&nbsp;';
@@ -186,7 +201,7 @@ class improviser {
      * @param int $questionid The ID of the question to make options for
      * @return \stdClass
      */
-    private static function make_multichoice_options($questionid) {
+    private function make_multichoice_options($questionid) {
         $options = new \stdClass();
         $options->questionid = $questionid;
         $options->layout = 0;
@@ -208,7 +223,7 @@ class improviser {
      * @param int $questionid The ID of the question to make options for
      * @return \stdClass
      */
-    private static function make_short_answer_options($questionid) {
+    private function make_short_answer_options($questionid) {
         $options = new \stdClass();
         $options->questionid = $questionid;
         $options->usecase = 0;
@@ -222,7 +237,7 @@ class improviser {
      * @param string $answertext The answer text
      * @return \stdClass
      */
-    private static function make_generic_question_answer($questionid, $format, $answertext) {
+    private function make_generic_question_answer($questionid, $format, $answertext) {
         $answer = new \stdClass();
         $answer->question = $questionid;
         $answer->answer = $answertext;
@@ -238,7 +253,7 @@ class improviser {
      * @param string $name The name of the improvised question without the prefix.
      * @return \stdClass|false
      */
-    private static function get_improvised_question_definition($name) {
+    private function get_improvised_question_definition($name) {
         global $DB;
         $questions = $DB->get_records('question', ['name' => '{IMPROV}' . $name]);
         if (!$questions) {
@@ -252,18 +267,21 @@ class improviser {
      * @param string $name The name of the question
      * @param int $optioncount How many answer options should be created
      */
-    private static function insert_multichoice_question_definition($name, $optioncount) {
+    private function insert_multichoice_question_definition($name, $optioncount) {
         global $DB;
-        if (self::delete_if_disabled($name)) {
+        if ($this->delete_if_disabled($name)) {
             return;
         }
 
         // Add question.
-        $question = self::make_generic_question_definition('multichoice', $name);
+        $question = $this->make_generic_question_definition('multichoice', $name);
+        if (!$question) {
+            return;
+        }
         $question->id = $DB->insert_record('question', $question);
 
         // Add options.
-        $options = self::make_multichoice_options($question->id);
+        $options = $this->make_multichoice_options($question->id);
         $DB->insert_record('qtype_multichoice_options', $options);
 
         // Add answers.
@@ -271,56 +289,62 @@ class improviser {
         $end = $begin + intval($optioncount);
         for ($a = $begin; $a < $end; $a++) {
             $letter = chr($a);
-            $answer = self::make_generic_question_answer($question->id, 1, $letter);
+            $answer = $this->make_generic_question_answer($question->id, 1, $letter);
             $DB->insert_record('question_answers', $answer);
         }
 
-        self::set_question_added($name);
+        $this->set_question_added($name);
     }
 
     /**
      * Insert a short answer question to the database.
      * @param string $name The name of the short answer question
      */
-    private static function insert_shortanswer_question_definition($name) {
+    private function insert_shortanswer_question_definition($name) {
         global $DB;
-        if (self::delete_if_disabled($name)) {
+        if ($this->delete_if_disabled($name)) {
             return;
         }
 
         // Add question.
-        $question = self::make_generic_question_definition('shortanswer', 'Short answer');
+        $question = $this->make_generic_question_definition('shortanswer', 'Short answer');
+        if (!$question) {
+            return;
+        }
         $question->id = $DB->insert_record('question', $question);
 
         // Add options.
-        $options = self::make_short_answer_options($question->id);
+        $options = $this->make_short_answer_options($question->id);
         $DB->insert_record('qtype_shortanswer_options', $options);
 
         // Add answer.
-        $answer = self::make_generic_question_answer($question->id, 0, '*');
+        $answer = $this->make_generic_question_answer($question->id, 0, '*');
         $DB->insert_record('question_answers', $answer);
 
-        self::set_question_added($name);
+        $this->set_question_added($name);
     }
 
     /**
      * Insert a true/false question to the database.
      * @param string $name The name of the true/false question
      */
-    private static function insert_truefalse_question_definition($name) {
+    private function insert_truefalse_question_definition($name) {
         global $DB;
-        if (self::delete_if_disabled($name)) {
+        if ($this->delete_if_disabled($name)) {
             return;
         }
 
         // Add question.
-        $question = self::make_generic_question_definition('truefalse', 'True / False');
+        $question = $this->make_generic_question_definition('truefalse', 'True / False');
+        if (!$question) {
+            return;
+        }
         $question->id = $DB->insert_record('question', $question);
 
         // Add answers.
-        $trueanswer = self::make_generic_question_answer($question->id, 0, 'True');
+        $trueanswer = $this->make_generic_question_answer($question->id, 0, 'True');
         $trueanswer->id = $DB->insert_record('question_answers', $trueanswer);
-        $falseanswer = self::make_generic_question_answer($question->id, 0, 'False');
+        $falseanswer = $this->make_generic_question_answer($question->id, 0, 'False');
         $falseanswer->id = $DB->insert_record('question_answers', $falseanswer);
 
         // True / False.
@@ -330,24 +354,27 @@ class improviser {
         $truefalse->falseanswer = $falseanswer->id;
         $DB->insert_record('question_truefalse', $truefalse);
 
-        self::set_question_added($name);
+        $this->set_question_added($name);
     }
 
     /**
      * Insert a STACK question to the database.
      * @param string $name The name of the STACK question
      */
-    private static function insert_stack_algebraic_question_definition($name) {
+    private function insert_stack_algebraic_question_definition($name) {
         global $DB;
-        if (!self::question_type_exists('stack')) {
+        if (!$this->question_type_exists('stack')) {
             return;
         }
-        if (self::delete_if_disabled($name)) {
+        if ($this->delete_if_disabled($name)) {
             return;
         }
 
         // Add question.
-        $question = self::make_generic_question_definition('stack', $name);
+        $question = $this->make_generic_question_definition('stack', $name);
+        if (!$question) {
+            return;
+        }
         $question->questiontext = '<p>[[input:ans1]] [[validation:ans1]]</p>';
         $question->id = $DB->insert_record('question', $question);
 
@@ -431,7 +458,7 @@ class improviser {
         $prtnode->falsefeedbackformat = 1;
         $prtnode->id = $DB->insert_record('qtype_stack_prt_nodes', $prtnode);
 
-        self::set_question_added($name);
+        $this->set_question_added($name);
     }
 
     /**
@@ -448,18 +475,18 @@ class improviser {
             'Algebraic'
         ];
     }
-    
+
     /**
      * Insert all the improvised question definitions to the question bank.
      * Every question will have a prefix of {IMPROV}
      */
-    public static function insert_default_improvised_question_definitions() {
+    public function insert_default_improvised_question_definitions() {
         for ($i = 3; $i <= 5; $i++) {
-            self::insert_multichoice_question_definition("$i Multichoice Options", $i);
+            $this->insert_multichoice_question_definition("$i Multichoice Options", $i);
         }
-        self::insert_shortanswer_question_definition('Short answer');
-        self::insert_truefalse_question_definition('True / False');
-        self::insert_stack_algebraic_question_definition('Algebraic');
+        $this->insert_shortanswer_question_definition('Short answer');
+        $this->insert_truefalse_question_definition('True / False');
+        $this->insert_stack_algebraic_question_definition('Algebraic');
     }
 
 }

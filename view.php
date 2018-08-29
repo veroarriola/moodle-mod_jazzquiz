@@ -202,7 +202,8 @@ function jazzquiz_view() {
 
     if ($jazzquiz->is_instructor()) {
         // TODO: Find a better place to add the question definitions.
-        improviser::insert_default_improvised_question_definitions();
+        $improviser = new improviser($jazzquiz);
+        $improviser->insert_default_improvised_question_definitions();
     }
 
     if ($action === 'quizstart') {
