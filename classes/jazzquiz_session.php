@@ -312,7 +312,13 @@ class jazzquiz_session {
      * @return int
      */
     public function get_student_count() {
-        return count($this->attempts);
+        $count = count($this->attempts);
+        if ($count > 0) {
+            $count--; // The instructor also has an attempt.
+            // Can also loop through all to check if "in progress",
+            // but usually there is only one instructor, so maybe not?
+        }
+        return $count;
     }
 
     /**
