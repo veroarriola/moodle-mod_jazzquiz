@@ -117,14 +117,13 @@ function get_question_form($session) {
         $isalreadysubmitted = false;
     }
     $qtype = $session->get_question_type_by_slot($slot);
-    $config = get_config('mod_jazzquiz');
-    $enabledqtypes = explode(',', $config->enabledqtypes);
+    $voteable = ['multichoice', 'truefalse'];
     return [
         'html' => $html,
         'js' => $js,
         'question_type' => $qtype,
         'is_already_submitted' => $isalreadysubmitted,
-        'voteable' => in_array($qtype, $enabledqtypes)
+        'voteable' => in_array($qtype, $voteable)
     ];
 }
 

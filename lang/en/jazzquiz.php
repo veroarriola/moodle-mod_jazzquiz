@@ -153,12 +153,6 @@ $string['download_attendance_list'] = 'Download attendance list';
 $string['download_responses'] = 'Download responses';
 $string['no_sessions_exist'] = 'No sessions exist yet.';
 
-// Admin Settings.
-$string['enabled_vote_question_types'] = 'Select voteable question types';
-$string['enabled_vote_question_types_info'] = 'Select the question types which should have a <b>Vote</b> option.';
-$string['improv_enabled_questions'] = 'Default improvisation questions';
-$string['improv_enabled_questions_info'] = 'Questions added by JazzQuiz which can be used for improvisation during a session.';
-
 // Instructions.
 $string['instructions_for_student'] = '<p>Please wait for the instructor to start the quiz.</p>';
 $string['instructions_for_instructor'] = '

@@ -326,6 +326,8 @@ class renderer extends \plugin_renderer_base {
             ];
         }
 
+        // TODO: Slots should not be passed as parameter to AMD module.
+        // It quickly gets over 1KB, which shows debug warning.
         $this->require_review($session, $slots);
 
         $notrespondeduserids = $session->get_users();
@@ -395,7 +397,8 @@ class renderer extends \plugin_renderer_base {
         $this->page->requires->js('/question/qengine.js');
         if ($session->jazzquiz->is_instructor()) {
             $count = count($session->jazzquiz->questions);
-            $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', [$count]);
+            $params =  [$count, false, []];
+            $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', $params);
         } else {
             $this->page->requires->js_call_amd('mod_jazzquiz/student', 'initialize');
         }
@@ -416,7 +419,8 @@ class renderer extends \plugin_renderer_base {
     public function require_review($session, $slots) {
         $this->require_core($session);
         $count = count($session->jazzquiz->questions);
-        $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', [$count, true, $slots]);
+        $params = [$count, true, $slots];
+        $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', $params);
     }
 
 }

@@ -4,7 +4,7 @@
 JazzQuiz is designed to be used in face-to-face lessons.
 The teacher may plan questions in advance, but can also easily improvise on the fly.
 Write your question on the blackboard, and select an appropriate question type from the dropdown menu.
-Several improvise questions will already be included: Short answer, multichoice (3, 4 & 5), true/false and if installed: STACK algebraic input. (If you install STACK after JazzQuiz, you must enable the question type in the JazzQuiz settings)
+Several improvise questions will already be included: Short answer, multichoice (3, 4 & 5), true/false.
 
 During the lesson, the teacher starts the quiz. Students can now connect to this quiz.
 Once the teacher is satisfied that all students have connected to the quiz, they can click on **Start Quiz**
