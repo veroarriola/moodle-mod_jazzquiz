@@ -109,7 +109,12 @@ class improviser {
      */
     private function get_default_question_category() {
         $context = \context_module::instance($this->jazzquiz->cm->id);
-        return question_get_default_category($context->id);
+        $category = question_get_default_category($context->id);
+        if (!$category) {
+            $contexts = new \question_edit_contexts($context);
+            $category = question_make_default_categories($contexts->all());
+        }
+        return $category;
     }
 
     /**
