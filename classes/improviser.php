@@ -52,6 +52,26 @@ class improviser {
     }
 
     /**
+     * Get all the improvised question records in our activity's question category.
+     * @return \stdClass[]|false
+     */
+    public function get_all_improvised_question_definitions() {
+        global $DB;
+        $category = $this->get_default_question_category();
+        if (!$category) {
+            return false;
+        }
+        $questions = $DB->get_records_sql('SELECT id, name FROM {question} WHERE name LIKE ? AND category = ?', [
+            '{IMPROV}%',
+            $category->id
+        ]);
+        if (!$questions) {
+            return false;
+        }
+        return $questions;
+    }
+
+    /**
      * Get the specified question name is an improvisational question.
      * @param string $name The name of the improvised question without the prefix.
      * @return \stdClass|false

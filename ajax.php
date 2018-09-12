@@ -43,8 +43,8 @@ require_sesskey();
  * @return mixed[]
  */
 function show_all_improvise_questions($jazzquiz) {
-    global $DB;
-    $questionrecords = $DB->get_records_sql('SELECT id, name FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
+    $improviser = new improviser($jazzquiz);
+    $questionrecords = $improviser->get_all_improvised_question_definitions();
     if (!$questionrecords) {
         return [
             'status' => 'error',
