@@ -43,8 +43,8 @@ require_sesskey();
  * @return mixed[]
  */
 function show_all_improvise_questions($jazzquiz) {
-    global $DB;
-    $questionrecords = $DB->get_records_sql('SELECT id, name FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
+    $improviser = new improviser($jazzquiz);
+    $questionrecords = $improviser->get_all_improvised_question_definitions();
     if (!$questionrecords) {
         return [
             'status' => 'error',
@@ -107,24 +107,25 @@ function get_question_form($session) {
     }
     $html = '';
     $js = '';
+    $css = [];
     $isalreadysubmitted = true;
     if (!$session->attempt->has_responded($slot)) {
         $jazzquiz = $session->jazzquiz;
         /** @var output\renderer $renderer */
         $renderer = $jazzquiz->renderer;
         $isinstructor = $jazzquiz->is_instructor();
-        list($html, $js) = $renderer->render_question_form($slot, $session->attempt, $jazzquiz, $isinstructor);
+        list($html, $js, $css) = $renderer->render_question_form($slot, $session->attempt, $jazzquiz, $isinstructor);
         $isalreadysubmitted = false;
     }
     $qtype = $session->get_question_type_by_slot($slot);
-    $config = get_config('mod_jazzquiz');
-    $enabledqtypes = explode(',', $config->enabledqtypes);
+    $voteable = ['multichoice', 'truefalse'];
     return [
         'html' => $html,
         'js' => $js,
+        'css' => $css,
         'question_type' => $qtype,
         'is_already_submitted' => $isalreadysubmitted,
-        'voteable' => in_array($qtype, $enabledqtypes)
+        'voteable' => in_array($qtype, $voteable)
     ];
 }
 
@@ -292,6 +293,7 @@ function save_vote($session) {
  */
 function get_vote_results($session) {
     $session->load_session_questions();
+    $session->load_attempts();
     $slot = count($session->questions);
     $vote = new jazzquiz_vote($session->data->id, $slot);
     $votes = $vote->get_results();
@@ -498,41 +500,22 @@ function session_info($session) {
  */
 function handle_instructor_request($action, $session) {
     switch ($action) {
-        case 'start_quiz':
-            return start_quiz($session);
-        case 'get_question_form':
-            return get_question_form($session);
-        case 'save_question':
-            return save_question($session);
-        case 'list_improvise_questions':
-            return show_all_improvise_questions($session->jazzquiz);
-        case 'list_jump_questions':
-            return show_all_jump_questions($session->jazzquiz);
-        case 'run_voting':
-            return run_voting($session);
-        case 'get_vote_results':
-            return get_vote_results($session);
-        case 'get_results':
-            return get_results($session);
-        case 'start_question':
-            return start_question($session);
-        case 'end_question':
-            return end_question($session);
-        case 'get_right_response':
-            return get_right_response($session);
-        case 'merge_responses':
-            return merge_responses($session);
-        case 'undo_merge':
-            return undo_merge($session);
-        case 'close_session':
-            return close_session($session);
-        case 'info':
-            return session_info($session);
-        default:
-            return [
-                'status' => 'error',
-                'message' => 'Invalid action'
-            ];
+        case 'start_quiz':               return start_quiz($session);
+        case 'get_question_form':        return get_question_form($session);
+        case 'save_question':            return save_question($session);
+        case 'list_improvise_questions': return show_all_improvise_questions($session->jazzquiz);
+        case 'list_jump_questions':      return show_all_jump_questions($session->jazzquiz);
+        case 'run_voting':               return run_voting($session);
+        case 'get_vote_results':         return get_vote_results($session);
+        case 'get_results':              return get_results($session);
+        case 'start_question':           return start_question($session);
+        case 'end_question':             return end_question($session);
+        case 'get_right_response':       return get_right_response($session);
+        case 'merge_responses':          return merge_responses($session);
+        case 'undo_merge':               return undo_merge($session);
+        case 'close_session':            return close_session($session);
+        case 'info':                     return session_info($session);
+        default:                         return ['status' => 'error', 'message' => 'Invalid action'];
     }
 }
 
@@ -544,19 +527,11 @@ function handle_instructor_request($action, $session) {
  */
 function handle_student_request($action, $session) {
     switch ($action) {
-        case 'save_question':
-            return save_question($session);
-        case 'save_vote':
-            return save_vote($session);
-        case 'get_question_form':
-            return get_question_form($session);
-        case 'info':
-            return session_info($session);
-        default:
-            return [
-                'status' => 'error',
-                'message' => 'Invalid action'
-            ];
+        case 'save_question':     return save_question($session);
+        case 'save_vote':         return save_vote($session);
+        case 'get_question_form': return get_question_form($session);
+        case 'info':              return session_info($session);
+        default:                  return ['status' => 'error', 'message' => 'Invalid action'];
     }
 }
 

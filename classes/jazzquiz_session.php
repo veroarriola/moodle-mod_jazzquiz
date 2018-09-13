@@ -308,15 +308,15 @@ class jazzquiz_session {
     }
 
     /**
-     * Get the count of active quiz attempts.
+     * Get the total number of students participating in the quiz.
      * @return int
      */
     public function get_student_count() {
-        $count = 0;
-        foreach ($this->attempts as $attempt) {
-            if ($attempt->data->status == jazzquiz_attempt::INPROGRESS) {
-                $count++;
-            }
+        $count = count($this->attempts);
+        if ($count > 0) {
+            $count--; // The instructor also has an attempt.
+            // Can also loop through all to check if "in progress",
+            // but usually there is only one instructor, so maybe not?
         }
         return $count;
     }

@@ -127,6 +127,15 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
                 }
                 Quiz.show(Question.box.html(data.html));
                 eval(data.js);
+                console.log('Received CSS: ' + data.css);
+                for (let cssUrl of data.css) {
+                    let head = document.getElementsByTagName('head')[0];
+                    let style = document.createElement('link');
+                    style.rel = 'stylesheet';
+                    style.type = 'text/css';
+                    style.href = cssUrl;
+                    head.appendChild(style);
+                }
                 this.quiz.role.onQuestionRefreshed(data);
             });
         }
@@ -319,7 +328,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
 
         /**
          * Sets the body of the target, and triggers an event letting MathJax know about the element.
-         * @param {*} target
+         * @param {*} $target
          * @param {string} latex
          */
         static addMathjaxElement($target, latex) {

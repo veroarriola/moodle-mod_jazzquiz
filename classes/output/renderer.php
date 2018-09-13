@@ -39,6 +39,9 @@ class page_requirements_diff extends \page_requirements_manager {
     /** @var array $beforeamdjs */
     private $beforeamdjs;
 
+    /** @var array $beforecss */
+    private $beforecss;
+
     /**
      * Constructor.
      * @param \page_requirements_manager $manager
@@ -46,6 +49,7 @@ class page_requirements_diff extends \page_requirements_manager {
     public function __construct($manager) {
         $this->beforeinitjs = $manager->jsinitcode;
         $this->beforeamdjs = $manager->amdjscode;
+        $this->beforecss = $manager->cssurls;
     }
 
     /**
@@ -59,6 +63,17 @@ class page_requirements_diff extends \page_requirements_manager {
         $amdjscode = array_diff($manager->amdjscode, $this->beforeamdjs);
         return array_merge($jsinitcode, $amdjscode);
     }
+
+    /**
+     * Run an array_diff on the required CSS when this
+     * was constructed and the one passed to this function.
+     * @param \page_requirements_manager $manager
+     * @return array the CSS that was added in-between constructor and this call.
+     */
+    public function get_css_diff($manager) {
+        return array_keys(array_diff($manager->cssurls, $this->beforecss));
+    }
+
 }
 
 /**
@@ -181,6 +196,7 @@ class renderer extends \plugin_renderer_base {
      */
     public function render_question($jazzquiz, $quba, $slot, $review = false, $reviewoptions = '') {
         $displayoptions = $jazzquiz->get_display_options($review, $reviewoptions);
+        $quba->render_question_head_html($slot);
         return $quba->render_question($slot, $displayoptions, $slot);
     }
 
@@ -193,7 +209,7 @@ class renderer extends \plugin_renderer_base {
      * @param \mod_jazzquiz\jazzquiz $jazzquiz
      * @param bool $isinstructor
      *
-     * @return string[] html, javascript
+     * @return string[] html, javascript, css
      */
     public function render_question_form($slot, $attempt, $jazzquiz, $isinstructor) {
         global $PAGE;
@@ -201,13 +217,14 @@ class renderer extends \plugin_renderer_base {
         ob_start();
         $questionhtml = $this->render_question($jazzquiz, $attempt->quba, $slot);
         $questionhtmlechoed = ob_get_clean();
-        $js = implode("\n", $differ->get_js_diff($PAGE->requires)) . "\n";
+        $js = implode("\n", $differ->get_js_diff($PAGE->requires));
+        $css = $differ->get_css_diff($PAGE->requires);
         $output = $this->render_from_template('jazzquiz/question', [
             'instructor' => $isinstructor,
             'question' => $questionhtml . $questionhtmlechoed,
             'slot' => $slot
         ]);
-        return [$output, $js];
+        return [$output, $js, $css];
     }
 
     /**
@@ -326,6 +343,8 @@ class renderer extends \plugin_renderer_base {
             ];
         }
 
+        // TODO: Slots should not be passed as parameter to AMD module.
+        // It quickly gets over 1KB, which shows debug warning.
         $this->require_review($session, $slots);
 
         $notrespondeduserids = $session->get_users();
@@ -382,7 +401,7 @@ class renderer extends \plugin_renderer_base {
             $session->jazzquiz->cm->id,
             $session->jazzquiz->data->id,
             $session->data->id,
-            $session->attempt->data->id,
+            $session->attempt ? $session->attempt->data->id : 0,
             sesskey()
         ]);
     }
@@ -395,7 +414,8 @@ class renderer extends \plugin_renderer_base {
         $this->page->requires->js('/question/qengine.js');
         if ($session->jazzquiz->is_instructor()) {
             $count = count($session->jazzquiz->questions);
-            $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', [$count]);
+            $params =  [$count, false, []];
+            $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', $params);
         } else {
             $this->page->requires->js_call_amd('mod_jazzquiz/student', 'initialize');
         }
@@ -416,7 +436,8 @@ class renderer extends \plugin_renderer_base {
     public function require_review($session, $slots) {
         $this->require_core($session);
         $count = count($session->jazzquiz->questions);
-        $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', [$count, true, $slots]);
+        $params = [$count, true, $slots];
+        $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', $params);
     }
 
 }

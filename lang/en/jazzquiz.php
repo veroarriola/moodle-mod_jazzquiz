@@ -141,7 +141,7 @@ $string['exit'] = 'Exit';
 $string['a_responses'] = '{$a} responses';
 $string['a_students_joined_quiz'] = '<b>{$a}</b> students joined the quiz.';
 
-// Quiz Review.
+// Session Reports.
 $string['attendance'] = 'Attendance';
 $string['a_students_answered'] = '<b>{$a}</b> students answered at least one question.';
 $string['no_attempts_found'] = 'No attempts found.';
@@ -151,12 +151,7 @@ $string['attendance_list'] = 'Attendance list';
 $string['download_report'] = 'Download report';
 $string['download_attendance_list'] = 'Download attendance list';
 $string['download_responses'] = 'Download responses';
-
-// Admin Settings.
-$string['enabled_vote_question_types'] = 'Select voteable question types';
-$string['enabled_vote_question_types_info'] = 'Select the question types which should have a <b>Vote</b> option.';
-$string['improv_enabled_questions'] = 'Default improvisation questions';
-$string['improv_enabled_questions_info'] = 'Questions added by JazzQuiz which can be used for improvisation during a session.';
+$string['no_sessions_exist'] = 'No sessions exist yet.';
 
 // Instructions.
 $string['instructions_for_student'] = '<p>Please wait for the instructor to start the quiz.</p>';

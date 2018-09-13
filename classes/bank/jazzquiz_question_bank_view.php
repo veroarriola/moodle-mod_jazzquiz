@@ -28,6 +28,7 @@ namespace mod_jazzquiz\bank;
 
 defined('MOODLE_INTERNAL') || die();
 
+use \core_question\bank\search\tag_condition as tag_condition;
 use \core_question\bank\search\hidden_condition as hidden_condition;
 use \core_question\bank\search\category_condition as category_condition;
 
@@ -70,17 +71,22 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * @param bool $recurse
      * @param bool $showhidden
      * @param bool $showquestiontext
+     * @param array $tagids
      */
-    public function display($tabname, $page, $perpage, $cat, $recurse, $showhidden, $showquestiontext) {
-        global $OUTPUT;
+    public function display($tabname, $page, $perpage, $cat, $recurse, $showhidden, $showquestiontext, $tagids = []) {
+        global $PAGE;
 
         if ($this->process_actions_needing_ui()) {
             return;
         }
         $contexts = $this->contexts->having_one_edit_tab_cap($tabname);
+        list($categoryid, $contextid) = explode(',', $cat);
+        $catcontext = \context::instance_by_id($contextid);
+        $thiscontext = $this->get_most_specific_context();
 
         // Category selection form.
-        echo $OUTPUT->heading(get_string('questionbank', 'question'), 2);
+        $this->display_question_bank_header();
+        array_unshift($this->searchconditions, new tag_condition([$catcontext, $thiscontext], $tagids));
         array_unshift($this->searchconditions, new hidden_condition(!$showhidden));
         array_unshift($this->searchconditions, new category_condition($cat, $recurse, $contexts, $this->baseurl, $this->course));
         $this->display_options_form($showquestiontext, '/mod/jazzquiz/edit.php');
@@ -98,6 +104,8 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
             $showquestiontext,
             $this->contexts->having_cap('moodle/question:add')
         );
+
+        $PAGE->requires->js_call_amd('core_question/edit_tags', 'init', ['#questionscontainer']);
     }
 
     /**

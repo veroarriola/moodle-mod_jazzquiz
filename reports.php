@@ -42,14 +42,18 @@ require_login();
  * @param \moodle_url $url
  */
 function jazzquiz_view_session_report($jazzquiz, $url) {
-    $sessionid = required_param('sessionid', PARAM_INT);
-    if (empty($sessionid)) {
-        // If no session id just go to the home page.
-        $redirecturl = new \moodle_url('/mod/jazzquiz/reports.php', [
-            'id' => $jazzquiz->cm->id,
-            'quizid' => $jazzquiz->data->id
+    $sessionid = optional_param('sessionid', 0, PARAM_INT);
+    if ($sessionid === 0) {
+        // If no session id is specified, we try to load the first one.
+        global $DB;
+        $sessions = $DB->get_records('jazzquiz_sessions', [
+            'jazzquizid' => $jazzquiz->data->id
         ]);
-        redirect($redirecturl, null, 3);
+        if (count($sessions) === 0) {
+            echo get_string('no_sessions_exist', 'jazzquiz');
+            return;
+        }
+        $sessionid = current($sessions)->id;
     }
     $session = new jazzquiz_session($jazzquiz, $sessionid);
     $session->load_attempts();
@@ -86,18 +90,6 @@ function jazzquiz_export_session_report($jazzquiz) {
         default:
             break;
     }
-}
-
-/**
- * @param jazzquiz $jazzquiz
- * @param \moodle_url $url
- */
-function jazzquiz_select_session_report($jazzquiz, $url) {
-    $sessions = $jazzquiz->get_sessions();
-    $context = $jazzquiz->renderer->get_select_session_context($url, $sessions, 0);
-    echo $jazzquiz->renderer->render_from_template('jazzquiz/report', [
-        'select_session' => $context
-    ]);
 }
 
 /**
@@ -145,7 +137,7 @@ function jazzquiz_reports() {
             jazzquiz_export_session_report($jazzquiz);
             break;
         default:
-            jazzquiz_select_session_report($jazzquiz, $url);
+            jazzquiz_view_session_report($jazzquiz, $url);
             break;
     }
     if (!$isdownload) {
