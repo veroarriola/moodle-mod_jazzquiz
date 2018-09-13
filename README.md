@@ -32,6 +32,11 @@ Delete the module from the **Activities** module list in the admin section.
 
 **Developer:** Sebastian S. Gundersen: <sebastsg@stud.ntnu.no>
 
+## See also
+
++ [ShortMath Question Type](https://github.com/KQMATH/moodle-qtype_shortmath)
++ [JazzQuiz in the Moodle plugin repository](https://moodle.org/plugins/mod_jazzquiz)
+
 ## Please note
 The original plugin, Realtime Quiz, was written by Davo Smith: <moodle@davosmith.co.uk>
 
