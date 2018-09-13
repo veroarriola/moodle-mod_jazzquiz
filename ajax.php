@@ -43,8 +43,8 @@ require_sesskey();
  * @return mixed[]
  */
 function show_all_improvise_questions($jazzquiz) {
-    global $DB;
-    $questionrecords = $DB->get_records_sql('SELECT id, name FROM {question} WHERE name LIKE ?', ['{IMPROV}%']);
+    $improviser = new improviser($jazzquiz);
+    $questionrecords = $improviser->get_all_improvised_question_definitions();
     if (!$questionrecords) {
         return [
             'status' => 'error',
@@ -107,13 +107,14 @@ function get_question_form($session) {
     }
     $html = '';
     $js = '';
+    $css = [];
     $isalreadysubmitted = true;
     if (!$session->attempt->has_responded($slot)) {
         $jazzquiz = $session->jazzquiz;
         /** @var output\renderer $renderer */
         $renderer = $jazzquiz->renderer;
         $isinstructor = $jazzquiz->is_instructor();
-        list($html, $js) = $renderer->render_question_form($slot, $session->attempt, $jazzquiz, $isinstructor);
+        list($html, $js, $css) = $renderer->render_question_form($slot, $session->attempt, $jazzquiz, $isinstructor);
         $isalreadysubmitted = false;
     }
     $qtype = $session->get_question_type_by_slot($slot);
@@ -121,6 +122,7 @@ function get_question_form($session) {
     return [
         'html' => $html,
         'js' => $js,
+        'css' => $css,
         'question_type' => $qtype,
         'is_already_submitted' => $isalreadysubmitted,
         'voteable' => in_array($qtype, $voteable)

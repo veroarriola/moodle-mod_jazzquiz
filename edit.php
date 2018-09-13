@@ -123,7 +123,7 @@ function jazzquiz_edit_list_questions($jazzquiz, $contexts, $url, $pagevars) {
  * View edit page.
  */
 function jazzquiz_edit() {
-    global $PAGE;
+    global $PAGE, $COURSE;
 
     $action = optional_param('action', 'listquestions', PARAM_ALPHA);
 
@@ -160,6 +160,10 @@ function jazzquiz_edit() {
         $renderer->footer();
         return;
     }
+
+    // Process moving, deleting and unhiding questions...
+    $questionbank = new \core_question\bank\view($contexts, $url, $COURSE, $cm);
+    $questionbank->process_actions();
 
     switch ($action) {
         case 'order':

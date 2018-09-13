@@ -201,7 +201,6 @@ function jazzquiz_view() {
     $PAGE->set_url($url);
 
     if ($jazzquiz->is_instructor()) {
-        // TODO: Find a better place to add the question definitions.
         $improviser = new improviser($jazzquiz);
         $improviser->insert_default_improvised_question_definitions();
     }
