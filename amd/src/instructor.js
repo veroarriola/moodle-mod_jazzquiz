@@ -897,11 +897,10 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
          * @param {Array.<string>} buttons The unique part of the IDs of the buttons to be enabled.
          */
         static enableControls(buttons) {
-            let children = Instructor.controlButtons.children('button');
-            for (let child of children) {
+            Instructor.controlButtons.children('button').each((index, child) => {
                 const id = child.getAttribute('id').replace('jazzquiz_control_', '');
                 child.disabled = (buttons.indexOf(id) === -1);
-            }
+            });
         }
 
         /**
@@ -963,12 +962,12 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             if (reportView) {
                 Instructor.addReportEventHandlers();
                 quiz.role.responses.showResponses = true;
-                for (let slot of slots) {
+                slots.forEach(slot => {
                     const wrapper = 'jazzquiz_wrapper_responses_' + slot.num;
                     const table = 'responses_wrapper_table_' + slot.num;
                     const graph = 'report_' + slot.num;
                     quiz.role.responses.set(wrapper, table, slot.responses, undefined, slot.type, graph, false);
-                }
+                });
             } else {
                 quiz.poll(500);
             }

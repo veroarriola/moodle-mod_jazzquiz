@@ -127,15 +127,14 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
                 }
                 Quiz.show(Question.box.html(data.html));
                 eval(data.js);
-                console.log('Received CSS: ' + data.css);
-                for (let cssUrl of data.css) {
+                data.css.forEach(cssUrl => {
                     let head = document.getElementsByTagName('head')[0];
                     let style = document.createElement('link');
                     style.rel = 'stylesheet';
                     style.type = 'text/css';
                     style.href = cssUrl;
                     head.appendChild(style);
-                }
+                });
                 this.quiz.role.onQuestionRefreshed(data);
             });
         }
@@ -276,6 +275,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
          */
         poll(ms) {
             Ajax.get('info', {}, data => {
+                console.log(data);
                 this.changeQuizState(data.status, data);
                 setTimeout(() => this.poll(ms), ms);
             });
