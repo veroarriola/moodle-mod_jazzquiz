@@ -82,6 +82,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 return;
             }
             Quiz.info.html(data.html);
+            Quiz.show(Quiz.info);
             const options = data.options;
             for (let i = 0; i < options.length; i++) {
                 Quiz.addMathjaxElement($('#' + options[i].content_id), options[i].text);

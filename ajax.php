@@ -125,7 +125,7 @@ function get_question_form($session) {
         'css' => $css,
         'question_type' => $qtype,
         'is_already_submitted' => $isalreadysubmitted,
-        'voteable' => in_array($qtype, $voteable)
+        'voteable' => !in_array($qtype, $voteable)
     ];
 }
 
@@ -452,7 +452,7 @@ function session_info($session) {
         case 'voting':
             $voteoptions = $DB->get_records('jazzquiz_votes', ['sessionid' => $session->data->id]);
             $options = [];
-            $html = '<div class="jazzquiz-vote">';
+            $html = '<div class="jazzquiz-vote jazzquiz-response-container">';
             $i = 0;
             foreach ($voteoptions as $voteoption) {
                 $options[] = [
