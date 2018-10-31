@@ -884,8 +884,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 return;
             }
             Ajax.get('get_right_response', {}, data => {
-                const answer = '<span class="jazzquiz-latex-wrapper">' + data.right_answer + '</span>';
-                Quiz.show(Instructor.correctAnswer.html(answer));
+                Quiz.show(Instructor.correctAnswer.html(data.right_answer));
                 Quiz.renderAllMathjax();
                 Quiz.check(Instructor.control('answer'));
                 this.isShowingCorrectAnswer = true;

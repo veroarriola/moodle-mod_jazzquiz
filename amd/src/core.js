@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, mString, Y) {
+define(['jquery', 'core/config', 'core/str', 'core/yui', 'core/event'], function ($, mConfig, mString, Y, mEvent) {
 
     // Contains the needed values for using the ajax script.
     let session = {
@@ -320,9 +320,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
          * Triggers a dynamic content update event, which MathJax listens to.
          */
         static renderAllMathjax() {
-            Y.fire(M.core.event.FILTER_CONTENT_UPDATED, {
-                nodes: new Y.NodeList(document.getElementsByClassName('jazzquiz-latex-wrapper'))
-            });
+            mEvent.notifyFilterContentUpdated(document.getElementsByClassName('jazzquiz-response-container'));
         }
 
         /**
@@ -331,7 +329,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
          * @param {string} latex
          */
         static addMathjaxElement($target, latex) {
-            $target.html('<span class="jazzquiz-latex-wrapper"><span class="filter_mathjaxloader_equation">' + latex + '</span></span>');
+            $target.html('<span class="filter_mathjaxloader_equation">' + latex + '</span>');
             Quiz.renderAllMathjax();
         }
 

@@ -1,4 +1,4 @@
-<div class="generalbox boxaligncenter jazzquiz-box">
+<div class="generalbox boxaligncenter jazzquiz-box jazzquiz-response-container">
     <div id="questionrow" class="row">
         <div class="inline-block span6">
             <h2>{{# str }} questions, jazzquiz {{/ str }}</h2>
@@ -13,10 +13,8 @@
                                 {{{ icon }}}
                             </div>
                             <div class="name">
-                                <span class="jazzquiz-latex-wrapper">
-                                    <span class="filter_mathjaxloader_equation">
-                                        {{{ name }}}
-                                    </span>
+                                <span class="filter_mathjaxloader_equation">
+                                    {{{ name }}}
                                 </span>
                             </div>
                             {{# first }}{{# pix }} spacer, core {{/ pix }}{{/ first }}
