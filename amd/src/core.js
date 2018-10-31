@@ -275,7 +275,6 @@ define(['jquery', 'core/config', 'core/str', 'core/yui'], function ($, mConfig, 
          */
         poll(ms) {
             Ajax.get('info', {}, data => {
-                console.log(data);
                 this.changeQuizState(data.status, data);
                 setTimeout(() => this.poll(ms), ms);
             });
