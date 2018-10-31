@@ -63,6 +63,16 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
     }
 
     /**
+     * Display the header element for the question bank.
+     * This is a copy of the super class method in 3.5+, and only exists for compatibility with 3.4 and earlier.
+     * TODO: This override should be removed in the future.
+     */
+    protected function display_question_bank_header() {
+        global $OUTPUT;
+        echo $OUTPUT->heading(get_string('questionbank', 'question'), 2);
+    }
+
+    /**
      * Shows the question bank editing interface.
      * @param string $tabname
      * @param int $page
@@ -177,4 +187,5 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
         // Add some top margin to the table (not viable via CSS).
         echo '<br><br>';
     }
+
 }
