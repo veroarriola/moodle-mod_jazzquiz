@@ -14,20 +14,8 @@ Depending on the question settings the question will end automatically, or will 
 The teacher can, at a later date, go back through the results and, for each question, see exactly what answer each student gave.
 The repolls are treated as separate questions, and you will get a correct order in the review page.
 
-**User Documentation:** http://confluence.uials.no:8090/display/KQMATHPUB/JazzQuiz
-
-## Installation:
-### Moodle plugins directory
-Click on **Install now** within the plugins directory, and then select your site from the list of "My sites"
-
-### Manually
-Unzip all the files into a temporary directory.
-Copy the **jazzquiz** folder into **moodle/mod**.
-The system administrator should then log in to moodle and click on the **Notifications** link in the Site administration
-block.
-
-## Uninstalling:
-Delete the module from the **Activities** module list in the admin section.
+## Documentation
+Documentation is available [here](https://github.com/KQMATH/moodle-mod_jazzquiz/wiki), including [installation instructions](https://github.com/KQMATH/moodle-mod_jazzquiz/wiki/Installation-instructions).
 
 ## Feedback:
 **Project lead:** Hans Georg Schaathun: <hasc@ntnu.no>
