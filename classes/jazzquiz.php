@@ -264,7 +264,7 @@ class jazzquiz {
             'edit' => true
         ]);
 
-        // Form handling
+        // Form handling.
         if ($mform->is_cancelled()) {
             // Redirect back to list questions page.
             $url->remove_params('action');

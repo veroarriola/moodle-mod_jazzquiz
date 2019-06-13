@@ -441,7 +441,7 @@ function session_info($session) {
                     'student_count' => $session->get_student_count()
                 ];
             }
-        // Fall-through.
+            // Fall-through.
         case 'preparing':
         case 'reviewing':
             return [
@@ -500,22 +500,38 @@ function session_info($session) {
  */
 function handle_instructor_request($action, $session) {
     switch ($action) {
-        case 'start_quiz':               return start_quiz($session);
-        case 'get_question_form':        return get_question_form($session);
-        case 'save_question':            return save_question($session);
-        case 'list_improvise_questions': return show_all_improvise_questions($session->jazzquiz);
-        case 'list_jump_questions':      return show_all_jump_questions($session->jazzquiz);
-        case 'run_voting':               return run_voting($session);
-        case 'get_vote_results':         return get_vote_results($session);
-        case 'get_results':              return get_results($session);
-        case 'start_question':           return start_question($session);
-        case 'end_question':             return end_question($session);
-        case 'get_right_response':       return get_right_response($session);
-        case 'merge_responses':          return merge_responses($session);
-        case 'undo_merge':               return undo_merge($session);
-        case 'close_session':            return close_session($session);
-        case 'info':                     return session_info($session);
-        default:                         return ['status' => 'error', 'message' => 'Invalid action'];
+        case 'start_quiz':
+            return start_quiz($session);
+        case 'get_question_form':
+            return get_question_form($session);
+        case 'save_question':
+            return save_question($session);
+        case 'list_improvise_questions':
+            return show_all_improvise_questions($session->jazzquiz);
+        case 'list_jump_questions':
+            return show_all_jump_questions($session->jazzquiz);
+        case 'run_voting':
+            return run_voting($session);
+        case 'get_vote_results':
+            return get_vote_results($session);
+        case 'get_results':
+            return get_results($session);
+        case 'start_question':
+            return start_question($session);
+        case 'end_question':
+            return end_question($session);
+        case 'get_right_response':
+            return get_right_response($session);
+        case 'merge_responses':
+            return merge_responses($session);
+        case 'undo_merge':
+            return undo_merge($session);
+        case 'close_session':
+            return close_session($session);
+        case 'info':
+            return session_info($session);
+        default:
+            return ['status' => 'error', 'message' => 'Invalid action'];
     }
 }
 
@@ -527,11 +543,16 @@ function handle_instructor_request($action, $session) {
  */
 function handle_student_request($action, $session) {
     switch ($action) {
-        case 'save_question':     return save_question($session);
-        case 'save_vote':         return save_vote($session);
-        case 'get_question_form': return get_question_form($session);
-        case 'info':              return session_info($session);
-        default:                  return ['status' => 'error', 'message' => 'Invalid action'];
+        case 'save_question':
+            return save_question($session);
+        case 'save_vote':
+            return save_vote($session);
+        case 'get_question_form':
+            return get_question_form($session);
+        case 'info':
+            return session_info($session);
+        default:
+            return ['status' => 'error', 'message' => 'Invalid action'];
     }
 }
 

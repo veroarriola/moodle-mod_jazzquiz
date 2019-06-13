@@ -91,7 +91,7 @@ class exporter {
     public function export_session_csv($session, $attempts) {
         list($name, $slots, $users) = $this->export_session($session, $attempts);
         $this->csv_file($name);
-        // Header row
+        // Header row.
         echo "Student\t";
         foreach ($slots as $slot) {
             $name = self::escape_csv($slot['name']);
@@ -99,7 +99,7 @@ class exporter {
             echo "$name ($qtype)\t";
         }
         echo "\r\n";
-        // Response rows
+        // Response rows.
         foreach ($users as $user => $slots) {
             $user = self::escape_csv($user);
             echo "$user\t";

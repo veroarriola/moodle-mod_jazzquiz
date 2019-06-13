@@ -163,8 +163,8 @@ class provider implements
         $quizzes = $DB->get_recordset_sql($sql, $params);
         foreach ($quizzes as $quiz) {
             $context = \context_module::instance($quiz->cmid);
-            $data = helper::get_context_data($context, $contextlist->get_user());
-            helper::export_context_files($context, $contextlist->get_user());
+            $data = helper::get_context_data($context, $user);
+            helper::export_context_files($context, $user);
             writer::with_context($context)->export_data([], $data);
         }
         $quizzes->close();
@@ -174,8 +174,7 @@ class provider implements
     protected static function export_quiz_attempts(approved_contextlist $contextlist) {
         global $DB;
         $userid = $contextlist->get_user()->id;
-        $sql = "SELECT DISTINCT
-                       cx.id              AS contextid,
+        $sql = "SELECT cx.id              AS contextid,
                        cm.id              AS cmid,
                        js.name            AS sessionname,
                        ja.id              AS id,

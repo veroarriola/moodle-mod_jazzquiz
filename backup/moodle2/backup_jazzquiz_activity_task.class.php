@@ -47,7 +47,7 @@ class backup_jazzquiz_activity_task extends backup_activity_task {
      */
     static public function encode_content_links($content) {
         global $CFG;
-        $base = preg_quote($CFG->wwwroot,"/");
+        $base = preg_quote($CFG->wwwroot, '/');
         // Link to the list of JazzQuizes.
         $search = "/(" . $base . "\/mod\/jazzquiz\/index.php\?id\=)([0-9]+)/";
         $content = preg_replace($search, '$@JAZZQUIZINDEX*$2@$', $content);
@@ -56,4 +56,5 @@ class backup_jazzquiz_activity_task extends backup_activity_task {
         $content = preg_replace($search, '$@JAZZQUIZVIEWBYID*$2@$', $content);
         return $content;
     }
+    
 }

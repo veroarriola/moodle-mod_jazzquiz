@@ -23,6 +23,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * @param \mod_jazzquiz\jazzquiz $jazzquiz
  * @param int $id
@@ -58,7 +60,7 @@ function jazzquiz_view_tabs($jazzquiz, $tab) {
     jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:seeresponses', 'reports');
 
     if ($tab === 'view' && count($row) === 1) {
-        // No tabs for students
+        // No tabs for students.
         return '<br>';
     }
     $tabs[] = $row;

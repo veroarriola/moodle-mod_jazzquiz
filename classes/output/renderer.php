@@ -414,7 +414,7 @@ class renderer extends \plugin_renderer_base {
         $this->page->requires->js('/question/qengine.js');
         if ($session->jazzquiz->is_instructor()) {
             $count = count($session->jazzquiz->questions);
-            $params =  [$count, false, []];
+            $params = [$count, false, []];
             $this->page->requires->js_call_amd('mod_jazzquiz/instructor', 'initialize', $params);
         } else {
             $this->page->requires->js_call_amd('mod_jazzquiz/student', 'initialize');
