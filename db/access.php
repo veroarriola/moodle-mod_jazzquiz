@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /* Capability definitions for the jazzquiz module.
  *
  * The capabilities are loaded into the database table when the module is

@@ -56,5 +56,5 @@ class backup_jazzquiz_activity_task extends backup_activity_task {
         $content = preg_replace($search, '$@JAZZQUIZVIEWBYID*$2@$', $content);
         return $content;
     }
-    
+
 }
