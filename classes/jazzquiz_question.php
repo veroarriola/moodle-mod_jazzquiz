@@ -38,7 +38,11 @@ class jazzquiz_question {
     public function __construct($data) {
         global $DB;
         $this->data = $data;
-        $this->question = $DB->get_record('question', ['id' => $data->questionid], '*', MUST_EXIST);
+        $this->question = $DB->get_record('question', ['id' => $data->questionid]);
+    }
+
+    public function is_valid() {
+        return $this->question !== false;
     }
 
 }

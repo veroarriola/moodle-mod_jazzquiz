@@ -305,7 +305,12 @@ class jazzquiz {
         $this->questions = [];
         $questions = $DB->get_records('jazzquiz_questions', ['jazzquizid' => $this->data->id], 'slot');
         foreach ($questions as $question) {
-            $this->questions[$question->slot] = new jazzquiz_question($question);
+            $jazzquestion = new jazzquiz_question($question);
+            if ($jazzquestion->is_valid()) {
+                $this->questions[$question->slot] = $jazzquestion;
+            } else {
+                $DB->delete_records('jazzquiz_questions', ['id' => $question->id]);
+            }
         }
     }
 
