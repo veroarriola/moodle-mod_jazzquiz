@@ -209,9 +209,9 @@ class improviser {
     /**
      * Insert a multichoice question to the database.
      * @param string $name The name of the question
-     * @param int $optioncount How many answer options should be created
+     * @param string[] $answers Answers to the question
      */
-    private function insert_multichoice_question_definition($name, $optioncount) {
+    private function insert_multichoice_question_definition($name, $answers) {
         global $DB;
         $question = $this->make_generic_question_definition('multichoice', $name);
         if (!$question) {
@@ -222,12 +222,9 @@ class improviser {
         $options = $this->make_multichoice_options($question->id);
         $DB->insert_record('qtype_multichoice_options', $options);
         // Add answers.
-        $begin = ord('A');
-        $end = $begin + intval($optioncount);
-        for ($a = $begin; $a < $end; $a++) {
-            $letter = chr($a);
-            $answer = $this->make_generic_question_answer($question->id, 1, $letter);
-            $DB->insert_record('question_answers', $answer);
+        foreach ($answers as $answer) {
+            $qanswer = $this->make_generic_question_answer($question->id, 1, $answer);
+            $DB->insert_record('question_answers', $qanswer);
         }
     }
 
@@ -237,7 +234,7 @@ class improviser {
      */
     private function insert_shortanswer_question_definition($name) {
         global $DB;
-        $question = $this->make_generic_question_definition('shortanswer', 'Short answer');
+        $question = $this->make_generic_question_definition('shortanswer', $name);
         if (!$question) {
             return;
         }
@@ -251,39 +248,18 @@ class improviser {
     }
 
     /**
-     * Insert a true/false question to the database.
-     * @param string $name The name of the true/false question
-     */
-    private function insert_truefalse_question_definition($name) {
-        global $DB;
-        $question = $this->make_generic_question_definition('truefalse', 'True / False');
-        if (!$question) {
-            return;
-        }
-        $question->id = $DB->insert_record('question', $question);
-        // Add answers.
-        $trueanswer = $this->make_generic_question_answer($question->id, 0, 'True');
-        $trueanswer->id = $DB->insert_record('question_answers', $trueanswer);
-        $falseanswer = $this->make_generic_question_answer($question->id, 0, 'False');
-        $falseanswer->id = $DB->insert_record('question_answers', $falseanswer);
-        // True / False.
-        $truefalse = new \stdClass();
-        $truefalse->question = $question->id;
-        $truefalse->trueanswer = $trueanswer->id;
-        $truefalse->falseanswer = $falseanswer->id;
-        $DB->insert_record('question_truefalse', $truefalse);
-    }
-
-    /**
      * Insert all the improvised question definitions to the question bank.
      * Every question will have a prefix of {IMPROV}
      */
     public function insert_default_improvised_question_definitions() {
-        for ($i = 3; $i <= 5; $i++) {
-            $this->insert_multichoice_question_definition("$i Multichoice Options", $i);
-        }
-        $this->insert_shortanswer_question_definition('Short answer');
-        $this->insert_truefalse_question_definition('True / False');
+        $multichoice = get_string('multichoice_options', 'jazzquiz');
+        $yes = get_string('yes');
+        $no = get_string('no');
+        $this->insert_multichoice_question_definition("3 $multichoice", ['A', 'B', 'C']);
+        $this->insert_multichoice_question_definition("4 $multichoice", ['A', 'B', 'C', 'D']);
+        $this->insert_multichoice_question_definition("5 $multichoice", ['A', 'B', 'C', 'D', 'E']);
+        $this->insert_shortanswer_question_definition(get_string('short_answer', 'jazzquiz'));
+        $this->insert_multichoice_question_definition("$yes / $no", [$yes, $no]);
     }
 
 }

@@ -48,6 +48,10 @@ $string['jazzquiz:control'] = 'Control an JazzQuiz. (Usually for instructors onl
 $string['jazzquiz:editquestions'] = 'Edit questions for an JazzQuiz.';
 $string['jazzquiz:seeresponses'] = 'View other student responses to grade them';
 
+// Improvise questions.
+$string['multichoice_options'] = 'Multichoice Options';
+$string['short_answer'] = 'Short answer';
+
 // Tabs.
 $string['view'] = 'View';
 $string['edit'] = 'Edit';
@@ -260,7 +264,7 @@ $string['instructions_for_instructor'] = '
         </tr>
     </table>';
 
-
+// Privacy.
 $string['privacy:metadata:core_question'] = 'The JazzQuiz activity stores question usage information in the core_question subsystem.';
 $string['privacy:metadata:jazzquiz_attempts'] = 'Details about the quiz attempt for a JazzQuiz session.';
 $string['privacy:metadata:jazzquiz_attempts:userid'] = 'The user who made the attempt.';
