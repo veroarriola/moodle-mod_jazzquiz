@@ -136,6 +136,7 @@ define(['jquery', 'core/config', 'core/str', 'core/yui', 'core/event'], function
                     head.appendChild(style);
                 });
                 this.quiz.role.onQuestionRefreshed(data);
+                Quiz.renderAllMathjax();
             });
         }
 
