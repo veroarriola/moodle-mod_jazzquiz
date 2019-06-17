@@ -57,18 +57,22 @@ class improviser {
      */
     public function get_all_improvised_question_definitions() {
         global $DB;
-        $category = $this->get_default_question_category();
-        if (!$category) {
-            return false;
+        $questions = [];
+        $context = \context_module::instance($this->jazzquiz->cm->id);
+        $parts = explode('/', $context->path);
+        foreach ($parts as $part) {
+            $sql = "SELECT q.id,
+                           q.name
+                      FROM {question} q
+                      JOIN {question_categories} qc
+                        ON qc.id = q.category
+                      JOIN {context} ctx
+                        ON ctx.id = qc.contextid
+                       AND ctx.path LIKE :path
+                     WHERE q.name LIKE :prefix";
+            $questions += $DB->get_records_sql($sql, ['prefix' => '{IMPROV}%', 'path' => '%/' . $part]);
         }
-        $questions = $DB->get_records_sql('SELECT id, name FROM {question} WHERE name LIKE ? AND category = ?', [
-            '{IMPROV}%',
-            $category->id
-        ]);
-        if (!$questions) {
-            return false;
-        }
-        return $questions;
+        return $questions ? $questions : false;
     }
 
     /**
