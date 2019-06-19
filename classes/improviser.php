@@ -69,7 +69,8 @@ class improviser {
                       JOIN {context} ctx
                         ON ctx.id = qc.contextid
                        AND ctx.path LIKE :path
-                     WHERE q.name LIKE :prefix";
+                     WHERE q.name LIKE :prefix
+                  ORDER BY q.name";
             $questions += $DB->get_records_sql($sql, ['prefix' => '{IMPROV}%', 'path' => '%/' . $part]);
         }
         return $questions ? $questions : false;
@@ -128,6 +129,9 @@ class improviser {
      * @return \stdClass | null
      */
     private function make_generic_question_definition($qtype, $name) {
+        if (!$this->question_type_exists($qtype)) {
+            return null;
+        }
         $existing = $this->get_improvised_question_definition($name);
         if ($existing !== false) {
             return null;
@@ -185,7 +189,7 @@ class improviser {
      * @param int $questionid The ID of the question to make options for
      * @return \stdClass
      */
-    private function make_short_answer_options($questionid) {
+    private function make_shortanswer_options($questionid) {
         $options = new \stdClass();
         $options->questionid = $questionid;
         $options->usecase = 0;
@@ -244,8 +248,23 @@ class improviser {
         }
         $question->id = $DB->insert_record('question', $question);
         // Add options.
-        $options = $this->make_short_answer_options($question->id);
+        $options = $this->make_shortanswer_options($question->id);
         $DB->insert_record('qtype_shortanswer_options', $options);
+        // Add answer.
+        $answer = $this->make_generic_question_answer($question->id, 0, '*');
+        $DB->insert_record('question_answers', $answer);
+    }
+
+    private function insert_shortmath_question_definition($name) {
+        global $DB;
+        $question = $this->make_generic_question_definition('shortmath', $name);
+        if (!$question) {
+            return;
+        }
+        $question->id = $DB->insert_record('question', $question);
+        // Add options. Important: If shortmath changes options table in the future, this must be changed too.
+        $options = $this->make_shortanswer_options($question->id);
+        $DB->insert_record('qtype_shortmath_options', $options);
         // Add answer.
         $answer = $this->make_generic_question_answer($question->id, 0, '*');
         $DB->insert_record('question_answers', $answer);
@@ -264,6 +283,7 @@ class improviser {
         $this->insert_multichoice_question_definition("5 $multichoice", ['A', 'B', 'C', 'D', 'E']);
         $this->insert_shortanswer_question_definition(get_string('short_answer', 'jazzquiz'));
         $this->insert_multichoice_question_definition("$yes / $no", [$yes, $no]);
+        $this->insert_shortmath_question_definition(get_string('short_math_answer', 'jazzquiz'));
     }
 
 }

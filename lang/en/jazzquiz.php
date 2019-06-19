@@ -51,6 +51,7 @@ $string['jazzquiz:seeresponses'] = 'View other student responses to grade them';
 // Improvise questions.
 $string['multichoice_options'] = 'Multichoice Options';
 $string['short_answer'] = 'Short answer';
+$string['short_math_answer'] = 'Short math answer';
 
 // Anonymity.
 $string['anonymous'] = 'Anonymous';
