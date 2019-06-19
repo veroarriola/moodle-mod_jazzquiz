@@ -43,9 +43,9 @@ $string['pluginname'] = 'JazzQuiz';
 
 $string['attempts'] = 'Attempts';
 $string['jazzquiz:addinstance'] = 'Add an instance of jazzquiz';
-$string['jazzquiz:attempt'] = 'Attempt an JazzQuiz';
-$string['jazzquiz:control'] = 'Control an JazzQuiz. (Usually for instructors only)';
-$string['jazzquiz:editquestions'] = 'Edit questions for an JazzQuiz.';
+$string['jazzquiz:attempt'] = 'Attempt a JazzQuiz';
+$string['jazzquiz:control'] = 'Control a JazzQuiz. (Usually for instructors only)';
+$string['jazzquiz:editquestions'] = 'Edit questions for a JazzQuiz.';
 $string['jazzquiz:seeresponses'] = 'View other student responses to grade them';
 
 // Improvise questions.
@@ -57,6 +57,7 @@ $string['anonymous'] = 'Anonymous';
 $string['anonymous_answers'] = 'Anonymous answers (Attendance can be seen)';
 $string['fully_anonymous'] = 'Fully anonymous';
 $string['nonanonymous_session'] = 'Non-anonymous session';
+$string['allow_guests'] = 'Allow guests';
 
 // Tabs.
 $string['view'] = 'View';

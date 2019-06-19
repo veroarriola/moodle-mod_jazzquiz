@@ -67,6 +67,7 @@ class start_session extends \moodleform {
         ];
         $mform->addGroup($anonymity,'anonymity', '', ['<br>', ''], false);
         $mform->setDefault('anonymity', 1);
+        $mform->addElement('checkbox', 'allowguests', '', get_string('allow_guests', 'jazzquiz'));
         $mform->addElement('submit', 'submitbutton', get_string('start_session', 'jazzquiz'));
     }
 

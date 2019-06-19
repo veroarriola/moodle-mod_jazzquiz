@@ -46,7 +46,8 @@
         <FIELD NAME="slot" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="This is which JazzQuiz question was last run. Not related to session questions."/>
         <FIELD NAME="currentquestiontime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The time the current question is allowed in seconds"/>
         <FIELD NAME="nextstarttime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The timestamp of the next start time"/>
-        <FIELD NAME="anonymity" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="anonymity" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="allowguests" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="created" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp for when this session was created."/>
       </FIELDS>
       <KEYS>

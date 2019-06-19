@@ -85,7 +85,7 @@ function jazzquiz_export_session_report($jazzquiz) {
             $exporter->export_session_question_csv($session, $attempt, $slot);
             break;
         case 'attendance':
-            $exporter->export_attendance_csv($session, $attempt);
+            $exporter->export_attendance_csv($session);
             break;
         default:
             break;
@@ -107,7 +107,7 @@ function jazzquiz_reports() {
     }
 
     $jazzquiz = new jazzquiz($cmid);
-    $jazzquiz->require_capability('mod/jazzquiz:seeresponses');
+    require_capability('mod/jazzquiz:seeresponses', $jazzquiz->context);
 
     $action = optional_param('action', '', PARAM_ALPHANUM);
 

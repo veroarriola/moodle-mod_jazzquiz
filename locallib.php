@@ -33,11 +33,10 @@ defined('MOODLE_INTERNAL') || die();
  * @param string $name
  */
 function jazzquiz_view_tab($jazzquiz, $id, &$row, $capability, $name) {
-    if (!$jazzquiz->has_capability($capability)) {
-        return;
+    if (has_capability($capability, $jazzquiz->context)) {
+        $url = new moodle_url("/mod/jazzquiz/$name.php", ['id' => $id]);
+        $row[] = new tabobject($name, $url, get_string($name, 'jazzquiz'));
     }
-    $url = new moodle_url("/mod/jazzquiz/$name.php", ['id' => $id]);
-    $row[] = new tabobject($name, $url, get_string($name, 'jazzquiz'));
 }
 
 /**

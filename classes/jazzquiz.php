@@ -166,7 +166,7 @@ class jazzquiz {
      * @param int $anonymity
      * @return int|false Session ID returned if successful, else false.
      */
-    public function create_session(string $name, int $anonymity) {
+    public function create_session(string $name, int $anonymity, int $allowguests) {
         global $DB;
         $session = new \stdClass();
         $session->name = $name;
@@ -176,6 +176,7 @@ class jazzquiz {
         $session->slot = 0;
         $session->anonymity = $anonymity;
         $session->showfeedback = false;
+        $session->allowguests = $allowguests;
         $session->created = time();
         try {
             return $DB->insert_record('jazzquiz_sessions', $session);
@@ -330,39 +331,12 @@ class jazzquiz {
     }
 
     /**
-     * Wraps require_capability with the context
-     * @param string $capability
-     */
-    public function require_capability($capability) {
-        // Throws exception on error.
-        require_capability($capability, $this->context);
-    }
-
-    /**
-     * Wrapper for the has_capability function to provide the rtq context
-     *
-     * @param string $capability
-     * @param int $userid
-     *
-     * @return bool Whether or not the current user has the capability
-     */
-    public function has_capability($capability, $userid = 0) {
-        if ($userid !== 0) {
-            // Pass in userid if there is one.
-            return has_capability($capability, $this->context, $userid);
-        }
-
-        // Just do standard check with current user.
-        return has_capability($capability, $this->context);
-    }
-
-    /**
      * Quick function for whether or not the current user is the instructor/can control the quiz
      * @return bool
      */
     public function is_instructor() {
         if (is_null($this->isinstructor)) {
-            $this->isinstructor = $this->has_capability('mod/jazzquiz:control');
+            $this->isinstructor = has_capability('mod/jazzquiz:control', $this->context);
         }
         return $this->isinstructor;
     }

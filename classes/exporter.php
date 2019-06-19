@@ -72,7 +72,7 @@ class exporter {
             if ($quizattempt->data->status == jazzquiz_attempt::PREVIEW) {
                 continue;
             }
-            $fullname =  $session->user_name_for_answer($quizattempt->data->userid);
+            $fullname = $session->user_name_for_answer($quizattempt->data->userid);
             $qubaslots = $quizattempt->quba->get_slots();
             $users[$fullname] = [];
             foreach ($qubaslots as $slot) {
@@ -168,10 +168,9 @@ class exporter {
     /**
      * Export and print session attendance data as CSV.
      * @param jazzquiz_session $session
-     * @param jazzquiz_attempt $quizattempt
      */
-    public function export_attendance_csv($session, $quizattempt) {
-        list($name, $users) = $this->export_attendance($session, $quizattempt);
+    public function export_attendance_csv(jazzquiz_session $session) {
+        list($name, $users) = $this->export_attendance($session);
         $this->csv_file("session_{$name}_attendance");
         echo "Student\tResponses\r\n";
         foreach ($users as $name => $count) {
