@@ -19,10 +19,17 @@ defined('MOODLE_INTERNAL') || die();
 function xmldb_jazzquiz_upgrade($oldversion) {
     global $DB;
     $dbman = $DB->get_manager();
-    if ($oldversion < 2019061705) {
+    if ($oldversion < 2019061910) {
         // Add anonymity field to session.
         $table = new xmldb_table('jazzquiz_sessions');
         $field = new xmldb_field('anonymity', XMLDB_TYPE_INTEGER, 10, null, true, null, 0);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add allowguests field to session.
+        $table = new xmldb_table('jazzquiz_sessions');
+        $field = new xmldb_field('allowguests', XMLDB_TYPE_INTEGER, 10, null, true, null, 0);
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -61,16 +68,7 @@ function xmldb_jazzquiz_upgrade($oldversion) {
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
-        upgrade_mod_savepoint(true, 2019061705, 'jazzquiz');
-    }
-    if ($oldversion < 2019061901) {
-        // Add allowguests field to session.
-        $table = new xmldb_table('jazzquiz_sessions');
-        $field = new xmldb_field('allowguests', XMLDB_TYPE_INTEGER, 10, null, true, null, 0);
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-        upgrade_mod_savepoint(true, 2019061901, 'jazzquiz');
+        upgrade_mod_savepoint(true, 2019061910, 'jazzquiz');
     }
     return true;
 }
