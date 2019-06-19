@@ -57,6 +57,7 @@ class start_session extends \moodleform {
      */
     public function definition() {
         $mform = $this->_form;
+        $jazzquiz = $this->_customdata['jazzquiz'];
         $mform->addElement('text', 'session_name', get_string('session_name', 'jazzquiz'));
         $mform->setType('session_name', PARAM_TEXT);
         $mform->addRule('session_name', get_string('session_name_required', 'jazzquiz'), 'required', null, 'client');
@@ -66,8 +67,9 @@ class start_session extends \moodleform {
             $mform->createElement('radio', 'anonymity', '', get_string('nonanonymous_session', 'jazzquiz'), 3, [])
         ];
         $mform->addGroup($anonymity,'anonymity', '', ['<br>', ''], false);
-        $mform->setDefault('anonymity', 1);
+        $mform->setDefault('anonymity', $jazzquiz->data->cfganonymity);
         $mform->addElement('checkbox', 'allowguests', '', get_string('allow_guests', 'jazzquiz'));
+        $mform->setDefault('allowguests', $jazzquiz->data->cfgallowguests);
         $mform->addElement('submit', 'submitbutton', get_string('start_session', 'jazzquiz'));
     }
 

@@ -164,10 +164,14 @@ class jazzquiz {
      * Create a new session for this quiz.
      * @param string $name
      * @param int $anonymity
+     * @param int $allowguests
      * @return int|false Session ID returned if successful, else false.
      */
     public function create_session(string $name, int $anonymity, int $allowguests) {
         global $DB;
+        $this->data->cfganonymity = $anonymity;
+        $this->data->cfgallowguests = $allowguests;
+        $this->save();
         $session = new \stdClass();
         $session->name = $name;
         $session->jazzquizid = $this->data->id;

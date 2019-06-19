@@ -78,7 +78,7 @@ function jazzquiz_view_start_quiz(jazzquiz $jazzquiz) {
 function jazzquiz_view_default_instructor(jazzquiz $jazzquiz) {
     global $PAGE, $DB;
 
-    $startsessionform = new forms\view\start_session($PAGE->url);
+    $startsessionform = new forms\view\start_session($PAGE->url, ['jazzquiz' => $jazzquiz]);
     $data = $startsessionform->get_data();
     if ($data) {
         $sessions = $DB->get_records('jazzquiz_sessions', [
