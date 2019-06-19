@@ -31,7 +31,7 @@ class exporter {
      * @param string $text
      * @return string
      */
-    public static function escape_csv($text) {
+    public static function escape_csv(string $text) {
         $text = str_replace("\r", '', $text);
         $text = str_replace("\n", '', $text);
         $text = str_replace("\t", '    ', $text);
@@ -42,7 +42,7 @@ class exporter {
      * Sets header to download csv file of given filename.
      * @param string $name filename without extension
      */
-    private function csv_file($name) {
+    private function csv_file(string $name) {
         header("Content-Disposition: attachment; filename=$name.csv");
         echo "sep=\t\r\n";
     }
@@ -53,7 +53,7 @@ class exporter {
      * @param jazzquiz_attempt[] $quizattempts
      * @return array
      */
-    public function export_session($session, $quizattempts) {
+    public function export_session(jazzquiz_session $session, array $quizattempts) {
         $quizattempt = reset($quizattempts);
         $qubaslots = $quizattempt->quba->get_slots();
         $slots = [];
@@ -72,12 +72,14 @@ class exporter {
             if ($quizattempt->data->status == jazzquiz_attempt::PREVIEW) {
                 continue;
             }
-            $fullname = $session->user_name_for_answer($quizattempt->data->userid);
-            $qubaslots = $quizattempt->quba->get_slots();
-            $users[$fullname] = [];
-            foreach ($qubaslots as $slot) {
-                $users[$fullname][$slot] = $quizattempt->get_response_data($slot);
+            $answers = [];
+            foreach ($quizattempt->quba->get_slots() as $slot) {
+                $answers[$slot] = $quizattempt->get_response_data($slot);
             }
+            $users[] = [
+                'name' => $session->user_name_for_answer($quizattempt->data->userid),
+                'answers' => $answers
+            ];
         }
         $name = 'session_' . $session->data->id . '_' . $session->data->name;
         return [$name, $slots, $users];
@@ -88,7 +90,7 @@ class exporter {
      * @param jazzquiz_session $session
      * @param jazzquiz_attempt[] $attempts
      */
-    public function export_session_csv($session, $attempts) {
+    public function export_session_csv(jazzquiz_session $session, array $attempts) {
         list($name, $slots, $users) = $this->export_session($session, $attempts);
         $this->csv_file($name);
         // Header row.
@@ -100,12 +102,12 @@ class exporter {
         }
         echo "\r\n";
         // Response rows.
-        foreach ($users as $user => $slots) {
-            $user = self::escape_csv($user);
-            echo "$user\t";
-            foreach ($slots as $slot) {
-                $response = self::escape_csv(implode(', ', $slot));
-                echo "$response\t";
+        foreach ($users as $user) {
+            $fullname = self::escape_csv($user['name']);
+            echo "$fullname\t";
+            foreach ($user['answers'] as $answer) {
+                $answer = self::escape_csv(implode(', ', $answer));
+                echo "$answer\t";
             }
             echo "\r\n";
         }
@@ -118,7 +120,7 @@ class exporter {
      * @param int $slot
      * @return array
      */
-    public function export_session_question($session, $quizattempt, $slot) {
+    public function export_session_question(jazzquiz_session $session, jazzquiz_attempt $quizattempt, int $slot) {
         $questionattempt = $quizattempt->quba->get_question_attempt($slot);
         $question = $questionattempt->get_question();
         $session->load_attempts();
@@ -134,7 +136,7 @@ class exporter {
      * @param jazzquiz_attempt $quizattempt
      * @param int $slot
      */
-    public function export_session_question_csv($session, $quizattempt, $slot) {
+    public function export_session_question_csv(jazzquiz_session $session, jazzquiz_attempt $quizattempt, int $slot) {
         list($name, $text, $responses) = $this->export_session_question($session, $quizattempt, $slot);
         $this->csv_file($name);
         echo "$text\r\n";
