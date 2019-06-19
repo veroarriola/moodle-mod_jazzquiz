@@ -282,7 +282,10 @@ class improviser {
         $this->insert_multichoice_question_definition("4 $multichoice", ['A', 'B', 'C', 'D']);
         $this->insert_multichoice_question_definition("5 $multichoice", ['A', 'B', 'C', 'D', 'E']);
         $this->insert_shortanswer_question_definition(get_string('short_answer', 'jazzquiz'));
-        $this->insert_multichoice_question_definition("$yes / $no", [$yes, $no]);
+        // TODO: Remove the check in the future, 2020+. Avoid messing with as many existing instances as possible.
+        if (!$this->get_improvised_question_definition('True / False')) {
+            $this->insert_multichoice_question_definition("$yes / $no", [$yes, $no]);
+        }
         $this->insert_shortmath_question_definition(get_string('short_math_answer', 'jazzquiz'));
     }
 
