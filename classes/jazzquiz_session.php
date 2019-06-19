@@ -374,11 +374,10 @@ class jazzquiz_session {
     public function get_users() {
         $users = [];
         foreach ($this->attempts as $attempt) {
-            // TODO: Eventually remove this status check.
-            if ($attempt->data->status == jazzquiz_attempt::PREVIEW) {
-                continue;
+            // Preview attempt means it's an instructor.
+            if ($attempt->data->status != jazzquiz_attempt::PREVIEW) {
+                $users[] = isguestuser($attempt->data->userid) ? null : $attempt->data->userid;
             }
-            $users[] = $attempt->data->userid;
         }
         return $users;
     }
@@ -450,19 +449,25 @@ class jazzquiz_session {
         ];
     }
 
-    /**
-     * Gets the users who have responded to the current question as an array
-     * @param int $slot
-     * @return int[] of user IDs
-     */
-    public function get_responded_list($slot) : array {
-        $responded = [];
+    public function get_attendances() : array {
+        global $DB;
+        $attendances = [];
+        $records = $DB->get_records('jazzquiz_attendance', ['sessionid' => $this->data->id]);
+        foreach ($records as $record) {
+            $attendances[] = [
+                'name' => $this->user_name_for_attendance($record->userid),
+                'count' => $record->numresponses
+            ];
+        }
         foreach ($this->attempts as $attempt) {
-            if ($attempt->has_responded($slot)) {
-                $responded[] = $attempt->data->userid;
+            if (!$attempt->data->userid && $attempt->data->guestsession) {
+                $attendances[] = [
+                    'name' => get_string('anonymous', 'jazzquiz'),
+                    'count' => $attempt->total_answers()
+                ];
             }
         }
-        return $responded;
+        return $attendances;
     }
 
     /**

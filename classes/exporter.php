@@ -146,36 +146,17 @@ class exporter {
     }
 
     /**
-     * Returns export name as first value, and a 'name' => 'total questions answered' array as second value.
-     * @param jazzquiz_session $session
-     * @return array
-     * @throws \dml_exception
-     */
-    public function export_attendance(jazzquiz_session $session) {
-        global $DB;
-        $attendances = [];
-        $records = $DB->get_records('jazzquiz_attendance', ['sessionid' => $session->data->id]);
-        foreach ($records as $record) {
-            $user = $session->user_name_for_attendance($record->userid);
-            if (isset($attendance[$user])) {
-                $attendances[$user] += $record->numresponses;
-            } else {
-                $attendances[$user] = $record->numresponses;
-            }
-        }
-        $name = $session->data->id . '_' . $session->data->name;
-        return [$name, $attendances];
-    }
-
-    /**
      * Export and print session attendance data as CSV.
      * @param jazzquiz_session $session
      */
     public function export_attendance_csv(jazzquiz_session $session) {
-        list($name, $users) = $this->export_attendance($session);
+        $name = $session->data->id . '_' . $session->data->name;
+        $attendances = $session->get_attendances();
         $this->csv_file("session_{$name}_attendance");
         echo "Student\tResponses\r\n";
-        foreach ($users as $name => $count) {
+        foreach ($attendances as $attendance) {
+            $name = $attendance['name'];
+            $count = $attendance['count'];
             echo "$name\t$count\r\n";
         }
     }

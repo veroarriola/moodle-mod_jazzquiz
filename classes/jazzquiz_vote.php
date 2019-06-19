@@ -57,11 +57,10 @@ class jazzquiz_vote {
 
     /**
      * Check whether a user has voted or not.
-     * @param int $userid
      * @return bool
      */
-    public function has_user_voted($userid) {
-        global $DB;
+    public function has_user_voted() {
+        global $DB, $USER;
         $allvotes = $DB->get_records('jazzquiz_votes', ['sessionid' => $this->sessionid]);
         if (!$allvotes) {
             return false;
@@ -76,7 +75,7 @@ class jazzquiz_vote {
             // Go through all the users who has voted on this attempt.
             foreach ($usersvoted as $uservoted) {
                 // Is this the user who is currently trying to vote?
-                if ($uservoted == $userid) {
+                if ($uservoted == $USER->id || $uservoted == $USER->sesskey) {
                     // Yes, the user has already voted!
                     return true;
                 }
@@ -88,12 +87,11 @@ class jazzquiz_vote {
     /**
      * Save the vote for a user.
      * @param int $voteid
-     * @param int $userid
      * @return bool
      */
-    public function save_vote($voteid, $userid) {
-        global $DB;
-        if ($this->has_user_voted($userid)) {
+    public function save_vote($voteid) {
+        global $DB, $USER;
+        if ($this->has_user_voted()) {
             return false;
         }
         $exists = $DB->record_exists('jazzquiz_votes', ['id' => $voteid]);
@@ -109,7 +107,7 @@ class jazzquiz_vote {
         if ($row->userlist != '') {
             $row->userlist .= ',';
         }
-        $row->userlist .= $userid;
+        $row->userlist .= isguestuser($USER) ? $USER->seskey : $USER->id;
         $DB->update_record('jazzquiz_votes', $row);
         return true;
     }

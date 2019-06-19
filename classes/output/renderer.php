@@ -16,6 +16,8 @@
 
 namespace mod_jazzquiz\output;
 
+use mod_jazzquiz\jazzquiz_session;
+
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->libdir . '/questionlib.php');
@@ -302,44 +304,30 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param jazzquiz_session $session
      * @param \moodle_url $url
+     * @return mixed[]
+     * @throws \coding_exception
      */
-    public function view_session_report($session, $url) {
-        global $DB;
-
-        $slots = [];
-        $students = [];
-
-        $quizattempt = reset($session->attempts);
-        if (!$quizattempt) {
-            echo '<div class="jazzquiz-box"><p>';
-            echo get_string('no_attempts_found', 'jazzquiz');
-            echo '</p></div>';
+    public function view_session_report(jazzquiz_session $session, \moodle_url $url) : array {
+        $attempt = reset($session->attempts);
+        if (!$attempt) {
+            $strnoattempts = get_string('no_attempts_found', 'jazzquiz');
+            echo '<div class="jazzquiz-box"><p>' . $strnoattempts . '</p></div>';
             return [];
         }
-        $quba = $quizattempt->quba;
-        $qubaslots = $quba->get_slots();
-        $totalresponded = [];
-
-        foreach ($qubaslots as $qubaslot) {
-            $questionattempt = $quba->get_question_attempt($qubaslot);
-            $question = $questionattempt->get_question();
+        $slots = [];
+        foreach ($attempt->quba->get_slots() as $qubaslot) {
+            $qattempt = $attempt->quba->get_question_attempt($qubaslot);
+            $question = $qattempt->get_question();
             $results = $session->get_question_results_list($qubaslot);
             list($results['responses'], $mergecount) = $session->get_merged_responses($qubaslot, $results['responses']);
-            $responses = $results['responses'];
-
-            $responded = $session->get_responded_list($qubaslot);
-            if ($responded) {
-                $totalresponded = array_merge($totalresponded, $responded);
-            }
-
             $slots[] = [
                 'num' => $qubaslot,
                 'name' => str_replace('{IMPROV}', '', $question->name),
-                'type' => $quba->get_question_attempt($qubaslot)->get_question()->get_type_name(),
+                'type' => $attempt->quba->get_question_attempt($qubaslot)->get_question()->get_type_name(),
                 'description' => $question->questiontext,
-                'responses' => $responses
+                'responses' => $results['responses']
             ];
         }
 
@@ -347,43 +335,16 @@ class renderer extends \plugin_renderer_base {
         // It quickly gets over 1KB, which shows debug warning.
         $this->require_review($session, $slots);
 
-        $notrespondeduserids = $session->get_users();
-        $respondedwithcount = [];
-        foreach ($totalresponded as $respondeduserid) {
-            foreach ($notrespondeduserids as $notrespondedindex => $notrespondeduserid) {
-                if ($notrespondeduserid === $respondeduserid) {
-                    unset($notrespondeduserids[$notrespondedindex]);
-                    break;
-                }
-            }
-            if (!isset($respondedwithcount[$respondeduserid])) {
-                $respondedwithcount[$respondeduserid] = 1;
-            } else {
-                $respondedwithcount[$respondeduserid]++;
-            }
-        }
-        foreach ($respondedwithcount as $respondeduserid => $respondedcount) {
-            $students[] = [
-                'name' => $session->user_name_for_answer($respondeduserid),
-                'count' => $respondedcount
-            ];
-        }
-        foreach ($notrespondeduserids as $notrespondeduserid) {
-            $students[] = [
-                'name' => $session->user_name_for_answer($notrespondeduserid),
-                'count' => 0
-            ];
-        }
-
+        $attendances = $session->get_attendances();
         $jazzquiz = $session->jazzquiz;
         $sessions = $jazzquiz->get_sessions();
         return [
             'select_session' => $jazzquiz->renderer->get_select_session_context($url, $sessions, $session->data->id),
             'session' => [
                 'slots' => $slots,
-                'students' => $students,
-                'count_total' => count($students),
-                'count_answered' => count($students) - count($notrespondeduserids),
+                'students' => $attendances,
+                'count_total' => count($session->attempts) - 1, // TODO: For loop and check if preview instead?
+                'count_answered' => count($attendances),
                 'cmid' => $jazzquiz->cm->id,
                 'quizid' => $jazzquiz->data->id,
                 'id' => $session->data->id

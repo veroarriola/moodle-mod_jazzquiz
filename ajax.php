@@ -273,10 +273,9 @@ function run_voting($session) {
  * @return mixed[]
  */
 function save_vote($session) {
-    global $USER;
     $voteid = required_param('vote', PARAM_INT);
     $vote = new jazzquiz_vote($session->data->id);
-    $status = $vote->save_vote($voteid, $USER->id);
+    $status = $vote->save_vote($voteid);
     return ['status' => ($status ? 'success' : 'error')];
 }
 
