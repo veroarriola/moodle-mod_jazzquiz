@@ -32,12 +32,15 @@ require_once($CFG->libdir . '/formslib.php');
 /**
  * Start session form displayed to instructors/users who can control the quiz.
  *
- * @package     mod_jazzquiz
- * @author      John Hoopes <moodle@madisoncreativeweb.com>
- * @copyright   2014 University of Wisconsin - Madison
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_jazzquiz
+ * @author    John Hoopes <moodle@madisoncreativeweb.com>
+ * @author    Sebastian S. Gundersen <sebastian@sgundersen.com>
+ * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2019 NTNU
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class start_session extends \moodleform {
+
     /**
      * Overriding parent function to account for namespace in the class name
      * so that client validation works
@@ -57,6 +60,13 @@ class start_session extends \moodleform {
         $mform->addElement('text', 'session_name', get_string('session_name', 'jazzquiz'));
         $mform->setType('session_name', PARAM_TEXT);
         $mform->addRule('session_name', get_string('session_name_required', 'jazzquiz'), 'required', null, 'client');
+        $anonymity = [
+            $mform->createElement('radio', 'anonymity', '', get_string('anonymous_answers', 'jazzquiz'), 1, []),
+            $mform->createElement('radio', 'anonymity', '', get_string('fully_anonymous', 'jazzquiz'), 2, []),
+            $mform->createElement('radio', 'anonymity', '', get_string('nonanonymous_session', 'jazzquiz'), 3, [])
+        ];
+        $mform->addGroup($anonymity,'anonymity', '', ['<br>', ''], false);
+        $mform->setDefault('anonymity', 1);
         $mform->addElement('submit', 'submitbutton', get_string('start_session', 'jazzquiz'));
     }
 

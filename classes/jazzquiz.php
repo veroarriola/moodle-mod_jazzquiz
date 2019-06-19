@@ -19,11 +19,11 @@ namespace mod_jazzquiz;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * @package     mod_jazzquiz
- * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
- * @copyright   2014 University of Wisconsin - Madison
- * @copyright   2018 NTNU
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_jazzquiz
+ * @author    Sebastian S. Gundersen <sebastian@sgundersen.com>
+ * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2018 NTNU
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz {
     /**
@@ -163,9 +163,10 @@ class jazzquiz {
     /**
      * Create a new session for this quiz.
      * @param string $name
+     * @param int $anonymity
      * @return int|false Session ID returned if successful, else false.
      */
-    public function create_session($name) {
+    public function create_session(string $name, int $anonymity) {
         global $DB;
         $session = new \stdClass();
         $session->name = $name;
@@ -173,6 +174,7 @@ class jazzquiz {
         $session->sessionopen = 1;
         $session->status = 'notrunning';
         $session->slot = 0;
+        $session->anonymity = $anonymity;
         $session->showfeedback = false;
         $session->created = time();
         try {

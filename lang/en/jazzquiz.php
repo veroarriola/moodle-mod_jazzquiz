@@ -52,6 +52,12 @@ $string['jazzquiz:seeresponses'] = 'View other student responses to grade them';
 $string['multichoice_options'] = 'Multichoice Options';
 $string['short_answer'] = 'Short answer';
 
+// Anonymity.
+$string['anonymous'] = 'Anonymous';
+$string['anonymous_answers'] = 'Anonymous answers (Attendance can be seen)';
+$string['fully_anonymous'] = 'Fully anonymous';
+$string['nonanonymous_session'] = 'Non-anonymous session';
+
 // Tabs.
 $string['view'] = 'View';
 $string['edit'] = 'Edit';
@@ -269,7 +275,6 @@ $string['privacy:metadata:core_question'] = 'The JazzQuiz activity stores questi
 $string['privacy:metadata:jazzquiz_attempts'] = 'Details about the quiz attempt for a JazzQuiz session.';
 $string['privacy:metadata:jazzquiz_attempts:userid'] = 'The user who made the attempt.';
 $string['privacy:metadata:jazzquiz_attempts:responded'] = 'Whether or not the last question that was asked has been answered.';
-$string['privacy:metadata:jazzquiz_attempts:responded_count'] = 'How many questions have been answered in this JazzQuiz attempt.';
 $string['privacy:metadata:jazzquiz_attempts:timestart'] = 'The time that the last question in the attempt was started.';
 $string['privacy:metadata:jazzquiz_attempts:timefinish'] = 'The time that the last question in the attempt was finished.';
 $string['privacy:metadata:jazzquiz_attempts:timemodified'] = 'The time that the last question in the attempt was modified.';

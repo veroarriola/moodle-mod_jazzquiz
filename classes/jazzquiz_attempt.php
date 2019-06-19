@@ -21,11 +21,11 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * An attempt for the quiz. Maps to individual question attempts.
  *
- * @package     mod_jazzquiz
- * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
- * @copyright   2014 University of Wisconsin - Madison
- * @copyright   2018 NTNU
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_jazzquiz
+ * @author    Sebastian S. Gundersen <sebastian@sgundersen.com>
+ * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2019 NTNU
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_attempt {
 
@@ -60,6 +60,11 @@ class jazzquiz_attempt {
         }
     }
 
+    public function belongs_to_current_user() {
+        global $USER;
+        return $this->data->userid == $USER->id || $this->data->guestsession == $USER->sesskey;
+    }
+
     /**
      * Check if this attempt is currently in progress.
      * @return bool
@@ -92,19 +97,27 @@ class jazzquiz_attempt {
             $slot = $this->quba->add_question($question);
             $this->quba->start_question($slot);
             $this->data->responded = 0;
-            $this->data->responded_count = 0;
         }
         return true;
     }
 
     /**
-     * Fetches user from database and returns the full name.
-     * @return string
+     * Anonymize all the question attempt steps for this quiz attempt.
+     * It will be impossible to identify which user answered all questions linked to this question usage.
+     * @throws \dml_exception
      */
-    public function get_user_full_name() {
+    public function anonymize_answers() {
         global $DB;
-        $user = $DB->get_record('user', ['id' => $this->data->userid]);
-        return fullname($user);
+        $attempts = $DB->get_records('question_attempts', ['questionusageid' => $this->data->questionengid]);
+        foreach ($attempts as $attempt) {
+            $steps = $DB->get_records('question_attempt_steps', ['questionattemptid' => $attempt->id]);
+            foreach ($steps as $step) {
+                $step->userid = null;
+                $DB->update_record('question_attempt_steps', $step);
+            }
+        }
+        $this->data->userid = null;
+        $this->save();
     }
 
     /**
@@ -149,10 +162,6 @@ class jazzquiz_attempt {
         $this->quba->finish_question($slot, time());
         $this->data->timemodified = time();
         $this->data->responded = 1;
-        if (empty($this->data->responded_count)) {
-            $this->data->responded_count = 0;
-        }
-        $this->data->responded_count++;
         $this->save();
         $transaction->allow_commit();
     }
@@ -230,15 +239,17 @@ class jazzquiz_attempt {
         }
         $this->data->timefinish = time();
         $this->save();
-        $params = [
-            'objectid' => $this->data->id,
-            'context' => $jazzquiz->context,
-            'relateduserid' => $this->data->userid
-        ];
-        $event = event\attempt_ended::create($params);
-        $event->add_record_snapshot('jazzquiz_attempts', $this->data);
-        $event->trigger();
         return true;
+    }
+
+    public function total_answers() : int {
+        $count = 0;
+        foreach ($this->quba->get_slots() as $slot) {
+            if ($this->has_responded($slot)) {
+                $count++;
+            }
+        }
+        return $count;
     }
 
 }

@@ -19,10 +19,10 @@ namespace mod_jazzquiz;
 defined('MOODLE_INTERNAL') || die;
 
 /**
- * @package     mod_jazzquiz
- * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
- * @copyright   2018 NTNU
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_jazzquiz
+ * @author    Sebastian S. Gundersen <sebastian@sgundersen.com>
+ * @copyright 2018 NTNU
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class exporter {
 
@@ -72,7 +72,7 @@ class exporter {
             if ($quizattempt->data->status == jazzquiz_attempt::PREVIEW) {
                 continue;
             }
-            $fullname = $quizattempt->get_user_full_name();
+            $fullname =  $session->user_name_for_answer($quizattempt->data->userid);
             $qubaslots = $quizattempt->quba->get_slots();
             $users[$fullname] = [];
             foreach ($qubaslots as $slot) {
@@ -144,61 +144,25 @@ class exporter {
     }
 
     /**
-     * Export session attendance data to array.
+     * Returns export name as first value, and a 'name' => 'total questions answered' array as second value.
      * @param jazzquiz_session $session
-     * @param jazzquiz_attempt $quizattempt
      * @return array
+     * @throws \dml_exception
      */
-    public function export_attendance($session, $quizattempt) {
+    public function export_attendance(jazzquiz_session $session) {
         global $DB;
-        // This starts with all the ids, but is filtered below.
-        $notrespondeduserids = $session->get_users();
-        $totalresponded = [];
-        $slots = $quizattempt->quba->get_slots();
-        foreach ($slots as $slot) {
-            $responded = $session->get_responded_list($slot);
-            if ($responded) {
-                $totalresponded = array_merge($totalresponded, $responded);
+        $attendances = [];
+        $records = $DB->get_records('jazzquiz_attendance', ['sessionid' => $session->data->id]);
+        foreach ($records as $record) {
+            $user = $session->user_name_for_attendance($record->userid);
+            if (isset($attendance[$user])) {
+                $attendances[$user] += $record->numresponses;
+            } else {
+                $attendances[$user] = $record->numresponses;
             }
         }
         $name = $session->data->id . '_' . $session->data->name;
-        if (!$totalresponded) {
-            return [$name, []];
-        }
-        $users = [];
-        $respondedwithcount = [];
-        foreach ($totalresponded as $respondeduserid) {
-            foreach ($notrespondeduserids as $notrespondedindex => $notrespondeduserid) {
-                if ($notrespondeduserid === $respondeduserid) {
-                    unset($notrespondeduserids[$notrespondedindex]);
-                    break;
-                }
-            }
-            if (!isset($respondedwithcount[$respondeduserid])) {
-                $respondedwithcount[$respondeduserid] = 1;
-            } else {
-                $respondedwithcount[$respondeduserid]++;
-            }
-        }
-        if ($respondedwithcount) {
-            foreach ($respondedwithcount as $respondeduserid => $respondedcount) {
-                try {
-                    $user = $DB->get_record('user', ['id' => $respondeduserid]);
-                    $users[fullname($user)] = $respondedcount;
-                } catch (\dml_exception $e) {
-                    $users[] = 'Error';
-                }
-            }
-            foreach ($notrespondeduserids as $notrespondeduserid) {
-                try {
-                    $user = $DB->get_record('user', ['id' => $notrespondeduserid]);
-                    $users[fullname($user)] = 0;
-                } catch (\dml_exception $e) {
-                    $users[] = 'Error';
-                }
-            }
-        }
-        return [$name, $users];
+        return [$name, $attendances];
     }
 
     /**

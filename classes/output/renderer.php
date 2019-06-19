@@ -26,10 +26,10 @@ require_once($CFG->libdir . '/questionlib.php');
  * This class takes in the manager and keeps the JS for when we want to get a diff.
  * NOTE: This class is placed here because it will only ever be used by renderer::render_question_form()
  * TODO: Look into removing this class in the future.
- * @package    mod_jazzquiz\output
- * @author     Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
- * @copyright  2018 NTNU
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_jazzquiz\output
+ * @author    Sebastian S. Gundersen <sebastian@sgundersen.com>
+ * @copyright 2018 NTNU
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class page_requirements_diff extends \page_requirements_manager {
 
@@ -79,11 +79,11 @@ class page_requirements_diff extends \page_requirements_manager {
 /**
  * Quiz renderer
  *
- * @package    mod_jazzquiz
- * @author     Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
- * @copyright  2014 University of Wisconsin - Madison
- * @copyright  2018 NTNU
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_jazzquiz
+ * @author    Sebastian S. Gundersen <sebastian@sgundersen.com>
+ * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2019 NTNU
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends \plugin_renderer_base {
 
@@ -363,16 +363,14 @@ class renderer extends \plugin_renderer_base {
             }
         }
         foreach ($respondedwithcount as $respondeduserid => $respondedcount) {
-            $user = $DB->get_record('user', ['id' => $respondeduserid]);
             $students[] = [
-                'name' => fullname($user),
+                'name' => $session->user_name_for_answer($respondeduserid),
                 'count' => $respondedcount
             ];
         }
         foreach ($notrespondeduserids as $notrespondeduserid) {
-            $user = $DB->get_record('user', ['id' => $notrespondeduserid]);
             $students[] = [
-                'name' => fullname($user),
+                'name' => $session->user_name_for_answer($notrespondeduserid),
                 'count' => 0
             ];
         }

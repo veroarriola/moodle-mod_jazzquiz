@@ -220,27 +220,21 @@ function start_quiz($session) {
  * @return mixed[]
  */
 function save_question($session) {
-    global $USER;
-    // Get the attempt for the question.
     $attempt = $session->attempt;
-
-    // Does it belong to this user?
-    if ($attempt->data->userid != $USER->id) {
+    if (!$attempt->belongs_to_current_user()) {
         return [
             'status' => 'error',
             'message' => 'Invalid user'
         ];
     }
-
     $session->load_session_questions();
     $attempt->save_question(count($session->questions));
-
+    $session->update_attendance_for_current_user();
     // Only give feedback if specified in session.
     $feedback = '';
     if ($session->data->showfeedback) {
         $feedback = $attempt->get_question_feedback($session->jazzquiz);
     }
-
     return [
         'status' => 'success',
         'feedback' => $feedback

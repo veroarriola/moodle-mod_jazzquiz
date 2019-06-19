@@ -64,7 +64,6 @@ class provider implements
         $items->add_database_table('jazzquiz_attempts', [
             'userid' => 'privacy:metadata:jazzquiz_attempts:userid',
             'responded' => 'privacy:metadata:jazzquiz_attempts:responded',
-            'responded_count' => 'privacy:metadata:jazzquiz_attempts:responded_count',
             'timestart' => 'privacy:metadata:jazzquiz_attempts:timestart',
             'timefinish' => 'privacy:metadata:jazzquiz_attempts:timefinish',
             'timemodified' => 'privacy:metadata:jazzquiz_attempts:timemodified'
@@ -180,7 +179,6 @@ class provider implements
                        ja.id              AS id,
                        ja.sessionid       AS sessionid,
                        ja.responded       AS responded,
-                       ja.responded_count AS responded_count,
                        ja.timestart       AS timestart,
                        ja.timefinish      AS timefinish,
                        ja.timemodified    AS timemodified,
@@ -219,7 +217,6 @@ class provider implements
             // Store the quiz attempt data.
             $data = new \stdClass();
             $data->responded = $attempt->responded;
-            $data->responded_count = $attempt->responded_count;
             $data->timestart = transform::datetime($attempt->timestart);
             $data->timefinish = transform::datetime($attempt->timefinish);
             $data->timemodified = transform::datetime($attempt->timemodified);

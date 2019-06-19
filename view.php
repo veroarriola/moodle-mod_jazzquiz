@@ -39,7 +39,7 @@ require_login();
  * @param jazzquiz $jazzquiz
  */
 function jazzquiz_view_start_quiz($jazzquiz) {
-    global $PAGE, $USER;
+    global $PAGE;
 
     // Set the quiz view page to the base layout for 1 column layout.
     $PAGE->set_pagelayout('base');
@@ -52,7 +52,7 @@ function jazzquiz_view_start_quiz($jazzquiz) {
     $session->load_session_questions();
     $session->load_attempts();
 
-    $session->initialize_attempt($USER->id);
+    $session->initialize_attempt();
     if ($jazzquiz->is_instructor()) {
         $session->attempt->data->status = jazzquiz_attempt::PREVIEW;
     } else {
@@ -88,7 +88,7 @@ function jazzquiz_view_default_instructor($jazzquiz) {
 
         // Only create session if none is open already.
         if (empty($sessions)) {
-            $sessionid = $jazzquiz->create_session($data->session_name);
+            $sessionid = $jazzquiz->create_session($data->session_name, $data->anonymity);
             if ($sessionid === false) {
                 return;
             }
@@ -127,7 +127,7 @@ function jazzquiz_view_default_student($jazzquiz) {
         $quizstarturl = clone($PAGE->url);
         $quizstarturl->param('action', 'quizstart');
         redirect($quizstarturl, null, 0);
-        return; // Explicit return to avoid confusion.
+        // Note: Redirect exits.
     }
 
     /** @var output\renderer $renderer */
@@ -147,18 +147,6 @@ function jazzquiz_view_default_student($jazzquiz) {
  * @param jazzquiz $jazzquiz
  */
 function jazzquiz_view_default($jazzquiz) {
-    global $PAGE;
-
-    // Trigger event for course module viewed.
-    $event = event\course_module_viewed::create([
-        'objectid' => $PAGE->cm->instance,
-        'context' => $PAGE->context,
-    ]);
-    $event->add_record_snapshot('course', $jazzquiz->course);
-    $event->add_record_snapshot($PAGE->cm->modname, $jazzquiz->data);
-    $event->trigger();
-
-    // Determine home display based on role.
     if ($jazzquiz->is_instructor()) {
         // Show "Start quiz" form.
         jazzquiz_view_default_instructor($jazzquiz);
@@ -173,7 +161,6 @@ function jazzquiz_view_default($jazzquiz) {
  */
 function jazzquiz_view() {
     global $PAGE;
-
     $cmid = optional_param('id', false, PARAM_INT);
     if (!$cmid) {
         // Probably a login redirect that doesn't include any ID.
@@ -184,7 +171,9 @@ function jazzquiz_view() {
 
     $action = optional_param('action', '', PARAM_ALPHANUM);
     $jazzquiz = new jazzquiz($cmid);
-    $jazzquiz->require_capability('mod/jazzquiz:attempt');
+    //if ($jazzquiz->data->onlyusers) {
+        //$jazzquiz->require_capability('mod/jazzquiz:attempt');
+    //}
     $modulename = get_string('modulename', 'jazzquiz');
     $quizname = format_string($jazzquiz->data->name, true);
 

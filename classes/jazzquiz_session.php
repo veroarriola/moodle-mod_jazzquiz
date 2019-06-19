@@ -19,11 +19,11 @@ namespace mod_jazzquiz;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * @package     mod_jazzquiz
- * @author      Sebastian S. Gundersen <sebastsg@stud.ntnu.no>
- * @copyright   2014 University of Wisconsin - Madison
- * @copyright   2018 NTNU
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_jazzquiz
+ * @author    Sebastian S. Gundersen <sebastian@sgundersen.com>
+ * @copyright 2014 University of Wisconsin - Madison
+ * @copyright 2019 NTNU
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class jazzquiz_session {
 
@@ -57,6 +57,14 @@ class jazzquiz_session {
             'jazzquizid' => $this->jazzquiz->data->id,
             'id' => $sessionid
         ], '*', MUST_EXIST);
+    }
+
+    private function requires_anonymous_answers() {
+        return $this->data->anonymity != 3;
+    }
+
+    private function requires_anonymous_attendance() {
+        return $this->data->anonymity == 2;
     }
 
     /**
@@ -101,11 +109,60 @@ class jazzquiz_session {
         return true;
     }
 
+    public function user_name_for_answer($userid) {
+        global $DB;
+        if ($this->requires_anonymous_answers() || is_null($userid)) {
+            return get_string('anonymous', 'jazzquiz');
+        }
+        $user = $DB->get_record('user', ['id' => $userid]);
+        if (!$user) {
+            return '?';
+        }
+        return fullname($user);
+    }
+
+    public function user_name_for_attendance($userid) {
+        global $DB;
+        if ($this->requires_anonymous_attendance() || is_null($userid)) {
+            return get_string('anonymous', 'jazzquiz');
+        }
+        $user = $DB->get_record('user', ['id' => $userid]);
+        if (!$user) {
+            return '?';
+        }
+        return fullname($user);
+    }
+
+    /**
+     * Anonymize attendance, making it unknown how many questions each user has answered.
+     * Only makes sense to do this along with anonymizing answers. This should be called first.
+     */
+    private function anonymize_attendance() {
+        global $DB;
+        $attendances = $DB->get_records('jazzquiz_attendance', ['sessionid' => $this->data->id]);
+        foreach ($attendances as $attendance) {
+            $attendance->userid = null;
+            $DB->update_record('jazzquiz_attendance', $attendance);
+        }
+    }
+
+    private function anonymize_users() {
+        if ($this->requires_anonymous_attendance()) {
+            $this->anonymize_attendance();
+        }
+        foreach ($this->attempts as &$attempt) {
+            if ($this->requires_anonymous_answers()) {
+                $attempt->anonymize_answers();
+            }
+        }
+    }
+
     /**
      * Closes the attempts and ends the session.
      * @return bool Whether or not this was successful
      */
     public function end_session() {
+        $this->anonymize_users();
         $this->data->status = 'notrunning';
         $this->data->sessionopen = 0;
         $this->data->currentquestiontime = null;
@@ -186,7 +243,6 @@ class jazzquiz_session {
      */
     public function start_question($questionid, $questiontime) {
         global $DB;
-
         $transaction = $DB->start_delegated_transaction();
 
         $sessionquestion = new \stdClass();
@@ -207,18 +263,17 @@ class jazzquiz_session {
         $this->save();
 
         $transaction->allow_commit();
-
         return [true, $questiontime];
     }
 
     /**
-     * Create a quiz attempt for the specified user.
-     * @param int $userid The user to create the attempt for
+     * Create a quiz attempt for the current user.
      */
-    public function initialize_attempt($userid) {
+    public function initialize_attempt() {
+        global $USER;
         // Check if this user has already joined the quiz.
         foreach ($this->attempts as &$attempt) {
-            if ($attempt->data->userid == $userid) {
+            if ($attempt->data->userid == $USER->id) {
                 $attempt->create_missing_attempts($this);
                 $attempt->save();
                 $this->attempt = $attempt;
@@ -228,25 +283,43 @@ class jazzquiz_session {
         // For users who have not yet joined the quiz.
         $this->attempt = new jazzquiz_attempt($this->jazzquiz->context);
         $this->attempt->data->sessionid = $this->data->id;
-        $this->attempt->data->userid = $userid;
+        if (isguestuser($USER->id)) {
+            $this->attempt->data->guestsession = $USER->sesskey;
+        } else {
+            $this->attempt->data->userid = $USER->id;
+        }
         $this->attempt->data->status = jazzquiz_attempt::NOTSTARTED;
         $this->attempt->data->timemodified = time();
         $this->attempt->data->timestart = time();
         $this->attempt->data->responded = null;
-        $this->attempt->data->responded_count = 0;
         $this->attempt->data->timefinish = null;
         $this->attempt->create_missing_attempts($this);
         $this->attempt->save();
+    }
 
-        $event = event\attempt_started::create([
-            'objectid' => $this->attempt->data->id,
-            'relateduserid' => $this->attempt->data->userid,
-            'courseid' => $this->jazzquiz->course->id,
-            'context' => $this->jazzquiz->context
+    public function update_attendance_for_current_user() {
+        global $DB, $USER;
+        if (isguestuser($USER->id)) {
+            return;
+        }
+        $numresponses = $this->attempt->total_answers();
+        if ($numresponses === 0) {
+            return;
+        }
+        $attendance = $DB->get_record('jazzquiz_attendance', [
+            'sessionid' => $this->data->id,
+            'userid' => $USER->id
         ]);
-        $event->add_record_snapshot('jazzquiz', $this->jazzquiz->data);
-        $event->add_record_snapshot('jazzquiz_attempts', $this->attempt->data);
-        $event->trigger();
+        if ($attendance) {
+            $attendance->numresponses = $numresponses;
+            $DB->update_record('jazzquiz_attendance', $attendance);
+        } else {
+            $attendance = new \stdClass();
+            $attendance->sessionid = $this->data->id;
+            $attendance->userid = $USER->id;
+            $attendance->numresponses = $numresponses;
+            $DB->insert_record('jazzquiz_attendance', $attendance);
+        }
     }
 
     /**
@@ -266,9 +339,14 @@ class jazzquiz_session {
      */
     public function load_attempt() {
         global $DB, $USER;
-        $attempt = $DB->get_record('jazzquiz_attempts', [
+        $sql = 'SELECT *
+                  FROM {jazzquiz_attempts}
+                 WHERE sessionid = :sessionid
+                   AND (userid = :userid OR guestsession = :sesskey)';
+        $attempt = $DB->get_record_sql($sql, [
             'sessionid' => $this->data->id,
-            'userid' => $USER->id
+            'userid' => $USER->id,
+            'sesskey' => $USER->sesskey
         ]);
         if (!$attempt) {
             $this->attempt = false;
@@ -282,9 +360,7 @@ class jazzquiz_session {
      */
     public function load_session_questions() {
         global $DB;
-        $this->questions = $DB->get_records('jazzquiz_session_questions', [
-            'sessionid' => $this->data->id
-        ], 'slot');
+        $this->questions = $DB->get_records('jazzquiz_session_questions', ['sessionid' => $this->data->id], 'slot');
         foreach ($this->questions as $question) {
             unset($this->questions[$question->id]);
             $this->questions[$question->slot] = $question;
@@ -379,12 +455,9 @@ class jazzquiz_session {
      * @param int $slot
      * @return int[] of user IDs
      */
-    public function get_responded_list($slot) {
+    public function get_responded_list($slot) : array {
         $responded = [];
         foreach ($this->attempts as $attempt) {
-            if ($attempt->data->responded != 1) {
-                continue;
-            }
             if ($attempt->has_responded($slot)) {
                 $responded[] = $attempt->data->userid;
             }
@@ -397,7 +470,7 @@ class jazzquiz_session {
      * @param int $slot
      * @return string
      */
-    public function get_question_type_by_slot($slot) {
+    public function get_question_type_by_slot($slot) : string {
         global $DB;
         $id = $this->questions[$slot]->questionid;
         $question = $DB->get_record('question', ['id' => $id], 'qtype');
