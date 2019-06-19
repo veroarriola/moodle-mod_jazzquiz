@@ -755,15 +755,6 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                 // It's already open. Let's not send another request.
                 return;
             }
-
-            // The dropdown lies within the button, so we have to do this extra step.
-            // This attribute is set in the onclick function for one of the buttons in the dropdown.
-            // TODO: Redo the dropdown so we don't have to do this.
-            if ($controlButton.data('isclosed') === 'yes') {
-                $controlButton.data('isclosed', '');
-                return;
-            }
-
             Ajax.get('list_' + name + '_questions', {}, data => {
                 let self = this;
                 let $menu = $('#jazzquiz_' + name + '_menu');
@@ -789,7 +780,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
                         const jazzQuestionId = $(this).data('jazzquiz-question-id');
                         self.jumpQuestion(questionId, time, jazzQuestionId);
                         $menu.html('').removeClass('active');
-                        $controlButton.removeClass('active').data('isclosed', 'yes');
+                        $controlButton.removeClass('active');
                     });
                     $menu.append($questionButton);
                 }
