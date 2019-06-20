@@ -821,6 +821,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
         startQuestion(method, questionId, questionTime, jazzquizQuestionId) {
             Quiz.hide(Quiz.info);
             this.responses.clear();
+            this.hideCorrectAnswer();
             Ajax.post('start_question', {
                 method: method,
                 questionid: questionId,
@@ -865,15 +866,21 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
         }
 
         /**
-         * Request and show the correct answer for the ongoing or previous question.
+         * Hide the correct answer if showing.
          */
-        showCorrectAnswer() {
+        hideCorrectAnswer() {
             if (this.isShowingCorrectAnswer) {
                 Quiz.hide(Instructor.correctAnswer);
                 Quiz.uncheck(Instructor.control('answer'));
                 this.isShowingCorrectAnswer = false;
-                return;
             }
+        }
+
+        /**
+         * Request and show the correct answer for the ongoing or previous question.
+         */
+        showCorrectAnswer() {
+            this.hideCorrectAnswer();
             Ajax.get('get_right_response', {}, data => {
                 Quiz.show(Instructor.correctAnswer.html(data.right_answer));
                 Quiz.renderAllMathjax();
