@@ -37,10 +37,11 @@ require_login();
 /**
  * View the quiz page.
  * @param jazzquiz $jazzquiz
+ * @throws \dml_exception
+ * @throws \moodle_exception
  */
 function jazzquiz_view_start_quiz(jazzquiz $jazzquiz) {
     global $PAGE;
-
     // Set the quiz view page to the base layout for 1 column layout.
     $PAGE->set_pagelayout('base');
 
@@ -51,7 +52,6 @@ function jazzquiz_view_start_quiz(jazzquiz $jazzquiz) {
     }
     $session->load_session_questions();
     $session->load_attempts();
-
     $session->initialize_attempt();
     if ($jazzquiz->is_instructor()) {
         $session->attempt->data->status = jazzquiz_attempt::PREVIEW;
@@ -64,7 +64,6 @@ function jazzquiz_view_start_quiz(jazzquiz $jazzquiz) {
     // TODO: Not certain if this is needed. Should be checked further.
     \question_engine::initialise_js();
 
-    /** @var output\renderer $renderer */
     $renderer = $jazzquiz->renderer;
     $renderer->header($jazzquiz, 'view');
     $renderer->render_quiz($session);
@@ -74,10 +73,11 @@ function jazzquiz_view_start_quiz(jazzquiz $jazzquiz) {
 /**
  * View the "Continue session" or "Start session" form.
  * @param jazzquiz $jazzquiz
+ * @throws \dml_exception
+ * @throws \moodle_exception
  */
 function jazzquiz_view_default_instructor(jazzquiz $jazzquiz) {
     global $PAGE, $DB;
-
     $startsessionform = new forms\view\start_session($PAGE->url, ['jazzquiz' => $jazzquiz]);
     $data = $startsessionform->get_data();
     if ($data) {
@@ -85,7 +85,7 @@ function jazzquiz_view_default_instructor(jazzquiz $jazzquiz) {
             'jazzquizid' => $jazzquiz->data->id,
             'sessionopen' => 1
         ]);
-        // Only create session if none is open already.
+        // Only create session if not already open.
         if (empty($sessions)) {
             $allowguests = isset($data->allowguests) ? 1 : 0;
             $sessionid = $jazzquiz->create_session($data->session_name, $data->anonymity, $allowguests);
@@ -115,6 +115,7 @@ function jazzquiz_view_default_instructor(jazzquiz $jazzquiz) {
 /**
  * View the "Join quiz" or "Quiz not running" form.
  * @param jazzquiz $jazzquiz
+ * @throws \moodle_exception
  */
 function jazzquiz_view_default_student(jazzquiz $jazzquiz) {
     global $PAGE;
@@ -142,6 +143,8 @@ function jazzquiz_view_default_student(jazzquiz $jazzquiz) {
 /**
  * View appropriate form based on role and session state.
  * @param jazzquiz $jazzquiz
+ * @throws \dml_exception
+ * @throws \moodle_exception
  */
 function jazzquiz_view_default(jazzquiz $jazzquiz) {
     if ($jazzquiz->is_instructor()) {

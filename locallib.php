@@ -23,16 +23,20 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_jazzquiz\jazzquiz;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * @param \mod_jazzquiz\jazzquiz $jazzquiz
+ * @param jazzquiz $jazzquiz
  * @param int $id
  * @param array $row
  * @param string $capability
  * @param string $name
+ * @throws coding_exception
+ * @throws moodle_exception
  */
-function jazzquiz_view_tab($jazzquiz, $id, &$row, $capability, $name) {
+function jazzquiz_view_tab(jazzquiz $jazzquiz, int $id, array &$row, string $capability, string $name) {
     if (has_capability($capability, $jazzquiz->context)) {
         $url = new moodle_url("/mod/jazzquiz/$name.php", ['id' => $id]);
         $row[] = new tabobject($name, $url, get_string($name, 'jazzquiz'));
@@ -40,24 +44,22 @@ function jazzquiz_view_tab($jazzquiz, $id, &$row, $capability, $name) {
 }
 
 /**
- * Prints local lib tabs
- *
- * @param \mod_jazzquiz\jazzquiz $jazzquiz
+ * Prints tabs for instructor.
+ * @param jazzquiz $jazzquiz
  * @param string $tab
- *
  * @return string HTML string of the tabs
+ * @throws coding_exception
+ * @throws moodle_exception
  */
-function jazzquiz_view_tabs($jazzquiz, $tab) {
+function jazzquiz_view_tabs(jazzquiz $jazzquiz, string $tab) : string {
     $tabs = [];
     $row = [];
     $inactive = [];
     $activated = [];
     $id = $jazzquiz->cm->id;
-
     jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:attempt', 'view');
     jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:editquestions', 'edit');
     jazzquiz_view_tab($jazzquiz, $id, $row, 'mod/jazzquiz:seeresponses', 'reports');
-
     if ($tab === 'view' && count($row) === 1) {
         // No tabs for students.
         return '<br>';

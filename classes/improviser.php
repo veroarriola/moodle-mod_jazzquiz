@@ -32,7 +32,7 @@ class improviser {
     /**
      * @param jazzquiz $jazzquiz
      */
-    public function __construct($jazzquiz) {
+    public function __construct(jazzquiz $jazzquiz) {
         $this->jazzquiz = $jazzquiz;
     }
 
@@ -41,7 +41,7 @@ class improviser {
      * @param string $name Name of the question type
      * @return bool
      */
-    private function question_type_exists($name) {
+    private function question_type_exists(string $name) : bool {
         $qtypes = \core_plugin_manager::instance()->get_plugins_of_type('qtype');
         foreach ($qtypes as $qtype) {
             if ($qtype->name === $name) {
@@ -81,7 +81,7 @@ class improviser {
      * @param string $name The name of the improvised question without the prefix.
      * @return \stdClass|false
      */
-    private function get_improvised_question_definition($name) {
+    private function get_improvised_question_definition(string $name) {
         global $DB;
         $category = $this->get_default_question_category();
         if (!$category) {
@@ -101,7 +101,7 @@ class improviser {
      * Deletes the improvised question definition with matching name if it exists.
      * @param string $name of question
      */
-    private function delete_improvised_question($name) {
+    private function delete_improvised_question(string $name) {
         $question = $this->get_improvised_question_definition($name);
         if ($question !== false) {
             question_delete_question($question->id);
@@ -128,7 +128,7 @@ class improviser {
      * @param string $name The name of the question to create
      * @return \stdClass | null
      */
-    private function make_generic_question_definition($qtype, $name) {
+    private function make_generic_question_definition(string $qtype, string $name) {
         if (!$this->question_type_exists($qtype)) {
             return null;
         }
@@ -203,7 +203,7 @@ class improviser {
      * @param string $answertext The answer text
      * @return \stdClass
      */
-    private function make_generic_question_answer($questionid, $format, $answertext) {
+    private function make_generic_question_answer($questionid, string $format, string $answertext) {
         $answer = new \stdClass();
         $answer->question = $questionid;
         $answer->answer = $answertext;
@@ -219,7 +219,7 @@ class improviser {
      * @param string $name The name of the question
      * @param string[] $answers Answers to the question
      */
-    private function insert_multichoice_question_definition($name, $answers) {
+    private function insert_multichoice_question_definition(string $name, array $answers) {
         global $DB;
         $question = $this->make_generic_question_definition('multichoice', $name);
         if (!$question) {
@@ -240,7 +240,7 @@ class improviser {
      * Insert a short answer question to the database.
      * @param string $name The name of the short answer question
      */
-    private function insert_shortanswer_question_definition($name) {
+    private function insert_shortanswer_question_definition(string $name) {
         global $DB;
         $question = $this->make_generic_question_definition('shortanswer', $name);
         if (!$question) {
@@ -255,7 +255,7 @@ class improviser {
         $DB->insert_record('question_answers', $answer);
     }
 
-    private function insert_shortmath_question_definition($name) {
+    private function insert_shortmath_question_definition(string $name) {
         global $DB;
         $question = $this->make_generic_question_definition('shortmath', $name);
         if (!$question) {

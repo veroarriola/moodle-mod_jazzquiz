@@ -46,7 +46,7 @@ class jazzquiz_attempt {
      * @param \context_module $context
      * @param \stdClass $data
      */
-    public function __construct($context, $data = null) {
+    public function __construct(\context_module $context, \stdClass $data = null) {
         if (empty($data)) {
             // Create new attempt.
             $this->data = new \stdClass();
@@ -83,7 +83,7 @@ class jazzquiz_attempt {
      * @param jazzquiz_session $session
      * @return bool false if invalid question id
      */
-    public function create_missing_attempts($session) {
+    public function create_missing_attempts(jazzquiz_session $session) {
         foreach ($session->questions as $slot => $question) {
             if ($this->quba->next_slot_number() > $slot) {
                 continue;
@@ -176,7 +176,7 @@ class jazzquiz_attempt {
      * @param int $slot The slot for which we want to get feedback
      * @return string HTML fragment of the feedback
      */
-    public function get_question_feedback($jazzquiz, $slot = -1) {
+    public function get_question_feedback(jazzquiz $jazzquiz, $slot = -1) {
         global $PAGE;
         if ($slot === -1) {
             // Attempt to get it from the slots param sent back from a question processing.
@@ -186,7 +186,7 @@ class jazzquiz_attempt {
         }
         $question = $this->quba->get_question($slot);
         $renderer = $question->get_renderer($PAGE);
-        $displayoptions = $jazzquiz->get_display_options();
+        $displayoptions = $jazzquiz->get_display_options(false, '');
         return $renderer->feedback($this->quba->get_question_attempt($slot), $displayoptions);
     }
 
@@ -229,9 +229,8 @@ class jazzquiz_attempt {
     /**
      * Closes the attempt
      * @param jazzquiz $jazzquiz
-     * @return bool Whether or not it was successful
      */
-    public function close_attempt($jazzquiz) {
+    public function close_attempt(jazzquiz $jazzquiz) {
         $this->quba->finish_all_questions(time());
         // We want the instructor to remain in preview mode.
         if (!$jazzquiz->is_instructor()) {
@@ -239,7 +238,6 @@ class jazzquiz_attempt {
         }
         $this->data->timefinish = time();
         $this->save();
-        return true;
     }
 
     public function total_answers() : int {

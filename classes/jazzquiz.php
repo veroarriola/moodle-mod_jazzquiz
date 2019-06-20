@@ -66,10 +66,9 @@ class jazzquiz {
      */
     public function __construct($cmid) {
         global $PAGE, $DB;
-
         $this->cm = get_coursemodule_from_id('jazzquiz', $cmid, 0, false, MUST_EXIST);
 
-        // TODO: Should login requirement be moved over to caller?
+        // TODO: Login requirement must be moved over to caller.
         require_login($this->cm->course, false, $this->cm);
 
         $this->context = \context_module::instance($cmid);
@@ -87,7 +86,7 @@ class jazzquiz {
      * @param string $reviewoptions
      * @return \question_display_options
      */
-    public function get_display_options($review = false, $reviewoptions = '') {
+    public function get_display_options(bool $review, string $reviewoptions) {
         $options = new \question_display_options();
         $options->flags = \question_display_options::HIDDEN;
         $options->context = $this->context;
@@ -224,7 +223,7 @@ class jazzquiz {
      *
      * @param int[] $order
      */
-    public function set_question_order($order) {
+    public function set_question_order(array $order) {
         global $DB;
         $order = array_unique($order);
         $questions = $DB->get_records('jazzquiz_questions', ['jazzquizid' => $this->data->id], 'slot');
@@ -243,7 +242,7 @@ class jazzquiz {
     /**
      * @return int[] of jazzquiz_question id
      */
-    public function get_question_order() {
+    public function get_question_order() : array {
         $order = [];
         foreach ($this->questions as $question) {
             $order[] = $question->data->id;
@@ -338,7 +337,7 @@ class jazzquiz {
      * Quick function for whether or not the current user is the instructor/can control the quiz
      * @return bool
      */
-    public function is_instructor() {
+    public function is_instructor() : bool {
         if (is_null($this->isinstructor)) {
             $this->isinstructor = has_capability('mod/jazzquiz:control', $this->context);
         }
@@ -350,7 +349,7 @@ class jazzquiz {
      * @param array $conditions
      * @return \stdClass[]
      */
-    public function get_sessions($conditions = []) {
+    public function get_sessions(array $conditions = []) : array {
         global $DB;
         $conditions = array_merge(['jazzquizid' => $this->data->id], $conditions);
         return $DB->get_records('jazzquiz_sessions', $conditions);

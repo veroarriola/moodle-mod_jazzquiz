@@ -42,7 +42,7 @@ require_sesskey();
  * @param jazzquiz $jazzquiz
  * @return mixed[]
  */
-function show_all_improvise_questions($jazzquiz) {
+function show_all_improvise_questions(jazzquiz $jazzquiz) {
     $improviser = new improviser($jazzquiz);
     $questionrecords = $improviser->get_all_improvised_question_definitions();
     if (!$questionrecords) {
@@ -71,7 +71,7 @@ function show_all_improvise_questions($jazzquiz) {
  * @param jazzquiz $jazzquiz
  * @return mixed[]
  */
-function show_all_jump_questions($jazzquiz) {
+function show_all_jump_questions(jazzquiz $jazzquiz) {
     global $DB;
     $sql = 'SELECT q.id AS id, q.name AS name, jq.questiontime AS time, jq.id AS jqid';
     $sql .= '  FROM {jazzquiz_questions} jq';
@@ -99,7 +99,7 @@ function show_all_jump_questions($jazzquiz) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function get_question_form($session) {
+function get_question_form(jazzquiz_session $session) {
     $session->load_session_questions();
     $slot = optional_param('slot', 0, PARAM_INT);
     if ($slot === 0) {
@@ -134,7 +134,7 @@ function get_question_form($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function start_question($session) {
+function start_question(jazzquiz_session $session) {
     $session->load_session_questions();
     $session->load_attempts();
     $method = required_param('method', PARAM_ALPHA);
@@ -202,7 +202,7 @@ function start_question($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function start_quiz($session) {
+function start_quiz(jazzquiz_session $session) {
     if ($session->data->status !== 'notrunning') {
         return [
             'status' => 'error',
@@ -219,7 +219,7 @@ function start_quiz($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function save_question($session) {
+function save_question(jazzquiz_session $session) {
     $attempt = $session->attempt;
     if (!$attempt->belongs_to_current_user()) {
         return [
@@ -246,7 +246,7 @@ function save_question($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function run_voting($session) {
+function run_voting(jazzquiz_session $session) {
     $questions = required_param('questions', PARAM_RAW);
     $questions = json_decode(urldecode($questions), true);
     if (!$questions) {
@@ -272,7 +272,7 @@ function run_voting($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function save_vote($session) {
+function save_vote(jazzquiz_session $session) {
     $voteid = required_param('vote', PARAM_INT);
     $vote = new jazzquiz_vote($session->data->id);
     $status = $vote->save_vote($voteid);
@@ -284,7 +284,7 @@ function save_vote($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function get_vote_results($session) {
+function get_vote_results(jazzquiz_session $session) {
     $session->load_session_questions();
     $session->load_attempts();
     $slot = count($session->questions);
@@ -312,7 +312,7 @@ function end_question($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function get_right_response($session) {
+function get_right_response(jazzquiz_session $session) {
     $session->load_session_questions();
     return ['right_answer' => $session->get_question_right_response()];
 }
@@ -322,7 +322,7 @@ function get_right_response($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function close_session($session) {
+function close_session(jazzquiz_session $session) {
     $session->load_attempts();
     $session->end_session();
     return ['status' => 'success'];
@@ -333,7 +333,7 @@ function close_session($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function get_results($session) {
+function get_results(jazzquiz_session $session) {
     $session->load_session_questions();
     $session->load_attempts();
     $slot = count($session->questions);
@@ -360,7 +360,7 @@ function get_results($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function merge_responses($session) {
+function merge_responses(jazzquiz_session $session) {
     $session->load_session_questions();
     $slot = optional_param('slot', count($session->questions), PARAM_INT);
     if (!isset($session->questions[$slot])) {
@@ -377,7 +377,7 @@ function merge_responses($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function undo_merge($session) {
+function undo_merge(jazzquiz_session $session) {
     $session->load_session_questions();
     $slot = optional_param('slot', count($session->questions), PARAM_INT);
     if (!isset($session->questions[$slot])) {
@@ -421,7 +421,7 @@ function stack_to_latex() {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function session_info($session) {
+function session_info(jazzquiz_session $session) {
     global $DB;
     switch ($session->data->status) {
         // Just a generic response with the state.
@@ -491,7 +491,7 @@ function session_info($session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function handle_instructor_request($action, $session) {
+function handle_instructor_request(string $action, jazzquiz_session $session) : array {
     switch ($action) {
         case 'start_quiz':
             return start_quiz($session);
@@ -534,7 +534,7 @@ function handle_instructor_request($action, $session) {
  * @param jazzquiz_session $session
  * @return mixed[]
  */
-function handle_student_request($action, $session) {
+function handle_student_request(string $action, jazzquiz_session $session) : array {
     switch ($action) {
         case 'save_question':
             return save_question($session);

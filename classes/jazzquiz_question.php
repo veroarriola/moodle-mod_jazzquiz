@@ -35,7 +35,7 @@ class jazzquiz_question {
     /**
      * @param \stdClass $data jazzquiz_question
      */
-    public function __construct($data) {
+    public function __construct(\stdClass $data) {
         global $DB;
         $this->data = $data;
         $this->question = $DB->get_record('question', ['id' => $data->questionid]);

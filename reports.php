@@ -40,8 +40,11 @@ require_login();
 /**
  * @param jazzquiz $jazzquiz
  * @param \moodle_url $url
+ * @throws \coding_exception
+ * @throws \dml_exception
+ * @throws \moodle_exception
  */
-function jazzquiz_view_session_report($jazzquiz, $url) {
+function jazzquiz_view_session_report(jazzquiz $jazzquiz, \moodle_url $url) {
     $sessionid = optional_param('sessionid', 0, PARAM_INT);
     if ($sessionid === 0) {
         // If no session id is specified, we try to load the first one.
@@ -64,8 +67,9 @@ function jazzquiz_view_session_report($jazzquiz, $url) {
 
 /**
  * @param jazzquiz $jazzquiz
+ * @throws \coding_exception
  */
-function jazzquiz_export_session_report($jazzquiz) {
+function jazzquiz_export_session_report(jazzquiz $jazzquiz) {
     $what = required_param('what', PARAM_ALPHANUM);
     $sessionid = required_param('sessionid', PARAM_INT);
     $session = new jazzquiz_session($jazzquiz, $sessionid);
@@ -97,7 +101,6 @@ function jazzquiz_export_session_report($jazzquiz) {
  */
 function jazzquiz_reports() {
     global $PAGE;
-
     $cmid = optional_param('id', false, PARAM_INT);
     if (!$cmid) {
         // Probably a login redirect that doesn't include any ID.
@@ -105,10 +108,8 @@ function jazzquiz_reports() {
         header('Location: /');
         exit;
     }
-
     $jazzquiz = new jazzquiz($cmid);
     require_capability('mod/jazzquiz:seeresponses', $jazzquiz->context);
-
     $action = optional_param('action', '', PARAM_ALPHANUM);
 
     $url = new \moodle_url('/mod/jazzquiz/reports.php');

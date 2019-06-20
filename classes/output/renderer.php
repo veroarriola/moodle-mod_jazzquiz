@@ -16,6 +16,9 @@
 
 namespace mod_jazzquiz\output;
 
+use mod_jazzquiz\forms\view\student_start_form;
+use mod_jazzquiz\jazzquiz;
+use mod_jazzquiz\jazzquiz_attempt;
 use mod_jazzquiz\jazzquiz_session;
 
 defined('MOODLE_INTERNAL') || die;
@@ -48,7 +51,7 @@ class page_requirements_diff extends \page_requirements_manager {
      * Constructor.
      * @param \page_requirements_manager $manager
      */
-    public function __construct($manager) {
+    public function __construct(\page_requirements_manager $manager) {
         $this->beforeinitjs = $manager->jsinitcode;
         $this->beforeamdjs = $manager->amdjscode;
         $this->beforecss = $manager->cssurls;
@@ -60,7 +63,7 @@ class page_requirements_diff extends \page_requirements_manager {
      * @param \page_requirements_manager $manager
      * @return array the JavaScript that was added in-between constructor and this call.
      */
-    public function get_js_diff($manager) {
+    public function get_js_diff(\page_requirements_manager $manager) : array {
         $jsinitcode = array_diff($manager->jsinitcode, $this->beforeinitjs);
         $amdjscode = array_diff($manager->amdjscode, $this->beforeamdjs);
         return array_merge($jsinitcode, $amdjscode);
@@ -72,7 +75,7 @@ class page_requirements_diff extends \page_requirements_manager {
      * @param \page_requirements_manager $manager
      * @return array the CSS that was added in-between constructor and this call.
      */
-    public function get_css_diff($manager) {
+    public function get_css_diff(\page_requirements_manager $manager) : array {
         return array_keys(array_diff($manager->cssurls, $this->beforecss));
     }
 
@@ -91,10 +94,10 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render the header for the page.
-     * @param \mod_jazzquiz\jazzquiz $jazzquiz
+     * @param jazzquiz $jazzquiz
      * @param string $tab The active tab on the page
      */
-    public function header($jazzquiz, $tab) {
+    public function header(jazzquiz $jazzquiz, string $tab) {
         echo $this->output->header();
         echo jazzquiz_view_tabs($jazzquiz, $tab);
     }
@@ -110,17 +113,15 @@ class renderer extends \plugin_renderer_base {
      * For instructors.
      * @param \moodleform $sessionform
      */
-    public function start_session_form($sessionform) {
-        echo $this->render_from_template('jazzquiz/start_session', [
-            'form' => $sessionform->render()
-        ]);
+    public function start_session_form(\moodleform $sessionform) {
+        echo $this->render_from_template('jazzquiz/start_session', ['form' => $sessionform->render()]);
     }
 
     /**
      * For instructors.
-     * @param \mod_jazzquiz\jazzquiz $jazzquiz
+     * @param jazzquiz $jazzquiz
      */
-    public function continue_session_form($jazzquiz) {
+    public function continue_session_form(jazzquiz $jazzquiz) {
         global $PAGE;
         $cmid = $jazzquiz->cm->id;
         $id = $jazzquiz->data->id;
@@ -131,20 +132,22 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Show the "join quiz" form for students.
-     * @param \mod_jazzquiz\forms\view\student_start_form $studentstartform
-     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param student_start_form $form
+     * @param jazzquiz_session $session
+     * @throws \moodle_exception
      */
-    public function join_quiz_form($studentstartform, $session) {
+    public function join_quiz_form(student_start_form $form, jazzquiz_session $session) {
         echo $this->render_from_template('jazzquiz/join_session', [
             'name' => $session->data->name,
             'started' => ($session->attempt !== false),
-            'form' => $studentstartform->render()
+            'form' => $form->render()
         ]);
     }
 
     /**
      * Show the "quiz not running" page for students.
      * @param int $cmid the course module id for the quiz
+     * @throws \moodle_exception
      */
     public function quiz_not_running($cmid) {
         global $PAGE;
@@ -155,9 +158,10 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Renders the quiz to the page
-     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param jazzquiz_session $session
+     * @throws \moodle_exception
      */
-    public function render_quiz($session) {
+    public function render_quiz(jazzquiz_session $session) {
         $this->require_quiz($session);
         $buttons = function($buttons) {
             $result = [];
@@ -189,14 +193,14 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render the question specified by slot
-     * @param \mod_jazzquiz\jazzquiz $jazzquiz
+     * @param jazzquiz $jazzquiz
      * @param \question_usage_by_activity $quba
      * @param int $slot
      * @param bool $review Whether or not we're reviewing the attempt
      * @param string|\stdClass $reviewoptions Can be string for overall actions like "edit" or an object of review options
      * @return string the HTML fragment for the question
      */
-    public function render_question($jazzquiz, $quba, $slot, $review = false, $reviewoptions = '') {
+    public function render_question(jazzquiz $jazzquiz, $quba, $slot, bool $review, string $reviewoptions) : string {
         $displayoptions = $jazzquiz->get_display_options($review, $reviewoptions);
         $quba->render_question_head_html($slot);
         return $quba->render_question($slot, $displayoptions, $slot);
@@ -205,24 +209,23 @@ class renderer extends \plugin_renderer_base {
     /**
      * Render a specific question in its own form so it can be submitted
      * independently of the rest of the questions
-     *
      * @param int $slot the id of the question we're rendering
-     * @param \mod_jazzquiz\jazzquiz_attempt $attempt
-     * @param \mod_jazzquiz\jazzquiz $jazzquiz
-     * @param bool $isinstructor
-     *
+     * @param jazzquiz_attempt $attempt
+     * @param jazzquiz $jazzquiz
+     * @param bool $instructor
      * @return string[] html, javascript, css
+     * @throws \moodle_exception
      */
-    public function render_question_form($slot, $attempt, $jazzquiz, $isinstructor) {
+    public function render_question_form($slot, jazzquiz_attempt $attempt, jazzquiz $jazzquiz, bool $instructor) : array {
         global $PAGE;
         $differ = new page_requirements_diff($PAGE->requires);
         ob_start();
-        $questionhtml = $this->render_question($jazzquiz, $attempt->quba, $slot);
+        $questionhtml = $this->render_question($jazzquiz, $attempt->quba, $slot, false, '');
         $questionhtmlechoed = ob_get_clean();
         $js = implode("\n", $differ->get_js_diff($PAGE->requires));
         $css = $differ->get_css_diff($PAGE->requires);
         $output = $this->render_from_template('jazzquiz/question', [
-            'instructor' => $isinstructor,
+            'instructor' => $instructor,
             'question' => $questionhtml . $questionhtmlechoed,
             'slot' => $slot
         ]);
@@ -234,8 +237,10 @@ class renderer extends \plugin_renderer_base {
      * @param \moodle_url $url
      * @param \stdClass[] $sessions
      * @param int $selectedid
+     * @return array
+     * @throws \coding_exception
      */
-    public function get_select_session_context($url, $sessions, $selectedid) {
+    public function get_select_session_context(\moodle_url $url, array $sessions, $selectedid) : array {
         $selecturl = clone($url);
         $selecturl->param('action', 'view');
         usort($sessions, function ($a, $b) {
@@ -266,13 +271,13 @@ class renderer extends \plugin_renderer_base {
 
     /**
      * Render the list questions view for the edit page
-     *
-     * @param \mod_jazzquiz\jazzquiz $jazzquiz
+     * @param jazzquiz $jazzquiz
      * @param array $questions Array of questions
      * @param string $questionbankview HTML for the question bank view
      * @param \moodle_url $url
+     * @throws \moodle_exception
      */
-    public function list_questions($jazzquiz, $questions, $questionbankview, $url) {
+    public function list_questions(jazzquiz $jazzquiz, array $questions, string $questionbankview, \moodle_url $url) {
         $slot = 1;
         $list = [];
         foreach ($questions as $question) {
@@ -290,12 +295,10 @@ class renderer extends \plugin_renderer_base {
             ];
             $slot++;
         }
-
         echo $this->render_from_template('jazzquiz/edit_question_list', [
             'questions' => $list,
             'qbank' => $questionbankview
         ]);
-
         $this->require_edit($jazzquiz->cm->id);
     }
 
@@ -353,9 +356,9 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param jazzquiz_session $session
      */
-    public function require_core($session) {
+    public function require_core(jazzquiz_session $session) {
         $this->page->requires->js_call_amd('mod_jazzquiz/core', 'initialize', [
             $session->jazzquiz->cm->id,
             $session->jazzquiz->data->id,
@@ -366,9 +369,9 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param jazzquiz_session $session
      */
-    public function require_quiz($session) {
+    public function require_quiz(jazzquiz_session $session) {
         $this->require_core($session);
         $this->page->requires->js('/question/qengine.js');
         if ($session->jazzquiz->is_instructor()) {
@@ -389,10 +392,10 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * @param \mod_jazzquiz\jazzquiz_session $session
+     * @param jazzquiz_session $session
      * @param array $slots
      */
-    public function require_review($session, $slots) {
+    public function require_review(jazzquiz_session $session, array $slots) {
         $this->require_core($session);
         $count = count($session->jazzquiz->questions);
         $params = [$count, true, $slots];

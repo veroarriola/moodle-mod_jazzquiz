@@ -65,18 +65,13 @@ class jazzquiz_vote {
         if (!$allvotes) {
             return false;
         }
-        // Go through all the existing votes.
         foreach ($allvotes as $vote) {
-            // Get all the users who voted for this.
             $usersvoted = explode(',', $vote->userlist);
             if (!$usersvoted) {
                 continue;
             }
-            // Go through all the users who has voted on this attempt.
             foreach ($usersvoted as $uservoted) {
-                // Is this the user who is currently trying to vote?
                 if ($uservoted == $USER->id || $uservoted == $USER->sesskey) {
-                    // Yes, the user has already voted!
                     return true;
                 }
             }
@@ -119,7 +114,7 @@ class jazzquiz_vote {
      * @param array $options
      * @param int $slot
      */
-    public function prepare_options($jazzquizid, $qtype, $options, $slot) {
+    public function prepare_options($jazzquizid, string $qtype, array $options, $slot) {
         global $DB;
 
         // Delete previous voting options for this session.

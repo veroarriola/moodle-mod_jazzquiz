@@ -31,7 +31,7 @@ class exporter {
      * @param string $text
      * @return string
      */
-    public static function escape_csv(string $text) {
+    public static function escape_csv(string $text) : string {
         $text = str_replace("\r", '', $text);
         $text = str_replace("\n", '', $text);
         $text = str_replace("\t", '    ', $text);
@@ -53,7 +53,7 @@ class exporter {
      * @param jazzquiz_attempt[] $quizattempts
      * @return array
      */
-    public function export_session(jazzquiz_session $session, array $quizattempts) {
+    public function export_session(jazzquiz_session $session, array $quizattempts) : array {
         $quizattempt = reset($quizattempts);
         $qubaslots = $quizattempt->quba->get_slots();
         $slots = [];
@@ -116,13 +116,13 @@ class exporter {
     /**
      * Export session question data to array.
      * @param jazzquiz_session $session
-     * @param jazzquiz_attempt $quizattempt
+     * @param jazzquiz_attempt $attempt
      * @param int $slot
      * @return array
      */
-    public function export_session_question(jazzquiz_session $session, jazzquiz_attempt $quizattempt, int $slot) {
-        $questionattempt = $quizattempt->quba->get_question_attempt($slot);
-        $question = $questionattempt->get_question();
+    public function export_session_question(jazzquiz_session $session, jazzquiz_attempt $attempt, int $slot) : array {
+        $qattempt = $attempt->quba->get_question_attempt($slot);
+        $question = $qattempt->get_question();
         $session->load_attempts();
         $responses = $session->get_question_results_list($slot);
         $responses = $responses['responses'];
@@ -133,11 +133,11 @@ class exporter {
     /**
      * Export and print session question data as CSV.
      * @param jazzquiz_session $session
-     * @param jazzquiz_attempt $quizattempt
+     * @param jazzquiz_attempt $attempt
      * @param int $slot
      */
-    public function export_session_question_csv(jazzquiz_session $session, jazzquiz_attempt $quizattempt, int $slot) {
-        list($name, $text, $responses) = $this->export_session_question($session, $quizattempt, $slot);
+    public function export_session_question_csv(jazzquiz_session $session, jazzquiz_attempt $attempt, int $slot) {
+        list($name, $text, $responses) = $this->export_session_question($session, $attempt, $slot);
         $this->csv_file($name);
         echo "$text\r\n";
         foreach ($responses as $response) {

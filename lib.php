@@ -33,8 +33,9 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @param \stdClass $jazzquiz An object from the form in mod.html
  * @return int The id of the newly inserted jazzquiz record
- **/
-function jazzquiz_add_instance($jazzquiz) {
+ * @throws dml_exception
+ */
+function jazzquiz_add_instance(\stdClass $jazzquiz) {
     global $DB;
     $jazzquiz->timemodified = time();
     $jazzquiz->timecreated = time();
@@ -49,8 +50,9 @@ function jazzquiz_add_instance($jazzquiz) {
  *
  * @param \stdClass $jazzquiz An object from the form in mod.html
  * @return boolean Success/Fail
- **/
-function jazzquiz_update_instance($jazzquiz) {
+ * @throws dml_exception
+ */
+function jazzquiz_update_instance(\stdClass $jazzquiz) {
     global $DB;
     $jazzquiz->timemodified = time();
     $jazzquiz->id = $jazzquiz->instance;
@@ -110,17 +112,17 @@ function jazzquiz_cron() {
  * @param mixed $forcedownload
  * @param array $options
  * @return bool
+ * @throws coding_exception
+ * @throws dml_exception
  */
 function jazzquiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options = []) {
     global $DB;
-
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
     }
     if ($filearea != 'question') {
         return false;
     }
-
     require_course_login($course, true, $cm);
 
     $questionid = (int)array_shift($args);
@@ -135,7 +137,6 @@ function jazzquiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
     if (!$question) {
         return false;
     }
-
     $fs = get_file_storage();
     $relative = implode('/', $args);
     $fullpath = "/$context->id/mod_jazzquiz/$filearea/$questionid/$relative";
@@ -161,7 +162,6 @@ function jazzquiz_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
  * @param array $args the remaining bits of the file path.
  * @param bool $forcedownload whether the user must be forced to download the file.
  * @param array $options additional options affecting the file serving
- * @return bool false if file not found, does not return if found - justsend the file
  */
 function mod_jazzquiz_question_pluginfile($course, $context, $component, $filearea, $qubaid, $slot,
                                           $args, $forcedownload, $options = []) {
@@ -177,40 +177,16 @@ function mod_jazzquiz_question_pluginfile($course, $context, $component, $filear
 /**
  * Check whether JazzQuiz supports a certain feature or not.
  * @param string $feature
- * @return bool|null
+ * @return bool
  */
-function jazzquiz_supports($feature) {
-    if (!defined('FEATURE_PLAGIARISM')) {
-        define('FEATURE_PLAGIARISM', 'plagiarism');
-    }
+function jazzquiz_supports(string $feature) : bool {
     switch ($feature) {
-        case FEATURE_GROUPS:
-            return false;
-        case FEATURE_GROUPINGS:
-            return false;
-        case FEATURE_GROUPMEMBERSONLY:
-            return false;
         case FEATURE_MOD_INTRO:
-            return true;
-        case FEATURE_COMPLETION_TRACKS_VIEWS:
-            return false;
-        case FEATURE_COMPLETION_HAS_RULES:
-            return false;
-        case FEATURE_GRADE_HAS_GRADE:
-            return false;
-        case FEATURE_GRADE_OUTCOMES:
-            return false;
-        case FEATURE_RATE:
-            return false;
         case FEATURE_BACKUP_MOODLE2:
-            return true;
         case FEATURE_SHOW_DESCRIPTION:
-            return true;
-        case FEATURE_PLAGIARISM:
-            return false;
         case FEATURE_USES_QUESTIONS:
             return true;
         default:
-            return null;
+            return false;
     }
 }

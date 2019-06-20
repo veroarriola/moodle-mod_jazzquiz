@@ -47,7 +47,7 @@ class jazzquiz_session {
      * @param jazzquiz $jazzquiz
      * @param int $sessionid
      */
-    public function __construct($jazzquiz, $sessionid) {
+    public function __construct(jazzquiz $jazzquiz, $sessionid) {
         global $DB;
         $this->jazzquiz = $jazzquiz;
         $this->attempts = [];
@@ -179,7 +179,7 @@ class jazzquiz_session {
      * @param string $from Original response text
      * @param string $into Merged response text
      */
-    public function merge_responses($slot, $from, $into) {
+    public function merge_responses($slot, string $from, string $into) {
         global $DB;
         $merge = new \stdClass();
         $merge->sessionid = $this->data->id;
@@ -203,11 +203,10 @@ class jazzquiz_session {
             'sessionid' => $this->data->id,
             'slot' => $slot
         ], 'ordernum desc', '*', 0, 1);
-        if (count($merge) === 0) {
-            return;
+        if (count($merge) > 0) {
+            $merge = reset($merge);
+            $DB->delete_records('jazzquiz_merges', ['id' => $merge->id]);
         }
-        $merge = reset($merge);
-        $DB->delete_records('jazzquiz_merges', ['id' => $merge->id]);
     }
 
     /**
@@ -216,7 +215,7 @@ class jazzquiz_session {
      * @param string[]['response'] $responses Original responses
      * @return string[]['response'], int Merged responses and count of merges.
      */
-    public function get_merged_responses($slot, $responses) {
+    public function get_merged_responses($slot, array $responses) : array {
         global $DB;
         $merges = $DB->get_records('jazzquiz_merges', [
             'sessionid' => $this->data->id,
