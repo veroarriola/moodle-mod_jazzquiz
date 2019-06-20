@@ -452,6 +452,10 @@
     font-size: 1.2rem;
 }
 
+.jazzquiz-add-selected-questions {
+    margin: 4px;
+}
+
 .start-question-menu .MathJax_Display,
 .questionlist li .controls .name .MathJax_Display {
     text-align: left !important;
