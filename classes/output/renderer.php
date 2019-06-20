@@ -137,9 +137,11 @@ class renderer extends \plugin_renderer_base {
      * @throws \moodle_exception
      */
     public function join_quiz_form(student_start_form $form, jazzquiz_session $session) {
+        $anonstr = ['', 'anonymous_answers_info', 'fully_anonymous_info', 'nonanonymous_session_info'];
         echo $this->render_from_template('jazzquiz/join_session', [
             'name' => $session->data->name,
             'started' => ($session->attempt !== false),
+            'anonymity_info' => get_string($anonstr[$session->data->anonymity], 'jazzquiz'),
             'form' => $form->render()
         ]);
     }

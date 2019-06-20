@@ -119,7 +119,7 @@ function jazzquiz_view_default_instructor(jazzquiz $jazzquiz) {
  */
 function jazzquiz_view_default_student(jazzquiz $jazzquiz) {
     global $PAGE;
-    $studentstartform = new forms\view\student_start_form($PAGE->url, ['rtq' => $jazzquiz]);
+    $studentstartform = new forms\view\student_start_form($PAGE->url);
     $data = $studentstartform->get_data();
     if ($data) {
         $quizstarturl = clone($PAGE->url);

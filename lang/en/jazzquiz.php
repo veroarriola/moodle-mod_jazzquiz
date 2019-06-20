@@ -59,6 +59,9 @@ $string['anonymous_answers'] = 'Anonymous answers (Attendance can be seen)';
 $string['fully_anonymous'] = 'Fully anonymous';
 $string['nonanonymous_session'] = 'Non-anonymous session';
 $string['allow_guests'] = 'Allow guests';
+$string['anonymous_answers_info'] = 'Answers are anonymized in this session. Your attendance is still recorded.';
+$string['fully_anonymous_info'] = 'Both answers and attendance are fully anonymized in this session.';
+$string['nonanonymous_session_info'] = 'This is a non-anonymous session. Both your attendance and answers are recorded.';
 
 // Tabs.
 $string['view'] = 'View';
