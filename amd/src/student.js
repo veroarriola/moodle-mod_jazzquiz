@@ -74,7 +74,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
         }
 
         onSessionClosed(data) {
-            setText(Quiz.info, 'session_closed');
+            window.location = location.href.split('&')[0];
         }
 
         onVoting(data) {

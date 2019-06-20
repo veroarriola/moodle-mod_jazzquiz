@@ -862,7 +862,7 @@ define(['jquery', 'mod_jazzquiz/core'], function ($, Jazz) {
             Quiz.hide(Question.box);
             Quiz.hide(Instructor.controls);
             setText(Quiz.info, 'closing_session');
-            Ajax.post('close_session', {}, () => setText(Quiz.info, 'session_closed'));
+            Ajax.post('close_session', {}, () => window.location = location.href.split('&')[0]);
         }
 
         /**
