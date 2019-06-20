@@ -83,10 +83,10 @@ class jazzquiz {
     /**
      * Sets up the display options for the question
      * @param bool $review
-     * @param string $reviewoptions
+     * @param string|\stdClass $reviewoptions
      * @return \question_display_options
      */
-    public function get_display_options(bool $review, string $reviewoptions) {
+    public function get_display_options(bool $review, $reviewoptions) {
         $options = new \question_display_options();
         $options->flags = \question_display_options::HIDDEN;
         $options->context = $this->context;

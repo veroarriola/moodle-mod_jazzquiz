@@ -200,7 +200,7 @@ class renderer extends \plugin_renderer_base {
      * @param string|\stdClass $reviewoptions Can be string for overall actions like "edit" or an object of review options
      * @return string the HTML fragment for the question
      */
-    public function render_question(jazzquiz $jazzquiz, $quba, $slot, bool $review, string $reviewoptions) : string {
+    public function render_question(jazzquiz $jazzquiz, $quba, $slot, bool $review, $reviewoptions) : string {
         $displayoptions = $jazzquiz->get_display_options($review, $reviewoptions);
         $quba->render_question_head_html($slot);
         return $quba->render_question($slot, $displayoptions, $slot);
