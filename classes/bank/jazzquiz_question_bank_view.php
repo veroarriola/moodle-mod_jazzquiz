@@ -82,6 +82,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * @param bool $showhidden
      * @param bool $showquestiontext
      * @param array $tagids
+     * @throws \coding_exception
      */
     public function display($tabname, $page, $perpage, $cat, $recurse, $showhidden, $showquestiontext, $tagids = []) {
         global $PAGE;
@@ -114,18 +115,24 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
             $showquestiontext,
             $this->contexts->having_cap('moodle/question:add')
         );
-
+        $this->display_add_selected_questions_button();
         $PAGE->requires->js_call_amd('core_question/edit_tags', 'init', ['#questionscontainer']);
+    }
+
+    private function display_add_selected_questions_button() {
+        $straddtoquiz = get_string('add_to_quiz', 'jazzquiz');
+        echo '<button class="btn btn-secondary jazzquiz-add-selected-questions">' . $straddtoquiz . '</button>';
     }
 
     /**
      * Generate an "add to quiz" url so that when clicked the question will be added to the quiz
      * @param int $questionid
      * @return \moodle_url Moodle url to add the question
+     * @throws \moodle_exception
      */
     public function get_add_to_jazzquiz_url($questionid) {
         $params = $this->baseurl->params();
-        $params['questionid'] = $questionid;
+        $params['questionids'] = $questionid;
         $params['action'] = 'addquestion';
         $params['sesskey'] = sesskey();
         return new \moodle_url('/mod/jazzquiz/edit.php', $params);
@@ -134,10 +141,10 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
     /**
      * This has been taken from the base class to allow us to call our own version of
      * create_new_question_button.
-     *
      * @param \stdClass $category
      * @param bool $add
      * @throws \coding_exception
+     * @throws \moodle_exception
      */
     protected function create_new_question_form($category, $add) {
         echo '<div class="createnewquestion">';
@@ -164,6 +171,7 @@ class jazzquiz_question_bank_view extends \core_question\bank\view {
      * @param string $caption the text to display on the button.
      * @param string $tooltip a tooltip to add to the button (optional).
      * @param bool $disabled if true, the button will be disabled.
+     * @throws \moodle_exception
      */
     private function create_new_question_button($categoryid, $params, $caption, $tooltip = '', $disabled = false) {
         global $OUTPUT;

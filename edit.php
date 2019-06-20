@@ -98,10 +98,13 @@ function jazzquiz_edit_order(jazzquiz $jazzquiz) {
  * @throws \moodle_exception
  */
 function jazzquiz_edit_add_question(jazzquiz $jazzquiz, \moodle_url $url) {
-    $questionid = required_param('questionid', PARAM_INT);
-    $jazzquiz->add_question($questionid);
+    $questionids = required_param('questionids', PARAM_TEXT);
+    $questionids = explode(',', $questionids);
+    foreach ($questionids as $questionid) {
+        $jazzquiz->add_question($questionid);
+    }
     // Ensure there is no action or questionid in the base url.
-    $url->remove_params('action', 'questionid');
+    $url->remove_params('action', 'questionids');
     redirect($url, null, 0);
 }
 

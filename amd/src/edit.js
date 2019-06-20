@@ -69,6 +69,21 @@ define(['jquery'], function ($) {
         return order;
     }
 
+    function listenAddToQuiz(courseModuleId) {
+        $('.jazzquiz-add-selected-questions').on('click', function () {
+            const $checkboxes = $('#categoryquestions td input[type=checkbox]:checked');
+            let questionIds = '';
+            for (const checkbox of $checkboxes) {
+                questionIds += checkbox.getAttribute('name').slice(1) + ',';
+            }
+            $.post('edit.php', {
+                id: courseModuleId,
+                action: 'addquestion',
+                questionids: questionIds,
+            }, () => location.reload());
+        });
+    }
+
     return {
         initialize: courseModuleId => {
             $('.edit-question-action').on('click', function () {
@@ -99,6 +114,7 @@ define(['jquery'], function ($) {
                 handle: '.dragquestion',
                 onSort: () => submitQuestionOrder(getQuestionOrder(), courseModuleId)
             });
+            listenAddToQuiz(courseModuleId);
         }
     };
 
