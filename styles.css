@@ -86,6 +86,7 @@
     z-index: 9000;
     padding: 20px;
     background: #fafafa;
+    overflow-y: scroll;
 }
 
 .jazzquiz-fullscreen #jazzquiz_control_separator {
