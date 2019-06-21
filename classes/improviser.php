@@ -61,8 +61,9 @@ class improviser {
         $context = \context_module::instance($this->jazzquiz->cm->id);
         $parts = explode('/', $context->path);
         foreach ($parts as $part) {
-            $sql = "SELECT q.id,
-                           q.name
+            // Selecting name first, to prevent duplicate improvise questions.
+            $sql = "SELECT q.name,
+                           q.id
                       FROM {question} q
                       JOIN {question_categories} qc
                         ON qc.id = q.category
