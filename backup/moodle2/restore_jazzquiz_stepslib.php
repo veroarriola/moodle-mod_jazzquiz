@@ -33,6 +33,7 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
             $paths[] = new restore_path_element('jazzquiz_session_question', '/activity/jazzquiz/sessions/session/sessionquestions/sessionquestion');
             $paths[] = new restore_path_element('jazzquiz_merge', '/activity/jazzquiz/sessions/session/merges/merge');
             $paths[] = new restore_path_element('jazzquiz_vote', '/activity/jazzquiz/sessions/session/votes/vote');
+            $paths[] = new restore_path_element('jazzquiz_attendance', '/activity/jazzquiz/sessions/session/attendances/attendance');
             $attempt = new restore_path_element('jazzquiz_attempt', '/activity/jazzquiz/sessions/session/attempts/attempt');
             $paths[] = $attempt;
             $this->add_question_usages($attempt, $paths);
@@ -122,6 +123,16 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         $data->sessionid = $this->get_new_parentid('jazzquiz_session');
         $newitemid = $DB->insert_record('jazzquiz_votes', $data);
         $this->set_mapping('jazzquiz_vote', $oldid, $newitemid);
+    }
+
+    protected function process_jazzquiz_attendance($data) {
+        global $DB;
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->sessionid = $this->get_new_parentid('jazzquiz_session');
+        $newitemid = $DB->insert_record('jazzquiz_attendance', $data);
+        $this->set_mapping('jazzquiz_attendance', $oldid, $newitemid);
     }
 
     protected function after_execute() {
