@@ -104,6 +104,23 @@ function jazzquiz_cron() {
 }
 
 /**
+ * This function extends the settings navigation block for the site.
+ *
+ * @param settings_navigation $settings
+ * @param navigation_node $jazzquiznode
+ * @return void
+ */
+function jazzquiz_extend_settings_navigation($settings, $jazzquiznode) {
+    global $PAGE, $CFG;
+
+    // Require {@link questionlib.php}
+    // Included here as we only ever want to include this file if we really need to.
+    require_once($CFG->libdir . '/questionlib.php');
+
+    question_extend_settings_navigation($jazzquiznode, $PAGE->cm->context)->trim_if_empty();
+}
+
+/**
  * @param \stdClass|int $course
  * @param \stdClass $cm
  * @param \context $context
