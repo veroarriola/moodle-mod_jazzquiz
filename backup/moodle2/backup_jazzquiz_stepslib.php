@@ -34,7 +34,9 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
             'timecreated',
             'timemodified',
             'defaultquestiontime',
-            'waitforquestiontime'
+            'waitforquestiontime',
+            'cfganonymity',
+            'cfgallowguests'
         ]);
 
         $questions = new backup_nested_element('questions');
@@ -53,7 +55,9 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
             'slot',
             'currentquestiontime',
             'nextstarttime',
-            'created'
+            'created',
+            'anonymity',
+            'allowguests'
         ]);
 
         $sessionquestions = new backup_nested_element('sessionquestions');
@@ -74,7 +78,8 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
             'responded',
             'timestart',
             'timefinish',
-            'timemodified'
+            'timemodified',
+            'guestsession'
         ]);
         $this->add_question_usages($attempt, 'questionengid');
 
@@ -98,6 +103,13 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
             'slot'
         ]);
 
+        $attendances = new backup_nested_element('attendances');
+        $attendance = new backup_nested_element('attendance', ['id'], [
+            'sessionid',
+            'userid',
+            'numresponses'
+        ]);
+
         // Build the tree.
         $jazzquiz->add_child($questions);
         $jazzquiz->add_child($sessions);
@@ -109,11 +121,13 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
         $session->add_child($attempts);
         $session->add_child($merges);
         $session->add_child($votes);
+        $session->add_child($attendances);
 
         $sessionquestions->add_child($sessionquestion);
         $attempts->add_child($attempt);
         $merges->add_child($merge);
         $votes->add_child($vote);
+        $attendances->add_child($attendance);
 
         // Define sources.
         $jazzquiz->set_source_table('jazzquiz', ['id' => backup::VAR_ACTIVITYID]);
@@ -122,6 +136,7 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
             $session->set_source_table('jazzquiz_sessions', ['jazzquizid' => backup::VAR_PARENTID]);
             $sessionquestion->set_source_table('jazzquiz_session_questions', ['sessionid' => backup::VAR_PARENTID]);
             $attempt->set_source_table('jazzquiz_attempts', ['sessionid' => backup::VAR_PARENTID]);
+            $attendance->set_source_table('jazzquiz_attendance', ['sessionid' => backup::VAR_PARENTID]);
             $merge->set_source_table('jazzquiz_merges', ['sessionid' => backup::VAR_PARENTID]);
             $vote->set_source_table('jazzquiz_votes', [
                 'jazzquizid' => backup::VAR_ACTIVITYID,
@@ -131,6 +146,7 @@ class backup_jazzquiz_activity_structure_step extends backup_questions_activity_
 
         // Define id annotations.
         $attempt->annotate_ids('user', 'userid');
+        $attendance->annotate_ids('user', 'userid');
         $question->annotate_ids('question', 'questionid');
         $sessionquestion->annotate_ids('question', 'questionid');
 
