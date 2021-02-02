@@ -27,14 +27,21 @@ class restore_jazzquiz_activity_structure_step extends restore_questions_activit
         $userinfo = $this->get_setting_value('userinfo');
         $paths = [];
         $paths[] = new restore_path_element('jazzquiz', '/activity/jazzquiz');
-        $paths[] = new restore_path_element('jazzquiz_question', '/activity/jazzquiz/questions/question');
+        $paths[] = new restore_path_element('jazzquiz_question',
+           '/activity/jazzquiz/questions/question');
         if ($userinfo) {
-            $paths[] = new restore_path_element('jazzquiz_session', '/activity/jazzquiz/sessions/session');
-            $paths[] = new restore_path_element('jazzquiz_session_question', '/activity/jazzquiz/sessions/session/sessionquestions/sessionquestion');
-            $paths[] = new restore_path_element('jazzquiz_merge', '/activity/jazzquiz/sessions/session/merges/merge');
-            $paths[] = new restore_path_element('jazzquiz_vote', '/activity/jazzquiz/sessions/session/votes/vote');
-            $paths[] = new restore_path_element('jazzquiz_attendance', '/activity/jazzquiz/sessions/session/attendances/attendance');
-            $attempt = new restore_path_element('jazzquiz_attempt', '/activity/jazzquiz/sessions/session/attempts/attempt');
+            $paths[] = new restore_path_element('jazzquiz_session',
+               '/activity/jazzquiz/sessions/session');
+            $paths[] = new restore_path_element('jazzquiz_session_question',
+               '/activity/jazzquiz/sessions/session/sessionquestions/sessionquestion');
+            $paths[] = new restore_path_element('jazzquiz_merge',
+               '/activity/jazzquiz/sessions/session/merges/merge');
+            $paths[] = new restore_path_element('jazzquiz_vote',
+               '/activity/jazzquiz/sessions/session/votes/vote');
+            $paths[] = new restore_path_element('jazzquiz_attendance',
+               '/activity/jazzquiz/sessions/session/attendances/attendance');
+            $attempt = new restore_path_element('jazzquiz_attempt',
+               '/activity/jazzquiz/sessions/session/attempts/attempt');
             $paths[] = $attempt;
             $this->add_question_usages($attempt, $paths);
         }
