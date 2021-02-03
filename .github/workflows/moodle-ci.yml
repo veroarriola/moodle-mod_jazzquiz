@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         php: ['7.2', '7.3', '7.4']
-        moodle-branch: ['MOODLE_310_STABLE']
+        moodle-branch: ['MOODLE_310_STABLE', 'MOODLE_39_STABLE']
         database: [pgsql, mariadb]
 
     steps:
@@ -102,9 +102,3 @@ jobs:
       - name: Behat features
         if: ${{ always() }}
         run: moodle-plugin-ci behat --profile chrome
-        
-      - name: coveralls
-        env:
-          COVERALLS_RUN_LOCALLY: true
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: moodle-plugin-ci coveralls-upload
