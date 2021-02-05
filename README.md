@@ -1,5 +1,10 @@
 # JazzQuiz
 
+![Build Status](https://github.com/KQMATH/moodle-mod_jazzquiz/workflows/build/badge.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/KQMATH/moodle-mod_jazzquiz/badge.svg?branch=master)](https://coveralls.io/github/KQMATH/moodle-mod_jazzquiz?branch=master)
+
+Moodle activity module, letting the teacher run a preplanned quiz with the power of improvisation
+
 ## What is it?
 JazzQuiz is designed to be used in face-to-face lessons.
 The teacher may plan questions in advance, but can also easily improvise on the fly.
