@@ -22,5 +22,5 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 First version considered ready for field trial.
 
-[Unreleased]: https://github.com/KQMATH/moodle-mod_jazzquiz/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/KQMATH/moodle-mod_jazzquiz/compare/v1.0.1...HEAD
 [1.0.1]: https://github.com/KQMATH/moodle-qtype_mod_jazzquiz/compare/v1.0.0...v1.0.1
