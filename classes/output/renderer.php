@@ -122,11 +122,10 @@ class renderer extends \plugin_renderer_base {
      * @param jazzquiz $jazzquiz
      */
     public function continue_session_form(jazzquiz $jazzquiz) {
-        global $PAGE;
         $cmid = $jazzquiz->cm->id;
         $id = $jazzquiz->data->id;
         echo $this->render_from_template('jazzquiz/continue_session', [
-            'path' => $PAGE->url->get_path() . "?id=$cmid&quizid=$id&action=quizstart"
+            'path' => $this->page->url->get_path() . "?id=$cmid&quizid=$id&action=quizstart"
         ]);
     }
 
@@ -152,9 +151,8 @@ class renderer extends \plugin_renderer_base {
      * @throws \moodle_exception
      */
     public function quiz_not_running($cmid) {
-        global $PAGE;
         echo $this->render_from_template('jazzquiz/no_session', [
-            'reload' => $PAGE->url->get_path() . '?id=' . $cmid
+            'reload' => $this->page->url->get_path() . '?id=' . $cmid
         ]);
     }
 
@@ -219,13 +217,12 @@ class renderer extends \plugin_renderer_base {
      * @throws \moodle_exception
      */
     public function render_question_form($slot, jazzquiz_attempt $attempt, jazzquiz $jazzquiz, bool $instructor) : array {
-        global $PAGE;
-        $differ = new page_requirements_diff($PAGE->requires);
+        $differ = new page_requirements_diff($this->page->requires);
         ob_start();
         $questionhtml = $this->render_question($jazzquiz, $attempt->quba, $slot, false, '');
         $questionhtmlechoed = ob_get_clean();
-        $js = implode("\n", $differ->get_js_diff($PAGE->requires));
-        $css = $differ->get_css_diff($PAGE->requires);
+        $js = implode("\n", $differ->get_js_diff($this->page->requires));
+        $css = $differ->get_css_diff($this->page->requires);
         $output = $this->render_from_template('jazzquiz/question', [
             'instructor' => $instructor,
             'question' => $questionhtml . $questionhtmlechoed,

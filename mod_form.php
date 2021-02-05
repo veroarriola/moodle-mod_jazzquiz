@@ -30,10 +30,6 @@ require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
 class mod_jazzquiz_mod_form extends moodleform_mod {
 
-    public function __construct($current, $section, $cm, $course) {
-        parent::__construct($current, $section, $cm, $course);
-    }
-
     public function definition() {
         $mform =& $this->_form;
 
