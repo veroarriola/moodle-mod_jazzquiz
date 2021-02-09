@@ -147,6 +147,7 @@ $string['vote'] = 'Vote';
 $string['improvise'] = 'Improvise';
 $string['jump'] = 'Jump';
 $string['next'] = 'Next';
+$string['random'] = 'Random';
 $string['end'] = 'End';
 $string['fullscreen'] = 'Fullscreen';
 $string['quit'] = 'Quit';
@@ -226,6 +227,15 @@ $string['instructions_for_instructor'] = '
             <td>n</td>
             <td>
                 Continue on to the next question in the list of planned questions.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-random"></i> Random
+            </td>
+            <td>m</td>
+            <td>
+                Starts a random question from the list of planned questions.
             </td>
         </tr>
         <tr>

@@ -173,6 +173,13 @@ function start_question(jazzquiz_session $session) {
             $questionid = $jazzquizquestion->question->id;
             $questiontime = $jazzquizquestion->data->questiontime;
             break;
+        case 'random':
+            $lastslot = count($session->jazzquiz->questions);
+            $session->data->slot = random_int(1, $lastslot);
+            $jazzquizquestion = $session->jazzquiz->questions[$session->data->slot];
+            $questionid = $jazzquizquestion->question->id;
+            $questiontime = $jazzquizquestion->data->questiontime;
+            break;
         default:
             return [
                 'status' => 'error',
