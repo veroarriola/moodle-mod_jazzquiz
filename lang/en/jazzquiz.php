@@ -168,6 +168,7 @@ $string['download_report'] = 'Download report';
 $string['download_attendance_list'] = 'Download attendance list';
 $string['download_responses'] = 'Download responses';
 $string['no_sessions_exist'] = 'No sessions exist yet.';
+$string['delete_report'] = 'Delete report';
 
 // Instructions.
 $string['instructions_for_student'] = '<p>Please wait for the instructor to start the quiz.</p>';
