@@ -97,9 +97,9 @@ function jazzquiz_export_session_report(jazzquiz $jazzquiz) {
 }
 
 function jazzquiz_delete_session_report(int $sessionid) {
-	if ($sessionid !== 0) {
-		jazzquiz_session::delete($sessionid);
-	}
+    if ($sessionid !== 0) {
+        jazzquiz_session::delete($sessionid);
+    }
 }
 
 /**
@@ -144,10 +144,10 @@ function jazzquiz_reports() {
         case 'export':
             jazzquiz_export_session_report($jazzquiz);
             break;
-		case 'delete':
-			jazzquiz_delete_session_report($sessionid);
-			jazzquiz_view_session_report($jazzquiz, $url, 0);
-			break;
+        case 'delete':
+            jazzquiz_delete_session_report($sessionid);
+            jazzquiz_view_session_report($jazzquiz, $url, 0);
+            break;
         default:
             jazzquiz_view_session_report($jazzquiz, $url, $sessionid);
             break;

@@ -398,7 +398,7 @@
 }
 
 #report_overview_controls {
-	position: relative;
+    position: relative;
 }
 
 #report_overview_controls a {
@@ -406,14 +406,14 @@
 }
 
 #report_overview_controls a:last-child {
-	position: absolute;
-	right: 32px;
-	margin-top: 4px;
-	color: #ff5555;
+    position: absolute;
+    right: 32px;
+    margin-top: 4px;
+    color: #ff5555;
 }
 
 #report_overview_controls a:last-child:hover {
-	color: #cc3333;
+    color: #cc3333;
 }
 
 #report_overview_responded table tr {
