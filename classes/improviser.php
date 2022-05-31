@@ -88,10 +88,13 @@ class improviser {
         if (!$category) {
             return false;
         }
-        $questions = $DB->get_records('question', [
-            'category' => $category->id,
-            'name' => '{IMPROV}' . $name
-        ]);
+        $sql = "SELECT qbe.id
+                  FROM {question_bank_entries} qbe
+                  JOIN {question} q
+                    ON q.id = qbe.id
+                 WHERE qbe.questioncategoryid = :catid
+                   AND q.name LIKE :name";
+        $questions = $DB->get_records_sql($sql, ['catid' => $category->id, 'name' => '{IMPROV}' . $name]);
         if (!$questions) {
             return false;
         }
