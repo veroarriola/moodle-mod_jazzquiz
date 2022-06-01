@@ -96,15 +96,11 @@ class jazzquiz_question_bank_view extends \core_question\local\bank\view {
 
         // Continues with list of questions.
         $this->display_question_list(
-            $this->contexts->having_one_edit_tab_cap($tabname),
             $this->baseurl,
             $cat,
-            $this->cm,
             null,
             $page,
-            $perpage,
-            $showhidden,
-            $showquestiontext,
+            $perpage,   
             $this->contexts->having_cap('moodle/question:add')
         );
         $this->display_add_selected_questions_button();
