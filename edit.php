@@ -60,10 +60,18 @@ function jazzquiz_session_open($jazzquizid) {
 function get_qbank_view(\core_question\local\bank\question_edit_contexts $contexts, jazzquiz $jazzquiz, \moodle_url $url, array $pagevars) {
     $qperpage = optional_param('qperpage', 10, PARAM_INT);
     $qpage = optional_param('qpage', 0, PARAM_INT);
+    $new_pagevars = [
+        'qpage' => $qpage,
+        'qperpage' => $qperpage,
+        'cat' => $pagevars['cat'],
+        'recurse' => true,
+        'showhidden' => true,
+        'qbshowtext' => true
+    ];
     // Capture question bank display in buffer to have the renderer render output.
     ob_start();
     $questionbank = new bank\jazzquiz_question_bank_view($contexts, $url, $jazzquiz->course, $jazzquiz->cm);
-    $questionbank->display('editq', $qpage, $qperpage, $pagevars['cat'], true, true, true);
+    $questionbank->display($new_pagevars, 'editq');
     return ob_get_clean();
 }
 
