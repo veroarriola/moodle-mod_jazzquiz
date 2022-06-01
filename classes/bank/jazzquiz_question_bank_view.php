@@ -51,10 +51,10 @@ class jazzquiz_question_bank_view extends \core_question\local\bank\view {
         // Full class names for question bank columns.
         $columns = [
             '\\mod_jazzquiz\\bank\\question_bank_add_to_jazzquiz_action_column',
-            'core_question\\bank\\checkbox_column',
-            'core_question\\bank\\question_type_column',
-            'core_question\\bank\\question_name_column',
-            'core_question\\bank\\preview_action_column'
+            'core_question\\local\\bank\\checkbox_column',
+            'qbank_viewquestiontype\\question_type_column',
+            'qbank_viewquestionname\\viewquestionname_column_helper',
+            'qbank_previewquestion\\preview_action_column'
         ];
         foreach ($columns as $column) {
             $this->requiredcolumns[$column] = new $column($this);
