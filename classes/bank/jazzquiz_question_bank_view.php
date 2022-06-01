@@ -75,16 +75,21 @@ class jazzquiz_question_bank_view extends \core_question\local\bank\view {
     /**
      * Shows the question bank editing interface.
      * @param string $tabname
-     * @param int $page
-     * @param int $perpage
-     * @param string $cat
-     * @param bool $recurse
-     * @param bool $showhidden
-     * @param bool $showquestiontext
-     * @param array $tagids
+     * @param array $pagevars
      * @throws \coding_exception
      */
-    public function display($tabname, $page, $perpage, $cat, $recurse, $showhidden, $showquestiontext, $tagids = []) {
+    public function display($pagevars, $tabname): void {
+        $page = $pagevars['qpage'];
+        $perpage = $pagevars['qperpage'];
+        $cat = $pagevars['cat'];
+        $recurse = $pagevars['recurse'];
+        $showhidden = $pagevars['showhidden'];
+        $showquestiontext = $pagevars['qbshowtext'];
+        $tagids = [];
+        if (!empty($pagevars['qtagids'])) {
+            $tagids = $pagevars['qtagids'];
+        }
+
         global $PAGE;
 
         if ($this->process_actions_needing_ui()) {
