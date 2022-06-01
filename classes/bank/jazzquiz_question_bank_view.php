@@ -82,9 +82,6 @@ class jazzquiz_question_bank_view extends \core_question\local\bank\view {
 
         global $PAGE;
 
-        if ($this->process_actions_needing_ui()) {
-            return;
-        }
         $contexts = $this->contexts->having_one_edit_tab_cap($tabname);
         list($categoryid, $contextid) = explode(',', $cat);
         $catcontext = \context::instance_by_id($contextid);
