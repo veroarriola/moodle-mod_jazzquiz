@@ -47,7 +47,7 @@ class jazzquiz_question_bank_view extends \core_question\local\bank\view {
      * Define the columns we want to be displayed on the question bank
      * @return array
      */
-    protected function wanted_columns() {
+    protected function wanted_columns(): array {
         // Full class names for question bank columns.
         $columns = [
             '\\mod_jazzquiz\\bank\\question_bank_add_to_jazzquiz_action_column',
