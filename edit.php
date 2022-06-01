@@ -174,7 +174,6 @@ function jazzquiz_edit() {
 
     // Process moving, deleting and unhiding questions...
     $questionbank = new \core_question\local\bank\view($contexts, $url, $COURSE, $cm);
-    $questionbank->process_actions();
 
     switch ($action) {
         case 'order':
