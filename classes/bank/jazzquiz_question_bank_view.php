@@ -41,7 +41,7 @@ use \core_question\bank\search\category_condition as category_condition;
  * @copyright   2018 NTNU
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jazzquiz_question_bank_view extends \core_question\bank\view {
+class jazzquiz_question_bank_view extends \core_question\local\bank\view {
 
     /**
      * Define the columns we want to be displayed on the question bank
