@@ -61,7 +61,7 @@ class question_bank_add_to_jazzquiz_action_column extends \core_question\local\b
      * Get the required fields.
      * @return string[]
      */
-    public function get_required_fields() {
+    public function get_required_fields(): array {
         return ['q.id'];
     }
 
