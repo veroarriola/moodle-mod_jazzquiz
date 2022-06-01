@@ -141,7 +141,7 @@ class jazzquiz_question_bank_view extends \core_question\local\bank\view {
      * @throws \coding_exception
      * @throws \moodle_exception
      */
-    protected function create_new_question_form($category, $add) {
+    protected function create_new_question_form($category, $add): void {
         echo '<div class="createnewquestion">';
         if ($add) {
             $caption = get_string('create_new_question', 'jazzquiz');
