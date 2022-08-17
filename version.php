@@ -31,3 +31,4 @@ $plugin->cron = 0; // Period in seconds for cron to run.
 $plugin->component = 'mod_jazzquiz';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '1.1.0 (Build: 2022081700)';
+
