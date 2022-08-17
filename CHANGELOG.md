@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 ### Changed
 - 
 
-## [1.0.2] - 2022-08-17
+## [1.1.0] - 2022-08-17
 
 - Added button to delete session report
 - Prevent repetition of 
