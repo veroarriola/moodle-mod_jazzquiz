@@ -120,7 +120,7 @@ class improviser {
         $context = \context_module::instance($this->jazzquiz->cm->id);
         $category = question_get_default_category($context->id);
         if (!$category) {
-            $contexts = new \question_edit_contexts($context);
+            $contexts = new \core_question\local\bank\question_edit_contexts($context);
             $category = question_make_default_categories($contexts->all());
         }
         return $category;
