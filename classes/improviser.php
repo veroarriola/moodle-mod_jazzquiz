@@ -127,6 +127,24 @@ class improviser {
     }
 
     /**
+     * Create a question bank entry for the database.
+     * @return \stdClass | null
+     */
+    private function make_generic_question_bank_entry() {
+        $category = $this->get_default_question_category();
+        if (!$category) {
+            return null;
+        }
+
+        /* debugging( "Making generic question bank entry." ) ; */
+        $question = new \stdClass();
+        $question->questioncategoryid = $category->id;
+        $question->ownerid = null;
+        $question->idnumber = null;
+        return $question;
+    }
+
+    /**
      * Create a question database object.
      * @param string $qtype What question type to create
      * @param string $name The name of the question to create
@@ -134,18 +152,15 @@ class improviser {
      */
     private function make_generic_question_definition(string $qtype, string $name) {
         if (!$this->question_type_exists($qtype)) {
+            /* debugging( "make_generic_question_definition: question type does not exist" ) ; */
             return null;
         }
         $existing = $this->get_improvised_question_definition($name);
         if ($existing !== false) {
-            return null;
-        }
-        $category = $this->get_default_question_category();
-        if (!$category) {
+            /* debugging( "make_generic_question_definition: existing: ".$name ) ; */
             return null;
         }
         $question = new \stdClass();
-        $question->category = $category->id;
         $question->parent = 0;
         $question->name = '{IMPROV}' . $name;
         $question->questiontext = '&nbsp;';
@@ -157,8 +172,6 @@ class improviser {
         $question->qtype = $qtype;
         $question->length = 1;
         $question->stamp = '';
-        $question->version = '';
-        $question->hidden = 0;
         $question->timecreated = time();
         $question->timemodified = $question->timecreated;
         $question->createdby = null;
@@ -225,11 +238,19 @@ class improviser {
      */
     private function insert_multichoice_question_definition(string $name, array $answers) {
         global $DB;
+        /* debugging("insert_multichoice_question_definition: ".$name ) ; */
         $question = $this->make_generic_question_definition('multichoice', $name);
         if (!$question) {
             return;
         }
+        /* debugging("insert_multichoice_question_definition 2") ; */
+        $qbankentry = $this->make_generic_question_bank_entry();
+        if (!$qbankentry) {
+            return;
+        }
         $question->id = $DB->insert_record('question', $question);
+        $qbankentry->id = $DB->insert_record('question_bank_entries', $qbankentry);
+        $this->insert_question_version( $qbankentry->id, $question->id ) ;
         // Add options.
         $options = $this->make_multichoice_options($question->id);
         $DB->insert_record('qtype_multichoice_options', $options);
@@ -238,6 +259,23 @@ class improviser {
             $qanswer = $this->make_generic_question_answer($question->id, 1, $answer);
             $DB->insert_record('question_answers', $qanswer);
         }
+        /* debugging( "Question ID ".$question->id ); */
+    }
+
+    /* Create a question version database object, linking the given question
+     * and question bank entry. 
+     * @param int $qbankid The ID of the question banke entry 
+     * @param int $qid The ID of the question 
+     * @return \stdClass
+     */
+    private function insert_question_version(int $qbankid, int $qid) {
+        global $DB;
+        $qv = new \stdClass();
+        $qv->questionbankentryid = $qbankid ;
+        $qv->version = 1 ;
+        $qv->questionid = $qid ;
+        $qv->id = $DB->insert_record('question_versions', $qv);
+        return $qv;
     }
 
     /**
@@ -246,11 +284,19 @@ class improviser {
      */
     private function insert_shortanswer_question_definition(string $name) {
         global $DB;
+        /* debugging("insert_shortanswer_question_definition: ".$name ) ; */
         $question = $this->make_generic_question_definition('shortanswer', $name);
         if (!$question) {
             return;
         }
+        $qbankentry = $this->make_generic_question_bank_entry();
+        if (!$qbankentry) {
+            return;
+        }
         $question->id = $DB->insert_record('question', $question);
+        $qbankentry->id = $DB->insert_record('question_bank_entries', $qbankentry);
+        $this->insert_question_version( $qbankentry->id, $question->id ) ;
+
         // Add options.
         $options = $this->make_shortanswer_options($question->id);
         $DB->insert_record('qtype_shortanswer_options', $options);
@@ -261,11 +307,18 @@ class improviser {
 
     private function insert_shortmath_question_definition(string $name) {
         global $DB;
+        /* debugging("insert_shortmath_question_definition: ".$name ) ; */
         $question = $this->make_generic_question_definition('shortmath', $name);
         if (!$question) {
             return;
         }
+        $qbankentry = $this->make_generic_question_bank_entry();
+        if (!$qbankentry) {
+            return;
+        }
         $question->id = $DB->insert_record('question', $question);
+        $qbankentry->id = $DB->insert_record('question_bank_entries', $qbankentry);
+        $this->insert_question_version( $qbankentry->id, $question->id ) ;
         // Add options. Important: If shortmath changes options table in the future, this must be changed too.
         $options = $this->make_shortanswer_options($question->id);
         $DB->insert_record('qtype_shortmath_options', $options);
