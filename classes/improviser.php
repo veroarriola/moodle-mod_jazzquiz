@@ -60,13 +60,19 @@ class improviser {
         $questions = [];
         $context = \context_module::instance($this->jazzquiz->cm->id);
         $parts = explode('/', $context->path);
+        debugging( "get_all_improvised: ".$parts ) ;
         foreach ($parts as $part) {
             // Selecting name first, to prevent duplicate improvise questions.
+            debugging( "get_all_improvised: ".$part ) ;
             $sql = "SELECT q.name,
                            q.id
                       FROM {question} q
+                      JOIN {question_versions} qv
+                        ON q.id = qv.questionid
+                      JOIN {question_bank_entries} qbe
+                        ON qbe.id = qv.questionbankentryid
                       JOIN {question_categories} qc
-                        ON qc.id = q.category
+                        ON qc.id = qbe.questioncategoryid
                       JOIN {context} ctx
                         ON ctx.id = qc.contextid
                        AND ctx.path LIKE :path
