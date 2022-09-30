@@ -64,9 +64,9 @@ function get_qbank_view(\core_question\local\bank\question_edit_contexts $contex
         'qpage' => $qpage,
         'qperpage' => $qperpage,
         'cat' => $pagevars['cat'],
-        'recurse' => true,
-        'showhidden' => true,
-        'qbshowtext' => true
+        'recurse' => $pagevars['recurse'],
+        'showhidden' => $pagevars['showhidden'],
+        'qbshowtext' => $pagevars['qbshowtext']
     ];
     // Capture question bank display in buffer to have the renderer render output.
     ob_start();
